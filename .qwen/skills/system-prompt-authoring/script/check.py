@@ -37,7 +37,23 @@ CONTRAST_PAIRS = (
     ("必须详细", "必须简短"),
     ("必须完整", "必须精简"),
 )
-CHECKABLE_EXT = (".md", ".py", ".json", ".toml", ".yaml", ".yml", ".txt", ".cfg", ".ini", ".sh")
+CHECKABLE_EXT = (
+    ".md", ".py", ".json", ".toml", ".yaml", ".yml", ".txt", ".cfg", ".ini", ".sh",
+    ".js", ".mjs", ".cjs", ".ts", ".tsx", ".jsx", ".go", ".rs", ".java", ".kt",
+    ".c", ".h", ".cc", ".cpp", ".hpp", ".rb", ".php", ".cs", ".swift", ".scala",
+    ".sql", ".proto", ".graphql", ".html", ".css", ".scss", ".xml", ".csv",
+    ".ipynb", ".lock", ".conf", ".properties", ".gradle", ".cmake", ".mk",
+)
+# 无扩展名但确实是文件的根级名字。只认这些，避免把 `make`、`pytest -q`
+# 这类命令当成路径。
+ROOT_FILE_NAMES = (
+    "Makefile", "makefile", "GNUmakefile", "Dockerfile", "Containerfile",
+    "Jenkinsfile", "Procfile", "Rakefile", "Gemfile", "Vagrantfile",
+    "README", "readme", "CONTRIBUTING", "SECURITY", "CODEOWNERS",
+    "requirements.txt", "LICENSE", "NOTICE", "AUTHORS", "CHANGELOG",
+)
+# 反引号里这些形状的不是本地路径，不查存在性。
+URL_RE = re.compile(r"^[A-Za-z][A-Za-z0-9+.-]*://")
 LONG_LINE_LIMIT = 200
 EXAMPLE_RULE_THRESHOLD = 50
 DUP_JACCARD = 0.6
@@ -262,11 +278,16 @@ class Doc:
 
     def __init__(self, text: str, md) -> None:
         self.text = text
-        self.raw = text.splitlines()
-        self.tokens = md.parse(text)
+        # BOM 会让首行的 `# 标题` 变成段落：\ufeff 不是合法空白，
+        # 解析器看不到标题标记。整体剔除 0xFEFF，行号不受影响。
+        self.raw = [line.replace("\ufeff", "") for line in text.splitlines()]
+        self.front_matter = self._detect_front_matter()
+        self.tokens = md.parse("\n".join(self.raw))
         self.headings: list[Heading] = []
         self.fences: list[tuple[int, int, str]] = []
-        self.code_lines: set[int] = set()
+        # front matter 不是正文：并进 code_lines 后，所有按行扫描的检查
+        # （规则计数、占位、行尾空白、S2、S10）自动跳过它，无需逐处再加条件
+        self.code_lines: set[int] = set(self.front_matter)
         self.html_lines: set[int] = set()
         self.example_lines: set[int] = set()
         self.tables: list[Table] = []
@@ -277,6 +298,7 @@ class Doc:
         self.unclosed_emphasis: list[tuple[int, str]] = []
         self.empty_links: list[tuple[int, str]] = []
         self.missing_heading_space: list[int] = []
+        self.heading_starts_deep: Heading | None = None
         self.duplicate_headings: list[tuple[int, str]] = []
         self._table_start = 0
         self._walk()
@@ -285,7 +307,21 @@ class Doc:
         self._find_missing_heading_space()
         self._find_unclosed_html()
         self._find_empty_links()
-        self._find_unclosed_emphasis()
+        self._find_heading_start()
+
+    def _detect_front_matter(self) -> set[int]:
+        """识别文件开头的 YAML front matter，返回其行号集合。
+
+        CommonMark 把 `---` 下的行按 setext 标题解析：一段 `name: x` 后面
+        跟一行 `---` 会变成一个巨大的 h2，真正的首个标题反而排在它后面。
+        跳过这段才不会把 front matter 当成正文结构。
+        """
+        if not self.raw or self.raw[0].strip() != "---":
+            return set()
+        for i in range(1, min(len(self.raw), 200)):
+            if self.raw[i].strip() in ("---", "..."):
+                return set(range(1, i + 2))
+        return set()
 
     def _inline_text(self, i: int) -> str:
         """取行内 token 的全部可见文字。
@@ -323,6 +359,11 @@ class Doc:
         while i < len(tokens):
             t = tokens[i]
             kind = t.type
+
+            # front matter 被解析成的 h2 与段落不是正文结构，整段跳过
+            if t.map and (t.map[0] + 1) in self.front_matter:
+                i += 1
+                continue
 
             if kind in ("bullet_list_open", "ordered_list_open"):
                 depth += 1
@@ -368,15 +409,40 @@ class Doc:
             i += 1
 
     def _scan_inline(self, i: int) -> None:
-        """检查行内 token 的对称性，记录未闭合的反引号。"""
+        r"""检查行内 token 的对称性。
+
+        不能按行数反引号：CommonMark 允许 code span 跨行，
+        ``第一行 `abc`` / ``第二行 def``` 是合法的单个 code span，
+        按行数会把两行都判成落单。判据改为「解析器没消化掉的标记」：
+        没配对的标记会在 text 节点里原样保留，配对成功的变成 code_inline
+        或 strong/em token，不再出现在 text 里。
+        """
         token = self.tokens[i]
-        line = token.map[0] + 1 if token.map else 0
-        if not line or line in self.code_lines or line in self.html_lines:
+        if not token.map:
             return
-        text = self.raw[line - 1] if 0 < line <= len(self.raw) else ""
-        # 行内代码由解析器兜住，但它把未闭合的 ` 渲染成字面量，这里按源文本数
-        if count_inline_backticks(text) % 2 == 1:
-            self.unclosed_inline.append(line)
+        first = token.map[0] + 1
+        if first in self.code_lines or first in self.html_lines:
+            return
+        parts: list[str] = []
+        for child in token.children or []:
+            if child.type == "text":
+                parts.append(child.content)
+            elif child.type in ("softbreak", "hardbreak"):
+                parts.append("\n")
+        leftover = "".join(parts)
+        # 反引号：只剩奇数个说明有一个没配上，落在它所在的那一行
+        if leftover.count("`") % 2 == 1:
+            for offset, raw_line in enumerate(self.raw[token.map[0] : token.map[1]]):
+                if count_inline_backticks(raw_line) % 2 == 1:
+                    self.unclosed_inline.append(first + offset)
+                    break
+
+        for marker in ("**", "__"):
+            if leftover.count(marker) % 2 == 1:
+                for offset, raw_line in enumerate(self.raw[token.map[0] : token.map[1]]):
+                    if count_marker(strip_inline_code(raw_line), marker) % 2 == 1:
+                        self.unclosed_emphasis.append((first + offset, marker))
+                        break
 
     def _find_duplicate_headings(self) -> None:
         """同名标题会让锚点冲突，跳转只落到第一个。
@@ -429,16 +495,13 @@ class Doc:
                 if not label.strip() or not url.strip():
                     self.empty_links.append((i, match.group(0)))
 
-    def _find_unclosed_emphasis(self) -> None:
-        """未配对的 `**` / `__` 会原样显示星号，而不是加粗。"""
-        skip = self.code_lines | self.html_lines
-        for i, line in enumerate(self.raw, 1):
-            if i in skip:
-                continue
-            text = strip_inline_code(line)
-            for marker in ("**", "__"):
-                if count_marker(text, marker) % 2 == 1:
-                    self.unclosed_emphasis.append((i, marker))
+    def _find_heading_start(self) -> None:
+        """首个标题不是 h1 时，整篇的层级基线都偏低。
+
+        从 h2 起笔的文件渲染出来没有一级标题，目录里缺少总的入口。
+        """
+        if self.headings and self.headings[0].level > 1:
+            self.heading_starts_deep = self.headings[0]
 
     def _mark_examples(self) -> None:
         """示例里的路径和规则词是在演示，不是对本文档的要求。
@@ -539,50 +602,89 @@ def check_duplicates(doc: Doc) -> list[Finding]:
     return findings
 
 
-def reference_candidates(doc: Doc) -> list[tuple[int, str]]:
-    """从行内代码里取形如路径的引用。"""
-    out: list[tuple[int, str]] = []
-    skip = doc.code_lines | doc.html_lines | doc.example_lines
-    for line_no, line in enumerate(doc.raw, 1):
-        if line_no in skip:
-            continue
-        for match in INLINE_CODE_RE.finditer(line):
-            ref = match.group(1).strip()
-            if ref.endswith(CHECKABLE_EXT) or (ref.endswith("/") and "/" in ref):
-                out.append((line_no, ref))
-    return out
+def looks_like_path(ref: str) -> bool:
+    """判断反引号里的内容是否在指一个本地文件或目录。
+
+    宁可多认几个文件名，也不能因为扩展名清单不全就整类放过：
+    `src/main.js` 之前完全不在检查范围内，等于 S10 对前端项目失效。
+    对应的代价是命令行要显式排除（带空格的整串不查）。
+    """
+    if not ref or any(ch.isspace() for ch in ref):
+        # 带空格的整串多半是命令（`pytest -q`）或一句话，不是单个路径
+        return False
+    if URL_RE.match(ref) or ref.startswith("mailto:"):
+        return False
+    if ref.startswith(("<", "@", "$")):
+        # 占位符、scope 包名、环境变量
+        return False
+    bare = ref.split("#", 1)[0].split("?", 1)[0]
+    if not bare:
+        return False
+    if bare.endswith("/"):
+        return "/" in bare or bare != "/"
+    name = bare.rsplit("/", 1)[-1]
+    if name in ROOT_FILE_NAMES:
+        return True
+    return bare.endswith(CHECKABLE_EXT)
 
 
 def resolve_reference(ref: str, base: Path) -> bool:
     target = ref.split("#", 1)[0].split("?", 1)[0].strip()
     if not target:
         return True
-    if target.startswith("/") or target.startswith("~"):
-        return True
+    candidate = Path(target).expanduser()
+    if candidate.is_absolute():
+        return candidate.exists()
+    # `~/x` 展开后是绝对路径，走到这里说明是相对路径。
     # 只沿目标文件所在目录向上找，不回退 cwd：否则同一份文档在不同目录下
     # 运行会得到不同结论，S10 就不可复核了。
-    candidate = Path(target)
     for parent in [base, *list(base.parents)[:5]]:
         if (parent / candidate).exists():
             return True
     return False
 
 
+def reference_groups(line: str) -> list[list[str]]:
+    """把一行里的路径引用按列举关系分组。
+
+    顿号连接的多个引用是在列候选（“从 `README`、`package.json` 里读”），
+    候选清单里的文件本来就可以不存在，逐个校验只会制造误报。
+    其他分隔（“与”“、再”）则视为各自独立的断言，分别校验。
+    """
+    groups: list[list[str]] = []
+    current: list[str] = []
+    prev_end: int | None = None
+    for match in INLINE_CODE_RE.finditer(line):
+        ref = match.group(1).strip()
+        if not looks_like_path(ref):
+            continue
+        separator = line[prev_end : match.start()] if prev_end is not None else ""
+        # 只有顿号、逗号或斜杠连接，才算与上一个引用同属一个列举
+        if current and separator.strip() in ("、", ",", "，", "/"):
+            current.append(ref)
+        else:
+            if current:
+                groups.append(current)
+            current = [ref]
+        prev_end = match.end()
+    if current:
+        groups.append(current)
+    return groups
+
+
 def check_references(doc: Doc, base: Path) -> list[Finding]:
     findings: list[Finding] = []
-    # 一行点名多个文件通常是在列候选（“从 README、package.json 里读”），
-    # 不是断言某个文件必须存在，逐个校验只会制造误报
-    by_line: dict[int, list[str]] = {}
-    for line_no, ref in reference_candidates(doc):
-        bucket = by_line.setdefault(line_no, [])
-        if ref not in bucket:
-            bucket.append(ref)
-
-    for line_no, refs in by_line.items():
-        if len(refs) > 1:
+    skip = doc.code_lines | doc.html_lines | doc.example_lines
+    for line_no, line in enumerate(doc.raw, 1):
+        if line_no in skip:
             continue
-        ref = refs[0]
-        if not resolve_reference(ref, base):
+        for group in reference_groups(line):
+            if len(group) > 1:
+                # 列举候选，不要求每一个都存在
+                continue
+            ref = group[0]
+            if resolve_reference(ref, base):
+                continue
             findings.append(
                 Finding(
                     WARNING,
@@ -685,6 +787,19 @@ def check_structure(doc: Doc) -> list[Finding]:
                 )
             )
         prev = heading
+
+    if doc.heading_starts_deep:
+        heading = doc.heading_starts_deep
+        findings.append(
+            Finding(
+                WARNING,
+                "MD-HEAD-START",
+                heading.line,
+                f"首个标题是 h{heading.level}，不是 h1",
+                "整篇没有一级标题时，目录里缺少总的入口，后续层级也随之整体偏移",
+                "把首个标题改为 `#`，其余层级依次上调",
+            )
+        )
 
     for table in doc.tables:
         cols = table.cols
@@ -990,12 +1105,13 @@ def check_rules(doc: Doc, skill_mode: bool = False) -> list[Finding]:
     return findings
 
 
-USAGE = "用法: python3 check.py [--skill] [--baseline <旧文件>] <目标文件>"
+USAGE = "用法: python3 check.py [--skill] [--strict] [--baseline <旧文件>] <目标文件>"
 
 
 def parse_args(argv: list[str]):
     positional: list[str] = []
     skill_mode = False
+    strict = False
     baseline: str | None = None
     i = 0
     while i < len(argv):
@@ -1005,6 +1121,8 @@ def parse_args(argv: list[str]):
             raise SystemExit(0)
         if arg == "--skill":
             skill_mode = True
+        elif arg == "--strict":
+            strict = True
         elif arg.startswith("--baseline="):
             baseline = arg.split("=", 1)[1]
         elif arg == "--baseline":
@@ -1022,11 +1140,11 @@ def parse_args(argv: list[str]):
     if len(positional) != 1:
         print(USAGE, file=sys.stderr)
         raise SystemExit(2)
-    return positional[0], skill_mode, baseline
+    return positional[0], skill_mode, baseline, strict
 
 
 def main() -> int:
-    target, skill_mode, baseline_path = parse_args(sys.argv[1:])
+    target, skill_mode, baseline_path, strict = parse_args(sys.argv[1:])
 
     path = Path(target)
     if not path.is_file():
@@ -1077,8 +1195,15 @@ def main() -> int:
         print()
 
     errors = sum(1 for f in findings if f.level == ERROR)
-    print("结果:", "失败" if errors else "通过")
-    return 1 if errors else 0
+    warnings = sum(1 for f in findings if f.level == WARNING)
+    if strict:
+        # 严格模式把警告也算失败：CI 里不给人“先放着”的余地，
+        # 每一条都要修掉或改成显式豁免
+        failed = errors + warnings > 0
+    else:
+        failed = errors > 0
+    print("结果:", "失败" if failed else "通过", "（严格模式：警告也计失败）" if strict else "")
+    return 1 if failed else 0
 
 
 if __name__ == "__main__":

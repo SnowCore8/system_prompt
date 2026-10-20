@@ -8,6 +8,7 @@
 
 from __future__ import annotations
 
+import io
 import sys
 import tempfile
 import unittest
@@ -612,10 +613,18 @@ class RunTest(unittest.TestCase):
             self.assertFalse(missing.exists())
 
     def test_parse_args_accepts_baseline(self):
-        target, skill, baseline = check.parse_args(["--skill", "--baseline", "old.md", "new.md"])
+        target, skill, baseline, strict = check.parse_args(["--skill", "--baseline", "old.md", "new.md"])
         self.assertEqual(target, "new.md")
         self.assertTrue(skill)
         self.assertEqual(baseline, "old.md")
+        self.assertFalse(strict)
+
+    def test_parse_args_accepts_strict(self):
+        target, skill, baseline, strict = check.parse_args(["--strict", "a.md"])
+        self.assertEqual(target, "a.md")
+        self.assertFalse(skill)
+        self.assertIsNone(baseline)
+        self.assertTrue(strict)
 
     def test_parse_args_rejects_unknown_flag(self):
         with self.assertRaises(SystemExit) as ctx:
@@ -626,6 +635,154 @@ class RunTest(unittest.TestCase):
         with self.assertRaises(SystemExit) as ctx:
             check.parse_args([])
         self.assertEqual(ctx.exception.code, 2)
+
+
+class CrossLineMarkTest(unittest.TestCase):
+    """反引号与强调可以跨行配对，按行计数会误报。"""
+
+    def test_multiline_code_span_not_reported(self):
+        doc = build("# Role\n\n第一行 `abc\n第二行 def` 结束\n")
+        self.assertEqual(doc.unclosed_inline, [])
+
+    def test_multiline_emphasis_not_reported(self):
+        doc = build("# Role\n\n这里有 **加粗\n结束** 文本\n")
+        self.assertEqual(doc.unclosed_emphasis, [])
+
+    def test_unclosed_across_lines_reported_once(self):
+        doc = build("# Role\n\n第一行 `abc\n第二行 def 结束\n")
+        self.assertEqual(doc.unclosed_inline, [3])
+
+    def test_unclosed_emphasis_across_lines_reported_once(self):
+        doc = build("# Role\n\n这里有 **加粗\n结束 文本\n")
+        self.assertEqual(doc.unclosed_emphasis, [(3, "**")])
+
+    def test_escaped_markers_not_counted(self):
+        doc = build("# Role\n\n字面量 \\*\\* 与 \\` 都不算标记\n")
+        self.assertEqual(doc.unclosed_emphasis, [])
+        self.assertEqual(doc.unclosed_inline, [])
+
+
+class FrontMatterTest(unittest.TestCase):
+    """YAML front matter 会被 CommonMark 解析成 setext 标题。"""
+
+    TEXT = (
+        "---\n"
+        "name: demo\n"
+        "description: 一段说明\n"
+        "---\n"
+        "\n"
+        "# 角色与完成定义\n"
+        "\n"
+        "## 输出格式\n"
+        "\n"
+        "- 列出结果。\n"
+    )
+
+    def test_front_matter_not_parsed_as_heading(self):
+        doc = build(self.TEXT)
+        self.assertEqual([h.level for h in doc.headings], [1, 2])
+        self.assertEqual(doc.headings[0].text, "角色与完成定义")
+
+    def test_front_matter_not_counted_as_rule(self):
+        doc = build(self.TEXT)
+        self.assertEqual([r.text for r in check.rule_lines(doc)], ["列出结果。"])
+
+    def test_front_matter_not_checked_for_paths(self):
+        text = "---\nname: `nonexistent/x.md`\n---\n\n# Role\n\n内容。\n"
+        self.assertEqual(check.check_references(build(text), Path("/tmp")), [])
+
+
+class BomTest(unittest.TestCase):
+    """BOM 会让首行标题变成段落。"""
+
+    def test_bom_stripped_before_parse(self):
+        doc = build("\ufeff# Role\n\n## 输出格式\n\n内容。\n")
+        self.assertEqual([h.level for h in doc.headings], [1, 2])
+
+    def test_bom_markdown_has_no_role_error(self):
+        text = "\ufeff# Role and Objective\n\n## Output Format\n\n- 结果。\n"
+        self.assertNotIn("S1", rules_of(text))
+
+
+class HeadingStartTest(unittest.TestCase):
+    """首个标题应从 h1 起。"""
+
+    def test_first_heading_h2_reported(self):
+        self.assertIn("MD-HEAD-START", structure_of("## 角色\n\n内容。\n"))
+
+    def test_first_heading_h1_not_reported(self):
+        self.assertNotIn("MD-HEAD-START", structure_of("# 角色\n\n## 细节\n\n内容。\n"))
+
+    def test_no_heading_not_reported(self):
+        self.assertNotIn("MD-HEAD-START", structure_of("纯文本。\n"))
+
+
+class PathHeuristicTest(unittest.TestCase):
+    """S10 认哪些反引号内容为路径。"""
+
+    def test_url_not_treated_as_path(self):
+        self.assertFalse(check.looks_like_path("https://example.com/guide.md"))
+
+    def test_command_with_space_not_treated_as_path(self):
+        self.assertFalse(check.looks_like_path("pytest -q"))
+
+    def test_placeholder_not_treated_as_path(self):
+        self.assertFalse(check.looks_like_path("<目标文件>"))
+
+    def test_common_source_extension_recognized(self):
+        self.assertTrue(check.looks_like_path("src/main.js"))
+
+    def test_root_file_name_recognized(self):
+        self.assertTrue(check.looks_like_path("Makefile"))
+
+    def test_url_query_not_split_into_path(self):
+        self.assertFalse(check.looks_like_path("https://x.test/a.md?q=1"))
+
+
+class ReferenceGroupTest(unittest.TestCase):
+    """顿号列举不逐个校验，独立断言逐个校验。"""
+
+    def test_enumeration_grouped(self):
+        groups = check.reference_groups("从 `README`、`package.json`、`Makefile` 里读")
+        self.assertEqual(groups, [["README", "package.json", "Makefile"]])
+
+    def test_independent_assertions_split(self):
+        groups = check.reference_groups("见 `AGENTS.md` 与 `docs/nope.md`")
+        self.assertEqual(groups, [["AGENTS.md"], ["docs/nope.md"]])
+
+
+class StrictModeTest(unittest.TestCase):
+    """--strict 把警告也算失败。"""
+
+    def _run(self, *args: str) -> int:
+        old_argv, old_out = sys.argv, sys.stdout
+        sys.argv = ["check.py", *args]
+        sys.stdout = io.StringIO()
+        try:
+            return check.main()
+        finally:
+            sys.argv, sys.stdout = old_argv, old_out
+
+    def test_strict_fails_on_warning_only(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "doc.md"
+            # h2 起笔只产生警告，没有错误
+            path.write_text("## 角色与完成定义\n\n## 输出格式\n\n- 结果。\n", encoding="utf-8")
+            self.assertEqual(self._run(str(path)), 0)
+            self.assertEqual(self._run("--strict", str(path)), 1)
+
+    def test_strict_passes_on_clean_file(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "doc.md"
+            path.write_text(
+                "# 角色与完成定义\n\n"
+                "# Instructions\n\n## 始终\n\n- 列出结果。\n\n"
+                "## 不确定时\n\n- 请求模糊：列出两三种理解，问用户选哪个。\n"
+                "- 信息不足：先查代码。\n- 超出范围：说明边界。\n\n"
+                "# Output Format\n\n- 只输出摘要正文。\n",
+                encoding="utf-8",
+            )
+            self.assertEqual(self._run("--strict", str(path)), 0)
 
 
 if __name__ == "__main__":
