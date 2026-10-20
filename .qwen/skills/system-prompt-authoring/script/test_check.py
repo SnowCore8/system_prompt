@@ -793,6 +793,7 @@ class LinkTargetTest(unittest.TestCase):
         self.root = Path(self.tmp.name)
         (self.root / "docs").mkdir()
         (self.root / "docs" / "real.md").write_text("# x\n", encoding="utf-8")
+        (self.root / "docs" / "我 的.md").write_text("# x\n", encoding="utf-8")
 
     def tearDown(self):
         self.tmp.cleanup()
@@ -838,6 +839,24 @@ class LinkTargetTest(unittest.TestCase):
 
     def test_safe_exists_swallows_oserror(self):
         self.assertFalse(check.safe_exists(self.root / ("a" * 5000)))
+
+    def test_percent_encoded_target_resolved(self):
+        """href 里的空格会被编码成 %20，不先解码就永远判成不存在。"""
+        self.assertNotIn("MD-LINK-TARGET", self._rules("# R\n\n[文档](docs/我 的.md)\n"))
+
+    def test_image_wrapped_link_not_empty(self):
+        """[![alt](a.png)](b.md) 的链接文字是图片的 alt，不能算空。"""
+        self.assertNotIn("MD-LINK-EMPTY", self._rules("# R\n\n[![图](docs/real.md)](docs/real.md)\n"))
+
+
+class QuoteTableTest(unittest.TestCase):
+    """引用块里的表格也要判定。"""
+
+    def test_broken_table_in_quote_reported(self):
+        self.assertIn("MD-TABLE-BROKEN", structure_of("> # R\n>\n> |a|b|\n> |1|2|\n"))
+
+    def test_valid_table_in_quote_not_reported(self):
+        self.assertNotIn("MD-TABLE-BROKEN", structure_of("> # R\n>\n> |a|b|\n> |-|-|\n> |1|2|\n"))
 
 
 class ListMarkerTest(unittest.TestCase):

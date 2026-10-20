@@ -16,6 +16,7 @@ import sys
 from dataclasses import dataclass
 from difflib import SequenceMatcher
 from pathlib import Path
+from urllib.parse import unquote
 
 DEPENDENCY = "markdown-it-py>=3,<4"
 
@@ -505,6 +506,10 @@ class Doc:
                         break
                     if follow.type in ("text", "code_inline"):
                         label += follow.content
+                    elif follow.type == "image":
+                        # `[![alt](a.png)](b.md)` 的链接文字是图片，alt 就是文字；
+                        # 只认 text 会把这种写法误判成空链接
+                        label += follow.content or ""
                 self.links.append((line, label, href, False))
             elif child.type == "image":
                 attrs = child.attrs or {}
@@ -732,10 +737,17 @@ def safe_exists(path: Path) -> bool:
 
 
 def resolve_reference(ref: str, base: Path) -> bool:
+    """把引用解析成本地路径并查存在性。
+
+    href 里的空格与非 ASCII 字符会被解析器百分号编码（`我 的.md`
+    变成 `%E6%88%91%20%E7%9A%84.md`），先解码再查，否则中文文件名
+    永远判成不存在。
+    """
     target = ref.split("#", 1)[0].split("?", 1)[0].strip()
     if not target:
         return True
     try:
+        target = unquote(target)
         candidate = Path(target).expanduser()
     except (ValueError, OSError):
         return False
@@ -993,7 +1005,8 @@ def check_structure(doc: Doc, base: Path) -> list[Finding]:
     skip_table = doc.code_lines | doc.html_lines | doc.example_lines
     run: list[int] = []
     for i, raw_line in enumerate(doc.raw + [""], 1):
-        stripped = strip_inline_code(raw_line).strip()
+        # 引用块里的表格行以 `> |` 开头，先剥掉 > 前缀再判断
+        stripped = strip_inline_code(strip_quote_prefix(raw_line)).strip()
         is_pipe_row = i <= len(doc.raw) and i not in skip_table and stripped.startswith("|")
         if is_pipe_row:
             run.append(i)
