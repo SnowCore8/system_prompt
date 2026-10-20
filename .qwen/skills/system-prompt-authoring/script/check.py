@@ -183,7 +183,6 @@ def count_inline_backticks(line: str) -> int:
 
 LINK_DEF_RE = re.compile(r"^\s{0,3}\[([^\]]+)\]:\s*\S", re.MULTILINE)
 LINK_USE_RE = re.compile(r"\[([^\]]*)\]\[([^\]]*)\]")
-EMPTY_LINK_RE = re.compile(r"\[([^\]]*)\]\(([^)]*)\)")
 # 常见否定式开头。漏掉「严禁」「请勿」「永远不要」会让 S2 整条规则失效
 NEGATION_RE = re.compile(
     r"^(?:绝不要|绝对不要|永远不要|千万不要|严禁|请勿|切勿|不要|绝不|禁止|不得|不准|不能)"
@@ -232,6 +231,37 @@ def find_link_definitions(doc: "Doc") -> tuple[dict[str, int], list[tuple[int, s
     return defined, duplicates
 
 
+def find_used_link_labels(doc: "Doc") -> set[str]:
+    """收集被真正用到的引用标签，用于发现没人使用的定义。
+
+    `[a]` 这种 collapsed 写法与普通方括号无法区分，只有 `[文字][标签]`
+    与 `[标签][]` 能确认意图，因此只认这两种。
+    """
+    used: set[str] = set()
+    skip = doc.code_lines | doc.html_lines | doc.example_lines
+    for i, line in enumerate(doc.raw, 1):
+        if i in skip:
+            continue
+        stripped = strip_inline_code(line)
+        if LINK_DEF_RE.match(stripped):
+            continue
+        for match in LINK_USE_RE.finditer(stripped):
+            label = collapse_label(match.group(2) or match.group(1))
+            if label:
+                used.add(label)
+    return used
+
+
+def is_external_link(target: str) -> bool:
+    """外链、锚点、协议相对地址不查本地存在性。"""
+    return (
+        not target
+        or target.startswith(("#", "//"))
+        or bool(URL_RE.match(target))
+        or target.startswith("mailto:")
+    )
+
+
 def collapse_label(label: str) -> str:
     return " ".join(label.split()).casefold()
 
@@ -273,6 +303,48 @@ def containment(small: set[str], big: set[str]) -> float:
     return len(small & big) / len(small)
 
 
+def find_unclosed_inline_html(doc: "Doc") -> list[tuple[int, str]]:
+    """找只开未关的行内 HTML 标签。
+
+    这类标签不像未闭合注释那样吞掉全文，只会让后面的内容样式走样，
+    而且解析器不报错，肉眼看源文件不容易发现。
+    只认行内常见的成对标签，`<br>`、`<img>` 这类空元素不参与配对。
+    """
+    void_tags = {
+        "br", "hr", "img", "input", "meta", "link", "area", "base",
+        "col", "embed", "source", "track", "wbr",
+    }
+    skip = doc.code_lines | doc.html_lines | doc.example_lines
+    open_tags: dict[str, int] = {}
+    for i, line in enumerate(doc.raw, 1):
+        if i in skip:
+            continue
+        text = strip_inline_code(line)
+        for match in re.finditer(r"<(/?)([A-Za-z][A-Za-z0-9]*)\b[^>]*>", text):
+            closing, name = match.group(1), match.group(2).lower()
+            if name in void_tags or match.group(0).endswith("/>"):
+                continue
+            if closing:
+                open_tags.pop(name, None)
+            else:
+                open_tags.setdefault(name, i)
+    return [(line, name) for name, line in open_tags.items()]
+
+
+def find_long_blank_runs(doc: "Doc", limit: int = 2) -> list[int]:
+    """连续多个空行。一个空行是分段，两个以上只是文件里的空洞。"""
+    out: list[int] = []
+    run = 0
+    for i, line in enumerate(doc.raw, 1):
+        if line.strip():
+            run = 0
+            continue
+        run += 1
+        if run == limit:
+            out.append(i - limit + 1)
+    return out
+
+
 class Doc:
     """基于 markdown-it token 流的结构视图。"""
 
@@ -292,11 +364,12 @@ class Doc:
         self.example_lines: set[int] = set()
         self.tables: list[Table] = []
         self.list_items: list[tuple[int, int]] = []
+        self.list_markers: list[tuple[int, int, bool, str, int | None]] = []
         self.unclosed: tuple[int, str, str] | None = None
         self.unclosed_inline: list[int] = []
         self.unclosed_html: int | None = None
         self.unclosed_emphasis: list[tuple[int, str]] = []
-        self.empty_links: list[tuple[int, str]] = []
+        self.links: list[tuple[int, str, str, bool]] = []
         self.missing_heading_space: list[int] = []
         self.heading_starts_deep: Heading | None = None
         self.duplicate_headings: list[tuple[int, str]] = []
@@ -306,7 +379,6 @@ class Doc:
         self._find_duplicate_headings()
         self._find_missing_heading_space()
         self._find_unclosed_html()
-        self._find_empty_links()
         self._find_heading_start()
 
     def _detect_front_matter(self) -> set[int]:
@@ -367,6 +439,15 @@ class Doc:
 
             if kind in ("bullet_list_open", "ordered_list_open"):
                 depth += 1
+                self.list_markers.append(
+                    (
+                        t.map[0] + 1 if t.map else 0,
+                        depth,
+                        t.type == "ordered_list_open",
+                        (t.markup or "").strip() or ("." if kind == "ordered_list_open" else "-"),
+                        (t.attrs or {}).get("start"),
+                    )
+                )
             elif kind in ("bullet_list_close", "ordered_list_close"):
                 depth -= 1
             elif kind == "list_item_open":
@@ -381,6 +462,7 @@ class Doc:
                 )
             elif kind == "inline":
                 self._scan_inline(i)
+                self._scan_links(t)
             elif kind == "fence":
                 start, end = t.map[0] + 1, t.map[1]
                 self.fences.append((start, end, t.info.strip()))
@@ -407,6 +489,26 @@ class Doc:
                 in_table = False
 
             i += 1
+
+    def _scan_links(self, token) -> None:
+        """收集行内链接与图片，供 MD-LINK-* 校验目标与文字。"""
+        line = token.map[0] + 1 if token.map else 0
+        if not line or line in self.code_lines or line in self.html_lines or line in self.example_lines:
+            return
+        children = token.children or []
+        for idx, child in enumerate(children):
+            if child.type == "link_open":
+                href = (child.attrs or {}).get("href", "")
+                label = ""
+                for follow in children[idx + 1 :]:
+                    if follow.type == "link_close":
+                        break
+                    if follow.type in ("text", "code_inline"):
+                        label += follow.content
+                self.links.append((line, label, href, False))
+            elif child.type == "image":
+                attrs = child.attrs or {}
+                self.links.append((line, child.content or "", attrs.get("src", ""), True))
 
     def _scan_inline(self, i: int) -> None:
         r"""检查行内 token 的对称性。
@@ -483,17 +585,6 @@ class Doc:
             if content.lstrip().startswith("<!--") and "-->" not in content:
                 self.unclosed_html = token.map[0] + 1
                 return
-
-    def _find_empty_links(self) -> None:
-        """`[文字]()` 与 `[](地址)` 渲染出来是空链接，点击无处可去。"""
-        skip = self.code_lines | self.html_lines | self.example_lines
-        for i, line in enumerate(self.raw, 1):
-            if i in skip:
-                continue
-            for match in EMPTY_LINK_RE.finditer(strip_inline_code(line)):
-                label, url = match.group(1), match.group(2)
-                if not label.strip() or not url.strip():
-                    self.empty_links.append((i, match.group(0)))
 
     def _find_heading_start(self) -> None:
         """首个标题不是 h1 时，整篇的层级基线都偏低。
@@ -628,18 +719,33 @@ def looks_like_path(ref: str) -> bool:
     return bare.endswith(CHECKABLE_EXT)
 
 
+def safe_exists(path: Path) -> bool:
+    """文件系统层查存在，不让 OSError 冒到调用方。
+
+    超长名字、名字里有 NUL、权限不足、悬空符号链接都会让 stat 抛异常，
+    而调用方要的是「这个引用能不能解析」，异常一律按解析不到处理。
+    """
+    try:
+        return path.exists()
+    except (OSError, ValueError):
+        return False
+
+
 def resolve_reference(ref: str, base: Path) -> bool:
     target = ref.split("#", 1)[0].split("?", 1)[0].strip()
     if not target:
         return True
-    candidate = Path(target).expanduser()
+    try:
+        candidate = Path(target).expanduser()
+    except (ValueError, OSError):
+        return False
     if candidate.is_absolute():
-        return candidate.exists()
+        return safe_exists(candidate)
     # `~/x` 展开后是绝对路径，走到这里说明是相对路径。
     # 只沿目标文件所在目录向上找，不回退 cwd：否则同一份文档在不同目录下
     # 运行会得到不同结论，S10 就不可复核了。
     for parent in [base, *list(base.parents)[:5]]:
-        if (parent / candidate).exists():
+        if safe_exists(parent / candidate):
             return True
     return False
 
@@ -733,7 +839,7 @@ def check_baseline(doc: Doc, baseline: Doc) -> list[Finding]:
     return findings
 
 
-def check_structure(doc: Doc) -> list[Finding]:
+def check_structure(doc: Doc, base: Path) -> list[Finding]:
     findings: list[Finding] = []
 
     defined, duplicate_defs = find_link_definitions(doc)
@@ -757,6 +863,81 @@ def check_structure(doc: Doc) -> list[Finding]:
                 f"链接引用的标签未定义：{text}",
                 "标签找不到定义时渲染器原样输出方括号，链接不成立",
                 f"补一行 `[标签]: 地址`，或改成行内链接 `[文字](地址)`",
+            )
+        )
+
+    used_labels = find_used_link_labels(doc)
+    for label, line in defined.items():
+        if label in used_labels:
+            continue
+        findings.append(
+            Finding(
+                SUGGESTION,
+                "MD-LINK-DEF-UNUSED",
+                line,
+                f"链接定义没有被任何引用使用：{label}",
+                "没人使用的定义只会增加维护负担，改地址时也不会有人发现",
+                "删掉这一行，或补上使用它的引用",
+            )
+        )
+
+    for line, label, target, is_image in doc.links:
+        kind = "图片" if is_image else "链接"
+        if not label.strip():
+            findings.append(
+                Finding(
+                    WARNING,
+                    "MD-LINK-EMPTY",
+                    line,
+                    f"{kind}缺少文字：{target or '空地址'}",
+                    "没有文字的链接在页面上不可见，读者无法判断点向哪里",
+                    "补上链接文字；装饰性图片改用 alt 描述",
+                )
+            )
+        if not target.strip():
+            findings.append(
+                Finding(
+                    WARNING,
+                    "MD-LINK-EMPTY",
+                    line,
+                    f"{kind}缺少地址：{label or '空文字'}",
+                    "空地址点击后没有任何反应，等于死链",
+                    "补上目标地址，或去掉链接语法只留文字",
+                )
+            )
+        elif not is_external_link(target) and not resolve_reference(target, base):
+            findings.append(
+                Finding(
+                    WARNING,
+                    "MD-LINK-TARGET",
+                    line,
+                    f"{kind}目标不存在：{target}",
+                    "相对路径写错时渲染出来是死链，而 Markdown 不会报错",
+                    f"改成实际路径（基准目录 {base}），或改成外链",
+                )
+            )
+
+    for line, name in find_unclosed_inline_html(doc):
+        findings.append(
+            Finding(
+                WARNING,
+                "MD-INLINE-HTML",
+                line,
+                f"行内标签 <{name}> 没有闭合",
+                "标签不闭合时后续内容的样式会被它影响，而 Markdown 不报错",
+                f"补上 </{name}>，或删掉这个标签只留文字",
+            )
+        )
+
+    for line in find_long_blank_runs(doc):
+        findings.append(
+            Finding(
+                WARNING,
+                "S12",
+                line,
+                "连续多个空行",
+                "一个空行已足够分段，多出的空行只是文件里的空洞，改动时容易误删或多删",
+                "删到只留一个空行",
             )
         )
 
@@ -800,6 +981,37 @@ def check_structure(doc: Doc) -> list[Finding]:
                 "把首个标题改为 `#`，其余层级依次上调",
             )
         )
+
+    # 表格分隔行写错（缺列、少横线、混了非法字符）时，整张表退化成普通段落，
+    # 解析器直接不产生 table token，上面那些检查一个都看不到。
+    # 判据：连续两行以上以 | 开头、列数一致，却没被解析成表格。
+    # table_close 的 map 是 None，只能靠 tr_open 的行号反推哪些行已进入表格
+    parsed_table_lines: set[int] = set()
+    for token in doc.tokens:
+        if token.type == "tr_open" and token.map:
+            parsed_table_lines.add(token.map[0] + 1)
+    skip_table = doc.code_lines | doc.html_lines | doc.example_lines
+    run: list[int] = []
+    for i, raw_line in enumerate(doc.raw + [""], 1):
+        stripped = strip_inline_code(raw_line).strip()
+        is_pipe_row = i <= len(doc.raw) and i not in skip_table and stripped.startswith("|")
+        if is_pipe_row:
+            run.append(i)
+            continue
+        # 整段竖线行里只要有一行进了 tr_open，说明表格已经成立，
+        # 分隔行本身不是 tr，不能要求每行都被解析
+        if len(run) >= 2 and not any(n in parsed_table_lines for n in run):
+            findings.append(
+                Finding(
+                    WARNING,
+                    "MD-TABLE-BROKEN",
+                    run[0],
+                    f"这 {len(run)} 行看起来是表格，但没有被解析成表格",
+                    "分隔行缺列、少横线或含非法字符时整张表退化成段落，竖线原样显示",
+                    "分隔行列数必须与表头一致，每列至少三个 -，例如 `| --- | --- |`",
+                )
+            )
+        run = []
 
     for table in doc.tables:
         cols = table.cols
@@ -852,18 +1064,6 @@ def check_structure(doc: Doc) -> list[Finding]:
             )
         )
 
-    for line, text in doc.empty_links:
-        findings.append(
-            Finding(
-                WARNING,
-                "MD-LINK-EMPTY",
-                line,
-                f"链接缺少文字或地址：{text}",
-                "空链接在页面上可见却无处可去，读者点击后没有任何反应",
-                "补上链接文字与地址，或去掉链接语法只留文字",
-            )
-        )
-
     for line in doc.missing_heading_space:
         findings.append(
             Finding(
@@ -898,6 +1098,67 @@ def check_structure(doc: Doc) -> list[Finding]:
                     "标题为空",
                     "空标题在目录里显示为空白行，读者无法判断这一节讲什么",
                     "补上标题文字，或删掉这一行",
+                )
+            )
+
+    # 同一段列表必须用同一种标记。解析器把 `-`、`*`、`+` 当成三个独立列表，
+    # 紧邻的两个列表换了符号，渲染出的间距与后续编号都会断开。
+    # 分组键含三部分：连续性、深度、是否有序。缺任何一个都会误报——
+    # 有序列表的 `.` 与无序的 `-` 本就不必一致，隔了空行的两个列表也彼此独立。
+    prev_line = 0
+    prev_depth = 0
+    markers_by_depth: dict[tuple[int, bool], tuple[str, int]] = {}
+    for line, depth, ordered, marker, start in doc.list_markers:
+        if line > prev_line + 1 or depth < prev_depth:
+            markers_by_depth.clear()
+        key = (depth, ordered)
+        seen = markers_by_depth.get(key)
+        if seen and seen[0] != marker:
+            findings.append(
+                Finding(
+                    WARNING,
+                    "MD-LIST-MARKER",
+                    line,
+                    f"同段列表标记不一致：深度 {depth} 用了 {seen[0]} 与 {marker}",
+                    "不同的标记会被解析成并列的多个列表，间距与后续编号会断开",
+                    f"统一用 {seen[0]}",
+                )
+            )
+        else:
+            markers_by_depth[key] = (marker, line)
+        prev_line, prev_depth = line, depth
+        # 从 1 开始的有序列表才符合常规编号；从其它值起会让引用它的地方对不上
+        if ordered and start not in (None, 1):
+            findings.append(
+                Finding(
+                    WARNING,
+                    "MD-LIST-START",
+                    line,
+                    f"有序列表从 {start} 开始编号",
+                    "改写或增删条目后编号与实际顺序不一致，读者会按编号理解优先级",
+                    "改为从 1 开始，或在正文里说明这是续接上一段编号",
+                )
+            )
+
+    # 空列表项渲染成一个小圆点，没有内容，通常是想留占位或误删了文字
+    declared_items = {line for line, _ in doc.list_items}
+    inline_first_lines = {
+        tok.map[0] + 1 for tok in doc.tokens if tok.type == "inline" and tok.map
+    }
+    for line in declared_items:
+        if line in inline_first_lines:
+            continue
+        if not 0 < line <= len(doc.raw):
+            continue
+        if re.match(r"^\s*(?:[-*+]|\d+[.)])\s*$", doc.raw[line - 1]):
+            findings.append(
+                Finding(
+                    WARNING,
+                    "MD-LIST-EMPTY",
+                    line,
+                    "列表项没有内容",
+                    "空列表项只渲染出一个符号，读者会以为是漏写",
+                    "补上内容，或删掉这一行",
                 )
             )
 
@@ -1163,7 +1424,7 @@ def main() -> int:
         return 2
 
     doc = Doc(path.read_text(encoding="utf-8"), md)
-    findings = check_structure(doc) + check_rules(doc, skill_mode=skill_mode)
+    findings = check_structure(doc, path.resolve().parent) + check_rules(doc, skill_mode=skill_mode)
     findings += check_duplicates(doc)
     findings += check_references(doc, path.resolve().parent)
     if baseline_file:

@@ -32,7 +32,7 @@ def rules_of(text: str) -> list[str]:
 
 
 def structure_of(text: str) -> list[str]:
-    return [f.rule for f in check.check_structure(build(text))]
+    return [f.rule for f in check.check_structure(build(text), Path("/nonexistent-base"))]
 
 
 class SetextHeadingTest(unittest.TestCase):
@@ -420,7 +420,7 @@ class HtmlCommentCloseTest(unittest.TestCase):
 
     def test_unclosed_comment_reported_as_error(self):
         text = "# Role and Objective\n\n<!-- 开始\n\n## 被吞掉的标题\n"
-        found = check.check_structure(build(text))
+        found = check.check_structure(build(text), Path("/nonexistent-base"))
         rules = [f.rule for f in found]
         self.assertIn("MD-HTML-COMMENT", rules)
         level = next(f.level for f in found if f.rule == "MD-HTML-COMMENT")
@@ -783,6 +783,143 @@ class StrictModeTest(unittest.TestCase):
                 encoding="utf-8",
             )
             self.assertEqual(self._run("--strict", str(path)), 0)
+
+
+class LinkTargetTest(unittest.TestCase):
+    """链接与图片的目标路径也要查存在性。"""
+
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.root = Path(self.tmp.name)
+        (self.root / "docs").mkdir()
+        (self.root / "docs" / "real.md").write_text("# x\n", encoding="utf-8")
+
+    def tearDown(self):
+        self.tmp.cleanup()
+
+    def _run(self, text: str) -> list[check.Finding]:
+        return check.check_structure(build(text), self.root)
+
+    def _rules(self, text: str) -> list[str]:
+        return [f.rule for f in self._run(text)]
+
+    def test_missing_link_target_reported(self):
+        self.assertIn("MD-LINK-TARGET", self._rules("# R\n\n见 [文档](docs/nope.md)。\n"))
+
+    def test_missing_image_target_reported(self):
+        self.assertIn("MD-LINK-TARGET", self._rules("# R\n\n![图](img/nope.png)\n"))
+
+    def test_existing_target_not_reported(self):
+        self.assertNotIn("MD-LINK-TARGET", self._rules("# R\n\n见 [文档](docs/real.md)。\n"))
+
+    def test_external_link_not_reported(self):
+        self.assertNotIn("MD-LINK-TARGET", self._rules("# R\n\n[文档](https://e.test/a.md)\n"))
+
+    def test_anchor_not_reported(self):
+        self.assertNotIn("MD-LINK-TARGET", self._rules("# R\n\n[跳转](#段)\n"))
+
+    def test_empty_image_alt_reported(self):
+        self.assertIn("MD-LINK-EMPTY", self._rules("# R\n\n![](docs/real.md)\n"))
+
+    def test_unused_definition_reported(self):
+        self.assertIn("MD-LINK-DEF-UNUSED", self._rules("# R\n\n[a]: docs/real.md\n\n正文。\n"))
+
+    def test_used_definition_not_reported(self):
+        self.assertNotIn(
+            "MD-LINK-DEF-UNUSED",
+            self._rules("# R\n\n[a]: docs/real.md\n\n见 [文字][a]。\n"),
+        )
+
+    def test_very_long_target_does_not_crash(self):
+        """超长名字会让 Path.exists() 抛 OSError，不能让它冒出去。"""
+        text = "# R\n\n[x](" + "a" * 5000 + ")\n"
+        rules = self._rules(text)
+        self.assertIn("MD-LINK-TARGET", rules)
+
+    def test_safe_exists_swallows_oserror(self):
+        self.assertFalse(check.safe_exists(self.root / ("a" * 5000)))
+
+
+class ListMarkerTest(unittest.TestCase):
+    """列表标记与编号的一致性。"""
+
+    def test_mixed_marker_in_same_run_reported(self):
+        self.assertIn("MD-LIST-MARKER", structure_of("# R\n\n- a\n* b\n"))
+
+    def test_different_run_may_change_marker(self):
+        self.assertNotIn("MD-LIST-MARKER", structure_of("# R\n\n- a\n\n* b\n"))
+
+    def test_ordered_and_bullet_not_compared(self):
+        self.assertNotIn("MD-LIST-MARKER", structure_of("# R\n\n- a\n\n1. b\n"))
+
+    def test_nested_mixed_marker_reported(self):
+        self.assertIn("MD-LIST-MARKER", structure_of("# R\n\n- a\n  - b\n  * c\n"))
+
+    def test_ordered_list_not_starting_at_one_reported(self):
+        self.assertIn("MD-LIST-START", structure_of("# R\n\n5. a\n6. b\n"))
+
+    def test_ordered_list_from_one_not_reported(self):
+        self.assertNotIn("MD-LIST-START", structure_of("# R\n\n1. a\n2. b\n"))
+
+    def test_empty_list_item_reported(self):
+        self.assertIn("MD-LIST-EMPTY", structure_of("# R\n\n- \n- b\n"))
+
+    def test_normal_list_not_reported(self):
+        self.assertEqual(
+            [r for r in structure_of("# R\n\n- a\n- b\n") if r.startswith("MD-LIST")], []
+        )
+
+
+class BrokenTableTest(unittest.TestCase):
+    """分隔行坏掉时整张表退化成段落，连 table token 都没有。"""
+
+    def test_missing_delimiter_row_reported(self):
+        self.assertIn("MD-TABLE-BROKEN", structure_of("# R\n\n|a|b|\n|1|2|\n"))
+
+    def test_delimiter_row_short_reported(self):
+        self.assertIn("MD-TABLE-BROKEN", structure_of("# R\n\n|a|b|\n|-|\n|1|2|\n"))
+
+    def test_valid_table_not_reported(self):
+        self.assertNotIn("MD-TABLE-BROKEN", structure_of("# R\n\n|a|b|\n|-|-|\n|1|2|\n"))
+
+    def test_single_pipe_line_not_reported(self):
+        self.assertNotIn("MD-TABLE-BROKEN", structure_of("# R\n\n| 命令 | 说明 |\n"))
+
+    def test_pipe_rows_in_fence_not_reported(self):
+        self.assertNotIn("MD-TABLE-BROKEN", structure_of("# R\n\n```\n|a|b|\n|1|2|\n```\n"))
+
+
+class InlineHtmlTest(unittest.TestCase):
+    """行内标签只开未关。"""
+
+    def test_unclosed_tag_reported(self):
+        self.assertIn("MD-INLINE-HTML", structure_of("# R\n\n<b>粗\n"))
+
+    def test_closed_tag_not_reported(self):
+        self.assertNotIn("MD-INLINE-HTML", structure_of("# R\n\n<b>粗</b>\n"))
+
+    def test_void_tag_not_reported(self):
+        self.assertNotIn("MD-INLINE-HTML", structure_of("# R\n\n换行<br>继续 <img src='x'>\n"))
+
+    def test_self_closing_not_reported(self):
+        self.assertNotIn("MD-INLINE-HTML", structure_of("# R\n\n<img src='x' />\n"))
+
+    def test_tag_in_fence_ignored(self):
+        self.assertNotIn("MD-INLINE-HTML", structure_of("# R\n\n```\n<b>粗\n```\n"))
+
+
+class BlankRunTest(unittest.TestCase):
+    """连续多个空行。"""
+
+    def test_two_blank_lines_reported(self):
+        self.assertIn("S12", structure_of("# R\n\n\n内容\n"))
+
+    def test_single_blank_line_not_reported(self):
+        self.assertNotIn("S12", structure_of("# R\n\n内容\n"))
+
+    def test_three_blank_lines_reported_once(self):
+        found = [f for f in check.check_structure(build("# R\n\n\n\n内容\n"), Path("/x")) if f.rule == "S12"]
+        self.assertEqual(len(found), 1)
 
 
 if __name__ == "__main__":
