@@ -738,6 +738,16 @@ class PathHeuristicTest(unittest.TestCase):
     def test_url_query_not_split_into_path(self):
         self.assertFalse(check.looks_like_path("https://x.test/a.md?q=1"))
 
+    def test_glob_pattern_not_treated_as_path(self):
+        """glob 匹配一批文件，不是具体路径。"""
+        self.assertFalse(check.looks_like_path("**/*.md"))
+        self.assertFalse(check.looks_like_path("src/*.ts"))
+
+    def test_glob_not_reported_as_missing(self):
+        text = "# Role and Objective\n\n- 只改 `**/*.md` 与 `src/*.ts`。\n"
+        with tempfile.TemporaryDirectory() as tmp:
+            self.assertEqual(check.check_references(build(text), Path(tmp)), [])
+
 
 class ReferenceGroupTest(unittest.TestCase):
     """顿号列举不逐个校验，独立断言逐个校验。"""
@@ -939,6 +949,201 @@ class BlankRunTest(unittest.TestCase):
     def test_three_blank_lines_reported_once(self):
         found = [f for f in check.check_structure(build("# R\n\n\n\n内容\n"), Path("/x")) if f.rule == "S12"]
         self.assertEqual(len(found), 1)
+
+
+class ExampleRegionBoundaryTest(unittest.TestCase):
+    """示例区识别：独占行标签、行内代码里的标签、未闭合。"""
+
+    def test_block_tags_with_content_parsed_as_one_block(self):
+        """开闭标签连同中间内容会被合并成一个 html_block，仍要正确配对。"""
+        text = "# R\n\n<example>\n- 例子。\n</example>\n\n- 真规则。\n"
+        self.assertNotIn("MD-EXAMPLE-UNCLOSED", structure_of(text))
+        self.assertEqual(len(check.rule_lines(build(text))), 1)
+
+    def test_unclosed_example_reported(self):
+        text = "# R\n\n<example>\n- 例子。\n\n- 后面\n"
+        self.assertIn("MD-EXAMPLE-UNCLOSED", structure_of(text))
+
+    def test_inline_code_tag_not_starting_region(self):
+        """讲解语法时写 `<example>` 是引用，不能把后面整篇吞成示例区。"""
+        text = "# R\n\n用 `<example>` 包住。\n\n- 真规则。\n"
+        doc = build(text)
+        self.assertNotIn("MD-EXAMPLE-UNCLOSED", structure_of(text))
+        self.assertEqual(doc.example_lines, set())
+        self.assertEqual(len(check.rule_lines(doc)), 1)
+
+    def test_multiple_regions_all_marked(self):
+        text = (
+            "# R\n\n<example>\n- 甲。\n</example>\n\n"
+            "- 真一。\n\n<example>\n- 乙。\n</example>\n\n- 真二。\n"
+        )
+        doc = build(text)
+        self.assertEqual(len(check.rule_lines(doc)), 2)
+        self.assertNotIn("MD-EXAMPLE-UNCLOSED", structure_of(text))
+
+
+class AutolinkTest(unittest.TestCase):
+    """autolink 是地址不是标签，不能报行内标签未闭合。"""
+
+    def test_url_autolink_not_reported(self):
+        self.assertNotIn("MD-INLINE-HTML", structure_of("# R\n\n见 <https://example.invalid> 说明。\n"))
+
+    def test_email_autolink_not_reported(self):
+        self.assertNotIn("MD-INLINE-HTML", structure_of("# R\n\n联系 <user@example.invalid>。\n"))
+
+    def test_real_unclosed_tag_still_reported(self):
+        self.assertIn("MD-INLINE-HTML", structure_of("# R\n\n正文 <span> 没有收尾。\n"))
+
+    def test_placeholder_with_hyphen_not_reported(self):
+        self.assertNotIn("MD-INLINE-HTML", structure_of("# R\n\n把 <target-file> 换成路径。\n"))
+
+    def test_placeholder_with_capital_not_reported(self):
+        self.assertNotIn("MD-INLINE-HTML", structure_of("# R\n\n返回 <T> 类型。\n"))
+
+    def test_placeholder_word_not_reported(self):
+        self.assertNotIn("MD-INLINE-HTML", structure_of("# R\n\n见 <file>。\n"))
+
+    def test_uppercase_real_tag_still_paired(self):
+        """标签名按小写归一后仍要参与配对。"""
+        self.assertNotIn("MD-INLINE-HTML", structure_of("# R\n\n<DIV>x</div>\n"))
+
+
+class UnclosedHtmlVariantsTest(unittest.TestCase):
+    """行内注释与 raw-text 块未闭合。"""
+
+    def test_inline_comment_unclosed_reported(self):
+        self.assertIn("MD-HTML-COMMENT", structure_of("# R\n\n- 正文 <!-- 注释开始\n- 下一条\n"))
+
+    def test_inline_comment_closed_not_reported(self):
+        self.assertNotIn("MD-HTML-COMMENT", structure_of("# R\n\n- 正文 <!-- 注释 --> 结束\n"))
+
+    def test_script_unclosed_reported(self):
+        self.assertIn("MD-HTML-BLOCK", structure_of("<script>\nvar x=1;\n\n# 标题\n"))
+
+    def test_style_unclosed_reported(self):
+        self.assertIn("MD-HTML-BLOCK", structure_of("<style>\na{}\n\n# 标题\n"))
+
+    def test_pre_closed_not_reported(self):
+        self.assertNotIn("MD-HTML-BLOCK", structure_of("<pre>\n文字\n</pre>\n\n# 标题\n"))
+
+    def test_self_closing_script_not_reported(self):
+        self.assertNotIn("MD-HTML-BLOCK", structure_of('<script src="x" />\n\n# 标题\n'))
+
+
+class ListMarkerSpaceTest(unittest.TestCase):
+    """标记后缺空格时整行按段落渲染。"""
+
+    def test_missing_space_before_cjk_reported(self):
+        self.assertIn("MD-LIST-SPACE", structure_of("# R\n\n-项内容。\n"))
+
+    def test_missing_space_before_latin_reported(self):
+        self.assertIn("MD-LIST-SPACE", structure_of("# R\n\n1.项内容。\n"))
+
+    def test_glob_star_not_reported(self):
+        self.assertNotIn("MD-LIST-SPACE", structure_of("# R\n\n- 只改 *.py 文件。\n"))
+
+    def test_cli_flag_not_reported(self):
+        self.assertNotIn("MD-LIST-SPACE", structure_of("# R\n\n- 用 --flag 参数。\n"))
+
+    def test_negative_number_not_reported(self):
+        self.assertNotIn("MD-LIST-SPACE", structure_of("# R\n\n- 温度 -5 度。\n"))
+
+    def test_thematic_break_not_reported(self):
+        self.assertNotIn("MD-LIST-SPACE", structure_of("# R\n\n- 上一条。\n\n---\n\n- 下一条。\n"))
+
+
+class BrokenLinkSyntaxTest(unittest.TestCase):
+    """链接语法没被解析成链接。"""
+
+    def test_unclosed_paren_reported(self):
+        self.assertIn("MD-LINK-SYNTAX", structure_of("# R\n\n- 读 [说明](a.md 再改。\n"))
+
+    def test_space_in_target_reported(self):
+        self.assertIn("MD-LINK-SYNTAX", structure_of("# R\n\n- 读 [说明](my file.md) 再改。\n"))
+
+    def test_valid_link_not_reported(self):
+        self.assertNotIn("MD-LINK-SYNTAX", structure_of("# R\n\n- 读 [说明](https://a.invalid) 再改。\n"))
+
+    def test_one_good_one_bad_on_same_line_reported(self):
+        text = "# R\n\n- 读 [好](https://a.invalid) 与 [坏](b.md。\n"
+        self.assertIn("MD-LINK-SYNTAX", structure_of(text))
+
+    def test_link_in_example_ignored(self):
+        text = "# R\n\n<example>\n- 读 [说明](a.md 再改。\n</example>\n"
+        self.assertNotIn("MD-LINK-SYNTAX", structure_of(text))
+
+
+class LinkDefinitionFormsTest(unittest.TestCase):
+    """跨行定义、列表内定义、collapsed 引用。"""
+
+    def test_multiline_definition_not_reported(self):
+        text = "见 [文字][doc]。\n\n[doc]:\n  https://a.invalid\n"
+        self.assertNotIn("MD-LINK-REF", structure_of(text))
+
+    def test_definition_inside_list_not_reported(self):
+        text = "见 [文字][doc]。\n\n- [doc]: https://a.invalid\n"
+        self.assertNotIn("MD-LINK-REF", structure_of(text))
+
+    def test_collapsed_reference_not_reported_unused(self):
+        text = "见 [doc]。\n\n[doc]: https://a.invalid\n"
+        self.assertNotIn("MD-LINK-DEF-UNUSED", structure_of(text))
+
+    def test_duplicate_definition_still_reported(self):
+        text = "见 [x][doc]。\n\n[doc]: https://a.invalid\n[doc]: https://b.invalid\n"
+        self.assertIn("MD-LINK-DEF-DUP", structure_of(text))
+
+    def test_uppercase_label_matches_definition(self):
+        text = "见 [x][DOC]。\n\n[doc]: https://a.invalid\n"
+        self.assertNotIn("MD-LINK-REF", structure_of(text))
+
+
+class AnchorTest(unittest.TestCase):
+    """页内锚点是否存在。"""
+
+    def test_valid_cjk_anchor_not_reported(self):
+        text = "# 输出格式\n\n见 [格式](#输出格式)。\n"
+        self.assertEqual([f for f in check.check_anchors(build(text)) if f.rule == "MD-ANCHOR"], [])
+
+    def test_wrong_cjk_anchor_reported(self):
+        text = "# 输出格式\n\n见 [格式](#输出规范)。\n"
+        self.assertIn("MD-ANCHOR", [f.rule for f in check.check_anchors(build(text))])
+
+    def test_english_slug_matches(self):
+        text = "## Role and Objective\n\n见 [角色](#role-and-objective)。\n"
+        self.assertEqual([f for f in check.check_anchors(build(text)) if f.rule == "MD-ANCHOR"], [])
+
+    def test_explicit_html_id_accepted(self):
+        text = '<a id="custom"></a>\n\n# 标题\n\n见 [跳转](#custom)。\n'
+        self.assertEqual([f for f in check.check_anchors(build(text)) if f.rule == "MD-ANCHOR"], [])
+
+    def test_duplicate_heading_gets_suffix(self):
+        text = "# 甲\n\n# 甲\n\n见 [第二个](#甲-1)。\n"
+        self.assertEqual([f for f in check.check_anchors(build(text)) if f.rule == "MD-ANCHOR"], [])
+
+    def test_external_and_top_anchors_skipped(self):
+        text = "# R\n\n见 [外](https://a.invalid) 与 [顶](#top)。\n"
+        self.assertEqual([f for f in check.check_anchors(build(text)) if f.rule == "MD-ANCHOR"], [])
+
+
+class FrontMatterBoundaryTest(unittest.TestCase):
+    """front matter 与普通分隔线要分得清。"""
+
+    def test_thematic_break_between_headings_not_front_matter(self):
+        """`---` 也是分隔线，不能把后续标题整段吞成 front matter。"""
+        text = "---\n\n# 标题\n\n---\n\n正文\n"
+        doc = build(text)
+        self.assertEqual(doc.front_matter, set())
+        self.assertEqual([h.text for h in doc.headings], ["标题"])
+
+    def test_real_front_matter_detected(self):
+        text = "---\nname: x\ndescription: y\n---\n\n# 标题\n"
+        doc = build(text)
+        self.assertEqual(doc.front_matter, {1, 2, 3, 4})
+        self.assertEqual([h.text for h in doc.headings], ["标题"])
+
+    def test_separator_only_body_not_front_matter(self):
+        text = "---\n只有一行文字\n---\n\n# 标题\n"
+        self.assertEqual(build(text).front_matter, set())
 
 
 if __name__ == "__main__":

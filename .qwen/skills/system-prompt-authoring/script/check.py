@@ -212,45 +212,36 @@ def find_link_definitions(doc: "Doc") -> tuple[dict[str, int], list[tuple[int, s
     """返回 (标签 -> 行号, 重复定义列表)。标签按 CommonMark 规则折叠大小写与空白。
 
     必须跳过代码块、HTML 块与示例区：围栏里写的 `[x]: /a` 只是示例，不构成定义。
+
+    不能只认单行正则：地址写在下一行（缩进续行）、定义写在列表项里，
+    两种都是合法的 CommonMark，正则一条都匹配不到，会让 MD-LINK-REF
+    把真正定义过的标签报成未定义。解析器自己的 `env.references`
+    里已经有折叠后的标签与行号，直接用它，重复定义再按行号归类。
     """
     skip = doc.code_lines | doc.html_lines | doc.example_lines
     defined: dict[str, int] = {}
     duplicates: list[tuple[int, str]] = []
+    for label, info in doc.references.items():
+        # 解析器的键是大写化的（`[doc]` 存成 `DOC`），其余地方统一用
+        # collapse_label 的折叠形式，这里转回去，否则一律判成未定义
+        key = collapse_label(label)
+        line = info.get("map", [0, 0])[0] + 1
+        if line in skip:
+            continue
+        defined[key] = line
+    # 解析器把重复标签折叠成第一条，重复定义要自己按源行找。
+    # 判据：同一标签在源文本里出现了不止一次定义行。
+    label_lines: dict[str, list[int]] = {}
     for i, line in enumerate(doc.raw, 1):
         if i in skip:
             continue
-        match = LINK_DEF_RE.match(line)
-        if not match:
-            continue
-        label = collapse_label(match.group(1))
-        if not label:
-            continue
-        if label in defined:
-            duplicates.append((i, match.group(1)))
-        else:
-            defined[label] = i
+        text = strip_inline_code(line)
+        for m in re.finditer(r"^\s{0,3}\[([^\]]+)\]:", text):
+            label_lines.setdefault(collapse_label(m.group(1)), []).append(i)
+    for key, lines in label_lines.items():
+        for extra in lines[1:]:
+            duplicates.append((extra, key))
     return defined, duplicates
-
-
-def find_used_link_labels(doc: "Doc") -> set[str]:
-    """收集被真正用到的引用标签，用于发现没人使用的定义。
-
-    `[a]` 这种 collapsed 写法与普通方括号无法区分，只有 `[文字][标签]`
-    与 `[标签][]` 能确认意图，因此只认这两种。
-    """
-    used: set[str] = set()
-    skip = doc.code_lines | doc.html_lines | doc.example_lines
-    for i, line in enumerate(doc.raw, 1):
-        if i in skip:
-            continue
-        stripped = strip_inline_code(line)
-        if LINK_DEF_RE.match(stripped):
-            continue
-        for match in LINK_USE_RE.finditer(stripped):
-            label = collapse_label(match.group(2) or match.group(1))
-            if label:
-                used.add(label)
-    return used
 
 
 def is_external_link(target: str) -> bool:
@@ -267,8 +258,41 @@ def collapse_label(label: str) -> str:
     return " ".join(label.split()).casefold()
 
 
+def find_used_link_labels(doc: "Doc") -> set[str]:
+    """收集被真正用到的引用标签，用于发现没人使用的定义。
+
+    `[文字][标签]`、`[标签][]` 与 collapsed 的 `[标签]` 三种写法都能确认
+    意图，但只有前两种能从源文本正则认出。第三种（`[标签]` 后面什么都不跟）
+    与普通方括号无法区分，必须看解析器：它把这些全解析成了 link token。
+    以「定义了的标签里，哪些没在解析出的链接文字里出现」判断更稳：
+    这里收集的是所有出现在链接位置上的原文标签候选。
+    """
+    used: set[str] = set()
+    skip = doc.code_lines | doc.html_lines | doc.example_lines
+    for i, line in enumerate(doc.raw, 1):
+        if i in skip:
+            continue
+        stripped = strip_inline_code(line)
+        if LINK_DEF_RE.match(stripped):
+            continue
+        for match in LINK_USE_RE.finditer(stripped):
+            label = collapse_label(match.group(2) or match.group(1))
+            if label:
+                used.add(label)
+        # collapsed / shortcut：`[标签]` 后面不是 `(`、`[`、`:`
+        for match in re.finditer(r"\[([^\]\n]+)\](?![(\[:])", stripped):
+            label = collapse_label(match.group(1))
+            if label:
+                used.add(label)
+    return used
+
+
 def find_undefined_link_refs(doc: "Doc", defined: dict[str, int]) -> list[tuple[int, str]]:
-    """找出标签未定义的 `[文字][标签]`。未定义时它会原样显示成字面量。"""
+    """找出标签未定义的 `[文字][标签]`。未定义时它会原样显示成字面量。
+
+    只查 `[文字][标签]` 与 `[标签][]` 两种显式写法。`[标签]` 这种 shortcut
+    在没定义时本来就是普通方括号（“见 [备注]”），报出来全是噪声。
+    """
     out: list[tuple[int, str]] = []
     skip = doc.code_lines | doc.html_lines | doc.example_lines
     for i, line in enumerate(doc.raw, 1):
@@ -304,31 +328,59 @@ def containment(small: set[str], big: set[str]) -> float:
     return len(small & big) / len(small)
 
 
+HTML_PAIRED_TAGS = frozenset({
+    "a", "abbr", "address", "article", "aside", "b", "bdi", "bdo", "blockquote",
+    "caption", "cite", "code", "colgroup", "data", "dd", "del", "details", "dfn",
+    "div", "dl", "dt", "em", "fieldset", "figcaption", "figure", "footer", "form",
+    "h1", "h2", "h3", "h4", "h5", "h6", "header", "hgroup", "i", "ins", "kbd",
+    "label", "legend", "li", "main", "mark", "menu", "nav", "ol", "optgroup",
+    "option", "output", "p", "picture", "pre", "q", "rp", "rt", "ruby", "s",
+    "samp", "section", "select", "small", "span", "strong", "sub", "summary",
+    "sup", "table", "tbody", "td", "tfoot", "th", "thead", "time", "tr", "u",
+    "ul", "var",
+})
+HTML_VOID_TAGS = frozenset({
+    "area", "base", "br", "col", "embed", "hr", "img", "input", "link",
+    "meta", "param", "source", "track", "wbr",
+})
+
+
 def find_unclosed_inline_html(doc: "Doc") -> list[tuple[int, str]]:
     """找只开未关的行内 HTML 标签。
 
     这类标签不像未闭合注释那样吞掉全文，只会让后面的内容样式走样，
     而且解析器不报错，肉眼看源文件不容易发现。
-    只认行内常见的成对标签，`<br>`、`<img>` 这类空元素不参与配对。
+
+    判据全部来自解析器的 html_inline token，不扫源文本：
+    - autolink（`<https://…>`、`<user@…>`）被解析成 link token，不是
+      html_inline，扫源文本会把 `https` 当成标签名，凡用 autolink 就误报。
+    - 名不在 HTML 已知标签表里的（`<target-file>`、`<T>`、`<id>`）是占位符
+      或讲解用语，不是标签，没有闭合问题。
+
+    残留局限：正文里讲语法时写出的单个 `<div>` 与真实未闭合无法区分，
+    会报出来。这类内容写进反引号或代码块即可跳过。
     """
-    void_tags = {
-        "br", "hr", "img", "input", "meta", "link", "area", "base",
-        "col", "embed", "source", "track", "wbr",
-    }
     skip = doc.code_lines | doc.html_lines | doc.example_lines
     open_tags: dict[str, int] = {}
-    for i, line in enumerate(doc.raw, 1):
-        if i in skip:
+    for token in doc.tokens:
+        if token.type != "inline" or not token.map:
             continue
-        text = strip_inline_code(line)
-        for match in re.finditer(r"<(/?)([A-Za-z][A-Za-z0-9]*)\b[^>]*>", text):
-            closing, name = match.group(1), match.group(2).lower()
-            if name in void_tags or match.group(0).endswith("/>"):
+        line = token.map[0] + 1
+        if line in skip:
+            continue
+        for child in token.children or []:
+            if child.type != "html_inline":
                 continue
-            if closing:
-                open_tags.pop(name, None)
-            else:
-                open_tags.setdefault(name, i)
+            for match in re.finditer(r"<(/?)([A-Za-z][A-Za-z0-9]*)[^>]*>", child.content or ""):
+                closing, name = match.group(1), match.group(2).lower()
+                if name in HTML_VOID_TAGS or match.group(0).endswith("/>"):
+                    continue
+                if name not in HTML_PAIRED_TAGS:
+                    continue
+                if closing:
+                    open_tags.pop(name, None)
+                else:
+                    open_tags.setdefault(name, line)
     return [(line, name) for name, line in open_tags.items()]
 
 
@@ -355,7 +407,11 @@ class Doc:
         # 解析器看不到标题标记。整体剔除 0xFEFF，行号不受影响。
         self.raw = [line.replace("\ufeff", "") for line in text.splitlines()]
         self.front_matter = self._detect_front_matter()
-        self.tokens = md.parse("\n".join(self.raw))
+        env: dict = {}
+        self.tokens = md.parse("\n".join(self.raw), env)
+        # 解析器折叠后的链接定义表：跨行续行、列表内的定义都在里面，
+        # 按正则逐行扫会漏掉这两类
+        self.references: dict[str, dict] = env.get("references", {})
         self.headings: list[Heading] = []
         self.fences: list[tuple[int, int, str]] = []
         # front matter 不是正文：并进 code_lines 后，所有按行扫描的检查
@@ -369,16 +425,23 @@ class Doc:
         self.unclosed: tuple[int, str, str] | None = None
         self.unclosed_inline: list[int] = []
         self.unclosed_html: int | None = None
+        self.unclosed_raw_html: tuple[int, str] | None = None
         self.unclosed_emphasis: list[tuple[int, str]] = []
         self.links: list[tuple[int, str, str, bool]] = []
         self.missing_heading_space: list[int] = []
         self.heading_starts_deep: Heading | None = None
         self.duplicate_headings: list[tuple[int, str]] = []
+        self.unclosed_example: int | None = None
+        self.list_marker_space: list[int] = []
+        self.broken_links: list[tuple[int, str]] = []
+        self.unclosed_html_inline: list[int] = []
         self._table_start = 0
         self._walk()
         self._mark_examples()
         self._find_duplicate_headings()
         self._find_missing_heading_space()
+        self._find_list_marker_space()
+        self._find_broken_links()
         self._find_unclosed_html()
         self._find_heading_start()
 
@@ -388,13 +451,27 @@ class Doc:
         CommonMark 把 `---` 下的行按 setext 标题解析：一段 `name: x` 后面
         跟一行 `---` 会变成一个巨大的 h2，真正的首个标题反而排在它后面。
         跳过这段才不会把 front matter 当成正文结构。
+
+        不能只看首尾两行 `---`：`---` 也是合法的分隔线，正文里
+        「分隔线 / 标题 / 分隔线」这种排布会被整段误判成 front matter，
+        真正的标题一起被跳过。front matter 的判据加一条：至少有一行是
+        `key:` 形式，且首行与收尾行之间没有空行开头的空段。
         """
-        if not self.raw or self.raw[0].strip() != "---":
+        if len(self.raw) < 3 or self.raw[0].strip() != "---":
             return set()
+        end = None
         for i in range(1, min(len(self.raw), 200)):
             if self.raw[i].strip() in ("---", "..."):
-                return set(range(1, i + 2))
-        return set()
+                end = i
+                break
+        if end is None:
+            return set()
+        body = [line for line in self.raw[1:end] if line.strip()]
+        if not body:
+            return set()
+        if not any(re.match(r"^[A-Za-z_][\w.-]*\s*:", line) for line in body):
+            return set()
+        return set(range(1, end + 2))
 
     def _inline_text(self, i: int) -> str:
         """取行内 token 的全部可见文字。
@@ -544,12 +621,16 @@ class Doc:
                     self.unclosed_inline.append(first + offset)
                     break
 
-        for marker in ("**", "__"):
+        for marker in ("**", "__", "~~"):
             if leftover.count(marker) % 2 == 1:
                 for offset, raw_line in enumerate(self.raw[token.map[0] : token.map[1]]):
                     if count_marker(strip_inline_code(raw_line), marker) % 2 == 1:
                         self.unclosed_emphasis.append((first + offset, marker))
                         break
+
+        # 单个 * 与 _ 不做检查：`*.py`、`src/*.ts`、`2*3`、`**/*.md`
+        # 都在用同一个字符，而它们既不是错也不是强调。区分「落单的斜体」
+        # 与「通配符」需要理解语义，机械判定只会把每一处 glob 都报成错。
 
     def _find_duplicate_headings(self) -> None:
         """同名标题会让锚点冲突，跳转只落到第一个。
@@ -578,18 +659,96 @@ class Doc:
             if re.match(r"^#{1,6}[^#\s]", line):
                 self.missing_heading_space.append(i)
 
+    def _find_list_marker_space(self) -> None:
+        """列表标记后缺空格时，整行按段落渲染。
+
+        CommonMark 要求 `-`、`*`、`+`、`1.` 之后至少一个空格或行尾。
+        `-项内容` 看起来是列表项，实际是普通段落，取消列表也不报错。
+        判据只认「标记后紧跟非空白且整行不是合法行内语法」：
+        `--flag`、`-5 度`、`*强调*` 这类不能报。
+        """
+        skip = self.code_lines | self.html_lines | self.example_lines
+        for i, line in enumerate(self.raw, 1):
+            if i in skip:
+                continue
+            if not re.match(r"^ {0,3}(?:[-*+]|\d+[.)])\S", line):
+                continue
+            # 排除 `---`、`***`、`-5`、`--flag`、`*强调*` 这类
+            body = line.lstrip()
+            if re.match(r"^(?:-{3,}|\*{3,}|_{3,})$", body):
+                continue
+            if re.match(r"^[-+]\d", body) or re.match(r"^--?[A-Za-z]", body):
+                continue
+            if re.match(r"^[*_]\S.*[*_]$", body):
+                continue
+            self.list_marker_space.append(i)
+
+    def _find_broken_links(self) -> None:
+        """找没被解析成链接的 `[文字](` 与 `![文字](`。
+
+        括号没闭合、地址里有空格、标题引号没配对时，整段退化成普通文字，
+        页面上直接显示方括号与圆括号，而解析器不报错。
+        判据：这一行源文本里 `](` 的出现次数多于解析出的链接数。
+        按次数比而不是按「有没有」，是为了同一行同时有一好一坏两处时仍能报。
+        """
+        parsed_count: dict[int, int] = {}
+        for token in self.tokens:
+            if token.type != "inline" or not token.map:
+                continue
+            line = token.map[0] + 1
+            for child in token.children or []:
+                if child.type in ("link_open", "image"):
+                    parsed_count[line] = parsed_count.get(line, 0) + 1
+        skip = self.code_lines | self.html_lines | self.example_lines
+        for i, line in enumerate(self.raw, 1):
+            if i in skip:
+                continue
+            text = strip_inline_code(line)
+            written = len(re.findall(r"!?\[[^\]\n]*\]\(", text))
+            if written > parsed_count.get(i, 0):
+                self.broken_links.append((i, text.strip()[:40]))
+
     def _find_unclosed_html(self) -> None:
         """未闭合的 `<!--` 会吞掉文件剩余部分，包括后面的标题。
 
         解析器把它当成一个 html_block 直到文末，不报错，但内容全不渲染。
+
+        三类要分开看：
+        - `<!--` 未闭合：内容全被吞掉。
+        - `<script>`、`<style>`、`<pre>`、`<textarea>` 这类 raw-text 块
+          未闭合时，解析器同样一路吃到文末，后面的标题一起消失。
+        - 行内出现的 `<!--` 没有被 `-->` 收尾：这一段标签会被当纯文本，
+          后面的正文照常渲染，但注释内容会显示出来。
         """
+        raw_tags = ("script", "style", "pre", "textarea")
         for token in self.tokens:
             if token.type != "html_block" or not token.map:
                 continue
-            content = token.content or ""
-            if content.lstrip().startswith("<!--") and "-->" not in content:
-                self.unclosed_html = token.map[0] + 1
+            content = (token.content or "").lstrip()
+            start = token.map[0] + 1
+            lowered = content.lower()
+            if lowered.startswith("<!--") and "-->" not in content:
+                self.unclosed_html = start
                 return
+            for tag in raw_tags:
+                if not lowered.startswith(f"<{tag}"):
+                    continue
+                # 自闭合写法 `<script />` 没有结束标签，也不该有
+                head = lowered.split(">", 1)[0]
+                if head.rstrip().endswith("/"):
+                    continue
+                if f"</{tag}>" not in lowered:
+                    self.unclosed_raw_html = (start, tag)
+                    return
+
+        # 行内注释：源文本里有 `<!--` 却没有配对的 `-->`，且不在代码块里
+        skip = self.code_lines | self.html_lines
+        for i, line in enumerate(self.raw, 1):
+            if i in skip:
+                continue
+            text = strip_inline_code(line)
+            if "<!--" in text and text.count("<!--") > text.count("-->"):
+                self.unclosed_html_inline.append(i)
 
     def _find_heading_start(self) -> None:
         """首个标题不是 h1 时，整篇的层级基线都偏低。
@@ -602,20 +761,72 @@ class Doc:
     def _mark_examples(self) -> None:
         """示例里的路径和规则词是在演示，不是对本文档的要求。
 
-        必须跳过代码块：模板里字面写出的 `<example>` 只是示例，不是示例区的开始。
+        判据必须是「解析器真的产出了 <example> 标签」，不能用字符串包含：
+        - 反引号里的 `<example>` 是讲解语法时的引用，不是示例区起点；
+          把反引号剥掉再找仍会命中，因为剥掉的只是反引号，标签文字还在。
+        - `<example>` 独占一行时被解析成 html_block，整段没有 inline token，
+          只扫 inline 子节点会把真正的示例区整段漏掉。
+        所以两处都看：html_block 的内容与 inline 里的 html_inline 子节点。
         """
-        start = None
-        skip = self.code_lines | self.html_lines
-        for i, line in enumerate(self.raw, 1):
-            if i in skip:
+        marks: list[tuple[int, bool]] = []
+        for token in self.tokens:
+            if not token.map:
                 continue
-            lowered = line.lower()
-            if start is None and "<example>" in lowered:
-                start = i
-            elif start is not None:
-                self.example_lines.add(i)
-                if "</example>" in lowered:
+            line = token.map[0] + 1
+            if line in self.code_lines:
+                continue
+            found = self._example_tags(token)
+            marks.extend((line + offset, opening) for offset, opening in found)
+        marks.sort()
+
+        start = None
+        for line, opening in marks:
+            if start is None:
+                if not opening:
+                    continue
+                start = line
+                self.example_lines.add(line)
+            else:
+                self.example_lines.add(line)
+                if not opening:
                     start = None
+        if start is not None:
+            self.unclosed_example = start
+
+    @staticmethod
+    def _example_tags(token) -> list[tuple[int, bool]]:
+        """按出现顺序返回 (行内偏移, 是否开始标签)。
+
+        `<example>` 与 `</example>` 之间只要有内容，整段（含两个标签）
+        会被合并成一个 html_block，块里同时出现开闭两个标签。
+        按块首字符判断开/闭会在这种最常见的写法上判错：
+        块首是 `<example>`，于是闭标签被当成第二个开标签。
+
+        正确做法是扫块内容里的每个标签，按出现顺序记下来，
+        再把内容里的换行换算成行内偏移。
+        """
+        if token.type not in ("html_block", "inline"):
+            return []
+        if token.type == "html_block":
+            source = token.content or ""
+            return [
+                (source.count("\n", 0, m.start()), m.group(0) == "<example>")
+                for m in re.finditer(r"</?example>", source, re.IGNORECASE)
+            ]
+        # 行内只认真正的 html_inline 子节点。把 inline 的全部子节点拼起来再扫
+        # 会让反引号里的 `` `<example>` `` 也命中——那是讲解语法的引用，
+        # 不是示例区起点。
+        out: list[tuple[int, bool]] = []
+        offset = 0
+        for child in token.children or []:
+            if child.type == "softbreak":
+                offset += 1
+                continue
+            if child.type != "html_inline":
+                continue
+            for m in re.finditer(r"</?example>", child.content or "", re.IGNORECASE):
+                out.append((offset, m.group(0) == "<example>"))
+        return out
 
     @property
     def content_lines(self) -> list[tuple[int, str]]:
@@ -713,6 +924,10 @@ def looks_like_path(ref: str) -> bool:
     if ref.startswith(("<", "@", "$")):
         # 占位符、scope 包名、环境变量
         return False
+    if any(ch in ref for ch in "*?[]"):
+        # glob 通配符匹配的是一批文件，不存在「这个路径在不在」的问题。
+        # `**/*.md`、`src/*.ts` 这类写法本身就不是具体文件。
+        return False
     bare = ref.split("#", 1)[0].split("?", 1)[0]
     if not bare:
         return False
@@ -788,6 +1003,73 @@ def reference_groups(line: str) -> list[list[str]]:
     if current:
         groups.append(current)
     return groups
+
+
+def github_slug(text: str) -> str:
+    """按 GitHub 的规则把标题文字转成锚点。
+
+    与常见实现一致：转小写、去掉标点、空格换连字符，保留中文字符
+    （GitHub 不把中文转拼音也不丢）。`## Role and Objective` 的锚点是
+    `#role-and-objective`，`## 规则 S1–S13` 是 `#规则-s1s13`。
+    """
+    lowered = text.strip().lower()
+    kept: list[str] = []
+    for ch in lowered:
+        if ch.isalnum() or ch in "-_":
+            kept.append(ch)
+        elif ch.isspace():
+            kept.append(" ")
+    return "".join(kept).replace(" ", "-")
+
+
+def check_anchors(doc: "Doc") -> list[Finding]:
+    """校验页内锚点 `[文字](#目标)` 是否指向一个存在的标题。
+
+    指向不存在的锚点时页面不会跳转，读者停在原地，而 Markdown 不报错。
+    显式 `<a id="x">` 或 `<a name="x">` 也算有效目标。
+    """
+    slugs: dict[str, int] = {}
+    for heading in doc.headings:
+        slug = github_slug(heading.text)
+        if slug:
+            # 同名标题 GitHub 会加 -1、-2 后缀，这里按出现顺序补上
+            if slug in slugs:
+                n = 1
+                while f"{slug}-{n}" in slugs:
+                    n += 1
+                slugs[f"{slug}-{n}"] = heading.line
+            else:
+                slugs[slug] = heading.line
+    for i, line in enumerate(doc.raw, 1):
+        for match in re.finditer(r"""<a\s+(?:id|name)\s*=\s*["']([^"']+)["']""", strip_inline_code(line)):
+            slugs.setdefault(match.group(1).lower(), i)
+
+    findings: list[Finding] = []
+    skip = doc.code_lines | doc.html_lines | doc.example_lines
+    for line_no, label, target, is_image in doc.links:
+        if is_image or not target.startswith("#") or target in ("#", "#top"):
+            continue
+        if line_no in skip:
+            continue
+        anchor = target[1:]
+        # 解析器会把锚点里的非 ASCII 百分号编码
+        try:
+            anchor = unquote(anchor)
+        except (ValueError, OSError):
+            pass
+        if anchor.lower() in slugs or anchor in slugs:
+            continue
+        findings.append(
+            Finding(
+                WARNING,
+                "MD-ANCHOR",
+                line_no,
+                f"页内锚点指向不存在的标题：{target}",
+                "锚点对不上时点击不跳转，读者停在原地，而 Markdown 不报错",
+                "改成实际标题的锚点（GitHub 规则：小写、空格换连字符、去标点）",
+            )
+        )
+    return findings
 
 
 def check_references(doc: Doc, base: Path) -> list[Finding]:
@@ -938,6 +1220,67 @@ def check_structure(doc: Doc, base: Path) -> list[Finding]:
                 f"行内标签 <{name}> 没有闭合",
                 "标签不闭合时后续内容的样式会被它影响，而 Markdown 不报错",
                 f"补上 </{name}>，或删掉这个标签只留文字",
+            )
+        )
+
+    for line in doc.unclosed_html_inline:
+        findings.append(
+            Finding(
+                WARNING,
+                "MD-HTML-COMMENT",
+                line,
+                "行内 HTML 注释没有闭合",
+                "`<!--` 之后没有 `-->` 时注释内容会原样显示在页面上",
+                "补上 -->，或删掉这处注释",
+            )
+        )
+
+    if doc.unclosed_raw_html:
+        line, tag = doc.unclosed_raw_html
+        findings.append(
+            Finding(
+                ERROR,
+                "MD-HTML-BLOCK",
+                line,
+                f"<{tag}> 块没有闭合",
+                f"未闭合的 <{tag}> 会一路吃到文件末尾，后面的标题与正文全部不渲染",
+                f"补上 </{tag}>",
+            )
+        )
+
+    if doc.unclosed_example:
+        findings.append(
+            Finding(
+                WARNING,
+                "MD-EXAMPLE-UNCLOSED",
+                doc.unclosed_example,
+                "<example> 没有闭合",
+                "示例区一直延续到文末，后面的规则会被当成示例，不进规则计数与重复检测",
+                "在示例末尾补上 </example>",
+            )
+        )
+
+    for line in doc.list_marker_space:
+        findings.append(
+            Finding(
+                WARNING,
+                "MD-LIST-SPACE",
+                line,
+                "列表标记后缺空格，不构成列表项",
+                "CommonMark 要求 `-`、`*`、`+`、`1.` 之后至少一个空格，否则整行按段落渲染",
+                "在标记后补一个空格",
+            )
+        )
+
+    for line, snippet in doc.broken_links:
+        findings.append(
+            Finding(
+                WARNING,
+                "MD-LINK-SYNTAX",
+                line,
+                f"链接语法没被解析成链接：{snippet}",
+                "括号没闭合、地址含空格或标题引号没配对时整段退化成文字，页面显示方括号",
+                "检查圆括号与引号是否配对；地址含空格时用尖括号包住：`[文字](<my file.md>)`",
             )
         )
 
@@ -1438,6 +1781,7 @@ def main() -> int:
 
     doc = Doc(path.read_text(encoding="utf-8"), md)
     findings = check_structure(doc, path.resolve().parent) + check_rules(doc, skill_mode=skill_mode)
+    findings += check_anchors(doc)
     findings += check_duplicates(doc)
     findings += check_references(doc, path.resolve().parent)
     if baseline_file:
