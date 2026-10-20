@@ -90,8 +90,10 @@ class IndentedCodeTest(unittest.TestCase):
             "# Output Format\n\n- 只输出结果。\n"
         )
         doc = build(text)
-        self.assertEqual(len(check.rule_lines(doc)), 1)
-        self.assertTrue(doc.code_lines)
+        # 真实规则两条；缩进代码块里的两条不计
+        self.assertEqual(len(check.rule_lines(doc)), 2)
+        self.assertEqual(sorted(doc.code_lines), [13, 14])
+        self.assertNotIn("不要这样写", [r.text for r in check.rule_lines(doc)])
 
 
 class QuoteFenceTest(unittest.TestCase):
@@ -386,6 +388,195 @@ class InlineCodeBalanceTest(unittest.TestCase):
     def test_backtick_inside_fence_ignored(self):
         text = "# Role and Objective\n\n```\n单个 ` 反引号\n```\n"
         self.assertNotIn("MD-INLINE-CODE", structure_of(text))
+
+
+class HeadingSpaceTest(unittest.TestCase):
+    """`#标题` 不是标题，是普通段落。"""
+
+    def test_missing_space_after_hash_reported(self):
+        text = "# Role and Objective\n\n##没有空格\n\n正文。\n"
+        self.assertIn("MD-HEAD-SPACE", structure_of(text))
+
+    def test_heading_without_space_not_parsed_as_heading(self):
+        doc = build("# Role and Objective\n\n##没有空格\n\n正文。\n")
+        self.assertEqual([h.text for h in doc.headings], ["Role and Objective"])
+
+    def test_normal_heading_not_reported(self):
+        text = "# Role and Objective\n\n## 有空格\n\n正文。\n"
+        self.assertNotIn("MD-HEAD-SPACE", structure_of(text))
+
+    def test_closing_hashes_not_reported(self):
+        text = "# Role and Objective\n\n## 标题 ##\n\n正文。\n"
+        self.assertNotIn("MD-HEAD-SPACE", structure_of(text))
+
+    def test_hash_inside_fence_ignored(self):
+        text = "# Role and Objective\n\n```\n##没有空格\n```\n"
+        self.assertNotIn("MD-HEAD-SPACE", structure_of(text))
+
+
+class HtmlCommentCloseTest(unittest.TestCase):
+    """未闭合的 <!-- 会吞掉文件剩余部分。"""
+
+    def test_unclosed_comment_reported_as_error(self):
+        text = "# Role and Objective\n\n<!-- 开始\n\n## 被吞掉的标题\n"
+        found = check.check_structure(build(text))
+        rules = [f.rule for f in found]
+        self.assertIn("MD-HTML-COMMENT", rules)
+        level = next(f.level for f in found if f.rule == "MD-HTML-COMMENT")
+        self.assertEqual(level, check.ERROR)
+
+    def test_closed_comment_not_reported(self):
+        text = "# Role and Objective\n\n<!-- 注释 -->\n\n正文。\n"
+        self.assertNotIn("MD-HTML-COMMENT", structure_of(text))
+
+    def test_unclosed_comment_hides_later_headings(self):
+        """这正是要报的原因：后续标题不再被识别。"""
+        text = "# Role and Objective\n\n<!-- 开始\n\n## 后面的标题\n"
+        self.assertEqual([h.text for h in build(text).headings], ["Role and Objective"])
+
+
+class EmptyLinkTest(unittest.TestCase):
+    def test_empty_label_reported(self):
+        text = "# Role and Objective\n\n见 [](https://example.com)。\n"
+        self.assertIn("MD-LINK-EMPTY", structure_of(text))
+
+    def test_empty_url_reported(self):
+        text = "# Role and Objective\n\n见 [文字]()。\n"
+        self.assertIn("MD-LINK-EMPTY", structure_of(text))
+
+    def test_normal_link_not_reported(self):
+        text = "# Role and Objective\n\n见 [文字](https://example.com)。\n"
+        self.assertNotIn("MD-LINK-EMPTY", structure_of(text))
+
+    def test_link_in_fence_ignored(self):
+        text = "# Role and Objective\n\n```\n[文字]()\n```\n"
+        self.assertNotIn("MD-LINK-EMPTY", structure_of(text))
+
+
+class EmphasisBalanceTest(unittest.TestCase):
+    """未配对的强调标记会原样显示成符号。"""
+
+    def test_unclosed_bold_reported(self):
+        text = "# Role and Objective\n\n这是 **未闭合。\n"
+        self.assertIn("MD-EMPHASIS", structure_of(text))
+
+    def test_closed_bold_not_reported(self):
+        text = "# Role and Objective\n\n这是 **加粗** 文字。\n"
+        self.assertNotIn("MD-EMPHASIS", structure_of(text))
+
+    def test_underscore_identifier_not_reported(self):
+        """`__init__` 这类标识符不能被当成强调。"""
+        text = "# Role and Objective\n\n调用 `__init__` 和 `_private`。\n"
+        self.assertNotIn("MD-EMPHASIS", structure_of(text))
+
+    def test_escaped_marker_not_counted(self):
+        text = "# Role and Objective\n\n转义 \\*\\* 两个星号。\n"
+        self.assertNotIn("MD-EMPHASIS", structure_of(text))
+
+    def test_triple_star_counted_once(self):
+        text = "# Role and Objective\n\n***粗斜体*** 结束。\n"
+        self.assertNotIn("MD-EMPHASIS", structure_of(text))
+
+
+class RuleCountTest(unittest.TestCase):
+    """规则计数不能按长度筛掉短规则，也不能漏掉嵌套项。"""
+
+    def test_short_rule_counted(self):
+        text = "# Role and Objective\n\n# Instructions\n\n## 始终\n\n- 只输出结果。\n"
+        self.assertEqual(len(check.rule_lines(build(text))), 1)
+
+    def test_nested_items_counted(self):
+        text = (
+            "# Role and Objective\n\n# Instructions\n\n## 始终\n\n"
+            "1. 甲项\n   - 乙项\n   - 丙项\n2. 丁项\n"
+        )
+        self.assertEqual(len(check.rule_lines(build(text))), 4)
+
+    def test_empty_item_not_counted(self):
+        text = "# Role and Objective\n\n# Instructions\n\n## 始终\n\n-\n- 真规则。\n"
+        self.assertEqual(len(check.rule_lines(build(text))), 1)
+
+    def test_rule_count_matches_list_items(self):
+        """S7 与头部统计必须同口径，否则两处数字对不上。"""
+        text = (
+            "# Role and Objective\n\n# Instructions\n\n## 始终\n\n"
+            "- 甲\n- 乙\n  - 丙\n- 丁\n"
+        )
+        doc = build(text)
+        self.assertEqual(len(check.rule_lines(doc)), len(doc.list_items))
+
+
+class NegationCoverageTest(unittest.TestCase):
+    """常见否定式开头都要被 S2 识别。"""
+
+    def _has_s2(self, rule_text: str) -> bool:
+        text = f"# Role and Objective\n\n# Instructions\n\n## 始终\n\n{rule_text}\n"
+        return "S2" in rules_of(text)
+
+    def test_common_negation_forms_reported(self):
+        for line in (
+            "- 不要用 markdown",
+            "- 绝不要用 markdown",
+            "- 严禁使用 markdown",
+            "- 永远不要用 markdown",
+            "- 请勿使用 markdown",
+            "- 切勿使用 markdown",
+            "- 不得在日志里打印手机号",
+        ):
+            with self.subTest(line=line):
+                self.assertTrue(self._has_s2(line), f"{line} 应报 S2")
+
+    def test_alternative_behavior_not_reported(self):
+        for line in (
+            "- 不要用 markdown，改成纯文本。",
+            "- 不要直接推 main，因为评审是唯一的回滚保险。",
+            "- 禁止跳过测试，应当先修代码。",
+        ):
+            with self.subTest(line=line):
+                self.assertFalse(self._has_s2(line), f"{line} 不该报 S2")
+
+    def test_plain_verb_does_not_count_as_fix(self):
+        """「使用」是禁止句里的动词，不能当成已给替代行为。"""
+        self.assertTrue(self._has_s2("- 严禁使用 markdown"))
+
+    def test_red_line_section_exempt(self):
+        text = "# Role and Objective\n\n# Instructions\n\n## 红线\n\n- 绝不提交凭证。\n"
+        self.assertNotIn("S2", rules_of(text))
+
+
+class ListIndentTest(unittest.TestCase):
+    """缩进判据只看能确认的错误：同级不一致、缩进过深丢结构。"""
+
+    def test_sibling_indent_mismatch_reported(self):
+        text = "# A\n\n- a\n    - a1\n  - a2\n"
+        self.assertIn("MD-LIST-INDENT", structure_of(text))
+
+    def test_too_deep_loses_structure(self):
+        """6 空格的无序子项被并入正文，渲染出字面 - 号。"""
+        text = "# A\n\n- a\n      - b\n"
+        self.assertIn("MD-LIST-INDENT", structure_of(text))
+
+    def test_two_three_four_spaces_all_valid(self):
+        text = "# A\n\n- a\n  - b\n\n- c\n   - d\n\n- e\n    - f\n"
+        self.assertNotIn("MD-LIST-INDENT", structure_of(text))
+
+    def test_separate_lists_do_not_conflict(self):
+        """不同列表各自的子项缩进不算同级冲突。"""
+        text = "# A\n\n- a\n  - b\n\n- c\n    - d\n"
+        self.assertNotIn("MD-LIST-INDENT", structure_of(text))
+
+    def test_ordered_list_deep_indent_ok(self):
+        """`1. ` 比 `- ` 宽，同样 6 空格对有序列表仍是子项。"""
+        text = "# A\n\n1. a\n      1. b\n"
+        self.assertNotIn("MD-LIST-INDENT", structure_of(text))
+
+    def test_indented_code_block_exempt(self):
+        text = "# A\n\n正文。\n\n    - 代码块里的\n"
+        self.assertNotIn("MD-LIST-INDENT", structure_of(text))
+
+    def test_same_indent_siblings_ok(self):
+        text = "# A\n\n- a\n  - b\n  - c\n"
+        self.assertNotIn("MD-LIST-INDENT", structure_of(text))
 
 
 class MetricsTest(unittest.TestCase):

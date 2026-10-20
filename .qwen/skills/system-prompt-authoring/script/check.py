@@ -26,7 +26,10 @@ SUGGESTION = "建议"
 PLACEHOLDER_RE = re.compile(r"^\W*(待补充|TBD|FIXME)\W*$")
 PRIORITY_RE = re.compile(r"(编号|数字)(小|大)?的?(赢|优先)|(?:^|[^A-Za-z])(L|第)\s*\d+\s*条优先")
 REFUTE_RE = re.compile(r"无效|不成立|不要|不得|禁止|不能|避免|不算|反例")
-FIX_HINT_RE = re.compile(r"而是|改为|改成|应当|应该|同时|并在|因为|原因|避免|防止|改用|使用|写成")
+# 判断「只禁不导」时认的替代行为与理由标记。
+# 不收「使用」「同时」「并在」这类纯动词/连词：它们会出现在禁止句本身
+# （「不要使用 markdown」），命中就把整条规则放过了。
+FIX_HINT_RE = re.compile(r"而是|改为|改成|应当|应该|因为|原因|避免|防止|改用|写成|以便|从而|否则")
 LIST_MARKER_RE = re.compile(r"^\s*(?:[-*+]|\d+[.)])\s+(.*)$")
 INLINE_CODE_RE = re.compile(r"`([^`\n]+)`")
 CONTRAST_PAIRS = (
@@ -34,12 +37,12 @@ CONTRAST_PAIRS = (
     ("必须详细", "必须简短"),
     ("必须完整", "必须精简"),
 )
-ROOT_FILE_NAMES = ("AGENTS.md", "CLAUDE.md", "QWEN.md", "README.md")
 CHECKABLE_EXT = (".md", ".py", ".json", ".toml", ".yaml", ".yml", ".txt", ".cfg", ".ini", ".sh")
 LONG_LINE_LIMIT = 200
 EXAMPLE_RULE_THRESHOLD = 50
 DUP_JACCARD = 0.6
 DUP_RATIO = 0.75
+DUP_MIN_LENGTH = 8
 BASE_COVERAGE = 0.5
 
 
@@ -164,6 +167,29 @@ def count_inline_backticks(line: str) -> int:
 
 LINK_DEF_RE = re.compile(r"^\s{0,3}\[([^\]]+)\]:\s*\S", re.MULTILINE)
 LINK_USE_RE = re.compile(r"\[([^\]]*)\]\[([^\]]*)\]")
+EMPTY_LINK_RE = re.compile(r"\[([^\]]*)\]\(([^)]*)\)")
+# 常见否定式开头。漏掉「严禁」「请勿」「永远不要」会让 S2 整条规则失效
+NEGATION_RE = re.compile(
+    r"^(?:绝不要|绝对不要|永远不要|千万不要|严禁|请勿|切勿|不要|绝不|禁止|不得|不准|不能)"
+)
+
+
+def count_marker(line: str, marker: str) -> int:
+    """数一行里未转义、未被更长标记吞掉的强调标记个数。"""
+    count = 0
+    i = 0
+    while i < len(line):
+        if line[i] == "\\" and i + 1 < len(line):
+            i += 2
+            continue
+        if line.startswith(marker, i):
+            # 三个星号是 *** 粗斜体，按一个标记算，避免奇偶判断被它带偏
+            count += 1
+            while line.startswith(marker, i):
+                i += len(marker)
+            continue
+        i += 1
+    return count
 
 
 def find_link_definitions(doc: "Doc") -> tuple[dict[str, int], list[tuple[int, str]]]:
@@ -247,11 +273,19 @@ class Doc:
         self.list_items: list[tuple[int, int]] = []
         self.unclosed: tuple[int, str, str] | None = None
         self.unclosed_inline: list[int] = []
+        self.unclosed_html: int | None = None
+        self.unclosed_emphasis: list[tuple[int, str]] = []
+        self.empty_links: list[tuple[int, str]] = []
+        self.missing_heading_space: list[int] = []
         self.duplicate_headings: list[tuple[int, str]] = []
         self._table_start = 0
         self._walk()
         self._mark_examples()
         self._find_duplicate_headings()
+        self._find_missing_heading_space()
+        self._find_unclosed_html()
+        self._find_empty_links()
+        self._find_unclosed_emphasis()
 
     def _inline_text(self, i: int) -> str:
         """取行内 token 的全部可见文字。
@@ -359,6 +393,53 @@ class Doc:
             else:
                 seen[key] = heading.line
 
+    def _find_missing_heading_space(self) -> None:
+        """`#标题` 在 CommonMark 里不是标题，是普通段落。
+
+        这种写法看起来像标题、实际没有语义，目录里也不出现，最容易漏。
+        """
+        skip = self.code_lines | self.html_lines
+        for i, line in enumerate(self.raw, 1):
+            if i in skip:
+                continue
+            if re.match(r"^#{1,6}[^#\s]", line):
+                self.missing_heading_space.append(i)
+
+    def _find_unclosed_html(self) -> None:
+        """未闭合的 `<!--` 会吞掉文件剩余部分，包括后面的标题。
+
+        解析器把它当成一个 html_block 直到文末，不报错，但内容全不渲染。
+        """
+        for token in self.tokens:
+            if token.type != "html_block" or not token.map:
+                continue
+            content = token.content or ""
+            if content.lstrip().startswith("<!--") and "-->" not in content:
+                self.unclosed_html = token.map[0] + 1
+                return
+
+    def _find_empty_links(self) -> None:
+        """`[文字]()` 与 `[](地址)` 渲染出来是空链接，点击无处可去。"""
+        skip = self.code_lines | self.html_lines | self.example_lines
+        for i, line in enumerate(self.raw, 1):
+            if i in skip:
+                continue
+            for match in EMPTY_LINK_RE.finditer(strip_inline_code(line)):
+                label, url = match.group(1), match.group(2)
+                if not label.strip() or not url.strip():
+                    self.empty_links.append((i, match.group(0)))
+
+    def _find_unclosed_emphasis(self) -> None:
+        """未配对的 `**` / `__` 会原样显示星号，而不是加粗。"""
+        skip = self.code_lines | self.html_lines
+        for i, line in enumerate(self.raw, 1):
+            if i in skip:
+                continue
+            text = strip_inline_code(line)
+            for marker in ("**", "__"):
+                if count_marker(text, marker) % 2 == 1:
+                    self.unclosed_emphasis.append((i, marker))
+
     def _mark_examples(self) -> None:
         """示例里的路径和规则词是在演示，不是对本文档的要求。
 
@@ -399,7 +480,11 @@ class Doc:
 
 
 def rule_lines(doc: Doc) -> list[RuleLine]:
-    """取正文里的列表项，作为规则行。"""
+    """取正文里的列表项，作为规则行。
+
+    不按长度过滤：`只输出结果。` 这种短规则也是规则，按长度筛掉会让
+    规则计数、重复检测、基线对比三处同时漏项。相似度阈值由各检查自己把关。
+    """
     rules: list[RuleLine] = []
     section = ""
     for line_no, line in doc.content_lines:
@@ -412,7 +497,7 @@ def rule_lines(doc: Doc) -> list[RuleLine]:
         if not match:
             continue
         text = match.group(1).strip()
-        if len(normalize_for_compare(text)) < 6:
+        if not text:
             continue
         rules.append(RuleLine(line_no, text, section))
     return rules
@@ -423,6 +508,9 @@ def check_duplicates(doc: Doc) -> list[Finding]:
     prepared = []
     for rule in rules:
         norm = normalize_for_compare(rule.text)
+        # 短到此地步的多是「同上」「见上」这类占位或单项清单，比对结果没有意义
+        if len(norm) < DUP_MIN_LENGTH:
+            continue
         prepared.append((rule, norm, bigrams(norm)))
 
     findings: list[Finding] = []
@@ -471,11 +559,13 @@ def resolve_reference(ref: str, base: Path) -> bool:
         return True
     if target.startswith("/") or target.startswith("~"):
         return True
+    # 只沿目标文件所在目录向上找，不回退 cwd：否则同一份文档在不同目录下
+    # 运行会得到不同结论，S10 就不可复核了。
     candidate = Path(target)
     for parent in [base, *list(base.parents)[:5]]:
         if (parent / candidate).exists():
             return True
-    return (Path.cwd() / candidate).exists()
+    return False
 
 
 def check_references(doc: Doc, base: Path) -> list[Finding]:
@@ -623,6 +713,54 @@ def check_structure(doc: Doc) -> list[Finding]:
             )
         )
 
+    if doc.unclosed_html:
+        findings.append(
+            Finding(
+                ERROR,
+                "MD-HTML-COMMENT",
+                doc.unclosed_html,
+                "HTML 注释没有闭合",
+                "未闭合的 <!-- 会一直吃到文件末尾，后面的标题和正文全部不渲染",
+                "在注释结束处补 -->",
+            )
+        )
+
+    for line, marker in doc.unclosed_emphasis:
+        findings.append(
+            Finding(
+                WARNING,
+                "MD-EMPHASIS",
+                line,
+                f"强调标记 {marker} 数量是奇数",
+                "未配对的标记会原样显示成符号，读者看到的是星号而不是加粗",
+                f"补齐 {marker}，或用转义 \\{marker[0]} 表示字面量",
+            )
+        )
+
+    for line, text in doc.empty_links:
+        findings.append(
+            Finding(
+                WARNING,
+                "MD-LINK-EMPTY",
+                line,
+                f"链接缺少文字或地址：{text}",
+                "空链接在页面上可见却无处可去，读者点击后没有任何反应",
+                "补上链接文字与地址，或去掉链接语法只留文字",
+            )
+        )
+
+    for line in doc.missing_heading_space:
+        findings.append(
+            Finding(
+                WARNING,
+                "MD-HEAD-SPACE",
+                line,
+                "`#` 后缺空格，不构成标题",
+                "CommonMark 要求 # 后至少一个空格，否则整行按普通段落渲染，目录里不会出现",
+                "在 # 后补一个空格",
+            )
+        )
+
     for line, text in doc.duplicate_headings:
         findings.append(
             Finding(
@@ -648,26 +786,57 @@ def check_structure(doc: Doc) -> list[Finding]:
                 )
             )
 
-    by_depth: dict[int, int] = {}
+    # 同一深度出现多次时缩进必须一致，否则渲染器的归属判断会随上下文漂移。
+    # 不按「比上级多 2–4 空格」判：合法缩进取决于上级标记宽度，
+    # `1. ` 比 `- ` 宽，同样 6 空格对有序列表是子项、对无序列表就丢了结构。
+    # 能确认的判据只有两条，其余交给「没被解析成列表项」那一项。
+    indent_by_depth: dict[int, int] = {}
+    prev_depth = 0
     for line, depth in doc.list_items:
+        if not 0 < line <= len(doc.raw):
+            continue
+        raw_line = doc.raw[line - 1]
+        indent = len(raw_line) - len(raw_line.lstrip())
+        # 深度变浅说明上一段子树结束，更深层的基准随之作废：
+        # 否则 `- a /  - b` 之后另起 `- c /   - d` 会被当成同级缩进冲突
+        if depth < prev_depth:
+            for stale in [d for d in indent_by_depth if d > depth]:
+                del indent_by_depth[stale]
         if depth > 1:
-            expected_parent = by_depth.get(depth - 1)
-            if expected_parent is not None:
-                raw_line = doc.raw[line - 1] if 0 < line <= len(doc.raw) else ""
-                indent = len(raw_line) - len(raw_line.lstrip())
-                gap = indent - expected_parent
-                if gap not in (2, 3, 4):
-                    findings.append(
-                        Finding(
-                            WARNING,
-                            "MD-LIST-INDENT",
-                            line,
-                            f"嵌套列表缩进 {indent} 空格，比上级多 {gap}",
-                            "多数渲染器要求嵌套缩进 2–4 空格，其他值会与上级列表合并",
-                            f"缩进改为 {expected_parent + 2} 或 {expected_parent + 4} 空格",
-                        )
+            sibling = indent_by_depth.get(depth)
+            if sibling is not None and sibling != indent:
+                findings.append(
+                    Finding(
+                        WARNING,
+                        "MD-LIST-INDENT",
+                        line,
+                        f"同级列表项缩进不一致：{sibling} 与 {indent}",
+                        "同级缩进不同时，解析器可能把后一项降为正文或提为上一级",
+                        f"统一为 {sibling} 空格",
                     )
-        by_depth[depth] = len(doc.raw[line - 1]) - len(doc.raw[line - 1].lstrip()) if 0 < line <= len(doc.raw) else 0
+                )
+        indent_by_depth[depth] = indent
+        prev_depth = depth
+
+    # 缩进过深时解析器把它并进上一项正文，这一行根本不会进 list_items，
+    # 只能从源文本找：形如列表项、却不在解析结果里的行。
+    parsed_lines = {line for line, _ in doc.list_items}
+    skip = doc.code_lines | doc.html_lines
+    for i, raw_line in enumerate(doc.raw, 1):
+        if i in skip or i in parsed_lines:
+            continue
+        if not re.match(r"^\s{4,}(?:[-*+]|\d+[.)])\s+\S", raw_line):
+            continue
+        findings.append(
+            Finding(
+                WARNING,
+                "MD-LIST-INDENT",
+                i,
+                "缩进过深，这一行没被当成列表项",
+                "解析器把超过 4 空格的缩进并入上一项正文，列表结构丢失，- 号会原样显示",
+                "缩进减到 2–4 空格，或与前一项对齐",
+            )
+        )
 
     return findings
 
@@ -785,11 +954,13 @@ def check_rules(doc: Doc, skill_mode: bool = False) -> list[Finding]:
         if stripped.startswith("#"):
             section = stripped.lstrip("# ").strip()
             continue
-        if not stripped.startswith(("- 不要", "- 绝不", "- 禁止", "- 不得", "不要", "绝不", "禁止")):
+        body = LIST_MARKER_RE.sub(r"\1", stripped)
+        match = NEGATION_RE.match(body)
+        if not match:
             continue
         if any(tag in section for tag in ("红线", "绝不", "绝对不做")):
             continue
-        rest = re.sub(r"^(- )?(不要|绝不|禁止|不得|不准)", "", stripped).lstrip()
+        rest = body[match.end():].lstrip()
         if not FIX_HINT_RE.search(rest):
             findings.append(
                 Finding(WARNING, "S2", line_no, "疑似只禁不导",
@@ -798,10 +969,11 @@ def check_rules(doc: Doc, skill_mode: bool = False) -> list[Finding]:
             )
 
     examples = len(re.findall(r"<example>", doc.text))
-    if examples == 0 and len(doc.list_items) >= EXAMPLE_RULE_THRESHOLD:
+    rule_count = len(rule_lines(doc))
+    if examples == 0 and rule_count >= EXAMPLE_RULE_THRESHOLD:
         findings.append(
             Finding(
-                SUGGESTION, "S7", None, f"规则 {len(doc.list_items)} 条但没有示例",
+                SUGGESTION, "S7", None, f"规则 {rule_count} 条但没有示例",
                 "规则一多，只靠文字描述容易在边界情况上跑偏；示例能固定没写到的行为",
                 "补 3–5 个示例，每个演示一条规则没写到的行为，用 `<example>` 包住",
             )
