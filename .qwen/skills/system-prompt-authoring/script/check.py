@@ -1587,11 +1587,11 @@ def check_structure(doc: Doc, base: Path) -> list[Finding]:
             continue
         if "http://" in line or "https://" in line:
             continue
-        if len(line) > 100:
+        if len(line) > 200:
             findings.append(
-                Finding(WARNING, "MD-LINE-LEN", i, "单行超过 100 字",
+                Finding(WARNING, "MD-LINE-LEN", i, "单行超过 200 字",
                         "过长单行不利于 diff 审查与定位，窄窗口还会横向滚动",
-                        "按句子拆行，每行不超过 100 字；表格、代码、URL 与 front matter 除外")
+                        "按句子拆行，每行不超过 200 字；表格、代码、URL 与 front matter 除外")
             )
 
     return findings

@@ -952,14 +952,14 @@ class BlankRunTest(unittest.TestCase):
 
 
 class LineLengthTest(unittest.TestCase):
-    """正文单行上限 100 字；表格、代码、URL、front matter 与示例区除外。"""
+    """正文单行上限 200 字；表格、代码、URL、front matter 与示例区除外。"""
 
     def test_long_prose_line_reported(self):
-        text = "# R\n\n" + "字" * 101 + "\n"
+        text = "# R\n\n" + "字" * 201 + "\n"
         self.assertIn("MD-LINE-LEN", structure_of(text))
 
-    def test_exactly_100_chars_not_reported(self):
-        text = "# R\n\n" + "字" * 100 + "\n"
+    def test_exactly_200_chars_not_reported(self):
+        text = "# R\n\n" + "字" * 200 + "\n"
         self.assertNotIn("MD-LINE-LEN", structure_of(text))
 
     def test_table_row_ignored(self):

@@ -46,7 +46,7 @@ argument-hint: '<target-file>'
 | S9 | 删掉答“不会做错”的行；偶尔才用的细则移进 skill | 人工 | CC-BP §Write an effective CLAUDE.md；§Avoid common failure patterns |
 | S10 | 不写没确认存在的工具、命令、配置项 | 人工核查 | 推导；佐证 ANT-PBP §Minimizing hallucinations |
 | S11 | 长文档不进指令文件；一段话不压在一行里 | 人工 | ANT-CE §Context retrieval；CC-BP Include/Exclude；单行限制为工程约束 |
-| S12 | 无占位标记、行尾空白、制表符；正文单行不超过 100 字；代码围栏成对；文件以换行结尾 | 机检 | 工程约束 |
+| S12 | 无占位标记、行尾空白、制表符；正文单行不超过 200 字；代码围栏成对；文件以换行结尾 | 机检 | 工程约束 |
 | S13 | GPT 系给明确指令，推理模型只给目标与约束；模型未知时用平实祈使句 | 人工 | OAI-PE §Choosing a model；§Prompting reasoning models |
 
 以下几条是推导，不要当成厂商原话：完成定义（S1）、输出格式三要素（S6）、示例合并规则（S7）、单步任务豁免（S4）、S10。
@@ -144,9 +144,9 @@ S2 与 S3 合用：红线段可以用“绝不”，但仍要写理由。机检�
 | MD-LIST-SPACE | 警告 | 列表标记后缺空格，整行按段落渲染而不是列表项 |
 | MD-LIST-START | 警告 | 有序列表不是从 1 开始编号 |
 | MD-LIST-EMPTY | 警告 | 列表项没有内容 |
-| MD-LINE-LEN | 警告 | 正文单行超过 100 字；表格、代码、URL、front matter 与示例区除外 |
+| MD-LINE-LEN | 警告 | 正文单行超过 200 字；表格、代码、URL、front matter 与示例区除外 |
 
-正文单行超过 100 字报 `MD-LINE-LEN`；表格、代码、URL、front matter 与示例区不查，
+正文单行超过 200 字报 `MD-LINE-LEN`；表格、代码、URL、front matter 与示例区不查，
 它们无法在不破坏语义的前提下拆行。
 
 围栏在引用块里也按源文本比对；表格按源行数字符，超出表头的单元格不会被静默忽略。
