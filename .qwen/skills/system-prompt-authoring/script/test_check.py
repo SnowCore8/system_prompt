@@ -951,6 +951,38 @@ class BlankRunTest(unittest.TestCase):
         self.assertEqual(len(found), 1)
 
 
+class LineLengthTest(unittest.TestCase):
+    """正文单行上限 100 字；表格、代码、URL、front matter 与示例区除外。"""
+
+    def test_long_prose_line_reported(self):
+        text = "# R\n\n" + "字" * 101 + "\n"
+        self.assertIn("MD-LINE-LEN", structure_of(text))
+
+    def test_exactly_100_chars_not_reported(self):
+        text = "# R\n\n" + "字" * 100 + "\n"
+        self.assertNotIn("MD-LINE-LEN", structure_of(text))
+
+    def test_table_row_ignored(self):
+        text = "# R\n\n| " + "字" * 120 + " |\n"
+        self.assertNotIn("MD-LINE-LEN", structure_of(text))
+
+    def test_fence_ignored(self):
+        text = "# R\n\n```\n" + "字" * 120 + "\n```\n"
+        self.assertNotIn("MD-LINE-LEN", structure_of(text))
+
+    def test_url_line_ignored(self):
+        text = "# R\n\n参见 https://example.com/" + "a" * 120 + "\n"
+        self.assertNotIn("MD-LINE-LEN", structure_of(text))
+
+    def test_front_matter_ignored(self):
+        text = "---\ndescription: " + "字" * 120 + "\n---\n\n# R\n"
+        self.assertNotIn("MD-LINE-LEN", structure_of(text))
+
+    def test_example_region_ignored(self):
+        text = "# R\n\n<example>\n" + "字" * 120 + "\n</example>\n"
+        self.assertNotIn("MD-LINE-LEN", structure_of(text))
+
+
 class ExampleRegionBoundaryTest(unittest.TestCase):
     """示例区识别：独占行标签、行内代码里的标签、未闭合。"""
 

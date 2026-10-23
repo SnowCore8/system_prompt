@@ -857,19 +857,27 @@ def rule_lines(doc: Doc) -> list[RuleLine]:
     """
     rules: list[RuleLine] = []
     section = ""
+    last_rule = None
     for line_no, line in doc.content_lines:
         if line_no in doc.example_lines:
             continue
         if line.lstrip().startswith("#"):
             section = line.strip().lstrip("# ").strip()
+            last_rule = None
             continue
         match = LIST_MARKER_RE.match(strip_inline_code(line))
-        if not match:
+        if match:
+            text = match.group(1).strip()
+            if not text:
+                continue
+            last_rule = RuleLine(line_no, text, section)
+            rules.append(last_rule)
             continue
-        text = match.group(1).strip()
-        if not text:
+        if last_rule is not None and line[:1] == " ":
+            # 列表项的缩进续行并入规则，否则基线对比与重复检测只看首行
+            last_rule.text = f"{last_rule.text} {line.strip()}".strip()
             continue
-        rules.append(RuleLine(line_no, text, section))
+        last_rule = None
     return rules
 
 
@@ -1569,6 +1577,22 @@ def check_structure(doc: Doc, base: Path) -> list[Finding]:
                 "缩进减到 2–4 空格，或与前一项对齐",
             )
         )
+
+    line_skip = doc.code_lines | doc.html_lines | doc.example_lines
+    for i, line in enumerate(doc.raw, 1):
+        if i in line_skip:
+            continue
+        stripped_line = strip_quote_prefix(line).strip()
+        if not stripped_line or stripped_line.startswith("|"):
+            continue
+        if "http://" in line or "https://" in line:
+            continue
+        if len(line) > 100:
+            findings.append(
+                Finding(WARNING, "MD-LINE-LEN", i, "单行超过 100 字",
+                        "过长单行不利于 diff 审查与定位，窄窗口还会横向滚动",
+                        "按句子拆行，每行不超过 100 字；表格、代码、URL 与 front matter 除外")
+            )
 
     return findings
 
