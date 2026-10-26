@@ -15,14 +15,12 @@ When rules involve multiple condition combinations or state transitions, do not 
 
 ### Decision Table Template
 
-```text
 | Order | Condition A | Condition B | Condition C | Action |
 |---|---|---|---|---|
 | 1 | No | * | * | Report only |
 | 2 | Yes | Yes | None | Refuse |
 | 3 | Yes | Yes | Has plan | Execute |
 | 4 | Yes | No | * | Execute |
-```
 
 - Order: first match wins, top to bottom; if you use "last match wins," say so.
 - `*` means any value, and `-` means not applicable; define both symbols.
@@ -44,12 +42,10 @@ When rules involve multiple condition combinations or state transitions, do not 
 
 ### State Table Template
 
-```text
 | Current state | Event | Condition | Next state | Action |
 |---|---|---|---|---|
 | Awaiting authorization | User consents | Non-production | Executing | Start changes |
 | Awaiting authorization | User refuses | - | Rejected | Stop; do not work around it |
-```
 
 - Every state/event combination must be defined explicitly or fall to a default row.
 - State terminal states; never silently return from a terminal state to executing.
