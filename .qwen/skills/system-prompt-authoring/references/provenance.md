@@ -14,13 +14,22 @@
 
 ## S2 否定式补替代行为或理由
 
-- ANT-PBP §Output and formatting > Control the format of responses：“Tell Claude what to do instead of what not to do”；“Instead of: ‘Do not use markdown in your response’”；“Try: ‘Your response should be composed of smoothly flowing prose paragraphs.’”
-- ANT-PBP §General principles > Add context to improve performance：“Your response will be read aloud by a text-to-speech engine, so never use ellipses since the text-to-speech engine will not know how to pronounce them.”
+- ANT-PBP §Output and formatting > Control the format of responses：
+  “Tell Claude what to do instead of what not to do”；
+  “Instead of: ‘Do not use markdown in your response’”；
+  “Try: ‘Your response should be composed of smoothly flowing prose paragraphs.’”
+- ANT-PBP §General principles > Add context to improve performance：
+  “Your response will be read aloud by a text-to-speech engine,
+  so never use ellipses since the text-to-speech engine will not know how to pronounce them.”
 
 ## S3 强语气只给红线或实测被忽略的单条
 
-- OAI-41 §4 Instruction Following > Recommended Workflow：“It's generally not necessary to use all-caps or other incentives like bribes or tips. We recommend starting without these, and only reaching for these if necessary for your particular prompt.”
-- CC-BP §Configure your environment > Write an effective CLAUDE.md：“If Claude keeps skipping one instruction, add emphasis such as ‘IMPORTANT’ to that line alone. If you emphasize many lines, none of them stands out.”
+- OAI-41 §4 Instruction Following > Recommended Workflow：
+  “It's generally not necessary to use all-caps or other incentives like bribes or tips.
+  We recommend starting without these, and only reaching for these if necessary for your particular prompt.”
+- CC-BP §Configure your environment > Write an effective CLAUDE.md：
+  “If Claude keeps skipping one instruction, add emphasis such as ‘IMPORTANT’ to that line alone.
+  If you emphasize many lines, none of them stands out.”
 - ANT-PBP §Tool use > Tool usage：“The fix is to dial back any aggressive language.”
 - 红线优先于普通要求，属推导。
 
@@ -39,13 +48,20 @@
 
 - MS §Key concepts > Output contract：“Keep the contract small and stable.”
 - MS §Design checklist > 3. Specify the output format：“If you need a specific format, specify it plainly and keep it consistent.”
-- GOOG §Gemini 3 > Core prompting principles：“By default, Gemini 3 models provide direct and efficient answers. If you need a more conversational or detailed response, you must explicitly request it in your instructions.”
+- GOOG §Gemini 3 > Core prompting principles：
+  “By default, Gemini 3 models provide direct and efficient answers.
+  If you need a more conversational or detailed response, you must explicitly request it in your instructions.”
 - “结构、长度、格式”三要素是把 output contract 与 verbosity 要求合并后的判据，属推导。
 
 ## S7 示例 3–5 个，边界并进示例
 
-- ANT-PBP §General principles > Use examples effectively：“Include 3–5 examples for best results.”；“Diverse: Cover edge cases and vary enough that Claude doesn't pick up unintended patterns.”；“Structured: Wrap examples in `<example>` tags…”
-- ANT-CE §The anatomy of effective context：“teams will often stuff a laundry list of edge cases into a prompt… We do not recommend this. Instead, we recommend working to curate a set of diverse, canonical examples…”
+- ANT-PBP §General principles > Use examples effectively：
+  “Include 3–5 examples for best results.”；
+  “Diverse: Cover edge cases and vary enough that Claude doesn't pick up unintended patterns.”；
+  “Structured: Wrap examples in `<example>` tags…”
+- ANT-CE §The anatomy of effective context：
+  “teams will often stuff a laundry list of edge cases into a prompt…
+  We do not recommend this. Instead, we recommend working to curate a set of diverse, canonical examples…”
 
 ## S8 Context 准入
 
@@ -83,5 +99,7 @@ CC-BP §Avoid common failure patterns：“Bloated CLAUDE.md files cause Claude 
 ## S13 按模型分叉
 
 - OAI-PE §Choosing a model：“GPT models are fast, cost-efficient, and highly intelligent, but benefit from more explicit instructions around how to accomplish tasks.”
-- OAI-PE §Prompting reasoning models：“Generally speaking, reasoning models will provide better results on tasks with only high-level guidance. This differs from GPT models, which benefit from very precise instructions.”
+- OAI-PE §Prompting reasoning models：
+  “Generally speaking, reasoning models will provide better results on tasks with only high-level guidance.
+  This differs from GPT models, which benefit from very precise instructions.”
 - OAI-41 引言：“GPT-4.1 is trained to follow instructions more closely and more literally than its predecessors…”
