@@ -1,32 +1,33 @@
-# AI 编码代理 system prompt
+# AI Coding Agent System Prompt
 
-本仓库只有两类内容：给编码代理读的全局指令基线，和审计这份基线的 skill。没有构建步骤；格式机检脚本依赖 `markdown-it-py`，改完 Markdown 与脚本就是改完。
+This repository has two kinds of content: a global instruction baseline for coding agents, and a skill that audits that baseline. There is no build step; the format checker depends
+on `markdown-it-py`. Changing the Markdown or the script is the whole job.
 
-## 文件
+## Files
 
-| 文件 | 作用 | 什么时候读 |
+| File | Purpose | When to read |
 |---|---|---|
-| `AGENTS.md` | 指令基线本体，会话开始时读进模型上下文，约束改代码时的行为 | 改规则时；想让代理遵守某条时 |
-| `README.md` | 本文件，说明仓库里有什么、怎么用 | 第一次接触这个仓库 |
-| `.qwen/skills/system-prompt-authoring/SKILL.md` | 审计与起草 `AGENTS.md` 的流程、S1–S13 内容规则表、格式机检用法 | 要改 `AGENTS.md` 之前 |
-| `.qwen/skills/system-prompt-authoring/references/provenance.md` | S1–S13 每条规则的厂商文档原句 | 某条规则的出处被质疑时 |
-| `.qwen/skills/system-prompt-authoring/references/complex-logic.md` | 决策表、状态表与复杂逻辑写法 | 规则涉及多条件组合或状态流转时 |
-| `.qwen/skills/system-prompt-authoring/script/check.py` | 机检脚本，只检查 Markdown 格式，不判断内容规则 | 改完 `AGENTS.md` 后 |
-| `.qwen/skills/system-prompt-authoring/script/test_check.py` | `check.py` 的自测用例 | 改 `check.py` 时 |
+| `AGENTS.md` | The instruction baseline itself; loaded into the model context at session start and constrains coding behavior | When changing rules; when you want the agent to follow a rule |
+| `README.md` | This file: what the repo contains and how to use it | First time in this repo |
+| `.qwen/skills/system-prompt-authoring/SKILL.md` | Process for auditing and drafting `AGENTS.md`, the S1–S13 content rules, and format-check usage | Before changing `AGENTS.md` |
+| `.qwen/skills/system-prompt-authoring/references/provenance.md` | Vendor-document quotes for each S1–S13 rule | When a rule's source is questioned |
+| `.qwen/skills/system-prompt-authoring/references/complex-logic.md` | Decision tables, state tables, and complex-logic guidance | When rules involve multi-condition combinations or state transitions |
+| `.qwen/skills/system-prompt-authoring/script/check.py` | Format checker; checks Markdown format only, not content rules | After changing `AGENTS.md` |
+| `.qwen/skills/system-prompt-authoring/script/test_check.py` | Self-tests for `check.py` | When changing `check.py` |
 
-## 用
+## Usage
 
-把 `AGENTS.md` 放进目标仓库根目录。工具只认固定文件名（`CLAUDE.md`、`QWEN.md`）时，装成那个名字，或软链接：
+Put `AGENTS.md` at the target repository root. When a tool only recognizes fixed filenames (`CLAUDE.md`, `QWEN.md`), install it under that name or symlink it:
 
 ```bash
 ln -s AGENTS.md CLAUDE.md
 ```
 
-改完先跑机检，再跑自测：
+After changes, run the format check, then the self-tests:
 
 ```bash
 python3 .qwen/skills/system-prompt-authoring/script/check.py AGENTS.md
 python3 -m unittest discover -s .qwen/skills/system-prompt-authoring/script
 ```
 
-机检只报 Markdown 格式问题；内容是否合格按 `SKILL.md` 的 S1–S13 人工核对。
+The checker reports Markdown format issues only; check content quality manually against S1–S13 in `SKILL.md`.

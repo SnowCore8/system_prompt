@@ -1,86 +1,86 @@
-# 复杂逻辑：决策表与状态表
+# Complex Logic: Decision Tables and State Tables
 
-规则一旦出现多个条件组合或状态流转，不要用一张大图承载。用表做规范源，图只做总览。
+When rules involve multiple condition combinations or state transitions, do not put them in one large diagram. Use a table as the source of truth; diagrams are overview only.
 
-## 什么时候用
+## When to Use
 
-| 场景 | 用哪种 |
+| Situation | Use |
 |---|---|
-| 多个条件组合后选一个动作 | 决策表 |
-| 任务随事件在状态之间迁移 | 状态表 |
-| 既有状态又有条件分支 | 状态表，条件列引用决策表 |
-| 需要计算、循环或数据结构 | 伪代码或纯函数加表驱动测试 |
+| Multiple conditions select one action | Decision table |
+| A task moves between states on events | State table |
+| Both states and condition branches | State table; condition column references a decision table |
+| Computation, loops, or data structures | Pseudocode or pure functions with table-driven tests |
 
-## 决策表
+## Decision Tables
 
-### 决策表模板
-
-```text
-| 顺序 | 条件 A | 条件 B | 条件 C | 动作 |
-|---|---|---|---|---|
-| 1 | 否 | * | * | 只报告 |
-| 2 | 是 | 是 | 无 | 拒绝 |
-| 3 | 是 | 是 | 有 | 执行 |
-| 4 | 是 | 否 | * | 执行 |
-```
-
-- 顺序：从上到下第一条命中即停止；如果采用“后者覆盖前者”，要写明。
-- `*` 表示任意值，`-` 表示不适用；两个符号都要定义。
-- 动作：一行只写一个可观察结果。
-- 默认：所有行都不命中时走哪个分支，必须写清。
-
-### 决策表示例：授权判断
-
-| 顺序 | 明确同意 | 生产 | 回滚方案 | 动作 |
-|---|---|---|---|---|
-| 1 | 否 | * | * | 只报告，不执行 |
-| 2 | 是 | 是 | 无 | 拒绝，先补回滚方案 |
-| 3 | 是 | 是 | 有 | 执行，保留回滚路径 |
-| 4 | 是 | 否 | * | 执行 |
-
-“明确同意”指对该操作的直接、明确同意；含糊的“先这样吧”不算。全部未命中时按默认拒绝并报告。
-
-## 状态表
-
-### 状态表模板
+### Decision Table Template
 
 ```text
-| 当前状态 | 事件 | 条件 | 下一状态 | 动作 |
+| Order | Condition A | Condition B | Condition C | Action |
 |---|---|---|---|---|
-| 待授权 | 用户同意 | 非生产 | 执行中 | 开始改动 |
-| 待授权 | 用户拒绝 | - | 已拒绝 | 停止，不绕道 |
+| 1 | No | * | * | Report only |
+| 2 | Yes | Yes | None | Refuse |
+| 3 | Yes | Yes | Has plan | Execute |
+| 4 | Yes | No | * | Execute |
 ```
 
-- 每个状态/事件组合要么显式定义，要么落到默认行。
-- 终止状态要写明；不能从终止状态静默回到执行中。
-- 条件列可以引用决策表的结论，不要重复展开。
+- Order: first match wins, top to bottom; if you use "last match wins," say so.
+- `*` means any value, and `-` means not applicable; define both symbols.
+- Action: one observable result per row.
+- Default: state which branch applies when no row matches.
 
-### 状态表示例：任务生命周期
+### Decision Table Example: Authorization
 
-| 当前状态 | 事件 | 条件 | 下一状态 | 动作 |
+| Order | Explicit consent | Production | Rollback plan | Action |
 |---|---|---|---|---|
-| 待授权 | 用户明确同意 | 非生产 | 执行中 | 开始改动 |
-| 待授权 | 用户明确同意 | 生产且有回滚 | 执行中 | 备份后开始 |
-| 待授权 | 用户拒绝 | - | 已拒绝 | 停止，不绕道 |
-| 执行中 | 验证失败 | - | 阻塞 | 报告，不提交 |
-| 执行中 | 验证通过 | - | 待验收 | 提交并交付 |
-| 阻塞 | 用户给新指令 | - | 待授权 | 重新确认 |
-| 待验收 | 用户确认 | - | 完成 | 结束 |
+| 1 | No | * | * | Report only; do not execute |
+| 2 | Yes | Yes | None | Refuse; require a rollback plan first |
+| 3 | Yes | Yes | Has plan | Execute; keep the rollback path |
+| 4 | Yes | No | * | Execute |
 
-未列出的组合一律停在当前状态并报告，不自行猜测。
+"Explicit consent" means direct, explicit approval for that operation; a vague "let's leave it like this" does not count. If no row matches, reject and report by default.
 
-## 模型友好写法
+## State Tables
 
-- 条件列用布尔或枚举，不用长句。
-- 动作列只写一个结果，不写“视情况处理”。
-- 表放在规则附近，不要只放在附录。
-- 表后补 3–5 个边界用例：默认、例外、冲突、信息不足。
-- 需要看图时，图只做总览；图和表冲突时以表为准。
-- 嵌套超过两层或表开始重复时，拆子决策，或改成伪代码/纯函数。
+### State Table Template
 
-## 维护与验收
+```text
+| Current state | Event | Condition | Next state | Action |
+|---|---|---|---|---|
+| Awaiting authorization | User consents | Non-production | Executing | Start changes |
+| Awaiting authorization | User refuses | - | Rejected | Stop; do not work around it |
+```
 
-- 先改表，再改图；不要手改图不同步表。
-- 规则变更时同步更新边界用例。
-- 复杂到表也放不下时，写成纯函数并配表驱动测试；不要让 prompt 承载算法。
-- 图只做总览，规范源始终是表或代码。
+- Every state/event combination must be defined explicitly or fall to a default row.
+- State terminal states; never silently return from a terminal state to executing.
+- The condition column may reference a decision table's conclusion; do not repeat it.
+
+### State Table Example: Task Lifecycle
+
+| Current state | Event | Condition | Next state | Action |
+|---|---|---|---|---|
+| Awaiting authorization | User explicitly consents | Non-production | Executing | Start changes |
+| Awaiting authorization | User explicitly consents | Production with rollback | Executing | Back up, then start |
+| Awaiting authorization | User refuses | - | Rejected | Stop; do not work around it |
+| Executing | Verification fails | - | Blocked | Report; do not commit |
+| Executing | Verification passes | - | Pending acceptance | Commit and deliver |
+| Blocked | User gives a new instruction | - | Awaiting authorization | Confirm again |
+| Pending acceptance | User confirms | - | Done | Finish |
+
+Any unlisted combination stays in the current state and reports; do not guess.
+
+## Model-Friendly Writing
+
+- Use booleans or enums in condition columns, not long sentences.
+- Put one result in the action column; never write "handle as appropriate."
+- Keep the table near the rule; do not put it only in an appendix.
+- Add 3–5 boundary cases after the table: default, exception, conflict, insufficient information.
+- When a diagram is needed, it is overview only; if diagram and table conflict, the table wins.
+- When nesting exceeds two levels or the table starts repeating, split sub-decisions or switch to pseudocode or pure functions.
+
+## Maintenance and Acceptance
+
+- Change the table first, then the diagram; never hand-edit the diagram without syncing the table.
+- Update boundary cases when rules change.
+- When the logic is too complex for a table, write a pure function with table-driven tests; do not make the prompt carry an algorithm.
+- Diagrams are overview only; the source of truth is always the table or code.
