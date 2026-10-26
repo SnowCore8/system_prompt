@@ -1,6 +1,6 @@
 # AI 编码代理 system prompt
 
-本仓库只有两类内容：给编码代理读的指令基线，和审计这份基线的 skill。没有构建步骤；格式机检脚本依赖 `markdown-it-py`，改完 Markdown 与脚本就是改完。
+本仓库只有两类内容：给编码代理读的全局指令基线，和审计这份基线的 skill。没有构建步骤；格式机检脚本依赖 `markdown-it-py`，改完 Markdown 与脚本就是改完。
 
 ## 文件
 
@@ -10,22 +10,22 @@
 | `README.md` | 本文件，说明仓库里有什么、怎么用 | 第一次接触这个仓库 |
 | `.qwen/skills/system-prompt-authoring/SKILL.md` | 审计与起草 `AGENTS.md` 的流程、S1–S13 内容规则表、格式机检用法 | 要改 `AGENTS.md` 之前 |
 | `.qwen/skills/system-prompt-authoring/references/provenance.md` | S1–S13 每条规则的厂商文档原句 | 某条规则的出处被质疑时 |
-| `.qwen/skills/system-prompt-authoring/script/check.py` | 机检脚本，只判 Markdown 格式，不判内容规则 | 改完 `AGENTS.md` 后 |
+| `.qwen/skills/system-prompt-authoring/script/check.py` | 机检脚本，只检查 Markdown 格式，不判断内容规则 | 改完 `AGENTS.md` 后 |
 | `.qwen/skills/system-prompt-authoring/script/test_check.py` | `check.py` 的自测用例 | 改 `check.py` 时 |
 
 ## 用
 
-把 `AGENTS.md` 放进目标仓库根目录。工具用固定文件名（`CLAUDE.md`、`QWEN.md`）时装成那个名字，或软链接：
+把 `AGENTS.md` 放进目标仓库根目录。工具只认固定文件名（`CLAUDE.md`、`QWEN.md`）时，装成那个名字，或软链接：
 
 ```bash
 ln -s AGENTS.md CLAUDE.md
 ```
 
-改完跑机检：
+改完先跑机检，再跑自测：
 
 ```bash
 python3 .qwen/skills/system-prompt-authoring/script/check.py AGENTS.md
 python3 -m unittest discover -s .qwen/skills/system-prompt-authoring/script
 ```
 
-机检只报告 Markdown 格式；内容是否合格按 `SKILL.md` 的 S1–S13 人工核对。
+机检只报 Markdown 格式问题；内容是否合格按 `SKILL.md` 的 S1–S13 人工核对。
