@@ -1,21 +1,21 @@
 ---
 name: system-prompt-authoring
-description: 起草、审计或重构编码代理的持久指令文件（AGENTS.md、CLAUDE.md、QWEN.md）。当用户要新建这类文件、判断现有文件哪些行该删该改，或要求把规则追溯到厂商文档时使用。用 `/system-prompt-authoring` 加目标文件路径调用。
+description: 起草、审计或重构编码代理的持久指令文件（AGENTS.md、CLAUDE.md、QWEN.md）。当用户要新建这类文件、判断现有文件哪些行该删该改，或要求把规则追溯到厂商文档时使用。机检脚本只验证 Markdown 格式，内容规则由人工判断。
 argument-hint: '<target-file>'
 ---
 
 # 起草或审计 system prompt
 
-你为编码代理起草和审计持久指令文件。交付的文件是可直接加载的 Markdown，每条规则要么有来源，要么标为推导，并且机检通过。
+你为编码代理起草和审计持久指令文件。交付的文件是可直接加载的 Markdown：内容规则逐条人工核对，Markdown 格式由脚本机检通过。
 
 ## 流程
 
 1. 确认目标文件和任务类型：新建还是审计。路径或意图不清楚就问，不要猜。
-2. 按“五个输入”收集信息。仓库里能查到的不问用户。确实拿不到的，用默认写法，并在报告里说明这是假设。
-3. 新建：按“模板”填，任务用不到的节删掉。
-4. 审计：先跑机检，再按“删行判据”逐行处理。同一约束出现在多节时合并成一处。
-5. 再跑一次机检。`[硬性]` 全部修掉；`[待确认]` 逐条写下结论，“看着没问题”不算结论。
-6. 报告：文件路径、机检输出原文、未解决项。还有 `[硬性]` 或没解释的 `[待确认]` 时，不要说完成。
+2. 按“五个输入”收集信息。仓库里能查到的不问用户；确实拿不到的用默认写法，并在报告里说明这是假设。
+3. 新建按“模板”填，任务用不到的节删掉；审计按“删行判据”逐行处理，同一约束只留一处。
+4. 人工核对内容规则 S1–S13。脚本不判断这些规则，机检通过不代表内容合格。
+5. 跑格式机检，修掉 `[错误]`；`[警告]` 逐条写下结论，“看着没问题”不算结论。
+6. 报告：文件路径、机检输出原文、内容规则逐条结论、未解决项。还有未解释的项时，不要说完成。
 
 ## 五个输入
 
@@ -29,29 +29,29 @@ argument-hint: '<target-file>'
 
 构建与测试命令、目录约定、语言版本，从 `README`、`package.json`、`pyproject.toml`、`Makefile`、CI 配置里读，写进 `Context`。
 
-## 规则 S1–S13
+## 内容规则 S1–S13
 
-`机检` 指“机检”一节的脚本能判，`人工` 指你必须自己读。
+这些规则由你人工判断。S12 里能机械判定的格式项另由脚本覆盖。
 
-| # | 要求 | 判定 | 出处 |
-|---|---|---|---|
-| S1 | 写清角色、范围、完成定义 | 机检 + 人工 | OAI-41 §Prompt Structure；ANT-PBP §Give Claude a role；MS §Design checklist 1；§Role and scope |
-| S2 | 每条禁止配替代行为或理由；红线可保留禁止式，但必须写理由 | 机检 + 人工 | ANT-PBP §Control the format of responses；§Add context |
-| S3 | 默认平实祈使句；强调只给红线，或实测被忽略的那一条 | 人工 | OAI-41 §Recommended Workflow；CC-BP §Write an effective CLAUDE.md；ANT-PBP §Tool usage |
-| S4 | 请求模糊、超出范围、信息不足各给一个动作；单步任务至少给“无法处理” | 机检关键词 + 人工 | MS §Design checklist 4；§How system messages work |
-| S5 | 不用编号声明优先级；不留无条件的对立要求 | 机检 | OAI-MS §Instructions and levels of authority |
-| S6 | 输出格式写明结构、长度、格式 | 机检 + 人工 | MS §Output contract；§Design checklist 3；GOOG §Core prompting principles |
-| S7 | 示例 3–5 个，每个演示一条规则没写到的行为；边界情况并进示例。规则超过 50 条且无示例时才提示 | 人工计数 + 机检 | ANT-PBP §Use examples effectively；ANT-CE §The anatomy of effective context |
-| S8 | `Context` 只放模型无法从代码推导的信息 | 人工 | CC-BP §Write an effective CLAUDE.md（Include/Exclude 表） |
-| S9 | 删掉答“不会做错”的行；偶尔才用的细则移进 skill | 人工 | CC-BP §Write an effective CLAUDE.md；§Avoid common failure patterns |
-| S10 | 不写没确认存在的工具、命令、配置项 | 人工核查 | 推导；佐证 ANT-PBP §Minimizing hallucinations |
-| S11 | 长文档不进指令文件；一段话不压在一行里 | 人工 | ANT-CE §Context retrieval；CC-BP Include/Exclude；单行限制为工程约束 |
-| S12 | 无占位标记、行尾空白、制表符；正文单行不超过 200 字；代码围栏成对；文件以换行结尾 | 机检 | 工程约束 |
-| S13 | GPT 系给明确指令，推理模型只给目标与约束；模型未知时用平实祈使句 | 人工 | OAI-PE §Choosing a model；§Prompting reasoning models |
+| # | 要求 | 出处 |
+|---|---|---|
+| S1 | 写清角色、范围、完成定义 | OAI-41 §Prompt Structure；ANT-PBP §Give Claude a role；MS §Design checklist 1；§Role and scope |
+| S2 | 每条禁止配替代行为或理由；红线可保留禁止式，但必须写理由 | ANT-PBP §Control the format of responses；§Add context |
+| S3 | 默认平实祈使句；强调只给红线，或实测被忽略的那一条 | OAI-41 §Recommended Workflow；CC-BP §Write an effective CLAUDE.md；ANT-PBP §Tool usage |
+| S4 | 请求模糊、超出范围、信息不足各给一个动作；单步任务至少给“无法处理” | MS §Design checklist 4；§How system messages work |
+| S5 | 不用编号声明优先级；不留无条件的对立要求 | OAI-MS §Instructions and levels of authority |
+| S6 | 输出格式写明结构、长度、格式 | MS §Output contract；§Design checklist 3；GOOG §Core prompting principles |
+| S7 | 示例 3–5 个，每个演示一条规则没写到的行为；边界情况并进示例。规则超过 50 条且无示例时才提示 | ANT-PBP §Use examples effectively；ANT-CE §The anatomy of effective context |
+| S8 | `Context` 只放模型无法从代码推导的信息 | CC-BP §Write an effective CLAUDE.md（Include/Exclude 表） |
+| S9 | 删掉答“不会做错”的行；偶尔才用的细则移进 skill | CC-BP §Write an effective CLAUDE.md；§Avoid common failure patterns |
+| S10 | 不写没确认存在的工具、命令、配置项 | 推导；佐证 ANT-PBP §Minimizing hallucinations |
+| S11 | 长文档不进指令文件；一段话不压在一行里 | ANT-CE §Context retrieval；CC-BP Include/Exclude；单行限制为工程约束 |
+| S12 | 无占位标记、行尾空白、制表符；正文单行不超过 200 字；代码围栏成对；文件以换行结尾 | 工程约束 |
+| S13 | GPT 系给明确指令，推理模型只给目标与约束；模型未知时用平实祈使句 | OAI-PE §Choosing a model；§Prompting reasoning models |
 
 以下几条是推导，不要当成厂商原话：完成定义（S1）、输出格式三要素（S6）、示例合并规则（S7）、单步任务豁免（S4）、S10。
 
-S2 与 S3 合用：红线段可以用“绝不”，但仍要写理由。机检只对红线段免除“配替代行为”，不免理由。
+S2 与 S3 合用：红线段可以用“绝不”，但仍要写理由。S12 中可由机器判定的项以机检结果为准，占位标记等内容项人工核对。
 
 ## 来源冲突时怎么选
 
@@ -96,117 +96,85 @@ S2 与 S3 合用：红线段可以用“绝不”，但仍要写理由。机检�
 
 ## 机检
 
-脚本只判能机械判定的部分。退出码 0 无错误、1 有错误、2 参数或文件问题。
+脚本只检查 Markdown 语法、排版与链接有效性，不读正文语义、不判断规则是否合理、不追溯来源。退出码 0 无错误、1 有错误、2 参数、依赖或文件问题。
 
 输出分三级：
 
 | 级别 | 含义 | 影响退出码 |
 |---|---|---|
-| 错误 | 文件结构损坏或违反强制规则 | 是 |
-| 警告 | 内容可能有问题，需要人判断 | 否 |
+| 错误 | 文件结构损坏 | 是 |
+| 警告 | 格式有问题，需要修 | 否 |
 | 建议 | 可改进项 | 否 |
 
 每条给出位置（`L行号` 或 `全文`）、规则编号、原因、建议改法。
 
-它按标题关键词判结构，标题措辞不同可能误判，确认后在报告里说明。匹配前会剔掉围栏内容、缩进代码块、HTML 块和行内代码，所以写进代码或引号里的示例不算违规，用普通正文复述规则则算。
-
-脚本还检查 Markdown 结构：
+脚本检查这些格式项：
 
 | 规则号 | 级别 | 判什么 |
 |---|---|---|
 | MD-FENCE | 错误 | 围栏未闭合 |
 | MD-HTML-COMMENT | 错误 | HTML 注释未闭合，会吞掉文件剩余部分；行内未闭合报同一规则号 |
-| MD-HTML-BLOCK | 错误 | `<script>`、`<style>`、`<pre>`、`<textarea>` 块未闭合，后文全部不渲染 |
-| MD-INLINE-CODE | 警告 | 反引号没配对（按段落判，跨行合法配对不报） |
-| MD-EMPHASIS | 警告 | `**`、`__` 或 `~~` 没配对（同样按段落判） |
-| MD-HEAD-SPACE | 警告 | `#` 后缺空格，整行按段落渲染而不是标题 |
-| MD-HEAD-START | 警告 | 首个标题不是 h1，整篇层级基线偏低 |
+| MD-HTML-BLOCK | 错误 | `<script>`、`<style>`、`<pre>`、`<textarea>` 块未闭合 |
+| MD-FINAL-NEWLINE | 错误 | 文件末尾缺少换行 |
+| MD-INLINE-CODE | 警告 | 反引号没配对 |
+| MD-EMPHASIS | 警告 | `**`、`__` 或 `~~` 没配对 |
+| MD-HEAD-SPACE | 警告 | `#` 后缺空格，整行按段落渲染 |
+| MD-HEAD-START | 警告 | 首个标题不是 h1 |
 | MD-HEAD-JUMP | 警告 | 标题层级跳跃 |
 | MD-HEAD-EMPTY | 警告 | 标题没有文字 |
 | MD-HEAD-DUP | 警告 | 标题重名（折叠大小写与空白后比较） |
-| MD-EXAMPLE-UNCLOSED | 警告 | `<example>` 没有闭合，后面内容全进示例区 |
+| MD-LIST-SPACE | 警告 | 列表标记后缺空格 |
+| MD-LIST-MARKER | 警告 | 同一段列表混用 `-`、`*`、`+` |
+| MD-LIST-START | 警告 | 有序列表不是从 1 开始编号 |
+| MD-LIST-EMPTY | 警告 | 列表项没有内容 |
+| MD-LIST-INDENT | 警告 | 同级缩进不一致，或缩进过深丢失列表结构 |
+| MD-TABLE-COLS | 警告 | 表格行之间列数不一致 |
+| MD-TABLE-BROKEN | 警告 | 连续竖线行没被解析成表格（分隔行缺列或少横线） |
 | MD-LINK-REF | 警告 | `[文字][标签]` 的标签没有定义 |
 | MD-LINK-DEF-DUP | 警告 | 同一标签定义了两次，后者不生效 |
 | MD-LINK-DEF-UNUSED | 建议 | 定义了却没人引用的标签 |
 | MD-LINK-EMPTY | 警告 | 链接或图片缺文字、缺地址 |
 | MD-LINK-TARGET | 警告 | 链接或图片的相对路径在仓库里不存在 |
-| MD-LINK-SYNTAX | 警告 | `[文字](` 没被解析成链接（括号没闭合、地址含空格、标题引号没配对） |
-| MD-ANCHOR | 警告 | 页内锚点 `#xxx` 指向不存在的标题 |
-| MD-TABLE-COLS | 警告 | 表格行之间列数不一致 |
-| MD-TABLE-BROKEN | 警告 | 连续竖线行没被解析成表格（分隔行缺列或少横线） |
-| MD-INLINE-HTML | 警告 | 已知名 HTML 标签只开未关（autolink、`<占位符>` 不算） |
-| MD-LIST-INDENT | 警告 | 同级列表项缩进不一致，或缩进过深未被解析成列表项 |
-| MD-LIST-MARKER | 警告 | 同一段列表里混用了 `-`、`*`、`+` |
-| MD-LIST-SPACE | 警告 | 列表标记后缺空格，整行按段落渲染而不是列表项 |
-| MD-LIST-START | 警告 | 有序列表不是从 1 开始编号 |
-| MD-LIST-EMPTY | 警告 | 列表项没有内容 |
-| MD-LINE-LEN | 警告 | 正文单行超过 200 字；表格、代码、URL、front matter 与示例区除外 |
+| MD-LINK-SYNTAX | 警告 | `[文字](` 没被解析成链接 |
+| MD-ANCHOR | 警告 | 页内锚点指向不存在的标题 |
+| MD-INLINE-HTML | 警告 | 已知名 HTML 标签只开未关 |
+| MD-BLANK-RUN | 警告 | 连续多个空行 |
+| MD-LINE-LEN | 警告 | 正文单行超过 200 字；表格、代码、URL 与 front matter 除外 |
+| MD-TRAILING-WS | 警告 | 行尾空白 |
+| MD-TAB | 警告 | 正文含制表符 |
 
-正文单行超过 200 字报 `MD-LINE-LEN`；表格、代码、URL、front matter 与示例区不查，它们无法在不破坏语义的前提下拆行。
+这些判定都基于 CommonMark 解析结果，不是逐行正则：
 
-围栏在引用块里也按源文本比对；表格按源行数字符，超出表头的单元格不会被静默忽略。所有结构判定都排除围栏、缩进代码块、HTML 块与示例区，写在这些地方的示例不会被当成真实结构。开头的 YAML front matter 整段不参与结构判定与规则计数。
-
-反引号与强调标记跨行配对是合法的 CommonMark 写法，脚本按「解析器没消化掉的标记」判断，不按行数奇偶，所以跨行配对不报、跨行未闭合只报一次。
-
-表格分隔行写错时整张表会退化成段落，解析器连 table token 都不产生，列数检查看不到。`MD-TABLE-BROKEN` 专门抓这种情况：连续两行以上以 `|` 开头，却没有任何一行进了表格。链接与图片的目标同样查存在性，外链、`mailto:` 与代码块里的写法不查；锚点另由 `MD-ANCHOR` 按标题算出的 slug 校验。
-
-示例区的判据是「解析器真的产出了 `<example>` 标签」，不是字符串包含。反引号里的 `` `<example>` `` 是在讲语法，不算开始。
-
-独占一行的开闭标签连同中间内容会被解析成一个 `html_block`。按块首字符判断开闭会把这个最常见的写法判错，脚本按块内标签的出现顺序配对。
-
-`<example>` 没闭合时 `MD-EXAMPLE-UNCLOSED` 报出来。否则后面整篇都被当成示例，规则计数与重复检测一起失真。
-
-链接定义从解析器的引用表读，不用逐行正则：地址写在下一行、定义写在列表项里，两种合法写法正则都匹配不到。`[标签]` 这种 collapsed 引用与普通方括号无法区分，`MD-LINK-REF` 只查 `[文字][标签]` 与 `[标签][]`。
-
-`MD-ANCHOR` 按 GitHub 规则把标题转成 slug 再比对：小写、空格换连字符、去标点、保留中文。同名标题按出现顺序加 `-1`、`-2` 后缀，显式 `<a id="x">` 也算有效目标。
+- 结构检查剔除围栏、缩进代码块、HTML 块与 front matter。`<example>` 不再单列，按普通 HTML 处理。
+- 反引号与强调可以跨行配对，脚本按“解析器没消化掉的标记”判断，跨行合法配对不报。
+- 链接定义从解析器的引用表读，地址写在下一行、定义写在列表项里都能识别。
+- 表格分隔行写错时整张表会退化成段落，`MD-TABLE-BROKEN` 专门抓这种情况。
+- 外链、`mailto:` 与锚点不查本地存在性；锚点按 GitHub 规则转 slug 后比对。
+- 行内标签只看解析器产出的 `html_inline`，autolink 与 `<占位符>` 不算未闭合。
 
 以下三类刻意不查，因为机械判定只会产出噪声：
 
 | 不查的写法 | 理由 |
 |---|---|
 | 单个 `*` 或 `_` 未配对 | `*.py`、`src/*.ts`、`2*3`、`**/*.md` 用的是同一个字符，区分要靠语义 |
-| setext 标题（`===` / `---` 下划线式） | 合法语法，正常写标题就会被报出来 |
+| setext 标题（`===`、`---` 下划线式） | 合法语法，正常写标题就会被报出来 |
 | 表格空表头单元格 `\| a \|  \|` | 合法且常用 |
 
-`MD-INLINE-HTML` 也有一处残留误报：正文里讲语法时写出单个 `<div>`，与真的漏写闭合标签无法区分。这类内容写进反引号或代码块即可跳过。
+`MD-INLINE-HTML` 有一处残留误报：正文里讲语法时写出单个 `<div>`，与真的漏写闭合标签无法区分。这类内容写进反引号或代码块即可跳过。
 
-除规则项，它还做三件需要人复核的检查：
-
-| 检查 | 规则号 | 级别 | 判什么 |
-|---|---|---|---|
-| 重复规则 | S9 | 建议 | 两条列表项措辞不同但讲同一件事，报后一条的行号与配对行 |
-| 引用存在性 | S10 | 警告 | 行内代码里形如路径的引用在仓库里找不到；顿号连接的多个引用视作列举，不逐个校验 |
-| 基线覆盖 | BASE | 警告 | 配合 `--baseline <旧文件>`，报旧文件里有、新文件里找不到对应表述的规则 |
-
-S10 认的路径包括常见源码扩展名、无扩展名的已知文件名（`Makefile`、`Dockerfile`、`README` 等）与以 `/` 结尾的目录。URL、带空格的命令、`<占位符>`、`${VAR}` 环境变量引用、glob 通配符（`**/*.md`、`src/*.ts`）都不查存在性。
-
-重复与基线都基于字符二元组相似度，同义换词能识别，改写幅度很大时可能漏报。基线阈值宁可多报，报出来的逐条确认即可。
-
-对目标文件运行。路径以本 skill 所在目录为基准，下面的 `<skill-dir>` 换成实际路径：
+运行方式。路径以本 skill 所在目录为基准，下面的 `<skill-dir>` 换成实际路径：
 
 ```bash
 python3 <skill-dir>/script/check.py AGENTS.md
 ```
 
-检查 skill 文档本身时加 `--skill`，跳过四项：S1、S6、指令节、兜底说明（skill 不是 agent 指令文件，这四项不适用）：
-
-```bash
-python3 <skill-dir>/script/check.py --skill SKILL.md
-```
-
-重写或压缩已有文件时，把旧版本存成临时文件做基线对比，报告里逐条说明 Base 项是有意删除还是漏删：
-
-```bash
-python3 <skill-dir>/script/check.py --baseline old-AGENTS.md AGENTS.md
-```
-
-放进 CI 时加 `--strict`，警告也算失败，退出码 1。适合已经稳定、只接受零告警的文件：新文件先不加，等警告逐条处理干净再打开，否则一开始就红一片，没人会看。
+放进 CI 时加 `--strict`，警告也算失败，退出码 1：
 
 ```bash
 python3 <skill-dir>/script/check.py --strict AGENTS.md
 ```
 
-脚本自身用例在 `script/test_check.py`，用标准库 unittest，无需额外依赖：
+脚本依赖 `markdown-it-py`；缺依赖时直接报错并给出安装命令，不会自动安装。脚本自身用例用标准库 unittest：
 
 ```bash
 python3 -m unittest discover -s <skill-dir>/script
@@ -215,10 +183,8 @@ python3 -m unittest discover -s <skill-dir>/script
 读输出：
 
 - `[错误]`：修掉并重跑，直到 0 项、退出码 0。
-- `[警告]`：逐条写结论。结构类误判要说明是标题措辞问题，不是内容缺失。
+- `[警告]`：逐条写结论；结构类误判要说明是标题措辞问题，不是内容缺失。
 - `[建议]`：按 S9 判断改不改，不强制。
-- S5 会跳过否定句和反模式段；换一种写法的引用仍可能命中，确认后再改。
-- 脚本不核对来源。
 
 ## 反模式
 
@@ -314,9 +280,7 @@ python3 -m unittest discover -s <skill-dir>/script
 - CI 跑 Python 3.11 与 3.12，两版都要过。
 ```
 
-跑机检脚本，示例的预期输出是 `[错误]` 0、`[警告]` 1 条、`[建议]` 0。那条警告是 S10 报示例里带版本号的模块文件不存在——示例为了贴近真实场景用了不存在的路径，真实项目里这个文件存在，警告自然消失。三处“绝不”都是带理由的红线；规则条数少，不报 S7。
-
-引用路径检查在有虚构示例的文件里必然误报，看到 S10 先确认路径是不是举例。
+机检预期是 `[错误]` 0、`[警告]` 0、`[建议]` 0。内容规则仍要人工核对。
 
 单步任务，不调用工具。S4 由“无法摘要”分支满足，`Instructions` 省略：
 
@@ -329,7 +293,7 @@ python3 -m unittest discover -s <skill-dir>/script
 - 输入为空或不是文本时，输出“无法摘要”。
 ```
 
-跑机检脚本，示例的预期输出是 `[错误]` 0、`[警告]` 2 条（缺指令节、缺兜底）、`[建议]` 0。这个形态下两条都是有意为之。
+机检同样预期 0/0/0。缺少指令节是内容层的取舍，脚本不会报。
 
 一句话也能起作用（ANT-PBP：“Even a single sentence makes a difference”），但完成定义不能省。
 
