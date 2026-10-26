@@ -575,6 +575,96 @@ class FenceTest(unittest.TestCase):
         self.assertNotIn("MD-FENCE", rules_of("# 标题\n\n```python\nprint(1)\n```\n"))
 
 
+class BomEolTest(unittest.TestCase):
+    def test_bom_reported(self):
+        self.assertIn("MD-BOM", rules_of("\ufeff# 标题\n\n正文。\n"))
+
+    def test_no_bom_not_reported(self):
+        self.assertNotIn("MD-BOM", rules_of("# 标题\n\n正文。\n"))
+
+    def test_mixed_eol_reported(self):
+        found = [f for f in all_findings("# 标题\r\n\r\n正文。\n") if f.rule == "MD-EOL"]
+        self.assertEqual(len(found), 1)
+        self.assertEqual(found[0].line, 3)
+
+    def test_uniform_lf_not_reported(self):
+        self.assertNotIn("MD-EOL", rules_of("# 标题\n\n正文。\n"))
+
+    def test_uniform_crlf_not_reported(self):
+        self.assertNotIn("MD-EOL", rules_of("# 标题\r\n\r\n正文。\r\n"))
+
+
+class HeadBlankAfterTest(unittest.TestCase):
+    def test_missing_blank_after_reported(self):
+        self.assertIn("MD-HEAD-BLANK-AFTER", rules_of("# 标题\n正文。\n"))
+
+    def test_blank_after_not_reported(self):
+        self.assertNotIn("MD-HEAD-BLANK-AFTER", rules_of("# 标题\n\n正文。\n"))
+
+    def test_heading_at_end_not_reported(self):
+        self.assertNotIn("MD-HEAD-BLANK-AFTER", rules_of("# 标题\n"))
+
+    def test_list_after_heading_not_reported(self):
+        self.assertNotIn("MD-HEAD-BLANK-AFTER", rules_of("# 标题\n- a\n"))
+
+    def test_quote_blank_not_reported(self):
+        self.assertNotIn("MD-HEAD-BLANK-AFTER", rules_of("> # 标题\n>\n> 正文。\n"))
+
+
+class FenceLangTest(unittest.TestCase):
+    def test_missing_language_reported(self):
+        self.assertIn("MD-FENCE-LANG", rules_of("# 标题\n\n```\nx\n```\n"))
+
+    def test_language_present_not_reported(self):
+        self.assertNotIn("MD-FENCE-LANG", rules_of("# 标题\n\n```python\nx\n```\n"))
+
+
+class EmptyLinkDefinitionTest(unittest.TestCase):
+    def test_empty_definition_reported(self):
+        self.assertIn("MD-LINK-DEF-EMPTY", rules_of("# 标题\n\n[a]:\n"))
+
+    def test_empty_destination_reported(self):
+        self.assertIn("MD-LINK-DEF-EMPTY", rules_of("# 标题\n\n[a]: <>\n"))
+
+    def test_multiline_definition_ok(self):
+        text = "# 标题\n\n[a]:\n  https://example.invalid\n"
+        self.assertNotIn("MD-LINK-DEF-EMPTY", rules_of(text))
+
+    def test_normal_definition_ok(self):
+        text = "# 标题\n\n[a]: https://example.invalid\n"
+        self.assertNotIn("MD-LINK-DEF-EMPTY", rules_of(text))
+
+    def test_definition_in_fence_ignored(self):
+        text = "# 标题\n\n```\n[a]:\n```\n"
+        self.assertNotIn("MD-LINK-DEF-EMPTY", rules_of(text))
+
+
+class BlankBeforeBlockTest(unittest.TestCase):
+    def test_list_after_heading_not_reported(self):
+        self.assertNotIn("MD-BLANK-BEFORE-BLOCK", rules_of("# 标题\n- a\n"))
+
+    def test_list_after_paragraph_without_blank(self):
+        self.assertIn("MD-BLANK-BEFORE-BLOCK", rules_of("正文\n- a\n"))
+
+    def test_list_after_heading_with_blank(self):
+        self.assertNotIn("MD-BLANK-BEFORE-BLOCK", rules_of("# 标题\n\n- a\n"))
+
+    def test_heading_after_paragraph_without_blank(self):
+        self.assertIn("MD-BLANK-BEFORE-BLOCK", rules_of("正文\n# 标题\n"))
+
+    def test_fence_after_paragraph_without_blank(self):
+        self.assertIn("MD-BLANK-BEFORE-BLOCK", rules_of("正文\n```python\nx\n```\n"))
+
+    def test_nested_list_not_reported(self):
+        self.assertNotIn("MD-BLANK-BEFORE-BLOCK", rules_of("- a\n  - b\n"))
+
+    def test_heading_in_quote_not_reported(self):
+        self.assertNotIn("MD-BLANK-BEFORE-BLOCK", rules_of("> # 标题\n"))
+
+    def test_table_at_start_not_reported(self):
+        self.assertNotIn("MD-BLANK-BEFORE-BLOCK", rules_of("|a|b|\n|-|-|\n|1|2|\n"))
+
+
 class FormatOnlyTest(unittest.TestCase):
     """内容问题不由脚本判断：这是纯格式检查器的边界。"""
 

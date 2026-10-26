@@ -25,6 +25,9 @@ LONG_LINE_LIMIT = 200
 LINK_DEF_RE = re.compile(r"^\s{0,3}\[([^\]]+)\]:\s*\S", re.MULTILINE)
 LINK_USE_RE = re.compile(r"\[([^\]]*)\]\[([^\]]*)\]")
 URL_RE = re.compile(r"^[A-Za-z][A-Za-z0-9+.-]*://")
+BLOCK_START_RE = re.compile(
+    r"^(?:#{1,6}\s|```|~~~|\||>|(?:[-*+]|\d+[.)])\s|<[A-Za-z!/])"
+)
 
 
 def load_markdown_it():
@@ -209,6 +212,30 @@ def find_undefined_link_refs(
     return out
 
 
+def find_empty_link_definitions(doc: "Doc") -> list[tuple[int, str]]:
+    """找出没有目标地址的链接定义。"""
+    out: list[tuple[int, str]] = []
+    skip = doc.code_lines | doc.html_lines
+    for i, line in enumerate(doc.raw, 1):
+        if i in skip:
+            continue
+        text = strip_inline_code(line)
+        match = re.match(r"^\s{0,3}\[([^\]]*)\]:\s*(.*)$", text)
+        if not match:
+            continue
+        label = match.group(1).strip()
+        rest = match.group(2).strip()
+        if not label:
+            out.append((i, "空标签"))
+            continue
+        if rest and rest != "<>":
+            continue
+        if not rest and i < len(doc.raw) and re.match(r"^ {1,3}\S", doc.raw[i]):
+            continue
+        out.append((i, label))
+    return out
+
+
 def is_external_link(target: str) -> bool:
     """外链、锚点、协议相对地址不查本地存在性。"""
     return (
@@ -283,6 +310,39 @@ def find_long_blank_runs(doc: "Doc", limit: int = 2) -> list[int]:
     return out
 
 
+BLOCK_BEFORE_LABELS = {
+    "heading_open": "标题",
+    "fence": "代码块",
+    "blockquote_open": "引用块",
+    "bullet_list_open": "列表",
+    "ordered_list_open": "列表",
+    "table_open": "表格",
+}
+
+
+def find_blocks_without_blank_before(doc: "Doc") -> list[tuple[int, str]]:
+    """找顶层块前缺少空行的情况。"""
+    out: list[tuple[int, str]] = []
+    skip = doc.front_matter | doc.code_lines | doc.html_lines
+    for token in doc.tokens:
+        label = BLOCK_BEFORE_LABELS.get(token.type)
+        if not label or token.level != 0 or not token.map:
+            continue
+        start = token.map[0] + 1
+        if start <= 1:
+            continue
+        previous = start - 1
+        if previous in skip:
+            continue
+        previous_text = strip_quote_prefix(doc.raw[previous - 1]).strip()
+        if not previous_text:
+            continue
+        if re.match(r"^#{1,6}\s", previous_text):
+            continue
+        out.append((start, label))
+    return out
+
+
 def github_slug(text: str) -> str:
     """按 GitHub 规则把标题文字转成锚点。"""
     lowered = text.strip().lower()
@@ -326,6 +386,8 @@ class Doc:
 
     def __init__(self, text: str, md) -> None:
         self.text = text
+        self.has_bom = text.startswith("\ufeff")
+        self.mixed_eol_line = self._find_mixed_eol_line(text)
         self.raw = [line.replace("\ufeff", "") for line in text.splitlines()]
         self.front_matter = self._detect_front_matter()
         env: dict = {}
@@ -358,6 +420,28 @@ class Doc:
         self._find_broken_links()
         self._find_unclosed_html()
         self._find_heading_start()
+
+    @staticmethod
+    def _find_mixed_eol_line(text: str) -> int | None:
+        """返回第一处与首行不同的换行所在行号；没有混合时返回 None。"""
+        endings: list[str] = []
+        for line in text.splitlines(keepends=True):
+            if line.endswith("\r\n"):
+                endings.append("crlf")
+            elif line.endswith("\n"):
+                endings.append("lf")
+            elif line.endswith("\r"):
+                endings.append("cr")
+            else:
+                endings.append("none")
+        real = [ending for ending in endings if ending != "none"]
+        if len(set(real)) <= 1:
+            return None
+        first = real[0]
+        for i, ending in enumerate(real, 1):
+            if ending != first:
+                return i
+        return None
 
     def _detect_front_matter(self) -> set[int]:
         """识别文件开头的 YAML front matter，返回其行号集合。"""
@@ -680,6 +764,29 @@ def check_format(doc: Doc, base: Path) -> list[Finding]:
     """检查 Markdown 格式，返回全部发现。"""
     findings: list[Finding] = []
 
+    if doc.has_bom:
+        findings.append(
+            Finding(
+                WARNING,
+                "MD-BOM",
+                1,
+                "文件以 BOM 开头",
+                "BOM 会让部分编辑器或渲染器把首行标题当成普通文本",
+                "保存为无 BOM 的 UTF-8",
+            )
+        )
+    if doc.mixed_eol_line:
+        findings.append(
+            Finding(
+                WARNING,
+                "MD-EOL",
+                doc.mixed_eol_line,
+                "混合使用 CRLF、LF 或 CR 换行",
+                "换行不一致会让 diff 噪声变大，部分工具还会按不同行尾处理",
+                "统一为 LF 换行",
+            )
+        )
+
     defined, duplicate_defs = find_link_definitions(doc)
     for line, label in duplicate_defs:
         findings.append(
@@ -690,6 +797,17 @@ def check_format(doc: Doc, base: Path) -> list[Finding]:
                 f"链接引用重复定义：{label}",
                 "同名定义前一条生效、后一条被忽略，改错位置时改动不会起作用",
                 "删掉多余的定义，只保留一条",
+            )
+        )
+    for line, label in find_empty_link_definitions(doc):
+        findings.append(
+            Finding(
+                WARNING,
+                "MD-LINK-DEF-EMPTY",
+                line,
+                f"链接定义缺少地址：{label}",
+                "定义没有目标时引用它的链接不会成立，渲染器还可能原样显示方括号",
+                "补上目标地址：`[标签]: 地址`",
             )
         )
     for line, text in find_undefined_link_refs(doc, defined):
@@ -841,6 +959,20 @@ def check_format(doc: Doc, base: Path) -> list[Finding]:
             )
         )
 
+    for start, _end, info in doc.fences:
+        if info:
+            continue
+        findings.append(
+            Finding(
+                SUGGESTION,
+                "MD-FENCE-LANG",
+                start,
+                "代码围栏没有语言标记",
+                "没有语言标记时渲染器无法高亮，读者也难以判断代码类型",
+                "在围栏后补语言，如 ```python",
+            )
+        )
+
     prev: Heading | None = None
     for heading in doc.headings:
         if prev and heading.level > prev.level + 1:
@@ -968,6 +1100,23 @@ def check_format(doc: Doc, base: Path) -> list[Finding]:
                 f"标题重名：{text}",
                 "同名标题的锚点冲突，目录和页内跳转只会落到第一个",
                 "改成可区分的标题，或把第二个降级为正文",
+            )
+        )
+
+    for heading in doc.headings:
+        if heading.line >= len(doc.raw):
+            continue
+        next_line = strip_quote_prefix(doc.raw[heading.line]).strip()
+        if not next_line or BLOCK_START_RE.match(next_line):
+            continue
+        findings.append(
+            Finding(
+                SUGGESTION,
+                "MD-HEAD-BLANK-AFTER",
+                heading.line,
+                "标题后缺少空行",
+                "标题紧接正文时源文件难读，部分目录生成器也会把后续内容并进标题",
+                "在标题后补一个空行",
             )
         )
 
@@ -1130,6 +1279,18 @@ def check_format(doc: Doc, base: Path) -> list[Finding]:
                     "改为空格",
                 )
             )
+
+    for line, label in find_blocks_without_blank_before(doc):
+        findings.append(
+            Finding(
+                SUGGESTION,
+                "MD-BLANK-BEFORE-BLOCK",
+                line,
+                f"{label}前缺少空行",
+                "块紧接上一段时源文件难读，部分渲染器也可能把两块并在一起",
+                "在块前补一个空行",
+            )
+        )
 
     if not doc.text.endswith("\n"):
         findings.append(
