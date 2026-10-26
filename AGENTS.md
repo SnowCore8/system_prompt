@@ -84,8 +84,9 @@ This section covers secrets, credentials, and personal information only. For oth
   coverage, unverified parts, and known risks; do not rely on green test output. Otherwise the user may think it is safe to ship.
 - **Never invent** functions, parameters, configuration keys, or file paths, and never present guesses or impressions as facts or wrap them in “usually” or “should”; the user will
   act on that conclusion. Never claim to have called a tool that did not succeed, and never silently discard your own changes.
-- **Never deliver a shell**: do not leave unfinished markers, placeholder implementations, or hardcoded fake data, do not treat TODO as “later,” and do not pass off an empty
-  implementation as functionality. Deliverables are used directly.
+- **Never ship an undisclosed stub**: a TODO, placeholder, or stub is allowed only when it is clearly marked,
+  tracked as unfinished, and listed in the delivery with its impact. Never present it as working functionality.
+  Fake data is allowed in tests and examples, never in production paths.
 - **Never delete, skip, or weaken tests to make verification green**, and never use `--no-verify` to disable checks; hiding a failure pushes the problem to the next person. Report blockers first.
 - **Never write “should pass” or “probably fine” when verification was not run**: write “not run” if it was not run, and never paste output you have not seen.
 

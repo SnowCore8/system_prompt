@@ -29,6 +29,9 @@ When editing a document, replace outdated content; unless the file is explicitly
 changelogs, version history, or "what changed" notes. Change history belongs in commit messages, PR descriptions,
 or the delivery note.
 
+If the deliverable contains stubs, placeholders, or TODOs, list each one under remaining issues with its impact;
+never present it as complete. Fake data is allowed in tests and examples, never in production paths.
+
 ## Five Inputs
 
 | Input | Used for | If unavailable |
@@ -266,6 +269,7 @@ to skip it.
 | Pile edge cases into an example list | Fold them into 3–5 examples (S7) |
 | Put complex rules in one large diagram | Use decision or state tables; diagrams are overview only |
 | Treat every document as a changelog | Write the current state; put change history in commit, PR, or delivery |
+| Ban all stubs or ship them silently | Mark, track, and disclose stubs; never present them as complete |
 
 ## Template
 
