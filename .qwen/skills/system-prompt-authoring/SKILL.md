@@ -136,8 +136,11 @@ python3 -m unittest discover -s <skill-dir>/script
 
 | 规则号 | 级别 | 判什么 |
 |---|---|---|
-| MD-FENCE | 错误 | 围栏未闭合 |
+| MD-BOM | 警告 | 文件以 BOM 开头 |
+| MD-EOL | 警告 | 混合使用 CRLF、LF 或 CR 换行 |
 | MD-FINAL-NEWLINE | 错误 | 文件末尾缺少换行 |
+| MD-FENCE | 错误 | 围栏未闭合 |
+| MD-FENCE-LANG | 建议 | 代码围栏没有语言标记 |
 | MD-HTML-COMMENT | 错误 | HTML 注释未闭合，会吞掉文件剩余部分；行内未闭合报同一规则号 |
 | MD-HTML-BLOCK | 错误 | `<script>`、`<style>`、`<pre>`、`<textarea>` 块未闭合 |
 | MD-HEAD-SPACE | 警告 | `#` 后缺空格，整行按段落渲染 |
@@ -145,6 +148,7 @@ python3 -m unittest discover -s <skill-dir>/script
 | MD-HEAD-JUMP | 警告 | 标题层级跳跃 |
 | MD-HEAD-EMPTY | 警告 | 标题没有文字 |
 | MD-HEAD-DUP | 警告 | 标题重名（折叠大小写与空白后比较） |
+| MD-HEAD-BLANK-AFTER | 建议 | 标题后缺少空行 |
 | MD-LIST-SPACE | 警告 | 列表标记后缺空格 |
 | MD-LIST-MARKER | 警告 | 同一段列表混用 `-`、`*`、`+` |
 | MD-LIST-START | 警告 | 有序列表不是从 1 开始编号 |
@@ -154,6 +158,7 @@ python3 -m unittest discover -s <skill-dir>/script
 | MD-TABLE-BROKEN | 警告 | 连续竖线行没被解析成表格（分隔行缺列或少横线） |
 | MD-LINK-REF | 警告 | `[文字][标签]` 的标签没有定义 |
 | MD-LINK-DEF-DUP | 警告 | 同一标签定义了两次，后者不生效 |
+| MD-LINK-DEF-EMPTY | 警告 | 链接定义缺少目标地址 |
 | MD-LINK-DEF-UNUSED | 建议 | 定义了却没人引用的标签 |
 | MD-LINK-EMPTY | 警告 | 链接或图片缺文字、缺地址 |
 | MD-LINK-TARGET | 警告 | 链接或图片的相对路径在仓库里不存在 |
@@ -163,6 +168,7 @@ python3 -m unittest discover -s <skill-dir>/script
 | MD-EMPHASIS | 警告 | `**`、`__` 或 `~~` 没配对 |
 | MD-INLINE-HTML | 警告 | 已知名 HTML 标签只开未关 |
 | MD-BLANK-RUN | 警告 | 连续多个空行 |
+| MD-BLANK-BEFORE-BLOCK | 建议 | 顶层块前缺少空行 |
 | MD-LINE-LEN | 警告 | 正文单行超过 200 字；表格、代码、URL 与文件头元数据（front matter）除外 |
 | MD-TRAILING-WS | 警告 | 行尾空白 |
 | MD-TAB | 警告 | 正文含制表符 |
@@ -172,6 +178,9 @@ python3 -m unittest discover -s <skill-dir>/script
 这些判定都基于 CommonMark 解析结果，不是逐行正则：
 
 - 结构检查剔除围栏、缩进代码块、HTML 块与文件头元数据（front matter）。`<example>` 不再单列，按普通 HTML 处理。
+- BOM 与混合换行按原文检测；BOM 在解析前剔除，避免影响首行标题。
+- 块前空行只看顶层块；嵌套列表、引用块内的块，以及标题后的块都不报。
+- 标题后空行只在下一行是正文时提示；列表、表格、代码块等块起始不报。
 - 反引号与强调可以跨行配对，脚本按“解析器没消化掉的标记”判断，跨行合法配对不报。
 - 链接定义从解析器的引用表读，地址写在下一行、定义写在列表项里都能识别。
 - 表格分隔行写错时整张表会退化成段落，`MD-TABLE-BROKEN` 专门抓这种情况。
@@ -215,6 +224,7 @@ python3 -m unittest discover -s <skill-dir>/script
 
 ```markdown
 # Role and Objective
+
 <角色一句话>。<负责范围>。<什么算做完>。
 
 # Instructions
@@ -255,6 +265,7 @@ python3 -m unittest discover -s <skill-dir>/script
 
 ```markdown
 # Role and Objective
+
 你维护 `datakit` 这个 Python 数据处理库。目标是让改动可合并、可回滚、测试通过。
 一个任务算做完：测试通过 + 变更说明写清 + 没有遗留未提交改动。
 
@@ -297,6 +308,7 @@ python3 -m unittest discover -s <skill-dir>/script
 
 ```markdown
 # Role and Objective
+
 你把输入文本压缩成不超过三句的中文摘要。做完的标准是保留结论与关键数字。
 
 # Output Format
