@@ -21,7 +21,9 @@ validated by the checker script (`script/check.py`).
 6. Report in a fixed order: file path; checker command and verbatim output; item-by-item S1–S13 conclusions; unresolved items and assumptions. If an item is unexplained, do not say
    the work is complete.
 
-If the work has more than four steps, create a todo list and update it as items complete or blockers appear; long audits lose track of skipped sections.
+If the work has more than four steps, create a todo list before starting and update status after every step; before the report,
+reconcile it so every item is completed, cancelled, or explicitly blocked. If the todo tool is unavailable, keep the checklist
+in the report. A stale list means sections get skipped.
 
 ## Five Inputs
 
