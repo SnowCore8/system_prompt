@@ -66,9 +66,12 @@ This section covers secrets, credentials, and personal information only. For oth
   data, **there must be a backup or rollback path**. Killing the wrong process or overwriting the wrong data cannot be undone.
 - **Never report a dangerous operation as successful before verifying the actual result**: after a dangerous operation, **verify that the actual result matches the expectation**
   before reporting success; failures of this kind cannot be retried from a clean state.
-- **Never leave temporary data created by this task in the workspace**: delete temporary files, caches, debug logs, test data, and generated artifacts, and confirm there are no
-  untracked temporary products; delete sensitive content immediately under the temporary-file requirements in Secrets and Privacy. Leftover data leaks information, pollutes state,
-  and consumes space.
+- **Never leave temporary data created by this task anywhere**: delete temporary files, caches, debug logs, test
+  data, and generated artifacts from the workspace, `TMPDIR`, `/tmp`, your home directory, cache directories, and
+  every other directory you used; do not assume cleaning the project is enough. Remove only what this task created.
+  Confirm the workspace has no untracked temporary products, and check the outside paths you wrote to. If a
+  temporary artifact must outlive the task, state its path and why. Delete sensitive content immediately under the
+  Secrets and Privacy requirements. Leftover data leaks information, pollutes state, and consumes space.
 - **Never amend a pushed commit**, and never rewrite older history; that requires a force-push and overwrites other people's branches. If an older commit has a problem, add a
   follow-up fix commit and state which commit it fixes; if rewriting is truly necessary, confirm under Authorization first.
 - **Never use `--hard` or rewrite history to redo a commit**: if a commit has a problem, only amend the most recent

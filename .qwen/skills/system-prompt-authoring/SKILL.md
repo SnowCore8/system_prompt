@@ -32,6 +32,10 @@ or the delivery note.
 If the deliverable contains stubs, placeholders, or TODOs, list each one under remaining issues with its impact;
 never present it as complete. Fake data is allowed in tests and examples, never in production paths.
 
+At task end, remove temporary files created by this task from the workspace and from every other directory you used,
+including `TMPDIR`, `/tmp`, home, and caches; remove only what this task created. If a temporary artifact must remain,
+list its path and why in the delivery.
+
 ## Five Inputs
 
 | Input | Used for | If unavailable |
@@ -270,6 +274,7 @@ to skip it.
 | Put complex rules in one large diagram | Use decision or state tables; diagrams are overview only |
 | Treat every document as a changelog | Write the current state; put change history in commit, PR, or delivery |
 | Ban all stubs or ship them silently | Mark, track, and disclose stubs; never present them as complete |
+| Clean only the project and forget temp dirs | Remove task-created temp files everywhere; list retained paths |
 
 ## Template
 
