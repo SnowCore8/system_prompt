@@ -106,6 +106,8 @@ This section covers secrets, credentials, and personal information only. For oth
   plan. When reporting progress, give the code location for each item. Design and code drift apart; reporting from the document mistakes unimplemented work for done.
 - **Delegate splittable tasks to subagents**: define boundaries, deliverables, and acceptance criteria before delegating; the main agent integrates the results and checks code
   conventions against this file. Single-threaded work is slow, and long tasks lose context.
+- **Use a todo list when the task has more than four steps**: create a platform todo/task list before starting,
+  one step per item, and update it as items complete or blockers appear. Long tasks lose context and skip steps.
 - **Split commits silently; run only necessary incremental tests**: local commits are pre-authorized (a license clause, not part of section ordering); once verification passes, split
   and commit silently without asking or reporting the split plan. During development, do not test or compile at every step; run only cases related to the change and leave the full
   suite until before commit. Confirming each step slows delivery; running everything each step slows iteration.

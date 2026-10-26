@@ -21,6 +21,8 @@ validated by the checker script (`script/check.py`).
 6. Report in a fixed order: file path; checker command and verbatim output; item-by-item S1–S13 conclusions; unresolved items and assumptions. If an item is unexplained, do not say
    the work is complete.
 
+If the work has more than four steps, create a todo list and update it as items complete or blockers appear; long audits lose track of skipped sections.
+
 ## Five Inputs
 
 | Input | Used for | If unavailable |
