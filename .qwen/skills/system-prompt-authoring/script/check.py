@@ -304,7 +304,7 @@ def safe_exists(path: Path) -> bool:
 
 
 def resolve_reference(ref: str, base: Path) -> bool:
-    """把相对引用解析成本地路径并查存在性。"""
+    """把引用解析成本地路径并查存在性。"""
     target = ref.split("#", 1)[0].split("?", 1)[0].strip()
     if not target:
         return True
@@ -677,6 +677,7 @@ def check_anchors(doc: Doc) -> list[Finding]:
 
 
 def check_format(doc: Doc, base: Path) -> list[Finding]:
+    """检查 Markdown 格式，返回全部发现。"""
     findings: list[Finding] = []
 
     defined, duplicate_defs = find_link_definitions(doc)
@@ -712,7 +713,7 @@ def check_format(doc: Doc, base: Path) -> list[Finding]:
                 SUGGESTION,
                 "MD-LINK-DEF-UNUSED",
                 line,
-                f"链接定义没有被任何引用使用：{label}",
+                f"链接定义未被引用：{label}",
                 "没人使用的定义只会增加维护负担，改地址时也不会有人发现",
                 "删掉这一行，或补上使用它的引用",
             )
@@ -809,7 +810,7 @@ def check_format(doc: Doc, base: Path) -> list[Finding]:
                 WARNING,
                 "MD-LINK-SYNTAX",
                 line,
-                f"链接语法没被解析成链接：{snippet}",
+                f"链接语法未生效，整段被当成文字：{snippet}",
                 "括号没闭合、地址含空格或标题引号没配对时整段退化成文字，页面显示方括号",
                 "检查圆括号与引号是否配对；地址含空格时用尖括号包住：`[文字](<my file.md>)`",
             )
@@ -888,7 +889,7 @@ def check_format(doc: Doc, base: Path) -> list[Finding]:
                     WARNING,
                     "MD-TABLE-BROKEN",
                     run[0],
-                    f"这 {len(run)} 行看起来是表格，但没有被解析成表格",
+                    f"这 {len(run)} 行像表格，但没有被解析成表格",
                     "分隔行缺列、少横线或含非法字符时整张表退化成段落，竖线原样显示",
                     "分隔行列数必须与表头一致，每列至少三个 -，例如 `| --- | --- |`",
                 )
@@ -916,7 +917,7 @@ def check_format(doc: Doc, base: Path) -> list[Finding]:
                 WARNING,
                 "MD-INLINE-CODE",
                 line,
-                "行内代码的反引号数量是奇数",
+                "行内代码的反引号没有配对",
                 "落单的 ` 会被渲染成字面量，后面的内容不会按代码样式显示",
                 "补齐反引号，或用转义 \\` 表示字面量",
             )
@@ -940,7 +941,7 @@ def check_format(doc: Doc, base: Path) -> list[Finding]:
                 WARNING,
                 "MD-EMPHASIS",
                 line,
-                f"强调标记 {marker} 数量是奇数",
+                f"强调标记 {marker} 没有配对",
                 "未配对的标记会原样显示成符号，读者看到的是星号而不是加粗",
                 f"补齐 {marker}，或用转义 \\{marker[0]} 表示字面量",
             )
