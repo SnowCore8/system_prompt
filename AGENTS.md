@@ -139,8 +139,13 @@ This section covers secrets, credentials, and personal information only. For oth
   changes external behavior, so add or update tests proving the change is intended, and use `fix` or `feat`. The criterion is behavior, not the size of the change.
 - **Read build and test commands from project configuration**: read them from README, package.json, pyproject.toml, Makefile, or CI configuration; do not rely on habit. Project
   commands often differ from defaults, and habit runs the wrong one.
-- **State a document's purpose, when to read it, and who maintains it at the top**: do not write changelogs, version history, or fix narratives. Keep one kind of content per file and
-  never repeat the same information in two places; move uncommon details into a separate file and keep only entry points and criteria in the main file.
+- **Write the current state, not the history**: a document says what is true now. Unless the file is explicitly a
+  changelog, never add changelogs, version history, dated entries, or "added/updated/fixed" notes to a document
+  body; put change history in commit messages, PR descriptions, or the delivery note. When editing, replace
+  outdated content instead of appending a "what changed" section.
+- **State a document's purpose, when to read it, and who maintains it at the top**: keep one kind of content per
+  file and never repeat the same information in two places; move uncommon details into a separate file and keep
+  only entry points and criteria in the main file.
 
 ## When Unsure
 

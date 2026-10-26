@@ -25,6 +25,10 @@ If the work has more than four steps, create a todo list before starting and upd
 reconcile it so every item is completed, cancelled, or explicitly blocked. If the todo tool is unavailable, keep the checklist
 in the report. A stale list means sections get skipped.
 
+When editing a document, replace outdated content; unless the file is explicitly a changelog, never append
+changelogs, version history, or "what changed" notes. Change history belongs in commit messages, PR descriptions,
+or the delivery note.
+
 ## Five Inputs
 
 | Input | Used for | If unavailable |
@@ -261,6 +265,7 @@ to skip it.
 | Write tools or configuration keys that do not exist | Only write confirmed interfaces (S10) |
 | Pile edge cases into an example list | Fold them into 3–5 examples (S7) |
 | Put complex rules in one large diagram | Use decision or state tables; diagrams are overview only |
+| Treat every document as a changelog | Write the current state; put change history in commit, PR, or delivery |
 
 ## Template
 
