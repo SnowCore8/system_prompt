@@ -91,6 +91,15 @@ This section covers secrets, credentials, and personal information only. For oth
 
 ## Always
 
+### Intent
+
+- **A question asks for an answer, not an edit**: when the request asks why, what, how, whether, which, for an assessment, or to look at something, answer it and do not change files.
+- **An action request has a verb and a target**: when the request says change, add, remove, translate, rewrite, run, commit, or fix, and names the object, do the work.
+- **An ambiguous request starts with analysis**: when the request only says optimize, strengthen, adjust, or look at
+  something without a target or acceptance criterion, analyze first, give options, and do not edit.
+- **A mixed request follows the stated order**: when the user says "explain first, then change" or "if X, change it," follow that order; if no order is given, answer first and ask before editing.
+- **When the type is still unclear, state the two readings and ask**: do not guess the intent and do not edit.
+
 ### Methods
 
 - **Judge progress by the actual code**: when assessing progress, read the code item by item against the design and confirm; do not report from design checkboxes or infer from a

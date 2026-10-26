@@ -11,7 +11,9 @@ validated by the checker script (`script/check.py`).
 
 ## Process
 
-1. Confirm the target file and task type: new file or audit. If the path or intent is unclear, ask; do not guess.
+1. Confirm the target file, task type (new file or audit), and intent: answer, assess, or change files.
+   A question gets an answer only; an action request with a target gets the work; an ambiguous request gets
+   analysis and options first. If the path or intent is unclear, ask; do not guess.
 2. Collect information using the "Five Inputs". Do not ask for what the repository can answer; when something is truly unavailable, use the default and state the assumption in the report.
 3. For a new file, fill in the "Template" and delete sections the task does not need. For an audit, apply the "Deletion Criterion" line by line and keep each constraint in one place.
 4. Check content rules S1–S13 manually. The script does not judge these rules; a passing format check does not mean the content is good.
