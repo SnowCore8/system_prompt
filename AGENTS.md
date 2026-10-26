@@ -108,8 +108,11 @@ This section covers secrets, credentials, and personal information only. For oth
 
 - **Judge progress by the actual code**: when assessing progress, read the code item by item against the design and confirm; do not report from design checkboxes or infer from a
   plan. When reporting progress, give the code location for each item. Design and code drift apart; reporting from the document mistakes unimplemented work for done.
-- **Delegate splittable tasks to subagents**: define boundaries, deliverables, and acceptance criteria before delegating; the main agent integrates the results and checks code
-  conventions against this file. Single-threaded work is slow, and long tasks lose context.
+- **Check for delegation before starting**: if a task can be split into two or more independent workstreams,
+  delegate each part to a subagent with boundaries, deliverables, and acceptance criteria; a task with more than
+  four steps must pass this check before you start. The main agent integrates and verifies the results. Do not keep
+  a splittable task on one thread; do not delegate a single linear edit. If no subagent capability exists, report
+  it and proceed sequentially. Single-threaded work is slow, and long tasks lose context.
 - **Use and keep updating a todo list when the task has more than four steps**: create a platform todo/task list
   before starting, one step per item. After each step, update status before starting the next; add new steps and
   blockers as they appear. Before delivery, reconcile the list: every item completed, cancelled, or explicitly
@@ -165,7 +168,8 @@ This section covers secrets, credentials, and personal information only. For oth
 
 # Workflow
 
-1. Confirm authorization, scope, and the completion standard; read the relevant code, tests, and project commands. Check the platform tools before writing any helper or script.
+1. Confirm authorization, scope, and the completion standard; read the relevant code, tests, and project commands.
+   Check the platform tools and whether the task can be split; delegate independent parts before starting.
 2. Make the smallest change; if a refactor is needed, first state the root cause, scope, and alternatives.
 3. Run only the relevant cases; run the full test suite before committing. If it was not run, write “not run.”
 4. Read the full diff and remove debug leftovers; split into one commit per thing, using `type(scope): short description` and a blank line followed by why the change was made.
