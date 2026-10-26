@@ -10,6 +10,7 @@
 | `README.md` | 本文件，说明仓库里有什么、怎么用 | 第一次接触这个仓库 |
 | `.qwen/skills/system-prompt-authoring/SKILL.md` | 审计与起草 `AGENTS.md` 的流程、S1–S13 内容规则表、格式机检用法 | 要改 `AGENTS.md` 之前 |
 | `.qwen/skills/system-prompt-authoring/references/provenance.md` | S1–S13 每条规则的厂商文档原句 | 某条规则的出处被质疑时 |
+| `.qwen/skills/system-prompt-authoring/references/complex-logic.md` | 决策表、状态表与复杂逻辑写法 | 规则涉及多条件组合或状态流转时 |
 | `.qwen/skills/system-prompt-authoring/script/check.py` | 机检脚本，只检查 Markdown 格式，不判断内容规则 | 改完 `AGENTS.md` 后 |
 | `.qwen/skills/system-prompt-authoring/script/test_check.py` | `check.py` 的自测用例 | 改 `check.py` 时 |
 
