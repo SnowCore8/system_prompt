@@ -343,6 +343,131 @@ def find_blocks_without_blank_before(doc: "Doc") -> list[tuple[int, str]]:
     return out
 
 
+BLOCK_AFTER_LABELS = {
+    "fence": "代码块",
+    "bullet_list_open": "列表",
+    "ordered_list_open": "列表",
+    "table_open": "表格",
+    "blockquote_open": "引用块",
+}
+
+
+def find_blocks_without_blank_after(doc: "Doc") -> list[tuple[int, str]]:
+    """找顶层块后直接接正文的情况。"""
+    out: list[tuple[int, str]] = []
+    skip = doc.front_matter | doc.code_lines | doc.html_lines
+    for token in doc.tokens:
+        label = BLOCK_AFTER_LABELS.get(token.type)
+        if not label or token.level != 0 or not token.map:
+            continue
+        next_index = token.map[1]
+        while next_index > token.map[0] and not doc.raw[next_index - 1].strip():
+            next_index -= 1
+        if next_index >= len(doc.raw):
+            continue
+        next_line_no = next_index + 1
+        if next_line_no in skip:
+            continue
+        text = strip_quote_prefix(doc.raw[next_index]).strip()
+        if not text or BLOCK_START_RE.match(text):
+            continue
+        out.append((next_line_no, label))
+    return out
+
+
+def find_headings_with_extra_space(doc: "Doc") -> list[int]:
+    """找 `#` 后用了多个空格的标题。"""
+    out: list[int] = []
+    skip = doc.code_lines | doc.html_lines
+    for i, line in enumerate(doc.raw, 1):
+        if i in skip:
+            continue
+        text = strip_quote_prefix(line)
+        if re.match(r"^#{1,6} {2,}\S", text):
+            out.append(i)
+    return out
+
+
+def find_indented_headings(doc: "Doc") -> list[int]:
+    """找顶层标题前的 1–3 空格缩进。"""
+    out: list[int] = []
+    for token in doc.tokens:
+        if token.type != "heading_open" or token.level != 0 or not token.map:
+            continue
+        line = token.map[0] + 1
+        if re.match(r"^ {1,3}#{1,6}\s", doc.raw[line - 1]):
+            out.append(line)
+    return out
+
+
+def find_quote_marker_space(doc: "Doc") -> list[int]:
+    """找 `>` 后没有空格的引用行。"""
+    out: list[int] = []
+    skip = doc.code_lines | doc.html_lines
+    for i, line in enumerate(doc.raw, 1):
+        if i in skip:
+            continue
+        text = line.lstrip(" ")
+        if len(line) - len(text) > 3:
+            continue
+        if re.match(r"^>(?=[^\s>])", text):
+            out.append(i)
+    return out
+
+
+def find_fence_style_mismatch(doc: "Doc") -> list[tuple[int, str]]:
+    """找同一文件里混用的反引号与波浪号围栏。"""
+    marks: dict[str, int] = {}
+    for token in doc.tokens:
+        if token.type != "fence" or not token.map:
+            continue
+        mark = (token.markup or "`")[0]
+        marks.setdefault(mark, token.map[0] + 1)
+    if len(marks) <= 1:
+        return []
+    first = next(iter(marks))
+    return [(line, mark) for mark, line in marks.items() if mark != first]
+
+
+def find_emphasis_style_mismatch(doc: "Doc") -> list[tuple[int, str, str]]:
+    """找同一文件里混用的斜体或粗体标记。"""
+    groups: dict[str, dict[str, int]] = {"斜体": {}, "粗体": {}}
+    for token in doc.tokens:
+        if token.type != "inline" or not token.map:
+            continue
+        line = token.map[0] + 1
+        for child in token.children or []:
+            if child.type == "em_open" and child.markup:
+                groups["斜体"].setdefault(child.markup, line)
+            elif child.type == "strong_open" and child.markup:
+                groups["粗体"].setdefault(child.markup, line)
+    out: list[tuple[int, str, str]] = []
+    for label, marks in groups.items():
+        if len(marks) <= 1:
+            continue
+        first = next(iter(marks))
+        for mark, line in marks.items():
+            if mark != first:
+                out.append((line, label, mark))
+    return out
+
+
+def find_hr_style_mismatch(doc: "Doc") -> list[tuple[int, str]]:
+    """找同一文件里混用的分隔线样式。"""
+    marks: dict[str, int] = {}
+    for token in doc.tokens:
+        if token.type != "hr" or not token.map:
+            continue
+        if token.map[0] + 1 in doc.front_matter:
+            continue
+        mark = (token.markup or "---").strip()
+        marks.setdefault(mark, token.map[0] + 1)
+    if len(marks) <= 1:
+        return []
+    first = next(iter(marks))
+    return [(line, mark) for mark, line in marks.items() if mark != first]
+
+
 def github_slug(text: str) -> str:
     """按 GitHub 规则把标题文字转成锚点。"""
     lowered = text.strip().lower()
@@ -850,6 +975,17 @@ def check_format(doc: Doc, base: Path) -> list[Finding]:
                     "补上链接文字；装饰性图片改用 alt 描述",
                 )
             )
+        elif label != label.strip():
+            findings.append(
+                Finding(
+                    SUGGESTION,
+                    "MD-LINK-TEXT-SPACE",
+                    line,
+                    f"{kind}文字首尾有空白：{label.strip()}",
+                    "首尾空白会进入可点击区域，视觉上像排版错误",
+                    "删掉文字首尾的空白",
+                )
+            )
         if not target.strip():
             findings.append(
                 Finding(
@@ -973,6 +1109,18 @@ def check_format(doc: Doc, base: Path) -> list[Finding]:
             )
         )
 
+    for line, mark in find_fence_style_mismatch(doc):
+        findings.append(
+            Finding(
+                SUGGESTION,
+                "MD-FENCE-STYLE",
+                line,
+                f"代码围栏样式不一致：另用了 {mark * 3}",
+                "同一文件混用两种围栏会让源文件风格不统一",
+                "统一使用一种围栏：``` 或 ~~~",
+            )
+        )
+
     prev: Heading | None = None
     for heading in doc.headings:
         if prev and heading.level > prev.level + 1:
@@ -1079,6 +1227,18 @@ def check_format(doc: Doc, base: Path) -> list[Finding]:
             )
         )
 
+    for line, label, mark in find_emphasis_style_mismatch(doc):
+        findings.append(
+            Finding(
+                SUGGESTION,
+                "MD-EMPHASIS-STYLE",
+                line,
+                f"{label}样式不一致：另用了 {mark}",
+                "同一文件混用两种标记会让源文件风格不统一",
+                f"统一使用一种{label}标记",
+            )
+        )
+
     for line in doc.missing_heading_space:
         findings.append(
             Finding(
@@ -1088,6 +1248,42 @@ def check_format(doc: Doc, base: Path) -> list[Finding]:
                 "`#` 后缺空格，不构成标题",
                 "CommonMark 要求 # 后至少一个空格，否则整行按普通段落渲染，目录里不会出现",
                 "在 # 后补一个空格",
+            )
+        )
+
+    for line in find_headings_with_extra_space(doc):
+        findings.append(
+            Finding(
+                WARNING,
+                "MD-HEAD-MULTI-SPACE",
+                line,
+                "标题的 `#` 后有多个空格",
+                "多个空格不影响渲染，但同一文件里空格数不一致会让源文件显得随意",
+                "改为一个空格",
+            )
+        )
+
+    for line in find_indented_headings(doc):
+        findings.append(
+            Finding(
+                SUGGESTION,
+                "MD-HEAD-INDENT",
+                line,
+                "标题前有缩进",
+                "标题缩进不参与列表层级，只会让源文件结构看起来不一致",
+                "把标题移到行首",
+            )
+        )
+
+    for line in find_quote_marker_space(doc):
+        findings.append(
+            Finding(
+                SUGGESTION,
+                "MD-QUOTE-SPACE",
+                line,
+                "引用标记后缺空格",
+                "`>text` 虽然能渲染，但和同文件里的 `> text` 不一致",
+                "在 > 后补一个空格",
             )
         )
 
@@ -1289,6 +1485,42 @@ def check_format(doc: Doc, base: Path) -> list[Finding]:
                 f"{label}前缺少空行",
                 "块紧接上一段时源文件难读，部分渲染器也可能把两块并在一起",
                 "在块前补一个空行",
+            )
+        )
+
+    for line, label in find_blocks_without_blank_after(doc):
+        findings.append(
+            Finding(
+                SUGGESTION,
+                "MD-BLANK-AFTER-BLOCK",
+                line,
+                f"{label}后直接接正文",
+                "块后没有空行时源文件难读，列表或引用还可能把下一行当成续行",
+                "在块后补一个空行",
+            )
+        )
+
+    for line, mark in find_hr_style_mismatch(doc):
+        findings.append(
+            Finding(
+                SUGGESTION,
+                "MD-HR-STYLE",
+                line,
+                f"分隔线样式不一致：另用了 {mark}",
+                "同一文件混用不同分隔线会让源文件风格不统一",
+                "统一使用一种分隔线：---、*** 或 ___",
+            )
+        )
+
+    if doc.text.endswith("\n\n"):
+        findings.append(
+            Finding(
+                WARNING,
+                "MD-FINAL-BLANK",
+                len(doc.raw),
+                "文件末尾有多余空行",
+                "文件已经以换行结尾，再留空行只会增加 diff 噪音",
+                "删掉末尾多余空行，只保留一个换行",
             )
         )
 

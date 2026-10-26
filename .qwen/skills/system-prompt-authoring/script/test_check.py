@@ -665,6 +665,109 @@ class BlankBeforeBlockTest(unittest.TestCase):
         self.assertNotIn("MD-BLANK-BEFORE-BLOCK", rules_of("|a|b|\n|-|-|\n|1|2|\n"))
 
 
+class HeadSpacingTest(unittest.TestCase):
+    def test_extra_space_after_hash_reported(self):
+        self.assertIn("MD-HEAD-MULTI-SPACE", rules_of("#  标题\n"))
+
+    def test_single_space_after_hash_not_reported(self):
+        self.assertNotIn("MD-HEAD-MULTI-SPACE", rules_of("# 标题\n"))
+
+    def test_indented_heading_reported(self):
+        self.assertIn("MD-HEAD-INDENT", rules_of(" # 标题\n"))
+
+    def test_heading_at_column_zero_not_reported(self):
+        self.assertNotIn("MD-HEAD-INDENT", rules_of("# 标题\n"))
+
+    def test_heading_in_quote_not_indented(self):
+        self.assertNotIn("MD-HEAD-INDENT", rules_of("> # 标题\n"))
+
+
+class QuoteSpaceTest(unittest.TestCase):
+    def test_missing_space_reported(self):
+        self.assertIn("MD-QUOTE-SPACE", rules_of(">引用\n"))
+
+    def test_space_not_reported(self):
+        self.assertNotIn("MD-QUOTE-SPACE", rules_of("> 引用\n"))
+
+    def test_nested_quote_not_reported(self):
+        self.assertNotIn("MD-QUOTE-SPACE", rules_of(">> 引用\n"))
+
+    def test_empty_quote_not_reported(self):
+        self.assertNotIn("MD-QUOTE-SPACE", rules_of(">\n"))
+
+
+class BlankAfterBlockTest(unittest.TestCase):
+    def test_fence_followed_by_text_reported(self):
+        self.assertIn("MD-BLANK-AFTER-BLOCK", rules_of("```python\nx\n```\n正文\n"))
+
+    def test_fence_followed_by_blank_not_reported(self):
+        self.assertNotIn(
+            "MD-BLANK-AFTER-BLOCK", rules_of("```python\nx\n```\n\n正文\n")
+        )
+
+    def test_fence_followed_by_heading_not_reported(self):
+        self.assertNotIn(
+            "MD-BLANK-AFTER-BLOCK", rules_of("```python\nx\n```\n# 标题\n")
+        )
+
+    def test_list_with_blank_after_not_reported(self):
+        self.assertNotIn("MD-BLANK-AFTER-BLOCK", rules_of("- a\n\n正文\n"))
+
+
+class FinalBlankTest(unittest.TestCase):
+    def test_extra_blank_reported(self):
+        self.assertIn("MD-FINAL-BLANK", rules_of("# 标题\n\n正文。\n\n"))
+
+    def test_single_newline_not_reported(self):
+        self.assertNotIn("MD-FINAL-BLANK", rules_of("# 标题\n\n正文。\n"))
+
+
+class LinkTextSpaceTest(unittest.TestCase):
+    def test_outer_space_reported(self):
+        self.assertIn(
+            "MD-LINK-TEXT-SPACE",
+            rules_of("[ 文字 ](https://example.invalid)\n"),
+        )
+
+    def test_normal_text_not_reported(self):
+        self.assertNotIn(
+            "MD-LINK-TEXT-SPACE",
+            rules_of("[文字](https://example.invalid)\n"),
+        )
+
+
+class FenceStyleTest(unittest.TestCase):
+    def test_mixed_style_reported(self):
+        text = "```python\nx\n```\n\n~~~python\ny\n~~~\n"
+        self.assertIn("MD-FENCE-STYLE", rules_of(text))
+
+    def test_single_style_not_reported(self):
+        text = "```python\nx\n```\n\n```python\ny\n```\n"
+        self.assertNotIn("MD-FENCE-STYLE", rules_of(text))
+
+
+class HrStyleTest(unittest.TestCase):
+    def test_mixed_style_reported(self):
+        self.assertIn("MD-HR-STYLE", rules_of("---\n\n正文\n\n***\n"))
+
+    def test_single_style_not_reported(self):
+        self.assertNotIn("MD-HR-STYLE", rules_of("---\n\n正文\n\n---\n"))
+
+
+class EmphasisStyleTest(unittest.TestCase):
+    def test_mixed_em_reported(self):
+        self.assertIn("MD-EMPHASIS-STYLE", rules_of("*a* 与 _b_\n"))
+
+    def test_single_em_not_reported(self):
+        self.assertNotIn("MD-EMPHASIS-STYLE", rules_of("*a* 与 *b*\n"))
+
+    def test_mixed_strong_reported(self):
+        self.assertIn("MD-EMPHASIS-STYLE", rules_of("**a** 与 __b__\n"))
+
+    def test_single_strong_not_reported(self):
+        self.assertNotIn("MD-EMPHASIS-STYLE", rules_of("**a** 与 **b**\n"))
+
+
 class FormatOnlyTest(unittest.TestCase):
     """内容问题不由脚本判断：这是纯格式检查器的边界。"""
 
