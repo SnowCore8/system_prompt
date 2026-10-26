@@ -8,6 +8,7 @@
 
 from __future__ import annotations
 
+import contextlib
 import io
 import sys
 import tempfile
@@ -19,614 +20,614 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import check  # noqa: E402
 
 MD = check.load_markdown_it()
-
-EMPHASIS_WORDS = ("必须", "绝不", "禁止", "不得", "不准", "CRITICAL", "MUST", "NEVER")
+BASE = Path("/nonexistent-base")
 
 
 def build(text: str) -> check.Doc:
     return check.Doc(text, MD)
 
 
-def rules_of(text: str) -> list[str]:
-    return [f.rule for f in check.check_rules(build(text))]
+def all_findings(text: str, base: Path = BASE) -> list[check.Finding]:
+    return check.check_format(build(text), base)
 
 
-def structure_of(text: str) -> list[str]:
-    return [f.rule for f in check.check_structure(build(text), Path("/nonexistent-base"))]
+def rules_of(text: str, base: Path = BASE) -> list[str]:
+    return [finding.rule for finding in all_findings(text, base)]
 
 
-class SetextHeadingTest(unittest.TestCase):
-    """Setext 标题要能识别，否则会误报缺 S1/S6。"""
+def run_main(*args: str) -> tuple[int, str, str]:
+    old_argv = sys.argv
+    out, err = io.StringIO(), io.StringIO()
+    sys.argv = ["check.py", *args]
+    try:
+        with contextlib.redirect_stdout(out), contextlib.redirect_stderr(err):
+            code = check.main()
+    finally:
+        sys.argv = old_argv
+    return code, out.getvalue(), err.getvalue()
 
-    def test_setext_headings_satisfy_role_and_output(self):
-        text = (
-            "Role and Objective\n"
-            "==================\n"
-            "\n"
-            "测试。\n"
-            "\n"
-            "Output Format\n"
-            "-------------\n"
-            "\n"
-            "- 只输出结果。\n"
-        )
+
+class DocParsingTest(unittest.TestCase):
+    """Markdown 结构的基本解析。"""
+
+    def test_setext_headings(self):
+        text = "Role and Objective\n==================\n\nOutput Format\n-------------\n\n- 结果。\n"
         doc = build(text)
-        self.assertEqual([(h.level, h.text) for h in doc.headings],
-                         [(1, "Role and Objective"), (2, "Output Format")])
+        self.assertEqual(
+            [(h.level, h.text) for h in doc.headings],
+            [(1, "Role and Objective"), (2, "Output Format")],
+        )
 
     def test_atx_and_setext_mixed(self):
         text = "Role and Objective\n==================\n\n## 子节\n\n正文。\n"
         self.assertEqual([h.level for h in build(text).headings], [1, 2])
 
+    def test_rich_heading_text(self):
+        doc = build("# **角色** 与 [目标](https://example.invalid)\n\n正文。\n")
+        self.assertEqual(doc.headings[0].text, "角色 与 目标")
 
-class HtmlCommentTest(unittest.TestCase):
-    """HTML 注释块里的强调词不算正文。"""
+    def test_inline_code_in_heading(self):
+        doc = build("# 用 `pytest` 测试\n\n正文。\n")
+        self.assertEqual(doc.headings[0].text, "用 pytest 测试")
 
-    def test_strong_words_in_html_comment_ignored(self):
-        body = "".join(f"- 绝不 绝不 绝不 绝不 绝不 绝不 绝不 {i}\n" for i in range(8))
-        text = (
-            "# Role and Objective\n\n测试。\n\n"
-            "# Instructions\n\n"
-            "<!--\n" + body + "-->\n\n"
-            "## 始终\n\n- 改代码前先读测试。\n\n"
-            "# Output Format\n\n- 只输出结果。\n"
-        )
+    def test_bom_stripped(self):
+        doc = build("\ufeff# 标题\n\n正文。\n")
+        self.assertEqual([h.level for h in doc.headings], [1])
+
+    def test_front_matter_skipped(self):
+        text = "---\nname: demo\ndescription: 说明\n---\n\n# 标题\n\n正文。\n"
         doc = build(text)
-        self.assertEqual(len(doc.html_lines), 10)
-        strong = [line for _, line in doc.prose_lines if any(w in line for w in EMPHASIS_WORDS)]
-        self.assertEqual(strong, [])
+        self.assertEqual(doc.front_matter, {1, 2, 3, 4})
+        self.assertEqual([h.text for h in doc.headings], ["标题"])
 
+    def test_blank_line_inside_delimiters_not_front_matter(self):
+        text = "---\nname: demo\n\n# 标题\n---\n\n正文。\n"
+        self.assertEqual(build(text).front_matter, set())
 
-class IndentedCodeTest(unittest.TestCase):
-    """缩进代码块里的列表项不算规则。"""
+    def test_thematic_breaks_not_front_matter(self):
+        text = "---\n\n# 标题\n\n---\n\n正文\n"
+        self.assertEqual(build(text).front_matter, set())
 
-    def test_indented_code_not_counted_as_rules(self):
-        text = (
-            "# Role and Objective\n\n测试。\n\n"
-            "# Instructions\n\n"
-            "## 始终\n\n- 改代码前先读测试。\n\n"
-            "示例：\n\n"
-            "    - 不要这样写\n"
-            "    - 绝不这样写\n\n"
-            "# Output Format\n\n- 只输出结果。\n"
-        )
-        doc = build(text)
-        # 真实规则两条；缩进代码块里的两条不计
-        self.assertEqual(len(check.rule_lines(doc)), 2)
-        self.assertEqual(sorted(doc.code_lines), [13, 14])
-        self.assertNotIn("不要这样写", [r.text for r in check.rule_lines(doc)])
-
-
-class QuoteFenceTest(unittest.TestCase):
-    """引用块里的围栏不能被判成未闭合。"""
-
-    def test_fence_inside_blockquote_is_closed(self):
-        text = (
-            "# Role and Objective\n\n测试。\n\n"
-            "> ```text\n"
-            "> 引用里的围栏\n"
-            "> ```\n"
-        )
+    def test_quote_fence_closed(self):
+        text = "> ```text\n> 引用里的围栏\n> ```\n"
         self.assertIsNone(build(text).unclosed)
 
-    def test_real_unclosed_fence_still_reported(self):
-        text = "# Role and Objective\n\n```python\nprint(1)\n"
-        self.assertIsNotNone(build(text).unclosed)
-        self.assertIn("MD-FENCE", structure_of(text))
+    def test_indented_code_lines(self):
+        text = "# 标题\n\n正文。\n\n    code\n    more\n"
+        self.assertEqual(build(text).code_lines, {5, 6})
 
+    def test_table_cells(self):
+        text = "| 甲 | 乙 |\n|---|---|\n| 1 | 2 | 3 |\n"
+        self.assertEqual([(t.start, t.cols) for t in build(text).tables], [(1, [2, 3])])
 
-class TableColumnsTest(unittest.TestCase):
-    """超出表头的单元格会被解析器丢弃，要按源文本发现。"""
+    def test_html_block_lines(self):
+        text = "# 标题\n\n<div>\n正文\n</div>\n"
+        self.assertEqual(build(text).html_lines, {3, 4, 5})
 
-    def test_extra_cell_detected(self):
-        text = (
-            "# Role and Objective\n\n"
-            "| 甲 | 乙 |\n"
-            "|---|---|\n"
-            "| 1 | 2 | 3 |\n"
-        )
+    def test_content_lines_and_blank_count(self):
+        text = "# 标题\n\n```\ncode\n```\n\n正文。\n"
         doc = build(text)
-        self.assertEqual([(t.start, t.cols) for t in doc.tables], [(3, [2, 3])])
-        self.assertIn("MD-TABLE-COLS", structure_of(text))
+        self.assertEqual(doc.blank_count, 2)
+        self.assertEqual([line for _, line in doc.content_lines], ["# 标题", "正文。"])
 
-    def test_escaped_pipe_and_code_pipe_not_counted(self):
-        text = (
-            "# Role and Objective\n\n"
-            "| 甲 | 乙 |\n"
-            "|---|---|\n"
-            "| a \\| b | `x | y` |\n"
+
+class HeadingTest(unittest.TestCase):
+    def test_missing_space_reported(self):
+        self.assertIn("MD-HEAD-SPACE", rules_of("# 标题\n\n##没有空格\n"))
+
+    def test_closing_hashes_not_reported(self):
+        self.assertNotIn("MD-HEAD-SPACE", rules_of("# 标题\n\n## 子节 ##\n"))
+
+    def test_heading_space_in_fence_ignored(self):
+        self.assertNotIn("MD-HEAD-SPACE", rules_of("# 标题\n\n```\n##没有空格\n```\n"))
+
+    def test_first_heading_not_h1(self):
+        self.assertIn("MD-HEAD-START", rules_of("## 标题\n\n正文。\n"))
+
+    def test_first_heading_h1(self):
+        self.assertNotIn("MD-HEAD-START", rules_of("# 标题\n\n## 子节\n"))
+
+    def test_level_jump(self):
+        self.assertIn("MD-HEAD-JUMP", rules_of("# 标题\n\n### 子节\n"))
+
+    def test_normal_levels(self):
+        self.assertNotIn("MD-HEAD-JUMP", rules_of("# 标题\n\n## 子节\n\n### 孙节\n"))
+
+    def test_empty_heading(self):
+        self.assertIn("MD-HEAD-EMPTY", rules_of("# 标题\n\n##\n\n正文。\n"))
+
+    def test_duplicate_heading_case_insensitive(self):
+        text = "# 标题\n\n## Example\n\n甲。\n\n## example\n\n乙。\n"
+        self.assertIn("MD-HEAD-DUP", rules_of(text))
+
+    def test_distinct_headings(self):
+        self.assertNotIn("MD-HEAD-DUP", rules_of("# 标题\n\n## 甲\n\n## 乙\n"))
+
+
+class ListTest(unittest.TestCase):
+    def test_missing_space_cjk(self):
+        self.assertIn("MD-LIST-SPACE", rules_of("# 标题\n\n-项内容。\n"))
+
+    def test_missing_space_latin(self):
+        self.assertIn("MD-LIST-SPACE", rules_of("# 标题\n\n1.项内容。\n"))
+
+    def test_glob_flag_negative_not_reported(self):
+        for line in ("- 只改 *.py 文件。", "- 用 --flag 参数。", "- 温度 -5 度。"):
+            with self.subTest(line=line):
+                self.assertNotIn("MD-LIST-SPACE", rules_of(f"# 标题\n\n{line}\n"))
+
+    def test_thematic_break_not_reported(self):
+        self.assertNotIn(
+            "MD-LIST-SPACE", rules_of("# 标题\n\n- 上一条。\n\n---\n\n- 下一条。\n")
         )
-        self.assertEqual([(t.start, t.cols) for t in build(text).tables], [(3, [2, 2])])
-        self.assertNotIn("MD-TABLE-COLS", structure_of(text))
+
+    def test_mixed_marker_same_run(self):
+        self.assertIn("MD-LIST-MARKER", rules_of("# 标题\n\n- a\n* b\n"))
+
+    def test_marker_change_between_runs_allowed(self):
+        self.assertNotIn("MD-LIST-MARKER", rules_of("# 标题\n\n- a\n\n* b\n"))
+
+    def test_nested_mixed_marker(self):
+        self.assertIn("MD-LIST-MARKER", rules_of("# 标题\n\n- a\n  - b\n  * c\n"))
+
+    def test_ordered_list_not_starting_at_one(self):
+        self.assertIn("MD-LIST-START", rules_of("# 标题\n\n5. a\n6. b\n"))
+
+    def test_ordered_list_from_one(self):
+        self.assertNotIn("MD-LIST-START", rules_of("# 标题\n\n1. a\n2. b\n"))
+
+    def test_empty_list_item(self):
+        self.assertIn("MD-LIST-EMPTY", rules_of("# 标题\n\n- \n- b\n"))
+
+    def test_sibling_indent_mismatch(self):
+        self.assertIn("MD-LIST-INDENT", rules_of("# 标题\n\n- a\n    - a1\n  - a2\n"))
+
+    def test_too_deep_loses_structure(self):
+        self.assertIn("MD-LIST-INDENT", rules_of("# 标题\n\n- a\n      - b\n"))
+
+    def test_valid_indents(self):
+        text = "# 标题\n\n- a\n  - b\n\n- c\n   - d\n\n- e\n    - f\n"
+        self.assertNotIn("MD-LIST-INDENT", rules_of(text))
+
+    def test_separate_lists_do_not_conflict(self):
+        self.assertNotIn("MD-LIST-INDENT", rules_of("# 标题\n\n- a\n  - b\n\n- c\n    - d\n"))
+
+    def test_ordered_deep_indent_ok(self):
+        self.assertNotIn("MD-LIST-INDENT", rules_of("# 标题\n\n1. a\n      1. b\n"))
+
+    def test_indented_code_exempt(self):
+        self.assertNotIn("MD-LIST-INDENT", rules_of("# 标题\n\n正文。\n\n    - 代码里的\n"))
 
 
-class InlineCodeTest(unittest.TestCase):
-    """反引号里的规则词是在引用，不是在执行。"""
+class TableTest(unittest.TestCase):
+    def test_extra_cell(self):
+        text = "# 标题\n\n| 甲 | 乙 |\n|---|---|\n| 1 | 2 | 3 |\n"
+        self.assertIn("MD-TABLE-COLS", rules_of(text))
 
-    def test_inline_code_stripped_from_prose(self):
-        line = "正文：规则写作 `绝不` 和 `必须`，这里只是引用。"
-        stripped = check.strip_inline_code(line)
-        self.assertNotIn("绝不", stripped)
-        self.assertNotIn("必须", stripped)
-        self.assertEqual(len(stripped), len(line))
+    def test_escaped_and_code_pipe_not_counted(self):
+        text = "# 标题\n\n| 甲 | 乙 |\n|---|---|\n| a \\| b | `x | y` |\n"
+        self.assertNotIn("MD-TABLE-COLS", rules_of(text))
 
-    def test_long_inline_code_does_not_change_length(self):
-        doc = build("# Role and Objective\n\n见 `very/long/path/to/file.md`。\n")
-        self.assertEqual(len(doc.prose_lines), 1)
+    def test_missing_delimiter_row(self):
+        self.assertIn("MD-TABLE-BROKEN", rules_of("# 标题\n\n|a|b|\n|1|2|\n"))
 
+    def test_short_delimiter_row(self):
+        self.assertIn("MD-TABLE-BROKEN", rules_of("# 标题\n\n|a|b|\n|-|\n|1|2|\n"))
 
-class ExampleBlockTest(unittest.TestCase):
-    """模板里字面写出的 <example> 只是示例，不能开启示例区。"""
+    def test_valid_table(self):
+        self.assertNotIn("MD-TABLE-BROKEN", rules_of("# 标题\n\n|a|b|\n|-|-|\n|1|2|\n"))
 
-    def test_literal_example_tag_inside_fence_ignored(self):
-        text = (
-            "# Role and Objective\n\n测试。\n\n"
-            "```markdown\n<example>\n<input>1</input>\n</example>\n```\n\n"
-            "## 始终\n\n- 改代码前先读测试。\n"
+    def test_single_pipe_line(self):
+        self.assertNotIn("MD-TABLE-BROKEN", rules_of("# 标题\n\n| 命令 | 说明 |\n"))
+
+    def test_pipe_rows_in_fence(self):
+        self.assertNotIn("MD-TABLE-BROKEN", rules_of("# 标题\n\n```\n|a|b|\n|1|2|\n```\n"))
+
+    def test_broken_table_in_quote(self):
+        self.assertIn("MD-TABLE-BROKEN", rules_of("> # 标题\n>\n> |a|b|\n> |1|2|\n"))
+
+    def test_valid_table_in_quote(self):
+        self.assertNotIn(
+            "MD-TABLE-BROKEN", rules_of("> # 标题\n>\n> |a|b|\n> |-|-|\n> |1|2|\n")
         )
-        self.assertEqual(build(text).example_lines, set())
 
-    def test_real_example_block_marked(self):
-        text = (
-            "# Role and Objective\n\n测试。\n\n"
-            "<example>\n- 绝不提交凭证。\n</example>\n\n"
-            "- 改代码前先读测试。\n"
+
+class LinkTest(unittest.TestCase):
+    def test_undefined_reference(self):
+        self.assertIn("MD-LINK-REF", rules_of("# 标题\n\n见 [文字][没有定义]。\n"))
+
+    def test_defined_reference(self):
+        text = "# 标题\n\n见 [文字][docs]。\n\n[docs]: https://example.invalid\n"
+        self.assertNotIn("MD-LINK-REF", rules_of(text))
+
+    def test_definition_in_fence_not_counted(self):
+        text = "# 标题\n\n见 [文字][docs]。\n\n```\n[docs]: /x.md\n```\n"
+        self.assertIn("MD-LINK-REF", rules_of(text))
+
+    def test_duplicate_definition(self):
+        text = "# 标题\n\n见 [文字][docs]。\n\n[docs]: /a.md\n[docs]: /b.md\n"
+        self.assertIn("MD-LINK-DEF-DUP", rules_of(text))
+
+    def test_inline_link_not_reference(self):
+        self.assertNotIn(
+            "MD-LINK-REF", rules_of("# 标题\n\n见 [文字](https://example.invalid)。\n")
         )
-        doc = build(text)
-        self.assertEqual(len(check.rule_lines(doc)), 1)
 
+    def test_multiline_definition(self):
+        text = "见 [文字][doc]。\n\n[doc]:\n  https://a.invalid\n"
+        self.assertNotIn("MD-LINK-REF", rules_of(text))
 
-class DuplicateTest(unittest.TestCase):
-    """重复检测：同义改写要报，同主题不同粒度不报。"""
+    def test_definition_inside_list(self):
+        text = "见 [文字][doc]。\n\n- [doc]: https://a.invalid\n"
+        self.assertNotIn("MD-LINK-REF", rules_of(text))
 
-    def test_reworded_rule_reported(self):
-        text = (
-            "# Role and Objective\n\n测试。\n\n"
-            "# Instructions\n\n"
-            "## 始终\n\n"
-            "- 改代码前先读相关模块和覆盖它的测试，按现有写法扩展。\n"
-            "- 改代码之前，先阅读相关模块以及覆盖它们的测试，按现有写法扩展。\n"
-            "- 提交前运行 `pytest -q` 并贴出退出码。\n"
+    def test_collapsed_reference_used(self):
+        text = "见 [doc]。\n\n[doc]: https://a.invalid\n"
+        self.assertNotIn("MD-LINK-DEF-UNUSED", rules_of(text))
+
+    def test_uppercase_label_matches(self):
+        text = "见 [文字][DOC]。\n\n[doc]: https://a.invalid\n"
+        self.assertNotIn("MD-LINK-REF", rules_of(text))
+
+    def test_unused_definition(self):
+        self.assertIn("MD-LINK-DEF-UNUSED", rules_of("# 标题\n\n[a]: https://a.invalid\n"))
+
+    def test_empty_label(self):
+        self.assertIn("MD-LINK-EMPTY", rules_of("# 标题\n\n见 [](https://example.invalid)。\n"))
+
+    def test_empty_target(self):
+        self.assertIn("MD-LINK-EMPTY", rules_of("# 标题\n\n见 [文字]()。\n"))
+
+    def test_empty_image_alt(self):
+        self.assertIn("MD-LINK-EMPTY", rules_of("# 标题\n\n![](https://example.invalid/a.png)\n"))
+
+    def test_image_wrapped_link_not_empty(self):
+        text = "# 标题\n\n[![图](https://example.invalid/a.png)](https://example.invalid/b)\n"
+        self.assertNotIn("MD-LINK-EMPTY", rules_of(text))
+
+    def test_broken_link_syntax(self):
+        self.assertIn("MD-LINK-SYNTAX", rules_of("# 标题\n\n- 读 [说明](a.md 再改。\n"))
+
+    def test_space_in_target(self):
+        self.assertIn("MD-LINK-SYNTAX", rules_of("# 标题\n\n- 读 [说明](my file.md) 再改。\n"))
+
+    def test_valid_link(self):
+        self.assertNotIn(
+            "MD-LINK-SYNTAX", rules_of("# 标题\n\n- 读 [说明](https://a.invalid) 再改。\n")
         )
-        found = check.check_duplicates(build(text))
-        self.assertEqual(len(found), 1)
-        self.assertEqual(found[0].level, check.SUGGESTION)
 
-    def test_distinct_rules_not_reported(self):
-        text = (
-            "# Role and Objective\n\n测试。\n\n"
-            "# Instructions\n\n"
-            "## 始终\n\n"
-            "- 改代码前先读相关模块和覆盖它的测试。\n"
-            "- 提交前运行 `pytest -q` 并贴出退出码。\n"
-            "- 金额用最小货币单位整数，不用浮点。\n"
-        )
-        self.assertEqual(check.check_duplicates(build(text)), [])
+    def test_one_good_one_bad_on_same_line(self):
+        text = "# 标题\n\n- 读 [好](https://a.invalid) 与 [坏](b.md。\n"
+        self.assertIn("MD-LINK-SYNTAX", rules_of(text))
 
-    def test_different_granularity_not_reported(self):
-        text = (
-            "# Role and Objective\n\n测试。\n\n"
-            "# Instructions\n\n"
-            "## 始终\n\n"
-            "- 提交前运行测试。\n"
-            "- 提交前运行 `pytest -q`、`ruff check` 与 `mypy`，三项全部通过并贴出退出码。\n"
-        )
-        self.assertEqual(check.check_duplicates(build(text)), [])
+    def test_link_syntax_in_fence_ignored(self):
+        text = "# 标题\n\n```\n- 读 [说明](a.md 再改。\n```\n"
+        self.assertNotIn("MD-LINK-SYNTAX", rules_of(text))
 
 
-class ReferenceTest(unittest.TestCase):
-    """S10：点名的路径必须存在。"""
-
+class LinkTargetTest(unittest.TestCase):
     def setUp(self):
         self.tmp = tempfile.TemporaryDirectory()
         self.root = Path(self.tmp.name)
         (self.root / "docs").mkdir()
-        (self.root / "docs" / "real.md").write_text("# 真文件\n", encoding="utf-8")
+        (self.root / "docs" / "real.md").write_text("# x\n", encoding="utf-8")
+        (self.root / "docs" / "我 的.md").write_text("# x\n", encoding="utf-8")
+        (self.root / "img").mkdir()
+        (self.root / "img" / "a.png").write_text("x", encoding="utf-8")
 
     def tearDown(self):
         self.tmp.cleanup()
 
-    def _run(self, text: str) -> list[check.Finding]:
-        return check.check_references(build(text), self.root)
+    def _rules(self, text: str) -> list[str]:
+        return rules_of(text, self.root)
 
-    def test_missing_path_reported(self):
-        found = self._run("# Role and Objective\n\n详见 `docs/nonexistent.md`。\n")
-        self.assertEqual(len(found), 1)
-        self.assertEqual(found[0].rule, "S10")
+    def test_missing_target(self):
+        self.assertIn("MD-LINK-TARGET", self._rules("# 标题\n\n见 [文档](docs/nope.md)。\n"))
 
-    def test_existing_path_not_reported(self):
-        self.assertEqual(self._run("# Role and Objective\n\n详见 `docs/real.md`。\n"), [])
+    def test_existing_target(self):
+        self.assertNotIn("MD-LINK-TARGET", self._rules("# 标题\n\n见 [文档](docs/real.md)。\n"))
 
-    def test_command_not_treated_as_path(self):
-        self.assertEqual(self._run("# Role and Objective\n\n跑 `pytest -q`。\n"), [])
-
-    def test_root_file_name_checked_as_path(self):
-        """裸文件名也是路径，不存在就要报。"""
-        found = self._run("# Role and Objective\n\n见 `AGENTS.md`。\n")
-        self.assertEqual(len(found), 1)
-        self.assertEqual(found[0].rule, "S10")
-
-    def test_root_file_name_exists_not_reported(self):
-        (self.root / "AGENTS.md").write_text("# x\n", encoding="utf-8")
-        self.assertEqual(self._run("# Role and Objective\n\n见 `AGENTS.md`。\n"), [])
-
-    def test_path_inside_example_ignored(self):
-        text = (
-            "# Role and Objective\n\n测试。\n\n"
-            "<example>\n见 `docs/nonexistent.md`。\n</example>\n"
+    def test_external_target(self):
+        self.assertNotIn(
+            "MD-LINK-TARGET", self._rules("# 标题\n\n[文档](https://e.invalid/a.md)\n")
         )
-        self.assertEqual(self._run(text), [])
 
-    def test_multiple_refs_on_one_line_treated_as_list(self):
-        """一行列多个候选文件时是在给选项，不是断言都存在。"""
-        text = "# Role and Objective\n\n从 `README.md`、`package.json`、`pyproject.toml` 里读。\n"
-        self.assertEqual(self._run(text), [])
+    def test_anchor_target_not_checked_here(self):
+        self.assertNotIn("MD-LINK-TARGET", self._rules("# 标题\n\n[跳转](#标题)\n"))
 
-    def test_single_ref_with_others_absent_still_reported(self):
-        text = "# Role and Objective\n\n见 `docs/nonexistent.md`，细节另议。\n"
-        self.assertEqual(len(self._run(text)), 1)
+    def test_missing_image_target(self):
+        self.assertIn("MD-LINK-TARGET", self._rules("# 标题\n\n![图](img/nope.png)\n"))
 
+    def test_existing_image_target(self):
+        self.assertNotIn("MD-LINK-TARGET", self._rules("# 标题\n\n![图](img/a.png)\n"))
 
-class BaselineTest(unittest.TestCase):
-    """基线对比：删掉的规则要报，保留下来的不报。"""
-
-    def test_dropped_rule_reported(self):
-        new = (
-            "# Role and Objective\n\n测试。\n\n"
-            "# Instructions\n\n## 始终\n\n"
-            "- 提交前运行 `pytest -q` 并贴出退出码。\n"
+    def test_percent_encoded_target(self):
+        self.assertNotIn(
+            "MD-LINK-TARGET", self._rules("# 标题\n\n[文档](docs/我 的.md)\n")
         )
-        old = new + "- 删除字段或表前，先确认没有读取方还在用。\n"
-        found = check.check_baseline(build(new), build(old))
-        self.assertEqual(len(found), 1)
-        self.assertIn("删除字段", found[0].message)
 
-    def test_rewritten_rule_counted_as_covered(self):
-        new = (
-            "# Role and Objective\n\n测试。\n\n"
-            "# Instructions\n\n## 始终\n\n"
-            "- 改代码前先读相关模块和覆盖它的测试，按现有写法扩展。\n"
+    def test_very_long_target_does_not_crash(self):
+        self.assertIn("MD-LINK-TARGET", self._rules("# 标题\n\n[x](" + "a" * 5000 + ")\n"))
+
+    def test_safe_exists_swallows_oserror(self):
+        self.assertFalse(check.safe_exists(self.root / ("a" * 5000)))
+
+    def test_resolve_reference_absolute_missing(self):
+        self.assertFalse(check.resolve_reference("/definitely/not/here.md", self.root))
+
+    def test_resolve_reference_empty(self):
+        self.assertTrue(check.resolve_reference("", self.root))
+
+
+class AnchorTest(unittest.TestCase):
+    def _anchors(self, text: str) -> list[str]:
+        return [f.rule for f in check.check_anchors(build(text))]
+
+    def test_valid_cjk_anchor(self):
+        self.assertNotIn("MD-ANCHOR", self._anchors("# 输出格式\n\n见 [格式](#输出格式)。\n"))
+
+    def test_wrong_cjk_anchor(self):
+        self.assertIn("MD-ANCHOR", self._anchors("# 输出格式\n\n见 [格式](#输出规范)。\n"))
+
+    def test_english_slug(self):
+        self.assertNotIn(
+            "MD-ANCHOR", self._anchors("## Role and Objective\n\n见 [角色](#role-and-objective)。\n")
         )
-        old = (
-            "# Role and Objective\n\n测试。\n\n"
-            "# Instructions\n\n## 始终\n\n"
-            "- 改代码前先读相关模块和覆盖它的测试，按现有写法扩展。\n"
+
+    def test_explicit_html_id(self):
+        text = '<a id="custom"></a>\n\n# 标题\n\n见 [跳转](#custom)。\n'
+        self.assertNotIn("MD-ANCHOR", self._anchors(text))
+
+    def test_duplicate_heading_suffix(self):
+        text = "# 甲\n\n# 甲\n\n见 [第二个](#甲-1)。\n"
+        self.assertNotIn("MD-ANCHOR", self._anchors(text))
+
+    def test_external_and_top_skipped(self):
+        text = "# 标题\n\n见 [外](https://e.invalid) 与 [顶](#top)。\n"
+        self.assertNotIn("MD-ANCHOR", self._anchors(text))
+
+    def test_anchor_in_fence_ignored(self):
+        text = "# 标题\n\n```\n[跳转](#不存在)\n```\n"
+        self.assertNotIn("MD-ANCHOR", self._anchors(text))
+
+
+class InlineTest(unittest.TestCase):
+    def test_unbalanced_backtick(self):
+        self.assertIn("MD-INLINE-CODE", rules_of("# 标题\n\n见 `pytest 的用法。\n"))
+
+    def test_balanced_backticks(self):
+        self.assertNotIn("MD-INLINE-CODE", rules_of("# 标题\n\n见 `pytest` 的用法。\n"))
+
+    def test_escaped_backtick(self):
+        self.assertNotIn("MD-INLINE-CODE", rules_of("# 标题\n\n见 \\` 字面量的用法 `x`。\n"))
+
+    def test_backtick_in_fence(self):
+        self.assertNotIn("MD-INLINE-CODE", rules_of("# 标题\n\n```\n单个 ` 反引号\n```\n"))
+
+    def test_multiline_code_span(self):
+        doc = build("# 标题\n\n第一行 `abc\n第二行 def` 结束\n")
+        self.assertEqual(doc.unclosed_inline, [])
+
+    def test_unclosed_code_span_across_lines_once(self):
+        doc = build("# 标题\n\n第一行 `abc\n第二行 def 结束\n")
+        self.assertEqual(doc.unclosed_inline, [3])
+
+    def test_unclosed_bold(self):
+        self.assertIn("MD-EMPHASIS", rules_of("# 标题\n\n这是 **未闭合。\n"))
+
+    def test_closed_bold(self):
+        self.assertNotIn("MD-EMPHASIS", rules_of("# 标题\n\n这是 **加粗** 文字。\n"))
+
+    def test_identifier_inside_code(self):
+        self.assertNotIn(
+            "MD-EMPHASIS", rules_of("# 标题\n\n调用 `__init__` 和 `_private`。\n")
         )
-        self.assertEqual(check.check_baseline(build(new), build(old)), [])
+
+    def test_escaped_markers(self):
+        self.assertNotIn("MD-EMPHASIS", rules_of("# 标题\n\n转义 \\*\\* 两个星号。\n"))
+
+    def test_triple_star(self):
+        self.assertNotIn("MD-EMPHASIS", rules_of("# 标题\n\n***粗斜体*** 结束。\n"))
+
+    def test_multiline_emphasis(self):
+        doc = build("# 标题\n\n这里有 **加粗\n结束** 文本\n")
+        self.assertEqual(doc.unclosed_emphasis, [])
+
+    def test_unclosed_emphasis_across_lines_once(self):
+        doc = build("# 标题\n\n这里有 **加粗\n结束 文本\n")
+        self.assertEqual(doc.unclosed_emphasis, [(3, "**")])
 
 
-class RichInlineHeadingTest(unittest.TestCase):
-    """标题里的强调、链接、行内代码都要计入标题文本。"""
+class InlineHtmlTest(unittest.TestCase):
+    def test_unclosed_tag(self):
+        self.assertIn("MD-INLINE-HTML", rules_of("# 标题\n\n<b>粗\n"))
 
-    def test_bold_heading_text_extracted(self):
-        doc = build("# **角色与目标**\n\n正文。\n")
-        self.assertEqual(doc.headings[0].text, "角色与目标")
+    def test_closed_tag(self):
+        self.assertNotIn("MD-INLINE-HTML", rules_of("# 标题\n\n<b>粗</b>\n"))
 
-    def test_link_heading_text_extracted(self):
-        doc = build("# [输出格式](https://example.com)\n\n正文。\n")
-        self.assertEqual(doc.headings[0].text, "输出格式")
+    def test_void_and_self_closing(self):
+        text = "# 标题\n\n换行<br>继续 <img src='x' />\n"
+        self.assertNotIn("MD-INLINE-HTML", rules_of(text))
 
-    def test_code_heading_text_extracted(self):
-        doc = build("# 用 `pytest` 测试\n\n正文。\n")
-        self.assertEqual(doc.headings[0].text, "用 pytest 测试")
+    def test_tag_in_fence(self):
+        self.assertNotIn("MD-INLINE-HTML", rules_of("# 标题\n\n```\n<b>粗\n```\n"))
 
-    def test_bold_heading_satisfies_s1(self):
-        """加粗标题不能导致误报缺 S1。"""
-        text = "# **Role and Objective**\n\n测试。\n\n# Output Format\n\n- 只输出结果。\n"
-        self.assertNotIn("S1", rules_of(text))
-
-
-class EmptyHeadingTest(unittest.TestCase):
-    def test_empty_heading_reported(self):
-        text = "# Role and Objective\n\n##\n\n正文。\n\n# Output Format\n\n- 结果。\n"
-        self.assertIn("MD-HEAD-EMPTY", structure_of(text))
-
-    def test_heading_with_only_marker_not_reported(self):
-        text = "# Role and Objective\n\n正文。\n"
-        self.assertNotIn("MD-HEAD-EMPTY", structure_of(text))
-
-
-class DuplicateHeadingTest(unittest.TestCase):
-    def test_same_heading_text_reported(self):
-        text = "# Role and Objective\n\n## 示例\n\n甲。\n\n## 示例\n\n乙。\n"
-        found = structure_of(text)
-        self.assertIn("MD-HEAD-DUP", found)
-
-    def test_different_heading_text_not_reported(self):
-        text = "# Role and Objective\n\n## 示例甲\n\n甲。\n\n## 示例乙\n\n乙。\n"
-        self.assertNotIn("MD-HEAD-DUP", structure_of(text))
-
-    def test_duplicate_matched_case_insensitively(self):
-        text = "# Role and Objective\n\n## Example\n\n甲。\n\n## example\n\n乙。\n"
-        self.assertIn("MD-HEAD-DUP", structure_of(text))
-
-
-class LinkReferenceTest(unittest.TestCase):
-    """链接引用：定义重复要报，标签未定义要报。"""
-
-    def test_undefined_label_reported(self):
-        text = "# Role and Objective\n\n见 [文字][没有定义]。\n"
-        self.assertIn("MD-LINK-REF", structure_of(text))
-
-    def test_defined_label_not_reported(self):
-        text = "# Role and Objective\n\n见 [文字][docs]。\n\n[docs]: /x.md\n"
-        self.assertNotIn("MD-LINK-REF", structure_of(text))
-
-    def test_definition_in_fence_not_counted(self):
-        text = (
-            "# Role and Objective\n\n见 [文字][docs]。\n\n"
-            "```markdown\n[docs]: /x.md\n```\n"
+    def test_autolink_url(self):
+        self.assertNotIn(
+            "MD-INLINE-HTML", rules_of("# 标题\n\n见 <https://example.invalid> 说明。\n")
         )
-        self.assertIn("MD-LINK-REF", structure_of(text))
 
-    def test_duplicate_definition_reported(self):
-        text = (
-            "# Role and Objective\n\n见 [文字][docs]。\n\n"
-            "[docs]: /a.md\n[docs]: /b.md\n"
+    def test_autolink_email(self):
+        self.assertNotIn(
+            "MD-INLINE-HTML", rules_of("# 标题\n\n联系 <user@example.invalid>。\n")
         )
-        self.assertIn("MD-LINK-DEF-DUP", structure_of(text))
 
-    def test_inline_link_not_treated_as_reference(self):
-        text = "# Role and Objective\n\n见 [文字](https://example.com)。\n"
-        self.assertNotIn("MD-LINK-REF", structure_of(text))
-
-
-class InlineCodeBalanceTest(unittest.TestCase):
-    """落单的反引号会让后续内容失去代码样式。"""
-
-    def test_unbalanced_backtick_reported(self):
-        text = "# Role and Objective\n\n见 `pytest 的用法。\n"
-        self.assertIn("MD-INLINE-CODE", structure_of(text))
-
-    def test_balanced_backticks_not_reported(self):
-        text = "# Role and Objective\n\n见 `pytest` 的用法。\n"
-        self.assertNotIn("MD-INLINE-CODE", structure_of(text))
-
-    def test_escaped_backtick_not_counted(self):
-        text = "# Role and Objective\n\n见 \\` 字面量的用法 `x`。\n"
-        self.assertNotIn("MD-INLINE-CODE", structure_of(text))
-
-    def test_backtick_inside_fence_ignored(self):
-        text = "# Role and Objective\n\n```\n单个 ` 反引号\n```\n"
-        self.assertNotIn("MD-INLINE-CODE", structure_of(text))
-
-
-class HeadingSpaceTest(unittest.TestCase):
-    """`#标题` 不是标题，是普通段落。"""
-
-    def test_missing_space_after_hash_reported(self):
-        text = "# Role and Objective\n\n##没有空格\n\n正文。\n"
-        self.assertIn("MD-HEAD-SPACE", structure_of(text))
-
-    def test_heading_without_space_not_parsed_as_heading(self):
-        doc = build("# Role and Objective\n\n##没有空格\n\n正文。\n")
-        self.assertEqual([h.text for h in doc.headings], ["Role and Objective"])
-
-    def test_normal_heading_not_reported(self):
-        text = "# Role and Objective\n\n## 有空格\n\n正文。\n"
-        self.assertNotIn("MD-HEAD-SPACE", structure_of(text))
-
-    def test_closing_hashes_not_reported(self):
-        text = "# Role and Objective\n\n## 标题 ##\n\n正文。\n"
-        self.assertNotIn("MD-HEAD-SPACE", structure_of(text))
-
-    def test_hash_inside_fence_ignored(self):
-        text = "# Role and Objective\n\n```\n##没有空格\n```\n"
-        self.assertNotIn("MD-HEAD-SPACE", structure_of(text))
-
-
-class HtmlCommentCloseTest(unittest.TestCase):
-    """未闭合的 <!-- 会吞掉文件剩余部分。"""
-
-    def test_unclosed_comment_reported_as_error(self):
-        text = "# Role and Objective\n\n<!-- 开始\n\n## 被吞掉的标题\n"
-        found = check.check_structure(build(text), Path("/nonexistent-base"))
-        rules = [f.rule for f in found]
-        self.assertIn("MD-HTML-COMMENT", rules)
-        level = next(f.level for f in found if f.rule == "MD-HTML-COMMENT")
-        self.assertEqual(level, check.ERROR)
-
-    def test_closed_comment_not_reported(self):
-        text = "# Role and Objective\n\n<!-- 注释 -->\n\n正文。\n"
-        self.assertNotIn("MD-HTML-COMMENT", structure_of(text))
-
-    def test_unclosed_comment_hides_later_headings(self):
-        """这正是要报的原因：后续标题不再被识别。"""
-        text = "# Role and Objective\n\n<!-- 开始\n\n## 后面的标题\n"
-        self.assertEqual([h.text for h in build(text).headings], ["Role and Objective"])
-
-
-class EmptyLinkTest(unittest.TestCase):
-    def test_empty_label_reported(self):
-        text = "# Role and Objective\n\n见 [](https://example.com)。\n"
-        self.assertIn("MD-LINK-EMPTY", structure_of(text))
-
-    def test_empty_url_reported(self):
-        text = "# Role and Objective\n\n见 [文字]()。\n"
-        self.assertIn("MD-LINK-EMPTY", structure_of(text))
-
-    def test_normal_link_not_reported(self):
-        text = "# Role and Objective\n\n见 [文字](https://example.com)。\n"
-        self.assertNotIn("MD-LINK-EMPTY", structure_of(text))
-
-    def test_link_in_fence_ignored(self):
-        text = "# Role and Objective\n\n```\n[文字]()\n```\n"
-        self.assertNotIn("MD-LINK-EMPTY", structure_of(text))
-
-
-class EmphasisBalanceTest(unittest.TestCase):
-    """未配对的强调标记会原样显示成符号。"""
-
-    def test_unclosed_bold_reported(self):
-        text = "# Role and Objective\n\n这是 **未闭合。\n"
-        self.assertIn("MD-EMPHASIS", structure_of(text))
-
-    def test_closed_bold_not_reported(self):
-        text = "# Role and Objective\n\n这是 **加粗** 文字。\n"
-        self.assertNotIn("MD-EMPHASIS", structure_of(text))
-
-    def test_underscore_identifier_not_reported(self):
-        """`__init__` 这类标识符不能被当成强调。"""
-        text = "# Role and Objective\n\n调用 `__init__` 和 `_private`。\n"
-        self.assertNotIn("MD-EMPHASIS", structure_of(text))
-
-    def test_escaped_marker_not_counted(self):
-        text = "# Role and Objective\n\n转义 \\*\\* 两个星号。\n"
-        self.assertNotIn("MD-EMPHASIS", structure_of(text))
-
-    def test_triple_star_counted_once(self):
-        text = "# Role and Objective\n\n***粗斜体*** 结束。\n"
-        self.assertNotIn("MD-EMPHASIS", structure_of(text))
-
-
-class RuleCountTest(unittest.TestCase):
-    """规则计数不能按长度筛掉短规则，也不能漏掉嵌套项。"""
-
-    def test_short_rule_counted(self):
-        text = "# Role and Objective\n\n# Instructions\n\n## 始终\n\n- 只输出结果。\n"
-        self.assertEqual(len(check.rule_lines(build(text))), 1)
-
-    def test_nested_items_counted(self):
-        text = (
-            "# Role and Objective\n\n# Instructions\n\n## 始终\n\n"
-            "1. 甲项\n   - 乙项\n   - 丙项\n2. 丁项\n"
-        )
-        self.assertEqual(len(check.rule_lines(build(text))), 4)
-
-    def test_empty_item_not_counted(self):
-        text = "# Role and Objective\n\n# Instructions\n\n## 始终\n\n-\n- 真规则。\n"
-        self.assertEqual(len(check.rule_lines(build(text))), 1)
-
-    def test_rule_count_matches_list_items(self):
-        """S7 与头部统计必须同口径，否则两处数字对不上。"""
-        text = (
-            "# Role and Objective\n\n# Instructions\n\n## 始终\n\n"
-            "- 甲\n- 乙\n  - 丙\n- 丁\n"
-        )
-        doc = build(text)
-        self.assertEqual(len(check.rule_lines(doc)), len(doc.list_items))
-
-
-class NegationCoverageTest(unittest.TestCase):
-    """常见否定式开头都要被 S2 识别。"""
-
-    def _has_s2(self, rule_text: str) -> bool:
-        text = f"# Role and Objective\n\n# Instructions\n\n## 始终\n\n{rule_text}\n"
-        return "S2" in rules_of(text)
-
-    def test_common_negation_forms_reported(self):
-        for line in (
-            "- 不要用 markdown",
-            "- 绝不要用 markdown",
-            "- 严禁使用 markdown",
-            "- 永远不要用 markdown",
-            "- 请勿使用 markdown",
-            "- 切勿使用 markdown",
-            "- 不得在日志里打印手机号",
-        ):
+    def test_placeholders_ignored(self):
+        for line in ("把 <target-file> 换成路径。", "返回 <T> 类型。", "见 <file>。"):
             with self.subTest(line=line):
-                self.assertTrue(self._has_s2(line), f"{line} 应报 S2")
+                self.assertNotIn("MD-INLINE-HTML", rules_of(f"# 标题\n\n{line}\n"))
 
-    def test_alternative_behavior_not_reported(self):
-        for line in (
-            "- 不要用 markdown，改成纯文本。",
-            "- 不要直接推 main，因为评审是唯一的回滚保险。",
-            "- 禁止跳过测试，应当先修代码。",
-        ):
-            with self.subTest(line=line):
-                self.assertFalse(self._has_s2(line), f"{line} 不该报 S2")
-
-    def test_plain_verb_does_not_count_as_fix(self):
-        """「使用」是禁止句里的动词，不能当成已给替代行为。"""
-        self.assertTrue(self._has_s2("- 严禁使用 markdown"))
-
-    def test_red_line_section_exempt(self):
-        text = "# Role and Objective\n\n# Instructions\n\n## 红线\n\n- 绝不提交凭证。\n"
-        self.assertNotIn("S2", rules_of(text))
+    def test_uppercase_tag_paired(self):
+        self.assertNotIn("MD-INLINE-HTML", rules_of("# 标题\n\n<DIV>x</div>\n"))
 
 
-class ListIndentTest(unittest.TestCase):
-    """缩进判据只看能确认的错误：同级不一致、缩进过深丢结构。"""
-
-    def test_sibling_indent_mismatch_reported(self):
-        text = "# A\n\n- a\n    - a1\n  - a2\n"
-        self.assertIn("MD-LIST-INDENT", structure_of(text))
-
-    def test_too_deep_loses_structure(self):
-        """6 空格的无序子项被并入正文，渲染出字面 - 号。"""
-        text = "# A\n\n- a\n      - b\n"
-        self.assertIn("MD-LIST-INDENT", structure_of(text))
-
-    def test_two_three_four_spaces_all_valid(self):
-        text = "# A\n\n- a\n  - b\n\n- c\n   - d\n\n- e\n    - f\n"
-        self.assertNotIn("MD-LIST-INDENT", structure_of(text))
-
-    def test_separate_lists_do_not_conflict(self):
-        """不同列表各自的子项缩进不算同级冲突。"""
-        text = "# A\n\n- a\n  - b\n\n- c\n    - d\n"
-        self.assertNotIn("MD-LIST-INDENT", structure_of(text))
-
-    def test_ordered_list_deep_indent_ok(self):
-        """`1. ` 比 `- ` 宽，同样 6 空格对有序列表仍是子项。"""
-        text = "# A\n\n1. a\n      1. b\n"
-        self.assertNotIn("MD-LIST-INDENT", structure_of(text))
-
-    def test_indented_code_block_exempt(self):
-        text = "# A\n\n正文。\n\n    - 代码块里的\n"
-        self.assertNotIn("MD-LIST-INDENT", structure_of(text))
-
-    def test_same_indent_siblings_ok(self):
-        text = "# A\n\n- a\n  - b\n  - c\n"
-        self.assertNotIn("MD-LIST-INDENT", structure_of(text))
-
-
-class MetricsTest(unittest.TestCase):
-    """统计口径：空行、代码块、HTML 块都不计入正文行。"""
-
-    def test_blank_and_code_lines_excluded(self):
-        text = (
-            "# Role and Objective\n"
-            "\n"
-            "\n"
-            "```python\n"
-            "print(1)\n"
-            "```\n"
-            "\n"
-            "- 改代码前先读测试。\n"
+class HtmlBlockTest(unittest.TestCase):
+    def test_unclosed_block_comment(self):
+        text = "# 标题\n\n<!-- 开始\n\n## 被吞掉的标题\n"
+        findings = all_findings(text)
+        self.assertIn("MD-HTML-COMMENT", [f.rule for f in findings])
+        self.assertEqual(
+            next(f.level for f in findings if f.rule == "MD-HTML-COMMENT"), check.ERROR
         )
-        doc = build(text)
-        self.assertEqual(doc.blank_count, 3)
-        self.assertEqual(len(doc.content_lines), 2)
 
-    def test_long_line_reported(self):
-        text = "# Role and Objective\n\n- " + "很" * 210 + "\n"
-        self.assertIn("S11", rules_of(text))
+    def test_closed_block_comment(self):
+        self.assertNotIn(
+            "MD-HTML-COMMENT", rules_of("# 标题\n\n<!-- 注释 -->\n\n正文。\n")
+        )
+
+    def test_unclosed_inline_comment(self):
+        self.assertIn(
+            "MD-HTML-COMMENT", rules_of("# 标题\n\n- 正文 <!-- 注释开始\n- 下一条\n")
+        )
+
+    def test_closed_inline_comment(self):
+        self.assertNotIn(
+            "MD-HTML-COMMENT", rules_of("# 标题\n\n- 正文 <!-- 注释 --> 结束\n")
+        )
+
+    def test_unclosed_script(self):
+        self.assertIn("MD-HTML-BLOCK", rules_of("<script>\nvar x=1;\n\n# 标题\n"))
+
+    def test_unclosed_style(self):
+        self.assertIn("MD-HTML-BLOCK", rules_of("<style>\na{}\n\n# 标题\n"))
+
+    def test_closed_pre(self):
+        self.assertNotIn("MD-HTML-BLOCK", rules_of("<pre>\n文字\n</pre>\n\n# 标题\n"))
+
+    def test_self_closing_script(self):
+        self.assertNotIn("MD-HTML-BLOCK", rules_of('<script src="x" />\n\n# 标题\n'))
 
 
-class RunTest(unittest.TestCase):
-    """端到端：退出码与参数处理。"""
+class FormatTest(unittest.TestCase):
+    def test_long_prose_line(self):
+        self.assertIn("MD-LINE-LEN", rules_of("# 标题\n\n" + "字" * 201 + "\n"))
 
-    def test_missing_file_returns_2(self):
-        self.assertEqual(check.main.__module__ and 0, 0)
-        with tempfile.TemporaryDirectory() as tmp:
-            missing = Path(tmp) / "nope.md"
-            self.assertFalse(missing.exists())
+    def test_exactly_limit(self):
+        self.assertNotIn("MD-LINE-LEN", rules_of("# 标题\n\n" + "字" * 200 + "\n"))
 
-    def test_parse_args_accepts_baseline(self):
-        target, skill, baseline, strict = check.parse_args(["--skill", "--baseline", "old.md", "new.md"])
-        self.assertEqual(target, "new.md")
-        self.assertTrue(skill)
-        self.assertEqual(baseline, "old.md")
-        self.assertFalse(strict)
+    def test_long_table_row_ignored(self):
+        self.assertNotIn("MD-LINE-LEN", rules_of("# 标题\n\n| " + "字" * 220 + " |\n"))
 
-    def test_parse_args_accepts_strict(self):
-        target, skill, baseline, strict = check.parse_args(["--strict", "a.md"])
+    def test_long_fence_line_ignored(self):
+        self.assertNotIn("MD-LINE-LEN", rules_of("# 标题\n\n```\n" + "字" * 220 + "\n```\n"))
+
+    def test_long_url_ignored(self):
+        text = "# 标题\n\n参见 https://example.invalid/" + "a" * 220 + "\n"
+        self.assertNotIn("MD-LINE-LEN", rules_of(text))
+
+    def test_long_front_matter_ignored(self):
+        text = "---\ndescription: " + "字" * 220 + "\n---\n\n# 标题\n"
+        self.assertNotIn("MD-LINE-LEN", rules_of(text))
+
+    def test_long_html_block_ignored(self):
+        text = "# 标题\n\n<div>\n" + "字" * 220 + "\n</div>\n"
+        self.assertNotIn("MD-LINE-LEN", rules_of(text))
+
+    def test_two_blank_lines(self):
+        self.assertIn("MD-BLANK-RUN", rules_of("# 标题\n\n\n正文\n"))
+
+    def test_one_blank_line(self):
+        self.assertNotIn("MD-BLANK-RUN", rules_of("# 标题\n\n正文\n"))
+
+    def test_blank_run_reported_once(self):
+        found = [f for f in all_findings("# 标题\n\n\n\n正文\n") if f.rule == "MD-BLANK-RUN"]
+        self.assertEqual(len(found), 1)
+
+    def test_blank_lines_in_fence_ignored(self):
+        self.assertNotIn("MD-BLANK-RUN", rules_of("# 标题\n\n```\n\n\n```\n"))
+
+    def test_blank_lines_in_html_ignored(self):
+        self.assertNotIn("MD-BLANK-RUN", rules_of("# 标题\n\n<pre>\n\n\n</pre>\n"))
+
+    def test_trailing_whitespace(self):
+        self.assertIn("MD-TRAILING-WS", rules_of("# 标题\n\n正文。 \n"))
+
+    def test_tab(self):
+        self.assertIn("MD-TAB", rules_of("# 标题\n\n正文\t继续。\n"))
+
+    def test_tab_in_fence_ignored(self):
+        self.assertNotIn("MD-TAB", rules_of("# 标题\n\n```\n\tx\n```\n"))
+
+    def test_missing_final_newline(self):
+        self.assertIn("MD-FINAL-NEWLINE", rules_of("# 标题\n\n正文。"))
+
+    def test_present_final_newline(self):
+        self.assertNotIn("MD-FINAL-NEWLINE", rules_of("# 标题\n\n正文。\n"))
+
+
+class FenceTest(unittest.TestCase):
+    def test_unclosed_fence_error(self):
+        findings = all_findings("# 标题\n\n```python\nprint(1)\n")
+        self.assertIn("MD-FENCE", [f.rule for f in findings])
+        self.assertEqual(next(f.level for f in findings if f.rule == "MD-FENCE"), check.ERROR)
+
+    def test_closed_fence(self):
+        self.assertNotIn("MD-FENCE", rules_of("# 标题\n\n```python\nprint(1)\n```\n"))
+
+
+class FormatOnlyTest(unittest.TestCase):
+    """内容问题不由脚本判断：这是纯格式检查器的边界。"""
+
+    def test_content_problems_produce_no_findings(self):
+        text = "# 随便\n\n- 只写一句。\n"
+        self.assertEqual(all_findings(text), [])
+
+    def test_no_content_check_api(self):
+        for name in (
+            "check_rules",
+            "rule_lines",
+            "check_duplicates",
+            "check_references",
+            "check_baseline",
+            "check_structure",
+        ):
+            with self.subTest(name=name):
+                self.assertFalse(hasattr(check, name))
+
+
+class HelperTest(unittest.TestCase):
+    def test_strip_inline_code(self):
+        line = "正文：`代码` 结束。"
+        stripped = check.strip_inline_code(line)
+        self.assertEqual(len(stripped), len(line))
+        self.assertNotIn("代码", stripped)
+
+    def test_collapse_label(self):
+        self.assertEqual(check.collapse_label("  A   B "), "a b")
+
+    def test_github_slug(self):
+        self.assertEqual(check.github_slug("Role and Objective"), "role-and-objective")
+        self.assertEqual(check.github_slug("规则 S1–S13"), "规则-s1s13")
+
+    def test_count_row_cells(self):
+        self.assertEqual(check.count_row_cells("| a | b |"), 2)
+        self.assertEqual(check.count_row_cells("| a \\| b | `x | y` |"), 2)
+
+    def test_count_inline_backticks(self):
+        self.assertEqual(check.count_inline_backticks("`a` 和 \\`"), 2)
+
+    def test_count_marker(self):
+        self.assertEqual(check.count_marker("**x**", "**"), 2)
+        self.assertEqual(check.count_marker("***x***", "**"), 2)
+
+
+class CliTest(unittest.TestCase):
+    def test_parse_args_strict(self):
+        target, strict = check.parse_args(["--strict", "a.md"])
         self.assertEqual(target, "a.md")
-        self.assertFalse(skill)
-        self.assertIsNone(baseline)
         self.assertTrue(strict)
 
-    def test_parse_args_rejects_unknown_flag(self):
+    def test_parse_args_rejects_unknown(self):
         with self.assertRaises(SystemExit) as ctx:
             check.parse_args(["--nope", "a.md"])
         self.assertEqual(ctx.exception.code, 2)
@@ -636,546 +637,55 @@ class RunTest(unittest.TestCase):
             check.parse_args([])
         self.assertEqual(ctx.exception.code, 2)
 
+    def test_help_exits_zero(self):
+        with self.assertRaises(SystemExit) as ctx:
+            check.parse_args(["--help"])
+        self.assertEqual(ctx.exception.code, 0)
 
-class CrossLineMarkTest(unittest.TestCase):
-    """反引号与强调可以跨行配对，按行计数会误报。"""
-
-    def test_multiline_code_span_not_reported(self):
-        doc = build("# Role\n\n第一行 `abc\n第二行 def` 结束\n")
-        self.assertEqual(doc.unclosed_inline, [])
-
-    def test_multiline_emphasis_not_reported(self):
-        doc = build("# Role\n\n这里有 **加粗\n结束** 文本\n")
-        self.assertEqual(doc.unclosed_emphasis, [])
-
-    def test_unclosed_across_lines_reported_once(self):
-        doc = build("# Role\n\n第一行 `abc\n第二行 def 结束\n")
-        self.assertEqual(doc.unclosed_inline, [3])
-
-    def test_unclosed_emphasis_across_lines_reported_once(self):
-        doc = build("# Role\n\n这里有 **加粗\n结束 文本\n")
-        self.assertEqual(doc.unclosed_emphasis, [(3, "**")])
-
-    def test_escaped_markers_not_counted(self):
-        doc = build("# Role\n\n字面量 \\*\\* 与 \\` 都不算标记\n")
-        self.assertEqual(doc.unclosed_emphasis, [])
-        self.assertEqual(doc.unclosed_inline, [])
-
-
-class FrontMatterTest(unittest.TestCase):
-    """YAML front matter 会被 CommonMark 解析成 setext 标题。"""
-
-    TEXT = (
-        "---\n"
-        "name: demo\n"
-        "description: 一段说明\n"
-        "---\n"
-        "\n"
-        "# 角色与完成定义\n"
-        "\n"
-        "## 输出格式\n"
-        "\n"
-        "- 列出结果。\n"
-    )
-
-    def test_front_matter_not_parsed_as_heading(self):
-        doc = build(self.TEXT)
-        self.assertEqual([h.level for h in doc.headings], [1, 2])
-        self.assertEqual(doc.headings[0].text, "角色与完成定义")
-
-    def test_front_matter_not_counted_as_rule(self):
-        doc = build(self.TEXT)
-        self.assertEqual([r.text for r in check.rule_lines(doc)], ["列出结果。"])
-
-    def test_front_matter_not_checked_for_paths(self):
-        text = "---\nname: `nonexistent/x.md`\n---\n\n# Role\n\n内容。\n"
-        self.assertEqual(check.check_references(build(text), Path("/tmp")), [])
-
-
-class BomTest(unittest.TestCase):
-    """BOM 会让首行标题变成段落。"""
-
-    def test_bom_stripped_before_parse(self):
-        doc = build("\ufeff# Role\n\n## 输出格式\n\n内容。\n")
-        self.assertEqual([h.level for h in doc.headings], [1, 2])
-
-    def test_bom_markdown_has_no_role_error(self):
-        text = "\ufeff# Role and Objective\n\n## Output Format\n\n- 结果。\n"
-        self.assertNotIn("S1", rules_of(text))
-
-
-class HeadingStartTest(unittest.TestCase):
-    """首个标题应从 h1 起。"""
-
-    def test_first_heading_h2_reported(self):
-        self.assertIn("MD-HEAD-START", structure_of("## 角色\n\n内容。\n"))
-
-    def test_first_heading_h1_not_reported(self):
-        self.assertNotIn("MD-HEAD-START", structure_of("# 角色\n\n## 细节\n\n内容。\n"))
-
-    def test_no_heading_not_reported(self):
-        self.assertNotIn("MD-HEAD-START", structure_of("纯文本。\n"))
-
-
-class PathHeuristicTest(unittest.TestCase):
-    """S10 认哪些反引号内容为路径。"""
-
-    def test_url_not_treated_as_path(self):
-        self.assertFalse(check.looks_like_path("https://example.com/guide.md"))
-
-    def test_command_with_space_not_treated_as_path(self):
-        self.assertFalse(check.looks_like_path("pytest -q"))
-
-    def test_placeholder_not_treated_as_path(self):
-        self.assertFalse(check.looks_like_path("<目标文件>"))
-
-    def test_common_source_extension_recognized(self):
-        self.assertTrue(check.looks_like_path("src/main.js"))
-
-    def test_root_file_name_recognized(self):
-        self.assertTrue(check.looks_like_path("Makefile"))
-
-    def test_url_query_not_split_into_path(self):
-        self.assertFalse(check.looks_like_path("https://x.test/a.md?q=1"))
-
-    def test_glob_pattern_not_treated_as_path(self):
-        """glob 匹配一批文件，不是具体路径。"""
-        self.assertFalse(check.looks_like_path("**/*.md"))
-        self.assertFalse(check.looks_like_path("src/*.ts"))
-
-    def test_glob_not_reported_as_missing(self):
-        text = "# Role and Objective\n\n- 只改 `**/*.md` 与 `src/*.ts`。\n"
+    def test_missing_file_returns_2(self):
         with tempfile.TemporaryDirectory() as tmp:
-            self.assertEqual(check.check_references(build(text), Path(tmp)), [])
+            code, _, err = run_main(str(Path(tmp) / "nope.md"))
+        self.assertEqual(code, 2)
+        self.assertIn("文件不存在", err)
 
-
-class ReferenceGroupTest(unittest.TestCase):
-    """顿号列举不逐个校验，独立断言逐个校验。"""
-
-    def test_enumeration_grouped(self):
-        groups = check.reference_groups("从 `README`、`package.json`、`Makefile` 里读")
-        self.assertEqual(groups, [["README", "package.json", "Makefile"]])
-
-    def test_independent_assertions_split(self):
-        groups = check.reference_groups("见 `AGENTS.md` 与 `docs/nope.md`")
-        self.assertEqual(groups, [["AGENTS.md"], ["docs/nope.md"]])
-
-
-class StrictModeTest(unittest.TestCase):
-    """--strict 把警告也算失败。"""
-
-    def _run(self, *args: str) -> int:
-        old_argv, old_out = sys.argv, sys.stdout
-        sys.argv = ["check.py", *args]
-        sys.stdout = io.StringIO()
-        try:
-            return check.main()
-        finally:
-            sys.argv, sys.stdout = old_argv, old_out
-
-    def test_strict_fails_on_warning_only(self):
+    def test_clean_file_returns_0(self):
         with tempfile.TemporaryDirectory() as tmp:
             path = Path(tmp) / "doc.md"
-            # h2 起笔只产生警告，没有错误
-            path.write_text("## 角色与完成定义\n\n## 输出格式\n\n- 结果。\n", encoding="utf-8")
-            self.assertEqual(self._run(str(path)), 0)
-            self.assertEqual(self._run("--strict", str(path)), 1)
+            path.write_text("# 标题\n\n正文。\n", encoding="utf-8")
+            code, out, _ = run_main(str(path))
+        self.assertEqual(code, 0)
+        self.assertIn("结果: 通过", out)
 
-    def test_strict_passes_on_clean_file(self):
+    def test_warning_only_returns_0(self):
         with tempfile.TemporaryDirectory() as tmp:
             path = Path(tmp) / "doc.md"
-            path.write_text(
-                "# 角色与完成定义\n\n"
-                "# Instructions\n\n## 始终\n\n- 列出结果。\n\n"
-                "## 不确定时\n\n- 请求模糊：列出两三种理解，问用户选哪个。\n"
-                "- 信息不足：先查代码。\n- 超出范围：说明边界。\n\n"
-                "# Output Format\n\n- 只输出摘要正文。\n",
-                encoding="utf-8",
-            )
-            self.assertEqual(self._run("--strict", str(path)), 0)
-
-
-class LinkTargetTest(unittest.TestCase):
-    """链接与图片的目标路径也要查存在性。"""
-
-    def setUp(self):
-        self.tmp = tempfile.TemporaryDirectory()
-        self.root = Path(self.tmp.name)
-        (self.root / "docs").mkdir()
-        (self.root / "docs" / "real.md").write_text("# x\n", encoding="utf-8")
-        (self.root / "docs" / "我 的.md").write_text("# x\n", encoding="utf-8")
-
-    def tearDown(self):
-        self.tmp.cleanup()
-
-    def _run(self, text: str) -> list[check.Finding]:
-        return check.check_structure(build(text), self.root)
-
-    def _rules(self, text: str) -> list[str]:
-        return [f.rule for f in self._run(text)]
-
-    def test_missing_link_target_reported(self):
-        self.assertIn("MD-LINK-TARGET", self._rules("# R\n\n见 [文档](docs/nope.md)。\n"))
-
-    def test_missing_image_target_reported(self):
-        self.assertIn("MD-LINK-TARGET", self._rules("# R\n\n![图](img/nope.png)\n"))
-
-    def test_existing_target_not_reported(self):
-        self.assertNotIn("MD-LINK-TARGET", self._rules("# R\n\n见 [文档](docs/real.md)。\n"))
-
-    def test_external_link_not_reported(self):
-        self.assertNotIn("MD-LINK-TARGET", self._rules("# R\n\n[文档](https://e.test/a.md)\n"))
-
-    def test_anchor_not_reported(self):
-        self.assertNotIn("MD-LINK-TARGET", self._rules("# R\n\n[跳转](#段)\n"))
-
-    def test_empty_image_alt_reported(self):
-        self.assertIn("MD-LINK-EMPTY", self._rules("# R\n\n![](docs/real.md)\n"))
-
-    def test_unused_definition_reported(self):
-        self.assertIn("MD-LINK-DEF-UNUSED", self._rules("# R\n\n[a]: docs/real.md\n\n正文。\n"))
-
-    def test_used_definition_not_reported(self):
-        self.assertNotIn(
-            "MD-LINK-DEF-UNUSED",
-            self._rules("# R\n\n[a]: docs/real.md\n\n见 [文字][a]。\n"),
-        )
-
-    def test_very_long_target_does_not_crash(self):
-        """超长名字会让 Path.exists() 抛 OSError，不能让它冒出去。"""
-        text = "# R\n\n[x](" + "a" * 5000 + ")\n"
-        rules = self._rules(text)
-        self.assertIn("MD-LINK-TARGET", rules)
-
-    def test_safe_exists_swallows_oserror(self):
-        self.assertFalse(check.safe_exists(self.root / ("a" * 5000)))
-
-    def test_percent_encoded_target_resolved(self):
-        """href 里的空格会被编码成 %20，不先解码就永远判成不存在。"""
-        self.assertNotIn("MD-LINK-TARGET", self._rules("# R\n\n[文档](docs/我 的.md)\n"))
-
-    def test_image_wrapped_link_not_empty(self):
-        """[![alt](a.png)](b.md) 的链接文字是图片的 alt，不能算空。"""
-        self.assertNotIn("MD-LINK-EMPTY", self._rules("# R\n\n[![图](docs/real.md)](docs/real.md)\n"))
-
-
-class QuoteTableTest(unittest.TestCase):
-    """引用块里的表格也要判定。"""
-
-    def test_broken_table_in_quote_reported(self):
-        self.assertIn("MD-TABLE-BROKEN", structure_of("> # R\n>\n> |a|b|\n> |1|2|\n"))
-
-    def test_valid_table_in_quote_not_reported(self):
-        self.assertNotIn("MD-TABLE-BROKEN", structure_of("> # R\n>\n> |a|b|\n> |-|-|\n> |1|2|\n"))
-
-
-class ListMarkerTest(unittest.TestCase):
-    """列表标记与编号的一致性。"""
-
-    def test_mixed_marker_in_same_run_reported(self):
-        self.assertIn("MD-LIST-MARKER", structure_of("# R\n\n- a\n* b\n"))
-
-    def test_different_run_may_change_marker(self):
-        self.assertNotIn("MD-LIST-MARKER", structure_of("# R\n\n- a\n\n* b\n"))
-
-    def test_ordered_and_bullet_not_compared(self):
-        self.assertNotIn("MD-LIST-MARKER", structure_of("# R\n\n- a\n\n1. b\n"))
-
-    def test_nested_mixed_marker_reported(self):
-        self.assertIn("MD-LIST-MARKER", structure_of("# R\n\n- a\n  - b\n  * c\n"))
-
-    def test_ordered_list_not_starting_at_one_reported(self):
-        self.assertIn("MD-LIST-START", structure_of("# R\n\n5. a\n6. b\n"))
-
-    def test_ordered_list_from_one_not_reported(self):
-        self.assertNotIn("MD-LIST-START", structure_of("# R\n\n1. a\n2. b\n"))
-
-    def test_empty_list_item_reported(self):
-        self.assertIn("MD-LIST-EMPTY", structure_of("# R\n\n- \n- b\n"))
-
-    def test_normal_list_not_reported(self):
-        self.assertEqual(
-            [r for r in structure_of("# R\n\n- a\n- b\n") if r.startswith("MD-LIST")], []
-        )
-
-
-class BrokenTableTest(unittest.TestCase):
-    """分隔行坏掉时整张表退化成段落，连 table token 都没有。"""
-
-    def test_missing_delimiter_row_reported(self):
-        self.assertIn("MD-TABLE-BROKEN", structure_of("# R\n\n|a|b|\n|1|2|\n"))
-
-    def test_delimiter_row_short_reported(self):
-        self.assertIn("MD-TABLE-BROKEN", structure_of("# R\n\n|a|b|\n|-|\n|1|2|\n"))
-
-    def test_valid_table_not_reported(self):
-        self.assertNotIn("MD-TABLE-BROKEN", structure_of("# R\n\n|a|b|\n|-|-|\n|1|2|\n"))
-
-    def test_single_pipe_line_not_reported(self):
-        self.assertNotIn("MD-TABLE-BROKEN", structure_of("# R\n\n| 命令 | 说明 |\n"))
-
-    def test_pipe_rows_in_fence_not_reported(self):
-        self.assertNotIn("MD-TABLE-BROKEN", structure_of("# R\n\n```\n|a|b|\n|1|2|\n```\n"))
-
-
-class InlineHtmlTest(unittest.TestCase):
-    """行内标签只开未关。"""
-
-    def test_unclosed_tag_reported(self):
-        self.assertIn("MD-INLINE-HTML", structure_of("# R\n\n<b>粗\n"))
-
-    def test_closed_tag_not_reported(self):
-        self.assertNotIn("MD-INLINE-HTML", structure_of("# R\n\n<b>粗</b>\n"))
-
-    def test_void_tag_not_reported(self):
-        self.assertNotIn("MD-INLINE-HTML", structure_of("# R\n\n换行<br>继续 <img src='x'>\n"))
-
-    def test_self_closing_not_reported(self):
-        self.assertNotIn("MD-INLINE-HTML", structure_of("# R\n\n<img src='x' />\n"))
-
-    def test_tag_in_fence_ignored(self):
-        self.assertNotIn("MD-INLINE-HTML", structure_of("# R\n\n```\n<b>粗\n```\n"))
-
-
-class BlankRunTest(unittest.TestCase):
-    """连续多个空行。"""
-
-    def test_two_blank_lines_reported(self):
-        self.assertIn("S12", structure_of("# R\n\n\n内容\n"))
-
-    def test_single_blank_line_not_reported(self):
-        self.assertNotIn("S12", structure_of("# R\n\n内容\n"))
-
-    def test_three_blank_lines_reported_once(self):
-        found = [f for f in check.check_structure(build("# R\n\n\n\n内容\n"), Path("/x")) if f.rule == "S12"]
-        self.assertEqual(len(found), 1)
-
-
-class LineLengthTest(unittest.TestCase):
-    """正文单行上限 200 字；表格、代码、URL、front matter 与示例区除外。"""
-
-    def test_long_prose_line_reported(self):
-        text = "# R\n\n" + "字" * 201 + "\n"
-        self.assertIn("MD-LINE-LEN", structure_of(text))
-
-    def test_exactly_200_chars_not_reported(self):
-        text = "# R\n\n" + "字" * 200 + "\n"
-        self.assertNotIn("MD-LINE-LEN", structure_of(text))
-
-    def test_table_row_ignored(self):
-        text = "# R\n\n| " + "字" * 120 + " |\n"
-        self.assertNotIn("MD-LINE-LEN", structure_of(text))
-
-    def test_fence_ignored(self):
-        text = "# R\n\n```\n" + "字" * 120 + "\n```\n"
-        self.assertNotIn("MD-LINE-LEN", structure_of(text))
-
-    def test_url_line_ignored(self):
-        text = "# R\n\n参见 https://example.com/" + "a" * 120 + "\n"
-        self.assertNotIn("MD-LINE-LEN", structure_of(text))
-
-    def test_front_matter_ignored(self):
-        text = "---\ndescription: " + "字" * 120 + "\n---\n\n# R\n"
-        self.assertNotIn("MD-LINE-LEN", structure_of(text))
-
-    def test_example_region_ignored(self):
-        text = "# R\n\n<example>\n" + "字" * 120 + "\n</example>\n"
-        self.assertNotIn("MD-LINE-LEN", structure_of(text))
-
-
-class ExampleRegionBoundaryTest(unittest.TestCase):
-    """示例区识别：独占行标签、行内代码里的标签、未闭合。"""
-
-    def test_block_tags_with_content_parsed_as_one_block(self):
-        """开闭标签连同中间内容会被合并成一个 html_block，仍要正确配对。"""
-        text = "# R\n\n<example>\n- 例子。\n</example>\n\n- 真规则。\n"
-        self.assertNotIn("MD-EXAMPLE-UNCLOSED", structure_of(text))
-        self.assertEqual(len(check.rule_lines(build(text))), 1)
-
-    def test_unclosed_example_reported(self):
-        text = "# R\n\n<example>\n- 例子。\n\n- 后面\n"
-        self.assertIn("MD-EXAMPLE-UNCLOSED", structure_of(text))
-
-    def test_inline_code_tag_not_starting_region(self):
-        """讲解语法时写 `<example>` 是引用，不能把后面整篇吞成示例区。"""
-        text = "# R\n\n用 `<example>` 包住。\n\n- 真规则。\n"
-        doc = build(text)
-        self.assertNotIn("MD-EXAMPLE-UNCLOSED", structure_of(text))
-        self.assertEqual(doc.example_lines, set())
-        self.assertEqual(len(check.rule_lines(doc)), 1)
-
-    def test_multiple_regions_all_marked(self):
-        text = (
-            "# R\n\n<example>\n- 甲。\n</example>\n\n"
-            "- 真一。\n\n<example>\n- 乙。\n</example>\n\n- 真二。\n"
-        )
-        doc = build(text)
-        self.assertEqual(len(check.rule_lines(doc)), 2)
-        self.assertNotIn("MD-EXAMPLE-UNCLOSED", structure_of(text))
-
-
-class AutolinkTest(unittest.TestCase):
-    """autolink 是地址不是标签，不能报行内标签未闭合。"""
-
-    def test_url_autolink_not_reported(self):
-        self.assertNotIn("MD-INLINE-HTML", structure_of("# R\n\n见 <https://example.invalid> 说明。\n"))
-
-    def test_email_autolink_not_reported(self):
-        self.assertNotIn("MD-INLINE-HTML", structure_of("# R\n\n联系 <user@example.invalid>。\n"))
-
-    def test_real_unclosed_tag_still_reported(self):
-        self.assertIn("MD-INLINE-HTML", structure_of("# R\n\n正文 <span> 没有收尾。\n"))
-
-    def test_placeholder_with_hyphen_not_reported(self):
-        self.assertNotIn("MD-INLINE-HTML", structure_of("# R\n\n把 <target-file> 换成路径。\n"))
-
-    def test_placeholder_with_capital_not_reported(self):
-        self.assertNotIn("MD-INLINE-HTML", structure_of("# R\n\n返回 <T> 类型。\n"))
-
-    def test_placeholder_word_not_reported(self):
-        self.assertNotIn("MD-INLINE-HTML", structure_of("# R\n\n见 <file>。\n"))
-
-    def test_uppercase_real_tag_still_paired(self):
-        """标签名按小写归一后仍要参与配对。"""
-        self.assertNotIn("MD-INLINE-HTML", structure_of("# R\n\n<DIV>x</div>\n"))
-
-
-class UnclosedHtmlVariantsTest(unittest.TestCase):
-    """行内注释与 raw-text 块未闭合。"""
-
-    def test_inline_comment_unclosed_reported(self):
-        self.assertIn("MD-HTML-COMMENT", structure_of("# R\n\n- 正文 <!-- 注释开始\n- 下一条\n"))
-
-    def test_inline_comment_closed_not_reported(self):
-        self.assertNotIn("MD-HTML-COMMENT", structure_of("# R\n\n- 正文 <!-- 注释 --> 结束\n"))
-
-    def test_script_unclosed_reported(self):
-        self.assertIn("MD-HTML-BLOCK", structure_of("<script>\nvar x=1;\n\n# 标题\n"))
-
-    def test_style_unclosed_reported(self):
-        self.assertIn("MD-HTML-BLOCK", structure_of("<style>\na{}\n\n# 标题\n"))
-
-    def test_pre_closed_not_reported(self):
-        self.assertNotIn("MD-HTML-BLOCK", structure_of("<pre>\n文字\n</pre>\n\n# 标题\n"))
-
-    def test_self_closing_script_not_reported(self):
-        self.assertNotIn("MD-HTML-BLOCK", structure_of('<script src="x" />\n\n# 标题\n'))
-
-
-class ListMarkerSpaceTest(unittest.TestCase):
-    """标记后缺空格时整行按段落渲染。"""
-
-    def test_missing_space_before_cjk_reported(self):
-        self.assertIn("MD-LIST-SPACE", structure_of("# R\n\n-项内容。\n"))
-
-    def test_missing_space_before_latin_reported(self):
-        self.assertIn("MD-LIST-SPACE", structure_of("# R\n\n1.项内容。\n"))
-
-    def test_glob_star_not_reported(self):
-        self.assertNotIn("MD-LIST-SPACE", structure_of("# R\n\n- 只改 *.py 文件。\n"))
-
-    def test_cli_flag_not_reported(self):
-        self.assertNotIn("MD-LIST-SPACE", structure_of("# R\n\n- 用 --flag 参数。\n"))
-
-    def test_negative_number_not_reported(self):
-        self.assertNotIn("MD-LIST-SPACE", structure_of("# R\n\n- 温度 -5 度。\n"))
-
-    def test_thematic_break_not_reported(self):
-        self.assertNotIn("MD-LIST-SPACE", structure_of("# R\n\n- 上一条。\n\n---\n\n- 下一条。\n"))
-
-
-class BrokenLinkSyntaxTest(unittest.TestCase):
-    """链接语法没被解析成链接。"""
-
-    def test_unclosed_paren_reported(self):
-        self.assertIn("MD-LINK-SYNTAX", structure_of("# R\n\n- 读 [说明](a.md 再改。\n"))
-
-    def test_space_in_target_reported(self):
-        self.assertIn("MD-LINK-SYNTAX", structure_of("# R\n\n- 读 [说明](my file.md) 再改。\n"))
-
-    def test_valid_link_not_reported(self):
-        self.assertNotIn("MD-LINK-SYNTAX", structure_of("# R\n\n- 读 [说明](https://a.invalid) 再改。\n"))
-
-    def test_one_good_one_bad_on_same_line_reported(self):
-        text = "# R\n\n- 读 [好](https://a.invalid) 与 [坏](b.md。\n"
-        self.assertIn("MD-LINK-SYNTAX", structure_of(text))
-
-    def test_link_in_example_ignored(self):
-        text = "# R\n\n<example>\n- 读 [说明](a.md 再改。\n</example>\n"
-        self.assertNotIn("MD-LINK-SYNTAX", structure_of(text))
-
-
-class LinkDefinitionFormsTest(unittest.TestCase):
-    """跨行定义、列表内定义、collapsed 引用。"""
-
-    def test_multiline_definition_not_reported(self):
-        text = "见 [文字][doc]。\n\n[doc]:\n  https://a.invalid\n"
-        self.assertNotIn("MD-LINK-REF", structure_of(text))
-
-    def test_definition_inside_list_not_reported(self):
-        text = "见 [文字][doc]。\n\n- [doc]: https://a.invalid\n"
-        self.assertNotIn("MD-LINK-REF", structure_of(text))
-
-    def test_collapsed_reference_not_reported_unused(self):
-        text = "见 [doc]。\n\n[doc]: https://a.invalid\n"
-        self.assertNotIn("MD-LINK-DEF-UNUSED", structure_of(text))
-
-    def test_duplicate_definition_still_reported(self):
-        text = "见 [x][doc]。\n\n[doc]: https://a.invalid\n[doc]: https://b.invalid\n"
-        self.assertIn("MD-LINK-DEF-DUP", structure_of(text))
-
-    def test_uppercase_label_matches_definition(self):
-        text = "见 [x][DOC]。\n\n[doc]: https://a.invalid\n"
-        self.assertNotIn("MD-LINK-REF", structure_of(text))
-
-
-class AnchorTest(unittest.TestCase):
-    """页内锚点是否存在。"""
-
-    def test_valid_cjk_anchor_not_reported(self):
-        text = "# 输出格式\n\n见 [格式](#输出格式)。\n"
-        self.assertEqual([f for f in check.check_anchors(build(text)) if f.rule == "MD-ANCHOR"], [])
-
-    def test_wrong_cjk_anchor_reported(self):
-        text = "# 输出格式\n\n见 [格式](#输出规范)。\n"
-        self.assertIn("MD-ANCHOR", [f.rule for f in check.check_anchors(build(text))])
-
-    def test_english_slug_matches(self):
-        text = "## Role and Objective\n\n见 [角色](#role-and-objective)。\n"
-        self.assertEqual([f for f in check.check_anchors(build(text)) if f.rule == "MD-ANCHOR"], [])
-
-    def test_explicit_html_id_accepted(self):
-        text = '<a id="custom"></a>\n\n# 标题\n\n见 [跳转](#custom)。\n'
-        self.assertEqual([f for f in check.check_anchors(build(text)) if f.rule == "MD-ANCHOR"], [])
-
-    def test_duplicate_heading_gets_suffix(self):
-        text = "# 甲\n\n# 甲\n\n见 [第二个](#甲-1)。\n"
-        self.assertEqual([f for f in check.check_anchors(build(text)) if f.rule == "MD-ANCHOR"], [])
-
-    def test_external_and_top_anchors_skipped(self):
-        text = "# R\n\n见 [外](https://a.invalid) 与 [顶](#top)。\n"
-        self.assertEqual([f for f in check.check_anchors(build(text)) if f.rule == "MD-ANCHOR"], [])
-
-
-class FrontMatterBoundaryTest(unittest.TestCase):
-    """front matter 与普通分隔线要分得清。"""
-
-    def test_thematic_break_between_headings_not_front_matter(self):
-        """`---` 也是分隔线，不能把后续标题整段吞成 front matter。"""
-        text = "---\n\n# 标题\n\n---\n\n正文\n"
-        doc = build(text)
-        self.assertEqual(doc.front_matter, set())
-        self.assertEqual([h.text for h in doc.headings], ["标题"])
-
-    def test_real_front_matter_detected(self):
-        text = "---\nname: x\ndescription: y\n---\n\n# 标题\n"
-        doc = build(text)
-        self.assertEqual(doc.front_matter, {1, 2, 3, 4})
-        self.assertEqual([h.text for h in doc.headings], ["标题"])
-
-    def test_separator_only_body_not_front_matter(self):
-        text = "---\n只有一行文字\n---\n\n# 标题\n"
-        self.assertEqual(build(text).front_matter, set())
+            path.write_text("## 标题\n\n正文。\n", encoding="utf-8")
+            code, out, _ = run_main(str(path))
+        self.assertEqual(code, 0)
+        self.assertIn("MD-HEAD-START", out)
+
+    def test_strict_warning_returns_1(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "doc.md"
+            path.write_text("## 标题\n\n正文。\n", encoding="utf-8")
+            code, _, _ = run_main("--strict", str(path))
+        self.assertEqual(code, 1)
+
+    def test_error_returns_1(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "doc.md"
+            path.write_text("# 标题\n\n```\nx\n", encoding="utf-8")
+            code, out, _ = run_main(str(path))
+        self.assertEqual(code, 1)
+        self.assertIn("MD-FENCE", out)
+
+    def test_invalid_utf8_returns_2(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "doc.md"
+            path.write_bytes(b"\xff\xfe")
+            code, _, err = run_main(str(path))
+        self.assertEqual(code, 2)
+        self.assertIn("读取失败", err)
 
 
 if __name__ == "__main__":
