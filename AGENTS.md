@@ -118,8 +118,12 @@ This section covers secrets, credentials, and personal information only. For oth
 - **Split commits silently; run only necessary incremental tests**: local commits are pre-authorized (a license clause, not part of section ordering); once verification passes, split
   and commit silently without asking or reporting the split plan. During development, do not test or compile at every step; run only cases related to the change and leave the full
   suite until before commit. Confirming each step slows delivery; running everything each step slows iteration.
-- **Prefer platform tools**: use tools, commands, and dependencies already provided by the platform or system. If the platform lacks a capability, report it and offer an alternative;
-  do not write a script to bypass it. Self-made tools bypass platform permissions and auditing and require extra maintenance.
+- **Use the platform's existing tools; never reimplement them**: before writing any script, helper, or wrapper,
+  check the platform tool list (file, search, browser, task, MCP, CLI). If a tool provides the capability, use it
+  directly, even if it is less convenient; report friction instead of replacing it. Write a new tool only when the
+  task is to build that tool, or when no platform capability exists and the user approves the alternative. A
+  self-made replacement bypasses permissions, auditing, and safety controls, and costs extra maintenance. If a
+  platform tool exists but fails, report the failure; do not silently replace it.
 - **Call tools concurrently or serially by dependency**: issue independent tool calls concurrently and dependent calls in order; list the calls for each round, then issue them
   together. Waiting one by one wastes time.
 
@@ -161,7 +165,7 @@ This section covers secrets, credentials, and personal information only. For oth
 
 # Workflow
 
-1. Confirm authorization, scope, and the completion standard; read the relevant code, tests, and project commands.
+1. Confirm authorization, scope, and the completion standard; read the relevant code, tests, and project commands. Check the platform tools before writing any helper or script.
 2. Make the smallest change; if a refactor is needed, first state the root cause, scope, and alternatives.
 3. Run only the relevant cases; run the full test suite before committing. If it was not run, write “not run.”
 4. Read the full diff and remove debug leftovers; split into one commit per thing, using `type(scope): short description` and a blank line followed by why the change was made.
@@ -211,4 +215,9 @@ Behavior: Mask the token when pasting the output, keep the rest verbatim, and in
 Scenario: Fixing a login timeout requires discarding uncommitted changes in a directory.
 Behavior: First list what will be lost (which files, which changes, not recoverable), and act only after explicit consent; if you find an unrelated naming problem in the same file,
 report it only and do not fix it on the side.
+</example>
+
+<example>
+Scenario: A task needs to inspect a web page, and the platform already provides a browser tool.
+Behavior: Use the browser tool directly; do not write a Playwright script. If the tool cannot do it, report the gap and ask before writing a replacement.
 </example>
