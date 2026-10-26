@@ -132,18 +132,22 @@ python3 -m unittest discover -s <skill-dir>/script
 
 每条给出位置（`L行号` 或 `全文`）、规则编号、原因、建议改法。
 
-按结构、标题、列表、表格、链接、行内与版面分组。
+按文件、结构、标题、列表、表格、链接、行内与版面分组。
 
 | 规则号 | 级别 | 判什么 |
 |---|---|---|
 | MD-BOM | 警告 | 文件以 BOM 开头 |
 | MD-EOL | 警告 | 混合使用 CRLF、LF 或 CR 换行 |
+| MD-FINAL-BLANK | 警告 | 文件末尾有多余空行 |
 | MD-FINAL-NEWLINE | 错误 | 文件末尾缺少换行 |
 | MD-FENCE | 错误 | 围栏未闭合 |
 | MD-FENCE-LANG | 建议 | 代码围栏没有语言标记 |
+| MD-FENCE-STYLE | 建议 | 同一文件混用反引号与波浪号围栏 |
 | MD-HTML-COMMENT | 错误 | HTML 注释未闭合，会吞掉文件剩余部分；行内未闭合报同一规则号 |
 | MD-HTML-BLOCK | 错误 | `<script>`、`<style>`、`<pre>`、`<textarea>` 块未闭合 |
 | MD-HEAD-SPACE | 警告 | `#` 后缺空格，整行按段落渲染 |
+| MD-HEAD-MULTI-SPACE | 警告 | `#` 后有多个空格 |
+| MD-HEAD-INDENT | 建议 | 顶层标题前有 1–3 空格缩进 |
 | MD-HEAD-START | 警告 | 首个标题不是 h1 |
 | MD-HEAD-JUMP | 警告 | 标题层级跳跃 |
 | MD-HEAD-EMPTY | 警告 | 标题没有文字 |
@@ -154,6 +158,7 @@ python3 -m unittest discover -s <skill-dir>/script
 | MD-LIST-START | 警告 | 有序列表不是从 1 开始编号 |
 | MD-LIST-EMPTY | 警告 | 列表项没有内容 |
 | MD-LIST-INDENT | 警告 | 同级缩进不一致，或缩进过深丢失列表结构 |
+| MD-QUOTE-SPACE | 建议 | `>` 后缺空格 |
 | MD-TABLE-COLS | 警告 | 表格行之间列数不一致 |
 | MD-TABLE-BROKEN | 警告 | 连续竖线行没被解析成表格（分隔行缺列或少横线） |
 | MD-LINK-REF | 警告 | `[文字][标签]` 的标签没有定义 |
@@ -161,26 +166,34 @@ python3 -m unittest discover -s <skill-dir>/script
 | MD-LINK-DEF-EMPTY | 警告 | 链接定义缺少目标地址 |
 | MD-LINK-DEF-UNUSED | 建议 | 定义了却没人引用的标签 |
 | MD-LINK-EMPTY | 警告 | 链接或图片缺文字、缺地址 |
+| MD-LINK-TEXT-SPACE | 建议 | 链接或图片文字首尾有空白 |
 | MD-LINK-TARGET | 警告 | 链接或图片的相对路径在仓库里不存在 |
 | MD-LINK-SYNTAX | 警告 | `[文字](` 没被解析成链接 |
 | MD-ANCHOR | 警告 | 页内锚点指向不存在的标题 |
 | MD-INLINE-CODE | 警告 | 反引号没配对 |
 | MD-EMPHASIS | 警告 | `**`、`__` 或 `~~` 没配对 |
+| MD-EMPHASIS-STYLE | 建议 | 同一文件混用斜体或粗体标记 |
 | MD-INLINE-HTML | 警告 | 已知名 HTML 标签只开未关 |
 | MD-BLANK-RUN | 警告 | 连续多个空行 |
 | MD-BLANK-BEFORE-BLOCK | 建议 | 顶层块前缺少空行 |
+| MD-BLANK-AFTER-BLOCK | 建议 | 顶层块后直接接正文 |
 | MD-LINE-LEN | 警告 | 正文单行超过 200 字；表格、代码、URL 与文件头元数据（front matter）除外 |
 | MD-TRAILING-WS | 警告 | 行尾空白 |
 | MD-TAB | 警告 | 正文含制表符 |
+| MD-HR-STYLE | 建议 | 同一文件混用分隔线样式 |
 
 ### 判定边界
 
 这些判定都基于 CommonMark 解析结果，不是逐行正则：
 
 - 结构检查剔除围栏、缩进代码块、HTML 块与文件头元数据（front matter）。`<example>` 不再单列，按普通 HTML 处理。
-- BOM 与混合换行按原文检测；BOM 在解析前剔除，避免影响首行标题。
+- BOM、混合换行与末尾空行按原文检测；BOM 在解析前剔除，避免影响首行标题。
 - 块前空行只看顶层块；嵌套列表、引用块内的块，以及标题后的块都不报。
+- 块后空行只看顶层块；嵌套列表、引用块内的块不报，并跳过块末尾自带的空行。
+- 块后空行只在块后直接接正文时提示；后续是另一个块起始时不报。
 - 标题后空行只在下一行是正文时提示；列表、表格、代码块等块起始不报。
+- 标题缩进只查顶层标题；列表、引用内的标题不报。
+- 围栏、分隔线与强调样式只在同一文件混用时提示。
 - 反引号与强调可以跨行配对，脚本按“解析器没消化掉的标记”判断，跨行合法配对不报。
 - 链接定义从解析器的引用表读，地址写在下一行、定义写在列表项里都能识别。
 - 表格分隔行写错时整张表会退化成段落，`MD-TABLE-BROKEN` 专门抓这种情况。
