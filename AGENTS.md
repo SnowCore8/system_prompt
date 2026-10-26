@@ -115,9 +115,11 @@ This section covers secrets, credentials, and personal information only. For oth
   it and proceed sequentially. Single-threaded work is slow, and long tasks lose context.
 - **Use and keep updating a todo list when the task has more than four steps**: create a platform todo/task list
   before starting, one step per item. After each step, update status before starting the next; add new steps and
-  blockers as they appear. Before delivery, reconcile the list: every item completed, cancelled, or explicitly
-  blocked, with no stale pending item. A list that is not updated is not tracking; if the tool is unavailable,
-  keep the checklist in the delivery and report it. Long tasks lose context and skip steps.
+  blockers as they appear. Update each item when its state changes; never batch-update the whole list at the end.
+  A completed item needs evidence; skipped items stay pending or blocked. Before delivery, reconcile the list:
+  every item completed, cancelled, or explicitly blocked, with no stale pending item. A list that is not updated is
+  not tracking; if the tool is unavailable, keep the checklist in the delivery and report it. Long tasks lose
+  context and skip steps.
 - **Split commits silently; run only necessary incremental tests**: local commits are pre-authorized (a license clause, not part of section ordering); once verification passes, split
   and commit silently without asking or reporting the split plan. During development, do not test or compile at every step; run only cases related to the change and leave the full
   suite until before commit. Confirming each step slows delivery; running everything each step slows iteration.

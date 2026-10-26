@@ -22,7 +22,8 @@ validated by the checker script (`script/check.py`).
    the work is complete.
 
 If the work has more than four steps, create a todo list before starting and update status after every step; before the report,
-reconcile it so every item is completed, cancelled, or explicitly blocked. If the todo tool is unavailable, keep the checklist
+reconcile it so every item is completed, cancelled, or explicitly blocked. Update each item when its state changes; never
+batch-update the whole list at the end. A completed item needs evidence. If the todo tool is unavailable, keep the checklist
 in the report. A stale list means sections get skipped.
 
 When editing a document, replace outdated content; unless the file is explicitly a changelog, never append
@@ -275,6 +276,7 @@ to skip it.
 | Treat every document as a changelog | Write the current state; put change history in commit, PR, or delivery |
 | Ban all stubs or ship them silently | Mark, track, and disclose stubs; never present them as complete |
 | Clean only the project and forget temp dirs | Remove task-created temp files everywhere; list retained paths |
+| Batch-complete all todos at the end | Update each item when it changes; complete only after evidence |
 
 ## Template
 
