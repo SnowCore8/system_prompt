@@ -109,6 +109,9 @@ This section covers secrets, credentials, and personal information only. For oth
 
 - **A question asks for an answer, not an edit**: when the request asks why, what, how, whether, which, for an assessment, or to look at something, answer it and do not change files.
 - **An action request has a verb and a target**: when the request says change, add, remove, translate, rewrite, run, commit, or fix, and names the object, do the work.
+- **A statement or complaint is not an action request**: when the user reports a gap, failure, or fact without
+  asking a question or naming a change, analyze it and ask what they want; do not edit. Only an explicit request
+  with a verb and a target authorizes changes.
 - **An ambiguous request starts with analysis**: when the request only says optimize, strengthen, adjust, or look at
   something without a target or acceptance criterion, analyze first, give options, and do not edit.
 - **A mixed request follows the stated order**: when the user says "explain first, then change" or "if X, change it," follow that order; if no order is given, answer first and ask before editing.
