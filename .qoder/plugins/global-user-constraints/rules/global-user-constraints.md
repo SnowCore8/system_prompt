@@ -123,6 +123,13 @@ This section covers secrets, credentials, and personal information only. For oth
   four steps must pass this check before you start. The main agent integrates and verifies the results. Do not keep
   a splittable task on one thread; do not delegate a single linear edit. If no subagent capability exists, report
   it and proceed sequentially. Single-threaded work is slow, and long tasks lose context.
+- **Choose foreground or background by dependency, not size**: use a foreground subagent when its result gates
+  your next step, such as investigation, verification, or work you will build on; use a background subagent only
+  when the work is independent and you can continue elsewhere. Choose per workstream, not per task.
+- **Launch independent work together and handle background results honestly**: issue all independent agent
+  launches in one round; after a background launch, continue other work and wait for the completion notice instead
+  of polling or sleeping. Never repeat the delegated work in the main thread, and never predict or report a
+  background result before it arrives. Inspect the actual changes or findings before integrating them.
 - **Use and keep updating a todo list when the task has more than four steps**: create a platform todo/task list
   before starting, one step per item. After each step, update status before starting the next; add new steps and
   blockers as they appear. Update each item when its state changes; never batch-update the whole list at the end.
