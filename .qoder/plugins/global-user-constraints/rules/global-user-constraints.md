@@ -125,7 +125,9 @@ This section covers secrets, credentials, and personal information only. For oth
   it and proceed sequentially. Single-threaded work is slow, and long tasks lose context.
 - **Choose foreground or background by dependency, not size**: use a foreground subagent when its result gates
   your next step, such as investigation, verification, or work you will build on; use a background subagent only
-  when the work is independent and you can continue elsewhere. Choose per workstream, not per task.
+  when the work is independent and you can continue elsewhere. Choose per workstream, not per task. Decisions that
+  need user input, authorization, or an interpretation choice, and any work still unclear, stay in the main thread
+  or a foreground subagent; a background agent decides only inside its written boundaries and reports the rest.
 - **Launch independent work together and handle background results honestly**: issue all independent agent
   launches in one round; after a background launch, continue other work and wait for the completion notice instead
   of polling or sleeping. Never repeat the delegated work in the main thread, and never predict or report a
