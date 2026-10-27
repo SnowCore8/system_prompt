@@ -28,6 +28,8 @@ filenames (`CLAUDE.md`, `QWEN.md`), install it under that name or symlink it:
 ln -s AGENTS.md CLAUDE.md
 ```
 
+A `.qwen -> .qoder` compatibility symlink exists for tools that only recognize `.qwen`; `.qoder` remains the canonical directory.
+
 After changes, run the format check, then the self-tests:
 
 ```bash
