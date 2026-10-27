@@ -1,0 +1,32 @@
+{
+  "name": "global-user-constraints",
+  "displayName": "Global User Constraints",
+  "version": "0.1.0",
+  "description": "Always-on user-level constraints, a system-prompt authoring skill, a manual audit command, and a secret-commit guard.",
+  "descriptionZh": "始终生效的用户全局约束、system-prompt-authoring skill、手动审查命令和 secret 提交拦截。",
+  "author": {
+    "name": "SnowCore8"
+  },
+  "keywords": [
+    "qoder-plugin",
+    "rules",
+    "constraints",
+    "system-prompt",
+    "security"
+  ],
+  "category": "developer-tools",
+  "tags": [
+    "rules",
+    "skill",
+    "security"
+  ],
+  "rules": "./rules/",
+  "skills": "./skills/",
+  "commands": {
+    "constraints-check": {
+      "source": "./commands/constraints-check.md",
+      "description": "按全局用户约束审查当前请求或方案"
+    }
+  },
+  "hooks": "./hooks/hooks.json"
+}

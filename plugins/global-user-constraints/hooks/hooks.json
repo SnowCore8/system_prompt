@@ -1,0 +1,21 @@
+{
+  "description": "Block obvious secret commits before git commit runs.",
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash|Shell|PowerShell|cmd",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3",
+            "args": [
+              "${QODER_PLUGIN_ROOT}/scripts/check-secret-commit.py"
+            ],
+            "timeout": 15,
+            "statusMessage": "正在检查提交中的 secret"
+          }
+        ]
+      }
+    ]
+  }
+}
