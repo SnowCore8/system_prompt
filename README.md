@@ -1,7 +1,7 @@
 # AI Coding Agent System Prompt
 
-This repository has two kinds of content: a global instruction baseline for coding agents, and a skill that audits that baseline. There is no build step; the format checker depends
-on `markdown-it-py`. Changing the Markdown or the script is the whole job.
+This repository has two kinds of source content: a global instruction baseline for coding agents, and a skill that audits that baseline. It also ships a packaged Qoder plugin under
+`.qwen/plugins/global-user-constraints`. There is no build step; the format checker depends on `markdown-it-py`. Changing the Markdown or the script is the whole job.
 
 ## Files
 
@@ -14,6 +14,7 @@ on `markdown-it-py`. Changing the Markdown or the script is the whole job.
 | `.qwen/skills/system-prompt-authoring/references/complex-logic.md` | Decision tables, state tables, and complex-logic guidance | When rules involve multi-condition combinations or state transitions |
 | `.qwen/skills/system-prompt-authoring/script/check.py` | Format checker; checks Markdown format only, not content rules | After changing `AGENTS.md` |
 | `.qwen/skills/system-prompt-authoring/script/test_check.py` | Self-tests for `check.py` | When changing `check.py` |
+| `.qwen/plugins/global-user-constraints` | Qoder plugin package: always-on rules, system-prompt-authoring skill, audit command, secret-commit hook | When distributing or installing the rules plugin |
 
 ## Usage
 
