@@ -7,7 +7,7 @@ This repository has two kinds of source content: a global instruction baseline f
 
 | File | Purpose | When to read |
 |---|---|---|
-| `AGENTS.md` | The instruction baseline itself; loaded into the model context at session start and constrains coding behavior | When changing rules; when you want the agent to follow a rule |
+| `AGENTS.md` | Symlink to the canonical rule file at `.qoder/plugins/global-user-constraints/rules/global-user-constraints.md`; loaded at session start | When changing rules; when you want the agent to follow a rule |
 | `README.md` | This file: what the repo contains and how to use it | First time in this repo |
 | `.qoder/skills/system-prompt-authoring/SKILL.md` | Process for auditing and drafting `AGENTS.md`, the S1–S13 content rules, and format-check usage | Before changing `AGENTS.md` |
 | `.qoder/skills/system-prompt-authoring/references/provenance.md` | Vendor-document quotes for each S1–S13 rule | When a rule's source is questioned |
@@ -18,7 +18,10 @@ This repository has two kinds of source content: a global instruction baseline f
 
 ## Usage
 
-Put `AGENTS.md` at the target repository root. When a tool only recognizes fixed filenames (`CLAUDE.md`, `QWEN.md`), install it under that name or symlink it:
+Put `AGENTS.md` at the target repository root. It is a symlink to the canonical rule file under
+`.qoder/plugins/global-user-constraints/rules/`; edit the target. For distribution, use the plugin package
+or its zip, not the symlink alone. When a tool only recognizes fixed filenames (`CLAUDE.md`, `QWEN.md`),
+install it under that name or symlink it:
 
 ```bash
 ln -s AGENTS.md CLAUDE.md

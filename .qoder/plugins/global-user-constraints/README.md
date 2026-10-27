@@ -4,9 +4,8 @@
 
 源文件：
 
-- 规则：仓库根目录 `AGENTS.md`
-- skill：`.qoder/skills/system-prompt-authoring`
-- 本目录是打包副本。改规则先改源文件，再同步到 `rules/` 与 `skills/`。
+- 规则源：`.qoder/plugins/global-user-constraints/rules/global-user-constraints.md`；根 `AGENTS.md` 是指向它的软链。
+- skill 源：`.qoder/skills/system-prompt-authoring`；本插件的 `skills/` 是打包副本。
 
 ## 结构
 
