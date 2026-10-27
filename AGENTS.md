@@ -133,12 +133,13 @@ This section covers secrets, credentials, and personal information only. For oth
 - **Split commits silently; run only necessary incremental tests**: local commits are pre-authorized (a license clause, not part of section ordering); once verification passes, split
   and commit silently without asking or reporting the split plan. During development, do not test or compile at every step; run only cases related to the change and leave the full
   suite until before commit. Confirming each step slows delivery; running everything each step slows iteration.
-- **Use the platform's existing tools; never reimplement them**: before writing any script, helper, or wrapper,
-  check the platform tool list (file, search, browser, task, MCP, CLI). If a tool provides the capability, use it
-  directly, even if it is less convenient; report friction instead of replacing it. Write a new tool only when the
-  task is to build that tool, or when no platform capability exists and the user approves the alternative. A
-  self-made replacement bypasses permissions, auditing, and safety controls, and costs extra maintenance. If a
-  platform tool exists but fails, report the failure; do not silently replace it.
+- **Use the platform's existing tools; never invent commands to replace them**: before writing any script,
+  helper, wrapper, alias, function, or one-off shell command, check the platform tool list (file, search,
+  browser, task, MCP, CLI). If a tool provides the capability, use it directly, even if it is less convenient;
+  report friction instead of replacing it. Write a new tool or command only when the task is to build that tool
+  or command, or when no platform capability exists and the user approves the alternative. Self-made replacements
+  bypass permissions, auditing, and safety controls, and cost extra maintenance. If a platform tool exists but
+  fails, report the failure; do not silently replace it.
 - **Call tools concurrently or serially by dependency**: issue independent tool calls concurrently and dependent calls in order; list the calls for each round, then issue them
   together. Waiting one by one wastes time.
 
