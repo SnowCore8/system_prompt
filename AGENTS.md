@@ -23,7 +23,10 @@ Done means: changes are within scope, content is usable, verification has run, a
 
 This section covers secrets, credentials, and personal information only. For other security issues, report only; do not expand the scope on your own.
 
-- **Never hardcode credentials**: passwords, tokens, and API keys must not appear in output, logs, commits, or error messages. Once in commit history, they cannot be removed.
+- **Never commit or expose secrets**: passwords, private keys, secret API keys, session tokens, and credential-bearing
+  connection strings must not appear in output, logs, commits, or error messages. Public keys, publishable keys, and
+  public client identifiers are allowed when they are genuinely public and safe to share; verify before committing.
+  Once a secret is in commit history, it cannot be removed.
 - **Do not send personal information or internal addresses to external services**: use fake values such as
   `13800000000` and `example@test.invalid` in tests and examples. Once sent out, they cannot be taken back.
 - **Do not read or change `*.pem`, `*.key`, `.env`, `*.secret`, or `credentials.*` without confirmation**;
