@@ -5,7 +5,7 @@
 源文件：
 
 - 规则：仓库根目录 `AGENTS.md`
-- skill：`.qwen/skills/system-prompt-authoring`
+- skill：`.qoder/skills/system-prompt-authoring`
 - 本目录是打包副本。改规则先改源文件，再同步到 `rules/` 与 `skills/`。
 
 ## 结构
@@ -25,13 +25,13 @@
 离线校验：
 
 ```bash
-python3 ~/.qoder/plugins/cache/qoder-bundler/qoder-create-plugin/skills/create-plugin/scripts/validate_qoder_plugin.py .qwen/plugins/global-user-constraints
+python3 ~/.qoder/plugins/cache/qoder-bundler/qoder-create-plugin/skills/create-plugin/scripts/validate_qoder_plugin.py .qoder/plugins/global-user-constraints
 ```
 
 本地安装 smoke test 使用临时目录，不要污染当前项目：
 
 ```bash
-PLUGIN_ROOT="$(pwd)/.qwen/plugins/global-user-constraints"
+PLUGIN_ROOT="$(pwd)/.qoder/plugins/global-user-constraints"
 SMOKE_CWD="$(mktemp -d)"
 qodercli --cwd "$SMOKE_CWD" plugin install --scope local "$PLUGIN_ROOT"
 qodercli --cwd "$SMOKE_CWD" plugin list --json
@@ -51,7 +51,7 @@ Hook 只匹配 `Bash`、`Shell`、`PowerShell`、`cmd` 工具调用：
 ## 打包
 
 ```bash
-cd .qwen/plugins/global-user-constraints
+cd .qoder/plugins/global-user-constraints
 zip -r ../global-user-constraints-0.1.0.zip . \
   -x "**/.DS_Store" "__MACOSX/*" ".qoder/settings.local.json" ".qoder/**"
 ```
@@ -59,7 +59,7 @@ zip -r ../global-user-constraints-0.1.0.zip . \
 zip 根目录必须直接包含 `.qoder-plugin/plugin.json`。打包后校验：
 
 ```bash
-python3 ~/.qoder/plugins/cache/qoder-bundler/qoder-create-plugin/skills/create-plugin/scripts/validate_qoder_plugin.py .qwen/plugins/global-user-constraints-0.1.0.zip
+python3 ~/.qoder/plugins/cache/qoder-bundler/qoder-create-plugin/skills/create-plugin/scripts/validate_qoder_plugin.py .qoder/plugins/global-user-constraints-0.1.0.zip
 ```
 
 ## 边界
