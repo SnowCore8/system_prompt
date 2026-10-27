@@ -1,40 +1,40 @@
 # AI Coding Agent System Prompt
 
-This repository has two kinds of source content: a global instruction baseline for coding agents, and a skill that audits that baseline. It also ships a packaged Qoder plugin under
-`.qoder/plugins/global-user-constraints`. There is no build step; the format checker depends on `markdown-it-py`. Changing the Markdown or the script is the whole job.
+This repository maintains the global constraints, the `system-prompt-authoring` skill, and a user-level Qoder plugin
+that packages both. The plugin package is the single source of truth; root `AGENTS.md` and the project skills path are links
+to it. Read this first when changing rules, the skill, or the plugin. Maintainer: repository owner.
 
-## Files
+There is no build step for the Markdown; the format checker depends on `markdown-it-py`. Packaging the plugin zip is a separate step.
 
-| File | Purpose | When to read |
-|---|---|---|
-| `AGENTS.md` | Symlink to the canonical rule file at `.qoder/plugins/global-user-constraints/rules/global-user-constraints.md`; loaded at session start | When changing rules; when you want the agent to follow a rule |
-| `README.md` | This file: what the repo contains and how to use it | First time in this repo |
-| `.qoder/skills/system-prompt-authoring/SKILL.md` | Process for auditing and drafting `AGENTS.md`, the S1–S13 content rules, and format-check usage | Before changing `AGENTS.md` |
-| `.qoder/skills/system-prompt-authoring/references/provenance.md` | Vendor-document quotes for each S1–S13 rule | When a rule's source is questioned |
-| `.qoder/skills/system-prompt-authoring/references/complex-logic.md` | Decision tables, state tables, and complex-logic guidance | When rules involve multi-condition combinations or state transitions |
-| `.qoder/skills/system-prompt-authoring/script/check.py` | Format checker; checks Markdown format only, not content rules | After changing `AGENTS.md` |
-| `.qoder/skills/system-prompt-authoring/script/test_check.py` | Self-tests for `check.py` | When changing `check.py` |
-| `.qoder/plugins/global-user-constraints` | Qoder plugin package: always-on rules, system-prompt-authoring skill, audit command, secret-commit hook | When distributing or installing the rules plugin |
+## Layout
 
-## Usage
+| Path | Role |
+|---|---|
+| `AGENTS.md` | Symlink to the canonical rule file under `.qoder/plugins/global-user-constraints/rules/` |
+| `.qoder/plugins/global-user-constraints/` | Canonical plugin package: rules, skill, audit command, secret-commit hook |
+| `.qoder/plugins/global-user-constraints/rules/global-user-constraints.md` | Canonical always-on rule text |
+| `.qoder/plugins/global-user-constraints/skills/system-prompt-authoring/` | Canonical skill source |
+| `.qoder/skills/` | Symlink to the plugin's `skills/` directory |
+| `.qwen` | Compatibility symlink to `.qoder` for tools that only recognize `.qwen` |
 
-Put `AGENTS.md` at the target repository root. It is a symlink to the canonical rule file under
-`.qoder/plugins/global-user-constraints/rules/`; edit the target. The project skills directory
-`.qoder/skills` is a symlink to the plugin's `skills/` directory; edit the target.
-For distribution, use the plugin package or its zip, not the symlink alone. When a tool only recognizes fixed
-filenames (`CLAUDE.md`, `QWEN.md`), install it under that name or symlink it:
+## Edit
 
-```bash
-ln -s AGENTS.md CLAUDE.md
-```
+1. Edit rules in `.qoder/plugins/global-user-constraints/rules/global-user-constraints.md`; `AGENTS.md` follows the link.
+2. Edit the skill in `.qoder/plugins/global-user-constraints/skills/system-prompt-authoring/`; `.qoder/skills` follows the link.
+3. Do not create a second copy. If a path resolves through a link, edit the target, not a copy.
 
-A `.qwen -> .qoder` compatibility symlink exists for tools that only recognize `.qwen`; `.qoder` remains the canonical directory.
-
-After changes, run the format check, then the self-tests:
+## Verify
 
 ```bash
-python3 .qoder/skills/system-prompt-authoring/script/check.py AGENTS.md
+python3 .qoder/skills/system-prompt-authoring/script/check.py --strict AGENTS.md
 python3 -m unittest discover -s .qoder/skills/system-prompt-authoring/script
 ```
 
-The checker reports Markdown format issues only; check content quality manually against S1–S13 in `SKILL.md`.
+The checker validates Markdown format only. Content rules S1–S13 are checked manually using `SKILL.md`.
+
+## Distribute
+
+See the plugin [README](.qoder/plugins/global-user-constraints/README.md) for building and validating the user-level plugin zip.
+Do not upload rule files, the plugin, or its zip to public platforms; use an approved internal channel.
+
+The enterprise `global-security-guard` plugin is separate and managed; this repository does not disable or replace it.
