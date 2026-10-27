@@ -17,6 +17,7 @@
 | `commands/constraints-check.md` | 手动触发约束审查 |
 | `hooks/hooks.json` | PreToolUse hook 配置 |
 | `scripts/check-secret-commit.py` | 拦截明显 secret 提交 |
+| `scripts/test_check_secret_commit.py` | hook 的表驱动测试 |
 | `qoder.md` / `qoderwork.md` | 插件级系统指令 |
 
 ## 安装与校验
@@ -40,19 +41,27 @@ qodercli --cwd "$SMOKE_CWD" plugin list --json
 
 Hook 只匹配 `Bash`、`Shell`、`PowerShell`、`cmd` 工具调用：
 
-- 只在命令包含 `git commit` 时检查。
-- 扫描命令文本和 `git diff --cached`；`-a`、`-am`、`--all` 时额外扫描 `git diff`。
+- 只识别真实的 `git commit` 子命令；`git log --grep commit`、`echo git commit`、`--help`、`--dry-run` 不会触发检查。
+- 扫描命令文本和 `git diff --cached`；`a` 作为独立短选项出现（如 `-a`、`-am`、`-av`）或使用 `--all` 时，额外扫描 `git diff`。
 - 命中明显的 private key、AWS/GitHub/Slack/Stripe/OpenAI/Google key、password/secret 赋值时，`exit 2` 阻止提交。
 - 不打印 secret 原文，只报告疑似类型。
 - 公开 key、publishable key、`.pub` 不在拦截范围；它们仍受“真正公开且安全”规则约束。
-- 不是完整 secret 扫描器；二进制、历史提交、未跟踪文件不检查。
+- 不是完整 secret 扫描器；二进制、历史提交、未跟踪文件不检查，带路径的提交只检查暂存区。
+
+## Hook 测试
+
+```bash
+python3 -B -m unittest discover -s .qoder/plugins/global-user-constraints/scripts -p 'test_*.py'
+```
+
+测试在临时 git 仓库中覆盖暂存/未暂存 secret、`-a`/`-am`/`--all`、非提交命令、help/dry-run、公开 key 和非法 payload。
 
 ## 打包
 
 ```bash
 cd .qoder/plugins/global-user-constraints
 zip -r ../global-user-constraints-0.1.0.zip . \
-  -x "**/.DS_Store" "__MACOSX/*" ".qoder/settings.local.json" ".qoder/**"
+  -x "**/.DS_Store" "__MACOSX/*" "**/__pycache__/*" "**/*.pyc" ".qoder/settings.local.json" ".qoder/**"
 ```
 
 zip 根目录必须直接包含 `.qoder-plugin/plugin.json`。打包后校验：
