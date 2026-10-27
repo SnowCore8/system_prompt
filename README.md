@@ -19,9 +19,10 @@ This repository has two kinds of source content: a global instruction baseline f
 ## Usage
 
 Put `AGENTS.md` at the target repository root. It is a symlink to the canonical rule file under
-`.qoder/plugins/global-user-constraints/rules/`; edit the target. For distribution, use the plugin package
-or its zip, not the symlink alone. When a tool only recognizes fixed filenames (`CLAUDE.md`, `QWEN.md`),
-install it under that name or symlink it:
+`.qoder/plugins/global-user-constraints/rules/`; edit the target. The project skill at
+`.qoder/skills/system-prompt-authoring` is also a symlink to the plugin's skill source; edit the target.
+For distribution, use the plugin package or its zip, not the symlink alone. When a tool only recognizes fixed
+filenames (`CLAUDE.md`, `QWEN.md`), install it under that name or symlink it:
 
 ```bash
 ln -s AGENTS.md CLAUDE.md
