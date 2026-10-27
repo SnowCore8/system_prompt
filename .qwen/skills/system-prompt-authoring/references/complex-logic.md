@@ -51,19 +51,27 @@ When rules involve multiple condition combinations or state transitions, do not 
 - State terminal states; never silently return from a terminal state to executing.
 - The condition column may reference a decision table's conclusion; do not repeat it.
 
-### State Table Example: Task Lifecycle
+### State Table Example: Inventory → Plan → Evaluate → Implement → Verify → Commit
 
 | Current state | Event | Condition | Next state | Action |
 |---|---|---|---|---|
-| Awaiting authorization | User explicitly consents | Non-production | Executing | Start changes |
-| Awaiting authorization | User explicitly consents | Production with rollback | Executing | Back up, then start |
-| Awaiting authorization | User refuses | - | Rejected | Stop; do not work around it |
-| Executing | Verification fails | - | Blocked | Report; do not commit |
-| Executing | Verification passes | - | Pending acceptance | Commit and deliver |
-| Blocked | User gives a new instruction | - | Awaiting authorization | Confirm again |
-| Pending acceptance | User confirms | - | Done | Finish |
+| Inventory | Task accepted | Scope and authorization are clear | Plan | Record scope, current state, dependencies, and constraints |
+| Inventory | Task accepted | Scope or authorization is unclear | Blocked | Ask for clarification or report; do not plan |
+| Plan | Inventory complete | Splittable, or more than four steps | Evaluate | Define steps, owners, and acceptance; delegate or create a todo list |
+| Plan | Inventory complete | Single linear path | Evaluate | Define a one-step-at-a-time plan; do not delegate |
+| Evaluate | Plan ready | Risk is acceptable and reversible | Implement | Choose the approach, rollback path, and platform tools |
+| Evaluate | Plan ready | High risk or no rollback | Blocked | Ask for confirmation or propose an alternative |
+| Implement | Approval recorded | Change is complete | Verify | Make the smallest change; do not expand scope |
+| Implement | Approval recorded | Root cause is structural | Implement | Refactor; do not stack another patch |
+| Implement | Approval recorded | Blocked | Blocked | Report the blocker and what is already done |
+| Verify | Implementation complete | Relevant and full tests pass | Commit | Collect evidence and real output |
+| Verify | Implementation complete | Tests fail or were not run | Implement | Fix; do not commit; if not run, say "not run" |
+| Commit | Verification passed | Diff is clean and contains no secrets or build artifacts | Deliver | Review the diff, split commits, and write the message |
+| Commit | Verification passed | Secret, build artifact, or scope creep found | Implement | Remove or repair the issue; do not commit |
+| Deliver | Commit complete | User accepts | Done | Clean up task-created temp files everywhere and mark pending acceptance |
+| Deliver | Commit complete | Feedback received | Inventory | Start a new cycle with the feedback |
 
-Any unlisted combination stays in the current state and reports; do not guess.
+For small tasks, collapse Inventory, Plan, and Evaluate into one pass; never skip Verify or Commit checks. Any unlisted combination stays in the current state and reports; do not guess.
 
 ## Model-Friendly Writing
 
