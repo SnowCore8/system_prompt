@@ -1,6 +1,6 @@
 ---
-name: user-security-constraints
-description: 用户全局安全约束，在回答任何问题之前必须遵守
+name: user-constraints
+description: 用户全局约束，在回答任何问题之前必须遵守
 trigger: always_on
 alwaysApply: true
 ---
