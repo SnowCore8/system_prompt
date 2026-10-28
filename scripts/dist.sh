@@ -1,14 +1,15 @@
 #!/usr/bin/env bash
-# 把用户级插件打包到仓库根目录，文件名带 plugin.json 中的版本号。
+# 把用户级插件打包到仓库根目录，文件名带当前 commit id。
 set -euo pipefail
 
 usage() {
   cat <<'EOF'
 用法: scripts/dist.sh [--no-validate]
 
-读取 .qoder-plugin/plugin.json 的 version，把插件目录打成
-<仓库根>/global-user-constraints-<version>.zip，并检查 zip 结构。
-默认还会运行 Qoder 插件离线校验；校验器不存在时跳过并提示。
+把插件目录打成 <仓库根>/global-user-constraints-<commit>.zip，
+commit 取当前 HEAD 的短 id；工作区有未提交改动时追加 -dirty。
+打包后检查 zip 结构，默认还会运行 Qoder 插件离线校验；
+校验器不存在时跳过并提示。
 EOF
 }
 
@@ -22,11 +23,17 @@ esac
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 PLUGIN_DIR="$REPO_ROOT/.qoder/plugins/global-user-constraints"
-MANIFEST="$PLUGIN_DIR/.qoder-plugin/plugin.json"
 VALIDATOR="$HOME/.qoder/plugins/cache/qoder-bundler/qoder-create-plugin/skills/create-plugin/scripts/validate_qoder_plugin.py"
 
-VERSION="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1], encoding="utf-8"))["version"])' "$MANIFEST")"
-OUT="$REPO_ROOT/global-user-constraints-$VERSION.zip"
+if ! COMMIT="$(git -C "$REPO_ROOT" rev-parse --short HEAD 2>/dev/null)"; then
+  echo "无法读取 commit id：$REPO_ROOT 不是 git 仓库或尚无提交" >&2
+  exit 1
+fi
+if [ -n "$(git -C "$REPO_ROOT" status --porcelain --untracked-files=normal)" ]; then
+  COMMIT="$COMMIT-dirty"
+  echo "工作区有未提交改动，文件名标记 -dirty" >&2
+fi
+OUT="$REPO_ROOT/global-user-constraints-$COMMIT.zip"
 
 rm -f "$OUT"
 (
