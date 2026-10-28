@@ -1,7 +1,7 @@
 {
   "name": "global-user-constraints",
   "displayName": "Global User Constraints",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Always-on user-level constraints, a system-prompt authoring skill, a manual audit command, and a secret-commit guard.",
   "descriptionZh": "始终生效的用户全局约束、system-prompt-authoring skill、手动审查命令和 secret 提交拦截。",
   "author": {
