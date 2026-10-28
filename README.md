@@ -14,7 +14,7 @@ Markdown 没有构建步骤；格式机检依赖 `markdown-it-py`。插件 zip �
 | `.qoder/plugins/global-user-constraints/skills/system-prompt-authoring/` | skill 源 |
 | `.qoder/skills/` | 指向插件 `skills/` 目录的软链 |
 | `.qwen` | 指向 `.qoder` 的兼容软链，供只认 `.qwen` 的工具使用 |
-| `scripts/dist.sh` | 分发脚本：递增 patch 版本，按当前 commit id 打包到仓库根目录 |
+| `scripts/dist.sh` | 分发脚本：按插件提交数生成版本，按当前 commit id 打包到仓库根目录 |
 
 ## 编辑
 
@@ -37,10 +37,11 @@ python3 -m unittest discover -s .qoder/skills/system-prompt-authoring/script
 scripts/dist.sh
 ```
 
-每次运行先把 `plugin.json` 的 patch 版本加一（`0.1.0` → `0.1.1`），再按当前 `HEAD` 的短 commit id 打成 `global-user-constraints-<commit>.zip`。
-版本递增本身不算工作区改动；其他未提交改动会让文件名追加 `-dirty`，并提示到 stderr。
+版本由当前 `HEAD` 推导：`0.1.<改动插件的提交数（不含 plugin.json）>`，写回 manifest 后按短 commit id 打成 `global-user-constraints-<commit>.zip`。
+同一 commit 重复运行版本不变；新提交只要改动插件目录，版本加一。
+版本写回本身不算工作区改动；其他未提交改动会让文件名追加 `-dirty`，并提示到 stderr。
 打包后检查 zip 结构并运行 Qoder 离线校验，`--no-validate` 跳过校验；校验器不存在时脚本会提示并跳过。
-版本递增要随代码提交；zip 是生成物，已在 `.gitignore` 中忽略。
+版本写回要随代码提交；zip 是生成物，已在 `.gitignore` 中忽略。
 
 插件包内容与 hook 行为见插件 [README](.qoder/plugins/global-user-constraints/README.md)。不要把规则文件、插件或 zip 上传到公网平台；走企业内网或已批准的通道。
 

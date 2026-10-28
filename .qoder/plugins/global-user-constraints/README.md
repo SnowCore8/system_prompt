@@ -64,8 +64,8 @@ python3 -B -m unittest discover -s .qoder/plugins/global-user-constraints/script
 scripts/dist.sh
 ```
 
-脚本每次运行先把 `.qoder-plugin/plugin.json` 的 patch 版本加一，再用当前 `HEAD` 的短 commit id 生成 `global-user-constraints-<commit>.zip` 到仓库根目录。
-版本递增之外的未提交改动会让文件名追加 `-dirty`；递增后的版本要随代码提交。
+脚本按当前 `HEAD` 推导版本 `0.1.<改动插件的提交数>`，写回 manifest，再用短 commit id 生成 `global-user-constraints-<commit>.zip` 到仓库根目录；同一 commit 重复运行版本不变。
+版本写回之外的未提交改动会让文件名追加 `-dirty`；写回的版本要随代码提交。
 打包排除 `.DS_Store`、`__pycache__`、`.pyc`、`.qoder/settings.local.json` 和嵌套的 `.qoder/` 目录。
 zip 根目录直接包含 `.qoder-plugin/plugin.json`；结构校验后默认调用 Qoder 离线校验器，`--no-validate` 可跳过。
 zip 是生成物，已在 `.gitignore` 中忽略。
