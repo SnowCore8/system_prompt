@@ -58,17 +58,16 @@ python3 -B -m unittest discover -s .qoder/plugins/global-user-constraints/script
 
 ## 打包
 
-```bash
-cd .qoder/plugins/global-user-constraints
-zip -r ../global-user-constraints-0.1.0.zip . \
-  -x "**/.DS_Store" "__MACOSX/*" "**/__pycache__/*" "**/*.pyc" ".qoder/settings.local.json" ".qoder/**"
-```
-
-zip 根目录必须直接包含 `.qoder-plugin/plugin.json`。打包后校验：
+在仓库根目录运行分发脚本：
 
 ```bash
-python3 ~/.qoder/plugins/cache/qoder-bundler/qoder-create-plugin/skills/create-plugin/scripts/validate_qoder_plugin.py .qoder/plugins/global-user-constraints-0.1.0.zip
+scripts/dist.sh
 ```
+
+脚本从 `.qoder-plugin/plugin.json` 读取 `version`，生成 `global-user-constraints-<version>.zip` 到仓库根目录。
+打包排除 `.DS_Store`、`__pycache__`、`.pyc`、`.qoder/settings.local.json` 和嵌套的 `.qoder/` 目录。
+zip 根目录直接包含 `.qoder-plugin/plugin.json`；结构校验后默认调用 Qoder 离线校验器，`--no-validate` 可跳过。
+zip 是生成物，已在 `.gitignore` 中忽略。
 
 ## 边界
 
