@@ -126,6 +126,10 @@ This section covers secrets, credentials, and personal information only. For oth
   four steps must pass this check before you start. The main agent integrates and verifies the results. Do not keep
   a splittable task on one thread; do not delegate a single linear edit. If no subagent capability exists, report
   it and proceed sequentially. Single-threaded work is slow, and long tasks lose context.
+- **Split by module or feature, one responsibility per subagent**: list the modules or features before
+  delegating and give each subagent exactly one, with its files, acceptance criteria, and integration point.
+  Never give one subagent several unrelated modules to reduce the agent count. When one module needs several
+  subagents, state the boundary; when one subagent must cover several modules, state why they cannot be split.
 - **Choose foreground or background by dependency, not size**: use a foreground subagent when its result gates
   your next step, such as investigation, verification, or work you will build on; use a background subagent only
   when the work is independent and you can continue elsewhere. Choose per workstream, not per task. Decisions that
