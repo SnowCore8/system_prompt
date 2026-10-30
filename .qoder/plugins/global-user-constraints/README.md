@@ -16,8 +16,8 @@
 | `skills/system-prompt-authoring/` | 起草与审计指令文件的 skill |
 | `commands/constraints-check.md` | 手动触发约束审查 |
 | `hooks/hooks.json` | 时间注入 hook 配置 |
-| `scripts/inject-time.py` | 向支持 `additionalContext` 的事件注入当前本地时间 |
-| `scripts/test_inject_time.py` | hook 的表驱动测试 |
+| `scripts/inject-time.c` | 向支持 `additionalContext` 的事件注入当前本地时间 |
+| `scripts/bin/` | 编译产物（`inject-time`、`inject-time.exe`），已被 `.gitignore` 忽略 |
 | `qoder.md` / `qoderwork.md` | 插件级系统指令 |
 
 ## 安装与校验
@@ -44,19 +44,21 @@ Hook 注册在 Qoder CLI 支持 `additionalContext` 的 9 个事件上，matcher
 - `SessionStart`、`UserPromptSubmit`、`PreToolUse`、`PostToolUse`、`PostToolUseFailure`
 - `SubagentStart`、`Notification`、`CwdChanged`、`FileChanged`
 
-- 解释器用 `python`（PATH 上需有，3.7+），并以 `-X utf8` 启动；Windows 只提供 `python.exe` 没有 `python3`，同时该参数固定 stdin/stdout 编码，避免 ANSI 代码页下中文注入失败。
-- 读取 stdin 的事件 JSON，从 `hook_event_name` 取事件名。
+- hook 直接启动 `scripts/bin/` 下的二进制，无运行时解释器依赖；POSIX 用 `inject-time`，Windows 包内为 `inject-time.exe`，由 `scripts/dist.sh` 按平台生成对应 `command`。
+- 读取 stdin 的事件 JSON，取顶层 `hook_event_name`；嵌套值里的同名字段不会误匹配。
 - 输出 `hookSpecificOutput.hookEventName` 与 `hookSpecificOutput.additionalContext`，内容为 `当前时间：YYYY-MM-DD HH:MM:SS +HH:MM`。
+- 时间来自平台本地时间 API：POSIX 用 `localtime_r` + `%z`，Windows 用 `GetLocalTime` 与 UTC 差值计算偏移，含夏令时。
 - 事件名不在支持列表、stdin 不是 JSON 对象时静默退出 0，不输出内容。
 - 不支持 `additionalContext` 的事件（如 `Stop`、`PermissionRequest`、`PostCompact`、`InstructionsLoaded`）未注册。
 
 ## Hook 测试
 
 ```bash
-python3 -B -m unittest discover -s .qoder/plugins/global-user-constraints/scripts -p 'test_*.py'
+scripts/build-hooks.sh
+python3 -m unittest scripts.test_inject_time -v
 ```
 
-测试覆盖 9 个受支持事件的注入输出、未支持事件和非法 payload 的静默行为。
+测试运行 Linux 版二进制，覆盖 9 个受支持事件、未支持事件、非法与截断 payload、嵌套同名字段的静默或忽略行为。Windows 版二进制只做交叉编译，行为需在 Windows 上验证。
 
 ## 打包
 
@@ -66,11 +68,15 @@ python3 -B -m unittest discover -s .qoder/plugins/global-user-constraints/script
 scripts/dist.sh
 ```
 
-脚本按当前 `HEAD` 推导版本 `0.1.<改动插件的提交数>`，写回 manifest，再用短 commit id 生成 `global-user-constraints-<commit>.zip` 到仓库根目录；同一 commit 重复运行版本不变。
-版本写回之外的未提交改动会让文件名追加 `-dirty`；写回的版本要随代码提交。
-打包排除 `.DS_Store`、`__pycache__`、`.pyc`、`.qoder/settings.local.json` 和嵌套的 `.qoder/` 目录。
-zip 根目录直接包含 `.qoder-plugin/plugin.json`；结构校验后默认调用 Qoder 离线校验器，`--no-validate` 可跳过。
-zip 是生成物，已在 `.gitignore` 中忽略。
+脚本先调用 `scripts/build-hooks.sh` 编译两个平台的二进制，再按当前 `HEAD` 推导版本 `0.1.<改动插件的提交数>`，写回 manifest，用短 commit id 生成两个包到仓库根目录：
+
+- `global-user-constraints-<commit>-linux-x64.zip`
+- `global-user-constraints-<commit>-windows-x64.zip`
+
+同一 commit 重复运行版本不变。版本写回之外的未提交改动会让文件名追加 `-dirty`；写回的版本要随代码提交。
+每份 zip 只含本平台二进制，`hooks/hooks.json` 的 `command` 在打包时改写为对应文件名；Windows 用户解压后用 `plugin install` 安装该目录。
+打包排除 `.DS_Store`、`__pycache__`、`.pyc` 和其他平台二进制；zip 根目录直接包含 `.qoder-plugin/plugin.json`，结构校验后默认调用 Qoder 离线校验器，`--no-validate` 可跳过。
+zip 与 `scripts/bin/` 都是生成物，已在 `.gitignore` 中忽略。
 
 ## 边界
 

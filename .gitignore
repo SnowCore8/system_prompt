@@ -2,3 +2,5 @@ __pycache__/
 *.py[cod]
 .qoder/tmp/
 *.zip
+
+.qoder/plugins/global-user-constraints/scripts/bin/
