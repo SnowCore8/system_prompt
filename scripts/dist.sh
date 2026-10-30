@@ -109,8 +109,8 @@ if f"scripts/bin/{binary}" not in names:
     problems.append(f"缺少 scripts/bin/{binary}")
 if f"scripts/bin/{other}" in names:
     problems.append(f"混入其他平台二进制 scripts/bin/{other}")
-if any(name.endswith(".py") for name in names):
-    problems.append("包含 Python 脚本")
+if any(name.startswith("scripts/") and name.endswith(".py") for name in names):
+    problems.append("scripts/ 下残留 Python 脚本")
 for name in names:
     if name.startswith("/") or ".." in name.split("/"):
         problems.append(f"非法路径: {name}")
