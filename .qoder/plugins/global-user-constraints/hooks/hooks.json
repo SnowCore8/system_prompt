@@ -1,18 +1,137 @@
 {
-  "description": "Block obvious secret commits before git commit runs.",
+  "description": "Inject the current local time into hook events that support additionalContext.",
   "hooks": {
-    "PreToolUse": [
+    "SessionStart": [
       {
-        "matcher": "Bash|Shell|PowerShell|cmd",
         "hooks": [
           {
             "type": "command",
             "command": "python3",
             "args": [
-              "${QODER_PLUGIN_ROOT}/scripts/check-secret-commit.py"
+              "${QODER_PLUGIN_ROOT}/scripts/inject-time.py"
             ],
-            "timeout": 15,
-            "statusMessage": "正在检查提交中的 secret"
+            "name": "inject-time",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3",
+            "args": [
+              "${QODER_PLUGIN_ROOT}/scripts/inject-time.py"
+            ],
+            "name": "inject-time",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3",
+            "args": [
+              "${QODER_PLUGIN_ROOT}/scripts/inject-time.py"
+            ],
+            "name": "inject-time",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3",
+            "args": [
+              "${QODER_PLUGIN_ROOT}/scripts/inject-time.py"
+            ],
+            "name": "inject-time",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "PostToolUseFailure": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3",
+            "args": [
+              "${QODER_PLUGIN_ROOT}/scripts/inject-time.py"
+            ],
+            "name": "inject-time",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "SubagentStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3",
+            "args": [
+              "${QODER_PLUGIN_ROOT}/scripts/inject-time.py"
+            ],
+            "name": "inject-time",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "Notification": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3",
+            "args": [
+              "${QODER_PLUGIN_ROOT}/scripts/inject-time.py"
+            ],
+            "name": "inject-time",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "CwdChanged": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3",
+            "args": [
+              "${QODER_PLUGIN_ROOT}/scripts/inject-time.py"
+            ],
+            "name": "inject-time",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "FileChanged": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3",
+            "args": [
+              "${QODER_PLUGIN_ROOT}/scripts/inject-time.py"
+            ],
+            "name": "inject-time",
+            "timeout": 5
           }
         ]
       }

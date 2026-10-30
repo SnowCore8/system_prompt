@@ -9,7 +9,7 @@ Markdown 没有构建步骤；格式机检依赖 `markdown-it-py`。插件 zip �
 | 路径 | 作用 |
 |---|---|
 | `AGENTS.md` | 指向 `.qoder/plugins/global-user-constraints/rules/` 下规则文件的软链 |
-| `.qoder/plugins/global-user-constraints/` | 插件包：规则、skill、审查命令、secret 提交 hook |
+| `.qoder/plugins/global-user-constraints/` | 插件包：规则、skill、审查命令、时间注入 hook |
 | `.qoder/plugins/global-user-constraints/rules/global-user-constraints.md` | 始终生效的规则正文 |
 | `.qoder/plugins/global-user-constraints/skills/system-prompt-authoring/` | skill 源 |
 | `.qoder/skills/` | 指向插件 `skills/` 目录的软链 |
