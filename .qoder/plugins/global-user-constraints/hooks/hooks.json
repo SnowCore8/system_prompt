@@ -6,7 +6,12 @@
         "hooks": [
           {
             "type": "command",
-            "command": "${QODER_PLUGIN_ROOT}/scripts/bin/inject-time",
+            "command": "python",
+            "args": [
+              "-X",
+              "utf8",
+              "${QODER_PLUGIN_ROOT}/scripts/inject-time.py"
+            ],
             "name": "inject-time",
             "timeout": 5
           }
@@ -18,7 +23,12 @@
         "hooks": [
           {
             "type": "command",
-            "command": "${QODER_PLUGIN_ROOT}/scripts/bin/inject-time",
+            "command": "python",
+            "args": [
+              "-X",
+              "utf8",
+              "${QODER_PLUGIN_ROOT}/scripts/inject-time.py"
+            ],
             "name": "inject-time",
             "timeout": 5
           }
@@ -30,7 +40,12 @@
         "hooks": [
           {
             "type": "command",
-            "command": "${QODER_PLUGIN_ROOT}/scripts/bin/inject-time",
+            "command": "python",
+            "args": [
+              "-X",
+              "utf8",
+              "${QODER_PLUGIN_ROOT}/scripts/inject-time.py"
+            ],
             "name": "inject-time",
             "timeout": 5
           }
@@ -42,7 +57,12 @@
         "hooks": [
           {
             "type": "command",
-            "command": "${QODER_PLUGIN_ROOT}/scripts/bin/inject-time",
+            "command": "python",
+            "args": [
+              "-X",
+              "utf8",
+              "${QODER_PLUGIN_ROOT}/scripts/inject-time.py"
+            ],
             "name": "inject-time",
             "timeout": 5
           }
@@ -54,7 +74,12 @@
         "hooks": [
           {
             "type": "command",
-            "command": "${QODER_PLUGIN_ROOT}/scripts/bin/inject-time",
+            "command": "python",
+            "args": [
+              "-X",
+              "utf8",
+              "${QODER_PLUGIN_ROOT}/scripts/inject-time.py"
+            ],
             "name": "inject-time",
             "timeout": 5
           }
@@ -66,7 +91,12 @@
         "hooks": [
           {
             "type": "command",
-            "command": "${QODER_PLUGIN_ROOT}/scripts/bin/inject-time",
+            "command": "python",
+            "args": [
+              "-X",
+              "utf8",
+              "${QODER_PLUGIN_ROOT}/scripts/inject-time.py"
+            ],
             "name": "inject-time",
             "timeout": 5
           }
@@ -78,7 +108,12 @@
         "hooks": [
           {
             "type": "command",
-            "command": "${QODER_PLUGIN_ROOT}/scripts/bin/inject-time",
+            "command": "python",
+            "args": [
+              "-X",
+              "utf8",
+              "${QODER_PLUGIN_ROOT}/scripts/inject-time.py"
+            ],
             "name": "inject-time",
             "timeout": 5
           }
@@ -90,7 +125,12 @@
         "hooks": [
           {
             "type": "command",
-            "command": "${QODER_PLUGIN_ROOT}/scripts/bin/inject-time",
+            "command": "python",
+            "args": [
+              "-X",
+              "utf8",
+              "${QODER_PLUGIN_ROOT}/scripts/inject-time.py"
+            ],
             "name": "inject-time",
             "timeout": 5
           }
@@ -102,7 +142,12 @@
         "hooks": [
           {
             "type": "command",
-            "command": "${QODER_PLUGIN_ROOT}/scripts/bin/inject-time",
+            "command": "python",
+            "args": [
+              "-X",
+              "utf8",
+              "${QODER_PLUGIN_ROOT}/scripts/inject-time.py"
+            ],
             "name": "inject-time",
             "timeout": 5
           }
