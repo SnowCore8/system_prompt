@@ -1,7 +1,7 @@
 {
   "name": "global-user-constraints",
   "displayName": "Global User Constraints",
-  "version": "0.1.14",
+  "version": "0.1.15",
   "description": "Always-on user-level constraints, a system-prompt authoring skill, a manual audit command, and a hook that injects the current local time.",
   "descriptionZh": "始终生效的用户全局约束、system-prompt-authoring skill、手动审查命令，以及注入当前本地时间的 hook。",
   "author": {
