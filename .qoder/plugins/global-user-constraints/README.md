@@ -44,6 +44,7 @@ Hook 注册在 Qoder CLI 支持 `additionalContext` 的 9 个事件上，matcher
 - `SessionStart`、`UserPromptSubmit`、`PreToolUse`、`PostToolUse`、`PostToolUseFailure`
 - `SubagentStart`、`Notification`、`CwdChanged`、`FileChanged`
 
+- 解释器用 `python`（PATH 上需有，3.7+），并以 `-X utf8` 启动；Windows 只提供 `python.exe` 没有 `python3`，同时该参数固定 stdin/stdout 编码，避免 ANSI 代码页下中文注入失败。
 - 读取 stdin 的事件 JSON，从 `hook_event_name` 取事件名。
 - 输出 `hookSpecificOutput.hookEventName` 与 `hookSpecificOutput.additionalContext`，内容为 `当前时间：YYYY-MM-DD HH:MM:SS +HH:MM`。
 - 事件名不在支持列表、stdin 不是 JSON 对象时静默退出 0，不输出内容。

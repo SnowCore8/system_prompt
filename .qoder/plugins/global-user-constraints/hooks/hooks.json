@@ -6,8 +6,10 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3",
+            "command": "python",
             "args": [
+              "-X",
+              "utf8",
               "${QODER_PLUGIN_ROOT}/scripts/inject-time.py"
             ],
             "name": "inject-time",
@@ -21,8 +23,10 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3",
+            "command": "python",
             "args": [
+              "-X",
+              "utf8",
               "${QODER_PLUGIN_ROOT}/scripts/inject-time.py"
             ],
             "name": "inject-time",
@@ -36,8 +40,10 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3",
+            "command": "python",
             "args": [
+              "-X",
+              "utf8",
               "${QODER_PLUGIN_ROOT}/scripts/inject-time.py"
             ],
             "name": "inject-time",
@@ -51,8 +57,10 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3",
+            "command": "python",
             "args": [
+              "-X",
+              "utf8",
               "${QODER_PLUGIN_ROOT}/scripts/inject-time.py"
             ],
             "name": "inject-time",
@@ -66,8 +74,10 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3",
+            "command": "python",
             "args": [
+              "-X",
+              "utf8",
               "${QODER_PLUGIN_ROOT}/scripts/inject-time.py"
             ],
             "name": "inject-time",
@@ -81,8 +91,10 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3",
+            "command": "python",
             "args": [
+              "-X",
+              "utf8",
               "${QODER_PLUGIN_ROOT}/scripts/inject-time.py"
             ],
             "name": "inject-time",
@@ -96,8 +108,10 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3",
+            "command": "python",
             "args": [
+              "-X",
+              "utf8",
               "${QODER_PLUGIN_ROOT}/scripts/inject-time.py"
             ],
             "name": "inject-time",
@@ -111,8 +125,10 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3",
+            "command": "python",
             "args": [
+              "-X",
+              "utf8",
               "${QODER_PLUGIN_ROOT}/scripts/inject-time.py"
             ],
             "name": "inject-time",
@@ -126,8 +142,10 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3",
+            "command": "python",
             "args": [
+              "-X",
+              "utf8",
               "${QODER_PLUGIN_ROOT}/scripts/inject-time.py"
             ],
             "name": "inject-time",
