@@ -10,9 +10,9 @@
             "args": [
               "-X",
               "utf8",
-              "${QODER_PLUGIN_ROOT}/scripts/inject-context.py"
+              "${QODER_PLUGIN_ROOT}/scripts/inject-time.py"
             ],
-            "name": "inject-context",
+            "name": "inject-time",
             "timeout": 5
           }
         ]
@@ -27,9 +27,9 @@
             "args": [
               "-X",
               "utf8",
-              "${QODER_PLUGIN_ROOT}/scripts/inject-context.py"
+              "${QODER_PLUGIN_ROOT}/scripts/inject-time.py"
             ],
-            "name": "inject-context",
+            "name": "inject-time",
             "timeout": 5
           }
         ]
@@ -44,9 +44,9 @@
             "args": [
               "-X",
               "utf8",
-              "${QODER_PLUGIN_ROOT}/scripts/inject-context.py"
+              "${QODER_PLUGIN_ROOT}/scripts/inject-time.py"
             ],
-            "name": "inject-context",
+            "name": "inject-time",
             "timeout": 5
           }
         ]
@@ -61,9 +61,9 @@
             "args": [
               "-X",
               "utf8",
-              "${QODER_PLUGIN_ROOT}/scripts/inject-context.py"
+              "${QODER_PLUGIN_ROOT}/scripts/inject-time.py"
             ],
-            "name": "inject-context",
+            "name": "inject-time",
             "timeout": 5
           }
         ]
@@ -78,9 +78,9 @@
             "args": [
               "-X",
               "utf8",
-              "${QODER_PLUGIN_ROOT}/scripts/inject-context.py"
+              "${QODER_PLUGIN_ROOT}/scripts/inject-time.py"
             ],
-            "name": "inject-context",
+            "name": "inject-time",
             "timeout": 5
           }
         ]
@@ -95,9 +95,9 @@
             "args": [
               "-X",
               "utf8",
-              "${QODER_PLUGIN_ROOT}/scripts/inject-context.py"
+              "${QODER_PLUGIN_ROOT}/scripts/inject-time.py"
             ],
-            "name": "inject-context",
+            "name": "inject-time",
             "timeout": 5
           }
         ]
@@ -112,9 +112,9 @@
             "args": [
               "-X",
               "utf8",
-              "${QODER_PLUGIN_ROOT}/scripts/inject-context.py"
+              "${QODER_PLUGIN_ROOT}/scripts/inject-time.py"
             ],
-            "name": "inject-context",
+            "name": "inject-time",
             "timeout": 5
           }
         ]
@@ -129,9 +129,9 @@
             "args": [
               "-X",
               "utf8",
-              "${QODER_PLUGIN_ROOT}/scripts/inject-context.py"
+              "${QODER_PLUGIN_ROOT}/scripts/inject-time.py"
             ],
-            "name": "inject-context",
+            "name": "inject-time",
             "timeout": 5
           }
         ]
@@ -146,9 +146,9 @@
             "args": [
               "-X",
               "utf8",
-              "${QODER_PLUGIN_ROOT}/scripts/inject-context.py"
+              "${QODER_PLUGIN_ROOT}/scripts/inject-time.py"
             ],
-            "name": "inject-context",
+            "name": "inject-time",
             "timeout": 5
           }
         ]
