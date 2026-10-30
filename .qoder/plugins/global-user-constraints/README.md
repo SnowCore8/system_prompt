@@ -1,6 +1,6 @@
 # Global User Constraints Plugin
 
-把仓库根目录 `AGENTS.md` 的规则、`system-prompt-authoring` skill、手动审查命令和每次事件注入当前时间的 hook 打成一个 Qoder 插件。
+把仓库根目录 `AGENTS.md` 的规则、`system-prompt-authoring` skill、手动审查命令，以及注入当前时间与会话级规则的 hook 打成一个 Qoder 插件。
 
 源文件：
 
@@ -12,13 +12,13 @@
 | 路径 | 作用 |
 |---|---|
 | `.qoder-plugin/plugin.json` | 插件 manifest |
-| `rules/global-user-constraints.md` | always-on 规则，内容来自 `AGENTS.md` |
+| `rules/global-user-constraints.md` | 规则正文，内容来自 `AGENTS.md`；由 hook 在 `SessionStart`、`SubagentStart` 注入 |
 | `skills/system-prompt-authoring/` | 起草与审计指令文件的 skill |
 | `commands/constraints-check.md` | 手动触发约束审查 |
-| `hooks/hooks.json` | 时间注入 hook 配置 |
-| `scripts/inject-time.py` | 向支持 `additionalContext` 的事件注入当前本地时间 |
-| `scripts/test_inject_time.py` | hook 的表驱动测试 |
-| `qoder.md` / `qoderwork.md` | 插件级系统指令 |
+| `hooks/hooks.json` | 时间与规则注入 hook 配置 |
+| `scripts/inject-context.py` | 向支持 `additionalContext` 的事件注入当前本地时间；在 `SessionStart`、`SubagentStart` 追加规则正文 |
+| `scripts/test_inject_context.py` | hook 的表驱动测试 |
+| `qoder.md` / `qoderwork.md` | 插件级系统指令；当前 CLI 1.1.81 未读取，保留以兼容其他运行时 |
 
 ## 安装与校验
 
@@ -47,6 +47,7 @@ Hook 注册在 Qoder CLI 支持 `additionalContext` 的 9 个事件上，matcher
 - 解释器用 `python`（PATH 上需有，3.7+），并以 `-X utf8` 启动；Windows 只提供 `python.exe` 没有 `python3`，同时该参数固定 stdin/stdout 编码，避免 ANSI 代码页下中文注入失败。
 - 读取 stdin 的事件 JSON，从 `hook_event_name` 取事件名。
 - 输出 `hookSpecificOutput.hookEventName` 与 `hookSpecificOutput.additionalContext`，内容为 `当前时间：YYYY-MM-DD HH:MM:SS +HH:MM`。
+- `SessionStart`、`SubagentStart` 的输出在时间后追加 `rules/global-user-constraints.md` 正文（去掉 YAML frontmatter），使约束在无 `AGENTS.md` 的项目里也进入上下文。规则文件不可读时只注入时间。
 - 事件名不在支持列表、stdin 不是 JSON 对象时静默退出 0，不输出内容。
 - 不支持 `additionalContext` 的事件（如 `Stop`、`PermissionRequest`、`PostCompact`、`InstructionsLoaded`）未注册。
 
@@ -56,7 +57,7 @@ Hook 注册在 Qoder CLI 支持 `additionalContext` 的 9 个事件上，matcher
 python3 -B -m unittest discover -s .qoder/plugins/global-user-constraints/scripts -p 'test_*.py'
 ```
 
-测试覆盖 9 个受支持事件的注入输出、未支持事件和非法 payload 的静默行为。
+测试覆盖 9 个受支持事件的注入输出、`SessionStart`/`SubagentStart` 的规则注入、其余事件不注入规则、未支持事件和非法 payload 的静默行为。
 
 ## 打包
 
@@ -76,4 +77,5 @@ zip 是生成物，已在 `.gitignore` 中忽略。
 
 - 这是用户级插件，不替代企业 `global-security-guard`；企业插件仍是 managed，用户不能关闭。
 - 不要把 zip 或规则文件上传到公网平台；只走企业内网或已批准的分发通道。
-- Hook 只注入当前时间，不拦截工具调用；规则本身仍要求人工审查与真实输出验证。
+- Hook 只注入当前时间与规则，不拦截工具调用；规则本身仍要求人工审查与真实输出验证。
+- manifest 的 `rules` 字段保留给支持它的运行时；Qoder CLI 1.1.81 会忽略该字段（`plugin validate` 输出 `Unknown field 'rules' will be ignored`），所以规则改由 hook 注入。
