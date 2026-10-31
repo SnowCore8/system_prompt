@@ -1,6 +1,7 @@
 # AI 编码代理 system prompt
 
-本仓库维护全局约束、`system-prompt-authoring` skill、TS→C++ 翻译流水线的 agent 定义，以及把它们打包在一起的用户级 Qoder 插件。插件包是唯一事实源；根 `AGENTS.md`、项目 skills 和 agents 路径都是指向它的软链。改规则、改 skill、改 agent 或改插件前先读本文件。维护者：仓库所有者。
+本仓库维护全局约束、`system-prompt-authoring` skill、TS→C++ 翻译流水线的 agent 定义，以及把它们打包在一起的用户级 Qoder 插件。插件包是唯一事实源；根 `AGENTS.md`、项目 skills 和 agents 路径都是指向它的软链。改规则、改 skill、改 agent 或改插件前先读本文件。
+安装插件后需按插件 README 复制规则到用户规则目录，规则才会生效。维护者：仓库所有者。
 
 Markdown 没有构建步骤；格式机检依赖 `markdown-it-py`。插件 zip 由 `scripts/dist.sh` 打包，产物在仓库根目录。
 
@@ -43,11 +44,8 @@ qodercn plugins validate .qoder/plugins/global-user-constraints
 scripts/dist.sh
 ```
 
-版本由当前 `HEAD` 推导：`0.1.<改动插件的提交数（不含 plugin.json）>`，写回 manifest 后按短 commit id 打成 `global-user-constraints-<commit>.zip`。
-同一 commit 重复运行版本不变；新提交只要改动插件目录，版本加一。
-版本写回本身不算工作区改动；其他未提交改动会让文件名追加 `-dirty`，并提示到 stderr。
-打包后检查 zip 结构，并对插件目录运行 `qodercn plugins validate`；`--no-validate` 跳过校验。
-版本写回要随代码提交；zip 是生成物，已在 `.gitignore` 中忽略。打包成功后脚本会删除仓库根目录里的旧 zip，只保留本次产物。
+版本推导、`-dirty` 标记、zip 结构校验和旧 zip 清理的细节见插件 README 的「打包」节与 `scripts/dist.sh`。
+版本写回要随代码提交；zip 是生成物，已在 `.gitignore` 中忽略。
 
 插件包内容与 hook 行为见插件 [README](.qoder/plugins/global-user-constraints/README.md)。不要把规则文件、插件或 zip 上传到公网平台；走企业内网或已批准的通道。
 

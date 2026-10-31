@@ -1,10 +1,10 @@
 # Global User Constraints Plugin
 
-把仓库根目录 `AGENTS.md` 的规则、`system-prompt-authoring` skill、TS→C++ 翻译流水线的 agent 定义、手动审查命令和每次事件注入当前时间的 hook 打成一个 Qoder 插件。
+把仓库根目录 `AGENTS.md` 的规则、`system-prompt-authoring` skill、TS→C++ 翻译流水线的 agent 定义、手动审查命令和每次事件注入当前时间的 hook 打成一个 Qoder 插件。插件安装后，规则文件不会自动加载；按「安装与校验」中的规则激活步骤复制一次。
 
 源文件：
 
-- 规则源：`.qoder/plugins/global-user-constraints/rules/global-user-constraints.md`；根 `AGENTS.md` 是指向它的软链，规则经此在本仓库生效。
+- 规则源：`.qoder/plugins/global-user-constraints/rules/global-user-constraints.md`；根 `AGENTS.md` 是指向它的软链，规则经此在本仓库生效。安装场景需按「安装与校验」复制到用户规则目录。
 - skill 源：`.qoder/plugins/global-user-constraints/skills/system-prompt-authoring`；项目 `.qoder/skills` 是指向整个插件 `skills/` 目录的软链。
 - agent 源：`.qoder/plugins/global-user-constraints/agents`；项目 `.qoder/agents` 是指向它的软链。
 
@@ -21,11 +21,11 @@
 | `hooks/hooks.json` | 时间注入 hook 配置 |
 | `scripts/inject-time.py` | 向支持 `additionalContext` 的事件注入当前本地时间 |
 | `scripts/test_inject_time.py` | hook 的表驱动测试 |
-| `qoder.md` / `qoderwork.md` | 插件级系统指令 |
+| `qoder.md` / `qoderwork.md` | 插件级系统指令（宿主支持时加载；qodercli 1.1.81 的 `plugins validate` 不列此组件） |
 
 ## 安装与校验
 
-校验插件目录（`--strict` 让警告也以退出码 1 结束，`--json` 输出结构化报告）：
+校验插件目录（`--strict` 让警告也以退出码 1 结束，`--json` 输出结构化报告）。`qodercn` 与 `qodercli` 是同一 CLI 的两个入口，按环境选用其一：
 
 ```bash
 qodercn plugins validate .qoder/plugins/global-user-constraints
@@ -40,12 +40,21 @@ qodercli --cwd "$SMOKE_CWD" plugin install --scope local "$PLUGIN_ROOT"
 qodercli --cwd "$SMOKE_CWD" plugin list --json
 ```
 
+规则激活（安装场景必做；以下以本地目录安装为例）：
+
+```bash
+mkdir -p ~/.qoder-cn/rules
+cp "$PLUGIN_ROOT/rules/global-user-constraints.md" ~/.qoder-cn/rules/
+```
+
+`qodercli 1.1.81` 的 `plugins validate` 只加载 skills/agents/commands/hooks，不加载 `rules/`；不复制则约束不生效。
+
 ## 工作流
 
 `workflows/ts2cpp.js` 把四个 agent 串成一条流水线：Translate → Critique →（Fix → 再 Critique）→ Gate。
 
 - 脚本是纯 JavaScript，首句必须是 `export const meta`；写测试、改代码等副作用都经 `agent()` 交给各子代理执行。
-- 插件内注册名为 `global-user-constraints:ts2cpp`（`<plugin>:<meta.name>`）；用自然语言指名运行即可，例如「运行 global-user-constraints:ts2cpp，切片 xxx」。
+- 插件内注册名为 `global-user-constraints:ts2cpp`（`<plugin>:<meta.name>`）；用自然语言指名运行即可，例如「运行 global-user-constraints:ts2cpp，切片 xxx」。`qodercli 1.1.81` 的 `plugins validate` 不列 workflows，注册名以实际调用为准。
 - `args` 接受 `{ slice, tsPath, cppPath, maxRounds? }`，也可直接传切片描述字符串；`maxRounds` 默认 3。
 - 只有 `severity` 为 `需修复` / `阻断放行` 的分歧进入修复循环，`记录` 的不修。
 - 修复轮次用尽仍有未修分歧，或 Fixer 返回非「已修复」状态时，返回值 `escalated` 为 true，放行与否仍由 Orchestrator 门禁判定。
@@ -80,7 +89,7 @@ python3 -B -m unittest discover -s .qoder/plugins/global-user-constraints/script
 scripts/dist.sh
 ```
 
-脚本按当前 `HEAD` 推导版本 `0.1.<改动插件的提交数>`，写回 manifest，再用短 commit id 生成 `global-user-constraints-<commit>.zip` 到仓库根目录；同一 commit 重复运行版本不变。
+脚本按当前 `HEAD` 推导版本 `0.1.<改动插件的提交数（不含 plugin.json）>`，写回 manifest，再用短 commit id 生成 `global-user-constraints-<commit>.zip` 到仓库根目录；同一 commit 重复运行版本不变。
 版本写回之外的未提交改动会让文件名追加 `-dirty`；写回的版本要随代码提交。
 打包排除 `.DS_Store`、`__pycache__`、`.pyc`、`.qoder/settings.local.json` 和嵌套的 `.qoder/` 目录。
 zip 根目录直接包含 `.qoder-plugin/plugin.json`；结构校验后默认对插件目录运行 `qodercn plugins validate`，`--no-validate` 可跳过。
@@ -88,6 +97,6 @@ zip 是生成物，已在 `.gitignore` 中忽略。打包成功后脚本删除�
 
 ## 边界
 
-- 规则生效目录：`~/.qoder-cn/rules`、项目 `.qoder/rules`，以及向上遍历父目录的 `.qoder*/rules`；本仓库经根 `AGENTS.md` 软链引用插件内的规则正文。
+- 规则生效目录：`~/.qoder-cn/rules`、项目 `.qoder/rules`，以及向上遍历父目录的 `.qoder*/rules`；本仓库经根 `AGENTS.md` 软链引用插件内的规则正文。安装场景见「安装与校验」的规则激活步骤。
 - 不要把 zip 或规则文件上传到公网平台；只走企业内网或已批准的分发通道。
 - Hook 只注入当前时间，不拦截工具调用；规则本身仍要求人工审查与真实输出验证。
