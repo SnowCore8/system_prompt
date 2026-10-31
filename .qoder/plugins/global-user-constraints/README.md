@@ -84,7 +84,7 @@ scripts/dist.sh
 版本写回之外的未提交改动会让文件名追加 `-dirty`；写回的版本要随代码提交。
 打包排除 `.DS_Store`、`__pycache__`、`.pyc`、`.qoder/settings.local.json` 和嵌套的 `.qoder/` 目录。
 zip 根目录直接包含 `.qoder-plugin/plugin.json`；结构校验后默认对插件目录运行 `qodercn plugins validate`，`--no-validate` 可跳过。
-zip 是生成物，已在 `.gitignore` 中忽略。
+zip 是生成物，已在 `.gitignore` 中忽略。打包成功后脚本删除仓库根目录里的旧 zip，只保留本次产物。
 
 ## 边界
 

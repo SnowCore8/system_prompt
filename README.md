@@ -47,7 +47,7 @@ scripts/dist.sh
 同一 commit 重复运行版本不变；新提交只要改动插件目录，版本加一。
 版本写回本身不算工作区改动；其他未提交改动会让文件名追加 `-dirty`，并提示到 stderr。
 打包后检查 zip 结构，并对插件目录运行 `qodercn plugins validate`；`--no-validate` 跳过校验。
-版本写回要随代码提交；zip 是生成物，已在 `.gitignore` 中忽略。
+版本写回要随代码提交；zip 是生成物，已在 `.gitignore` 中忽略。打包成功后脚本会删除仓库根目录里的旧 zip，只保留本次产物。
 
 插件包内容与 hook 行为见插件 [README](.qoder/plugins/global-user-constraints/README.md)。不要把规则文件、插件或 zip 上传到公网平台；走企业内网或已批准的通道。
 

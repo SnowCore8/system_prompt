@@ -11,7 +11,7 @@ usage() {
 <仓库根>/global-user-constraints-<commit>.zip，commit 取 HEAD 短 id。
 除 manifest 版本写回外，工作区有未提交改动时文件名追加 -dirty。
 打包后检查 zip 结构，默认还会用 qodercn plugins validate 校验插件目录；
-命令不存在时跳过并提示。
+命令不存在时跳过并提示。校验通过后删除仓库根目录里的旧 zip，只保留本次产物。
 EOF
 }
 
@@ -91,5 +91,12 @@ if [ "$VALIDATE" -eq 1 ]; then
     echo "跳过插件校验: 未找到 qodercn 命令" >&2
   fi
 fi
+
+for old in "$REPO_ROOT"/global-user-constraints-*.zip; do
+  if [ -e "$old" ] && [ "$old" != "$OUT" ]; then
+    rm -f "$old"
+    echo "已删除旧 zip: $(basename "$old")" >&2
+  fi
+done
 
 echo "插件版本 $VERSION；已生成 $OUT"
