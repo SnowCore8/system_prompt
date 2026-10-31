@@ -16,6 +16,7 @@
 | `rules/global-user-constraints.md` | 规则正文，仓库根 `AGENTS.md` 软链的目标；插件运行时不加载 |
 | `skills/system-prompt-authoring/` | 起草与审计指令文件的 skill |
 | `agents/` | TS→C++ 翻译流水线：`Translator.md`、`Critic.md`、`Fixer.md`、`Orchestrator.md` |
+| `workflows/ts2cpp.js` | 把四个 agent 串成流水线的工作流脚本 |
 | `commands/constraints-check.md` | 手动触发约束审查 |
 | `hooks/hooks.json` | 时间注入 hook 配置 |
 | `scripts/inject-time.py` | 向支持 `additionalContext` 的事件注入当前本地时间 |
@@ -38,6 +39,17 @@ SMOKE_CWD="$(mktemp -d)"
 qodercli --cwd "$SMOKE_CWD" plugin install --scope local "$PLUGIN_ROOT"
 qodercli --cwd "$SMOKE_CWD" plugin list --json
 ```
+
+## 工作流
+
+`workflows/ts2cpp.js` 把四个 agent 串成一条流水线：Translate → Critique →（Fix → 再 Critique）→ Gate。
+
+- 脚本是纯 JavaScript，首句必须是 `export const meta`；脚本本身没有文件、网络和 shell 权限，所有副作用都经 `agent()` 交给子代理，因此 Critics 写失败测试、Fixer 改代码都由各自子代理完成。
+- 插件内注册名为 `global-user-constraints:ts2cpp`（`<plugin>:<meta.name>`）；用自然语言指名运行即可，例如「运行 global-user-constraints:ts2cpp，切片 xxx」。
+- `args` 接受 `{ slice, tsPath, cppPath, maxRounds? }`，也可直接传切片描述字符串；`maxRounds` 默认 3。
+- 只有 `severity` 为 `需修复` / `阻断放行` 的分歧进入修复循环，`记录` 的不修。
+- 修复轮次用尽仍有未修分歧，或 Fixer 返回非「已修复」状态时，返回值 `escalated` 为 true，放行与否仍由 Orchestrator 门禁判定。
+- 调用 agent 时先按裸名（`Translator` 等），遇到 `Unknown agent type` 时回退到 `global-user-constraints:` 前缀，兼容项目级 agent 与插件安装两种注册方式。
 
 ## Hook 行为
 

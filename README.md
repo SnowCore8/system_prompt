@@ -13,6 +13,7 @@ Markdown 没有构建步骤；格式机检依赖 `markdown-it-py`。插件 zip �
 | `.qoder/plugins/global-user-constraints/rules/global-user-constraints.md` | 规则正文；靠根 `AGENTS.md` 软链生效，插件运行时不加载 |
 | `.qoder/plugins/global-user-constraints/skills/system-prompt-authoring/` | skill 源 |
 | `.qoder/plugins/global-user-constraints/agents/` | TS→C++ 翻译流水线的四个 agent 定义源 |
+| `.qoder/plugins/global-user-constraints/workflows/` | TS→C++ 翻译流水线的工作流源 |
 | `.qoder/plugins/marketplace.json` | 本仓库插件的市场描述文件，承载 `category`/`tags` 等市场字段 |
 | `.qoder/skills/` | 指向插件 `skills/` 目录的软链 |
 | `.qoder/agents/` | 指向插件 `agents/` 目录的软链 |
