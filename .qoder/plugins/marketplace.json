@@ -1,0 +1,22 @@
+{
+  "name": "system-prompt-local",
+  "owner": {
+    "name": "SnowCore8"
+  },
+  "metadata": {
+    "description": "本仓库自带的插件市场描述文件，用于以市场方式安装 .qoder/plugins 下的插件。",
+    "pluginRoot": "."
+  },
+  "plugins": [
+    {
+      "name": "global-user-constraints",
+      "category": "developer-tools",
+      "tags": [
+        "rules",
+        "skill",
+        "security"
+      ],
+      "source": "./global-user-constraints"
+    }
+  ]
+}
