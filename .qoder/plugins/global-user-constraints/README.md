@@ -89,6 +89,5 @@ zip 是生成物，已在 `.gitignore` 中忽略。
 ## 边界
 
 - 规则生效目录：`~/.qoder-cn/rules`、项目 `.qoder/rules`，以及向上遍历父目录的 `.qoder*/rules`；本仓库经根 `AGENTS.md` 软链引用插件内的规则正文。
-- 这是用户级插件，不替代企业 `global-security-guard`；企业插件仍是 managed，用户不能关闭。
 - 不要把 zip 或规则文件上传到公网平台；只走企业内网或已批准的分发通道。
 - Hook 只注入当前时间，不拦截工具调用；规则本身仍要求人工审查与真实输出验证。

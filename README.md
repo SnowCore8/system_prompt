@@ -52,5 +52,3 @@ scripts/dist.sh
 插件包内容与 hook 行为见插件 [README](.qoder/plugins/global-user-constraints/README.md)。不要把规则文件、插件或 zip 上传到公网平台；走企业内网或已批准的通道。
 
 插件规则生效目录：`~/.qoder-cn/rules`、项目 `.qoder/rules`，以及向上遍历父目录的 `.qoder*/rules`。本仓库的规则正文放在插件内，经根 `AGENTS.md` 软链引用。
-
-企业 `global-security-guard` 是独立的托管（managed）插件；本仓库不关闭也不替代它。
