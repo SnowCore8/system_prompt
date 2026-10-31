@@ -1,7 +1,7 @@
 {
   "name": "global-user-constraints",
   "displayName": "Global User Constraints",
-  "version": "0.1.22",
+  "version": "0.1.23",
   "description": "Always-on user-level constraints, a system-prompt authoring skill, a manual audit command, and a hook that injects the current local time.",
   "author": {
     "name": "SnowCore8"
