@@ -13,13 +13,14 @@ validated by the checker script (`script/check.py`).
 
 1. Confirm the target file, task type (new file or audit), and intent: answer, assess, or change files.
    A question gets an answer only; an action request with a target gets the work; an ambiguous request gets
-   analysis and options first. If the path or intent is unclear, ask; do not guess.
+   analysis and options first. If the path or intent is unclear, ask; do not guess. If the target is not an
+   instruction file, state that it is out of scope and stop.
 2. Collect information using the "Five Inputs". Do not ask for what the repository can answer; when something is truly unavailable, use the default and state the assumption in the report.
 3. For a new file, fill in the "Template" and delete sections the task does not need. For an audit, apply the "Deletion Criterion" line by line and keep each constraint in one place.
 4. Check content rules S1–S13 manually. The script does not judge these rules; a passing format check does not mean the content is good.
 5. Run the format check and fix `[错误]` items. Write a conclusion for every `[警告]` item; "looks fine" is not a conclusion.
-6. Report in a fixed order: file path; checker command and verbatim output; item-by-item S1–S13 conclusions; unresolved items and assumptions. If an item is unexplained, do not say
-   the work is complete.
+6. Report in a fixed order: file path; checker command and verbatim output; item-by-item S1–S13 conclusions; unresolved items and assumptions. Keep the report concise and paste only
+   key output. If an item is unexplained, do not say the work is complete.
 
 If the work has more than four steps, create a todo list before starting and update status after every step; before the report,
 reconcile it so every item is completed, cancelled, or explicitly blocked. Update each item when its state changes; never
@@ -83,7 +84,7 @@ present, and do not treat numbering as evidence when absent.
   out; ANT-PBP says strong wording written for older models should be pulled back. Emphasize only red lines, or one observed skipped rule, and state the observation.
 - **Granularity**: write goals and constraints first. List steps only when order or completeness is critical, and state what happens if a step is skipped (ANT-PBP: "Prefer general
   instructions over prescriptive steps."). For non-reasoning models that need explicit planning, add `Reasoning Steps` per OAI-41.
-- **Length**: no line limit; use S9.
+- **Length**: no total-length limit; per-line limit is S12.
 - **Prohibitions**: keep red lines and state why; for everything else, write the alternative behavior.
 - **Priority**: numbering itself does not create priority; do not write "the lower number wins." A file may explicitly declare ordering; follow it. OAI-MS levels: root > system >
   developer > user > guideline; a later message at the same level overrides an earlier one.
@@ -105,7 +106,7 @@ If the answer is "no," delete it. The criterion is signal, not word count (ANT-C
 | Style requirements that differ from language defaults | General language conventions |
 | How to run tests and which runner to use | Detailed API documentation (link instead) |
 | Repository conventions (branch naming, commit format) | Fast-changing information |
-| Project-specific architectural decisions | File-by-file descriptions |
+| Project-specific architectural decisions | Long explanations or tutorials |
 | Required environment variables | Self-evident requirements such as "write clean code" |
 
 Examples: 3–5, each showing behavior not covered by the rules; fold edge cases into examples instead of a separate checklist (ANT-CE opposes laundry lists). Do not add examples for
@@ -152,7 +153,7 @@ In CI, add `--strict`; warnings also fail and the exit code is 1:
 python3 <skill-dir>/script/check.py --strict AGENTS.md
 ```
 
-The script depends on `markdown-it-py`; if it is missing, the script reports an error and prints an install command; it does not install automatically. The script's own tests use the standard
+The script depends on `markdown-it-py>=3`; if it is missing, the script reports an error and prints an install command; it does not install automatically. The script's own tests use the standard
 library unittest:
 
 ```bash
@@ -171,7 +172,7 @@ Output has three levels:
 
 Each finding gives a location (`L<line>` or whole file), rule ID, reason, and suggested fix.
 
-Grouped by file, structure, headings, lists, tables, links, inline, and layout.
+Grouped by level, then by line.
 
 | Rule | Level | Checks |
 |---|---|---|
@@ -182,7 +183,7 @@ Grouped by file, structure, headings, lists, tables, links, inline, and layout.
 | MD-FENCE | Error | Unclosed fence |
 | MD-FENCE-LANG | Suggestion | Fenced code block has no language tag |
 | MD-FENCE-STYLE | Suggestion | Mixed backtick and tilde fences in one file |
-| MD-HTML-COMMENT | Error | Unclosed HTML comment; an unclosed inline comment reports the same rule |
+| MD-HTML-COMMENT | Error / Warning | Block comment unclosed: Error; inline comment unclosed: Warning (fails only with `--strict`) |
 | MD-HTML-BLOCK | Error | Unclosed `<script>`, `<style>`, `<pre>`, or `<textarea>` block |
 | MD-HEAD-SPACE | Warning | No space after `#`; the line renders as a paragraph |
 | MD-HEAD-MULTI-SPACE | Warning | Multiple spaces after `#` |
@@ -316,7 +317,8 @@ to skip it.
 - <Build/test commands, environment variables, and other information the model cannot guess>
 ```
 
-Section order follows OAI-PE's Identity → Instructions → Examples → Context and the OAI-41 template.
+Section order follows the template: Role and Objective → Instructions → Workflow → Output Format → Examples → Context. This is OAI-PE's Identity → Instructions → Examples → Context
+with Workflow and Output Format inserted.
 
 ## Examples
 
@@ -344,7 +346,7 @@ A task is done when: tests pass + the change note is clear + no uncommitted chan
 - Ambiguous request: first list two or three interpretations, ask the user to choose, and do not pick one and start.
 - Insufficient information: read the code and tests first; if still unclear, ask; do not guess interface semantics.
 - Out of scope: state the boundary, give options, and do not act.
-- Conflicting instructions: point out the conflict, follow this file's constraints, and record the deviation in the delivery.
+- Conflicting instructions: point out the conflict, follow the higher-level constraint, and record the deviation in the delivery.
 
 # Workflow
 1. Read the relevant code and tests; confirm the current state.
@@ -353,7 +355,7 @@ A task is done when: tests pass + the change note is clear + no uncommitted chan
 4. Write the change note.
 
 # Output Format
-- Conclusion first, then evidence.
+- Conclusion first, then evidence; keep the note under 200 words.
 - Paste verification results verbatim with the exit code; if not run, write "not run."
 
 # Context

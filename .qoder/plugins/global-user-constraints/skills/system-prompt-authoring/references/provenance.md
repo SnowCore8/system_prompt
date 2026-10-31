@@ -70,6 +70,7 @@ CC-BP §Write an effective CLAUDE.md (Include/Exclude table):
 - "Bash commands Claude can't guess" / "Anything Claude can figure out by reading code"
 - "Testing instructions and preferred test runners" / "Detailed API documentation (link to docs instead)"
 - "Architectural decisions specific to your project" / "Long explanations or tutorials"
+- Rows 2, 4, and 6 of the SKILL table (style, repository conventions, environment variables) are derived engineering guidance, not quotations from CC-BP.
 
 ## S9 Delete line by line
 
