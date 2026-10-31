@@ -10,7 +10,7 @@ Markdown 没有构建步骤；格式机检依赖 `markdown-it-py`。插件 zip �
 |---|---|
 | `AGENTS.md` | 指向 `.qoder/plugins/global-user-constraints/rules/` 下规则文件的软链 |
 | `.qoder/plugins/global-user-constraints/` | 插件包：规则、skill、agent、审查命令、时间注入 hook |
-| `.qoder/plugins/global-user-constraints/rules/global-user-constraints.md` | 规则正文；靠根 `AGENTS.md` 软链生效，插件运行时不加载 |
+| `.qoder/plugins/global-user-constraints/rules/global-user-constraints.md` | 规则正文；经根 `AGENTS.md` 软链生效 |
 | `.qoder/plugins/global-user-constraints/skills/system-prompt-authoring/` | skill 源 |
 | `.qoder/plugins/global-user-constraints/agents/` | TS→C++ 翻译流水线的四个 agent 定义源 |
 | `.qoder/plugins/global-user-constraints/workflows/` | TS→C++ 翻译流水线的工作流源 |
@@ -46,11 +46,11 @@ scripts/dist.sh
 版本由当前 `HEAD` 推导：`0.1.<改动插件的提交数（不含 plugin.json）>`，写回 manifest 后按短 commit id 打成 `global-user-constraints-<commit>.zip`。
 同一 commit 重复运行版本不变；新提交只要改动插件目录，版本加一。
 版本写回本身不算工作区改动；其他未提交改动会让文件名追加 `-dirty`，并提示到 stderr。
-打包后检查 zip 结构，并对插件目录运行 `qodercn plugins validate`；`--no-validate` 跳过校验，`qodercn` 不在 PATH 时脚本会提示并跳过。
+打包后检查 zip 结构，并对插件目录运行 `qodercn plugins validate`；`--no-validate` 跳过校验。
 版本写回要随代码提交；zip 是生成物，已在 `.gitignore` 中忽略。
 
 插件包内容与 hook 行为见插件 [README](.qoder/plugins/global-user-constraints/README.md)。不要把规则文件、插件或 zip 上传到公网平台；走企业内网或已批准的通道。
 
-插件不携带 always-on 规则：规则引擎只扫描 `~/.qoder-cn/rules`、项目 `.qoder/rules` 和向上遍历父目录的 `.qoder*/rules`，插件 `rules/` 目录不在其中，`rules` 也不是合法 manifest 键。规则在本仓库靠根 `AGENTS.md` 软链生效；要在别处生效，需把规则文件放进上述任一目录。
+插件规则生效目录：`~/.qoder-cn/rules`、项目 `.qoder/rules`，以及向上遍历父目录的 `.qoder*/rules`。本仓库的规则正文放在插件内，经根 `AGENTS.md` 软链引用。
 
 企业 `global-security-guard` 是独立的托管（managed）插件；本仓库不关闭也不替代它。
