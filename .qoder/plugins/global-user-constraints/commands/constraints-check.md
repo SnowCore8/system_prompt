@@ -2,7 +2,9 @@
 description: 按全局用户约束审查当前对话中的请求、建议或即将执行的命令
 ---
 
-按全局用户约束审查当前对话中的请求或方案。
+按 `global-user-constraints` 全局规则的约束审查当前对话中的请求或方案。若规则不在上下文中，先读取 `~/.qoder-cn/rules/global-user-constraints.md`、项目
+`.qoder/rules/global-user-constraints.md` 或插件内的 `rules/global-user-constraints.md`；读取不到时，报告无法审查，不凭记忆补规则。审查对象不是请求、方案、命令或配置时，
+说明超出范围，不审查。
 
 审查对象包括：用户刚提出的需求、你准备给出的建议、以及任何即将执行的命令或配置。
 
