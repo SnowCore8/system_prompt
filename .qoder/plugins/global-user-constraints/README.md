@@ -1,19 +1,21 @@
 # Global User Constraints Plugin
 
-把仓库根目录 `AGENTS.md` 的规则、`system-prompt-authoring` skill、手动审查命令和每次事件注入当前时间的 hook 打成一个 Qoder 插件。
+把仓库根目录 `AGENTS.md` 的规则、`system-prompt-authoring` skill、TS→C++ 翻译流水线的 agent 定义、手动审查命令和每次事件注入当前时间的 hook 打成一个 Qoder 插件。
 
 源文件：
 
-- 规则源：`.qoder/plugins/global-user-constraints/rules/global-user-constraints.md`；根 `AGENTS.md` 是指向它的软链。
+- 规则源：`.qoder/plugins/global-user-constraints/rules/global-user-constraints.md`；根 `AGENTS.md` 是指向它的软链。插件运行时不加载 `rules/`，该目录只是本仓库的规则事实源（见「边界」）。
 - skill 源：`.qoder/plugins/global-user-constraints/skills/system-prompt-authoring`；项目 `.qoder/skills` 是指向整个插件 `skills/` 目录的软链。
+- agent 源：`.qoder/plugins/global-user-constraints/agents`；项目 `.qoder/agents` 是指向它的软链。
 
 ## 结构
 
 | 路径 | 作用 |
 |---|---|
 | `.qoder-plugin/plugin.json` | 插件 manifest |
-| `rules/global-user-constraints.md` | always-on 规则，内容来自 `AGENTS.md` |
+| `rules/global-user-constraints.md` | 规则正文，仓库根 `AGENTS.md` 软链的目标；插件运行时不加载 |
 | `skills/system-prompt-authoring/` | 起草与审计指令文件的 skill |
+| `agents/` | TS→C++ 翻译流水线：`Translator.md`、`Critic.md`、`Fixer.md`、`Orchestrator.md` |
 | `commands/constraints-check.md` | 手动触发约束审查 |
 | `hooks/hooks.json` | 时间注入 hook 配置 |
 | `scripts/inject-time.py` | 向支持 `additionalContext` 的事件注入当前本地时间 |
@@ -22,10 +24,10 @@
 
 ## 安装与校验
 
-离线校验：
+校验插件目录（`--strict` 让警告也以退出码 1 结束，`--json` 输出结构化报告）：
 
 ```bash
-python3 ~/.qoder/plugins/cache/qoder-bundler/qoder-create-plugin/skills/create-plugin/scripts/validate_qoder_plugin.py .qoder/plugins/global-user-constraints
+qodercn plugins validate .qoder/plugins/global-user-constraints
 ```
 
 本地安装 smoke test 使用临时目录，不要污染当前项目：
@@ -69,11 +71,12 @@ scripts/dist.sh
 脚本按当前 `HEAD` 推导版本 `0.1.<改动插件的提交数>`，写回 manifest，再用短 commit id 生成 `global-user-constraints-<commit>.zip` 到仓库根目录；同一 commit 重复运行版本不变。
 版本写回之外的未提交改动会让文件名追加 `-dirty`；写回的版本要随代码提交。
 打包排除 `.DS_Store`、`__pycache__`、`.pyc`、`.qoder/settings.local.json` 和嵌套的 `.qoder/` 目录。
-zip 根目录直接包含 `.qoder-plugin/plugin.json`；结构校验后默认调用 Qoder 离线校验器，`--no-validate` 可跳过。
+zip 根目录直接包含 `.qoder-plugin/plugin.json`；结构校验后默认对插件目录运行 `qodercn plugins validate`（校验对象是源目录，不是 zip；`qodercn` 不在 PATH 时跳过并提示），`--no-validate` 可跳过。
 zip 是生成物，已在 `.gitignore` 中忽略。
 
 ## 边界
 
+- 插件不能携带 always-on 规则：规则引擎只扫描 `~/.qoder-cn/rules`、项目 `.qoder/rules`，以及向上遍历父目录的 `.qoder*/rules`；插件目录不在扫描范围内，`rules` 也不是合法 manifest 键（会被判为 `unknown_field` 并忽略）。要在其他项目生效，需把规则文件放进上述任一目录，或改用 hook 注入。
 - 这是用户级插件，不替代企业 `global-security-guard`；企业插件仍是 managed，用户不能关闭。
 - 不要把 zip 或规则文件上传到公网平台；只走企业内网或已批准的分发通道。
 - Hook 只注入当前时间，不拦截工具调用；规则本身仍要求人工审查与真实输出验证。
