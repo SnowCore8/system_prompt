@@ -41,11 +41,11 @@ qodercli --cwd "$SMOKE_CWD" plugin install --scope local "$PLUGIN_ROOT"
 qodercli --cwd "$SMOKE_CWD" plugin list --json
 ```
 
-规则激活（安装场景必做；以下以本地目录安装为例）：
+规则激活（安装场景必做）。复制源取决于安装方式：本地目录安装用仓库根级 `rules/`，zip 或市场安装用插件安装目录下的 `rules/`（含 `.qoder-plugin/plugin.json` 的目录）：
 
 ```bash
 mkdir -p ~/.qoder-cn/rules
-cp rules/global-user-constraints.md ~/.qoder-cn/rules/
+cp <插件目录>/rules/global-user-constraints.md ~/.qoder-cn/rules/
 ```
 
 插件包内含 `rules/global-user-constraints.md`，但宿主不从包内加载约束：`qodercli 1.1.81` 的 `plugins validate` 只加载 skills/agents/commands/hooks，不加载 `rules/`。安装后仍要把规则复制到 `~/.qoder-cn/rules`，否则约束不生效。
