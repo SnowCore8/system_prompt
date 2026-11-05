@@ -1,6 +1,8 @@
 # AI 编码代理 system prompt
 
-本仓库维护全局约束、`system-prompt-authoring` skill、TS→C++ 翻译流水线的 agent 定义，以及把它们打包在一起的用户级 Qoder 插件。插件包在 `plugins/global-user-constraints/`，约束规则正文在 `rules/`，两者是本仓库的唯一真源；`.qwen/` 是统一入口，`.qoder`、`.qoder-cn` 指向它，三个点目录解析到同一份源。改规则、改 skill、改 agent 或改插件前先读本文件。
+本仓库维护全局约束、`system-prompt-authoring` skill、TS→C++ 翻译流水线的 agent 定义，以及把它们打包在一起的用户级 Qoder 插件。
+插件包在 `plugins/global-user-constraints/`，约束规则正文在 `rules/`，两者是本仓库的唯一真源；`.qwen/` 是统一入口，`.qoder`、`.qoder-cn` 指向它，
+三个点目录解析到同一份源。改规则、改 skill、改 agent 或改插件前先读本文件。
 安装插件后需按插件 README 把规则复制到用户规则目录，规则才会生效。维护者：仓库所有者。
 
 Markdown 没有构建步骤；格式机检依赖 `markdown-it-py`。插件 zip 由 `scripts/dist.sh` 打包，产物在仓库根目录。

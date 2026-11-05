@@ -226,7 +226,7 @@ Grouped by level, then by line.
 
 These checks are based on CommonMark parser results, not line-by-line regular expressions:
 
-- Structure checks skip fences, indented code, HTML blocks, and front matter. `<example>` is no longer special; it is treated as ordinary HTML.
+- Structure checks skip fences, indented code, HTML blocks, and front matter. `<example>` is treated as ordinary HTML.
 - BOM, mixed line endings, and trailing blank lines are checked from the raw text; the BOM is stripped before parsing so it does not affect the first heading.
 - Blank-line-before checks only look at top-level blocks; blocks inside nested lists or blockquotes, and blocks after headings, are not reported.
 - Blank-line-after checks only look at top-level blocks; blocks inside nested lists or blockquotes are not reported, and blank lines already at the end of a block are skipped.
