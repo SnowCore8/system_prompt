@@ -1,10 +1,10 @@
 # Global User Constraints Plugin
 
-把 `system-prompt-authoring` skill、TS→C++ 翻译流水线的 agent 定义、手动审查命令和每次事件注入当前时间的 hook 打成一个 Qoder 插件。规则正文不在插件包内，位于仓库根级 `rules/global-user-constraints.md`。插件安装后规则不会自动加载；按「安装与校验」中的规则激活步骤复制一次。
+把 `system-prompt-authoring` skill、TS→C++ 翻译流水线的 agent 定义、手动审查命令和每次事件注入当前时间的 hook 打成一个 Qoder 插件。规则正文唯一真源在仓库根级 `rules/global-user-constraints.md`，打包时随包分发。插件安装后规则不会自动加载；按「安装与校验」中的规则激活步骤复制一次。
 
 源文件：
 
-- 规则源：`rules/global-user-constraints.md`（仓库根级，不在插件包内）；`.qwen/rules` 软链指向它，`.qoder`、`.qoder-cn` 经 `.qwen` 解析到同一份。安装场景需按「安装与校验」复制到用户规则目录。
+- 规则源：`rules/global-user-constraints.md`（仓库根级，打包时随包分发）；`.qwen/rules` 软链指向它，`.qoder`、`.qoder-cn` 经 `.qwen` 解析到同一份。安装场景需按「安装与校验」复制到用户规则目录。
 - 插件源：`plugins/global-user-constraints`；`.qwen/plugins` 软链指向根级 `plugins/`。
 - skill 源：`plugins/global-user-constraints/skills/system-prompt-authoring`。
 - agent 源：`plugins/global-user-constraints/agents`。
@@ -13,6 +13,7 @@
 
 | 路径 | 作用 |
 |---|---|
+| `rules/` | 约束规则正文（软链到根级 `rules/`，打包时解引用为真实文件） |
 | `.qoder-plugin/plugin.json` | 插件 manifest |
 | `skills/system-prompt-authoring/` | 起草与审计指令文件的 skill |
 | `agents/` | TS→C++ 翻译流水线：`Translator.md`、`Critic.md`、`Fixer.md`、`Orchestrator.md` |
@@ -47,7 +48,7 @@ mkdir -p ~/.qoder-cn/rules
 cp rules/global-user-constraints.md ~/.qoder-cn/rules/
 ```
 
-插件包不含规则正文，规则正本在仓库根级 `rules/`。`qodercli 1.1.81` 的 `plugins validate` 只加载 skills/agents/commands/hooks，不加载 `rules/`；不复制则约束不生效。
+插件包内含 `rules/global-user-constraints.md`，但宿主不从包内加载约束：`qodercli 1.1.81` 的 `plugins validate` 只加载 skills/agents/commands/hooks，不加载 `rules/`。安装后仍要把规则复制到 `~/.qoder-cn/rules`，否则约束不生效。
 
 ## 工作流
 
@@ -92,7 +93,8 @@ scripts/dist.sh
 脚本按当前 `HEAD` 推导版本 `0.1.<改动插件的提交数（不含 plugin.json）>`，写回 manifest，再用短 commit id 生成 `global-user-constraints-<commit>.zip` 到仓库根目录；同一 commit 重复运行版本不变。
 版本写回之外的未提交改动会让文件名追加 `-dirty`；写回的版本要随代码提交。
 打包排除 `.DS_Store`、`__pycache__`、`.pyc`、`.qoder/settings.local.json` 和嵌套的 `.qoder/` 目录。
-zip 根目录直接包含 `.qoder-plugin/plugin.json`；结构校验后默认对插件目录运行 `qodercn plugins validate`，`--no-validate` 可跳过。
+打包时先把插件目录复制到临时目录并用 `cp -aL` 解引用软链，`rules/` 在 zip 内是真实文件；临时目录在脚本退出时删除。
+zip 根目录直接包含 `.qoder-plugin/plugin.json` 与 `rules/global-user-constraints.md`；结构校验后默认对插件目录运行 `qodercn plugins validate`，`--no-validate` 可跳过。
 zip 是生成物，已在 `.gitignore` 中忽略。打包成功后脚本删除仓库根目录里的旧 zip，只保留本次产物。
 
 ## 边界

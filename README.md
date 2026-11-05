@@ -1,8 +1,8 @@
 # AI 编码代理 system prompt
 
 本仓库维护全局约束、`system-prompt-authoring` skill、TS→C++ 翻译流水线的 agent 定义，以及把它们打包在一起的用户级 Qoder 插件。
-插件包在 `plugins/global-user-constraints/`，约束规则正文在 `rules/`，两者是本仓库的唯一真源；`.qwen/` 是统一入口，`.qoder`、`.qoder-cn` 指向它，
-三个点目录解析到同一份源。改规则、改 skill、改 agent 或改插件前先读本文件。
+插件包在 `plugins/global-user-constraints/`，约束规则正文在 `rules/`，两者是本仓库的唯一真源；插件内的 `rules` 软链指向根级 `rules/`，打包时解引用，仓库仍只有一份规则。
+`.qwen/` 是统一入口，`.qoder`、`.qoder-cn` 指向它，三个点目录解析到同一份源。改规则、改 skill、改 agent 或改插件前先读本文件。
 安装插件后需按插件 README 把规则复制到用户规则目录，规则才会生效。维护者：仓库所有者。
 
 Markdown 没有构建步骤；格式机检依赖 `markdown-it-py`。插件 zip 由 `scripts/dist.sh` 打包，产物在仓库根目录。
@@ -11,7 +11,7 @@ Markdown 没有构建步骤；格式机检依赖 `markdown-it-py`。插件 zip �
 
 | 路径 | 作用 |
 |---|---|
-| `plugins/global-user-constraints/` | 插件包：skill、agent、审查命令、时间注入 hook、工作流 |
+| `plugins/global-user-constraints/` | 插件包：skill、agent、审查命令、时间注入 hook、工作流、规则软链 |
 | `plugins/global-user-constraints/.qoder-plugin/plugin.json` | 插件 manifest |
 | `plugins/global-user-constraints/skills/system-prompt-authoring/` | skill 源 |
 | `plugins/global-user-constraints/agents/` | TS→C++ 翻译流水线的四个 agent 定义源 |
@@ -45,7 +45,7 @@ qodercn plugins validate plugins/global-user-constraints
 scripts/dist.sh
 ```
 
-版本推导、`-dirty` 标记、zip 结构校验和旧 zip 清理的细节见插件 README 的「打包」节与 `scripts/dist.sh`。
+版本推导、`-dirty` 标记、规则软链解引用、zip 结构校验和旧 zip 清理的细节见插件 README 的「打包」节与 `scripts/dist.sh`。
 版本写回要随代码提交；zip 是生成物，已在 `.gitignore` 中忽略。
 
 插件包内容与 hook 行为见插件 [README](plugins/global-user-constraints/README.md)。不要把规则文件、插件或 zip 上传到公网平台；走企业内网或已批准的通道。

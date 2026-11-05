@@ -10,6 +10,7 @@ usage() {
 .qoder-plugin/plugin.json；同一 commit 重复运行版本不变。插件目录打成
 <仓库根>/global-user-constraints-<commit>.zip，commit 取 HEAD 短 id。
 除 manifest 版本写回外，工作区有未提交改动时文件名追加 -dirty。
+插件目录内的 rules/ 软链会解引用为真实文件，规则正文随包分发。
 打包后检查 zip 结构，默认还会用 qodercn plugins validate 校验插件目录；
 命令不存在时跳过并提示。校验通过后删除仓库根目录里的旧 zip，只保留本次产物。
 EOF
@@ -57,8 +58,12 @@ fi
 OUT="$REPO_ROOT/global-user-constraints-$COMMIT.zip"
 
 rm -f "$OUT"
+STAGE="$(mktemp -d)"
+trap 'rm -rf "$STAGE"' EXIT
+# 插件目录内的 rules 是指向仓库根级 rules/ 的软链；解引用后进包，包里是真实文件
+cp -aL "$PLUGIN_DIR/." "$STAGE/"
 (
-  cd "$PLUGIN_DIR"
+  cd "$STAGE"
   zip -qr "$OUT" . \
     -x "**/.DS_Store" "__MACOSX/*" "**/__pycache__/*" "**/*.pyc" ".qoder/settings.local.json" ".qoder/**"
 )
@@ -73,6 +78,8 @@ with zipfile.ZipFile(path) as zf:
 problems = []
 if ".qoder-plugin/plugin.json" not in names:
     problems.append("缺少 .qoder-plugin/plugin.json")
+if "rules/global-user-constraints.md" not in names:
+    problems.append("缺少 rules/global-user-constraints.md")
 for name in names:
     if name.startswith("/") or ".." in name.split("/"):
         problems.append(f"非法路径: {name}")
