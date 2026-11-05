@@ -24,7 +24,7 @@ case "${1:-}" in
 esac
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-PLUGIN_REL=".qoder/plugins/global-user-constraints"
+PLUGIN_REL="plugins/global-user-constraints"
 PLUGIN_DIR="$REPO_ROOT/$PLUGIN_REL"
 MANIFEST_REL="$PLUGIN_REL/.qoder-plugin/plugin.json"
 

@@ -1,1 +1,0 @@
-.qoder/plugins/global-user-constraints/rules/global-user-constraints.md

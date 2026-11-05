@@ -1,19 +1,19 @@
 # Global User Constraints Plugin
 
-把仓库根目录 `AGENTS.md` 的规则、`system-prompt-authoring` skill、TS→C++ 翻译流水线的 agent 定义、手动审查命令和每次事件注入当前时间的 hook 打成一个 Qoder 插件。插件安装后，规则文件不会自动加载；按「安装与校验」中的规则激活步骤复制一次。
+把 `system-prompt-authoring` skill、TS→C++ 翻译流水线的 agent 定义、手动审查命令和每次事件注入当前时间的 hook 打成一个 Qoder 插件。规则正文不在插件包内，位于仓库根级 `rules/global-user-constraints.md`。插件安装后规则不会自动加载；按「安装与校验」中的规则激活步骤复制一次。
 
 源文件：
 
-- 规则源：`.qoder/plugins/global-user-constraints/rules/global-user-constraints.md`；根 `AGENTS.md` 是指向它的软链，规则经此在本仓库生效。安装场景需按「安装与校验」复制到用户规则目录。
-- skill 源：`.qoder/plugins/global-user-constraints/skills/system-prompt-authoring`；项目 `.qoder/skills` 是指向整个插件 `skills/` 目录的软链。
-- agent 源：`.qoder/plugins/global-user-constraints/agents`；项目 `.qoder/agents` 是指向它的软链。
+- 规则源：`rules/global-user-constraints.md`（仓库根级，不在插件包内）；`.qwen/rules` 软链指向它，`.qoder`、`.qoder-cn` 经 `.qwen` 解析到同一份。安装场景需按「安装与校验」复制到用户规则目录。
+- 插件源：`plugins/global-user-constraints`；`.qwen/plugins` 软链指向根级 `plugins/`。
+- skill 源：`plugins/global-user-constraints/skills/system-prompt-authoring`。
+- agent 源：`plugins/global-user-constraints/agents`。
 
 ## 结构
 
 | 路径 | 作用 |
 |---|---|
 | `.qoder-plugin/plugin.json` | 插件 manifest |
-| `rules/global-user-constraints.md` | 规则正文，仓库根 `AGENTS.md` 软链的目标 |
 | `skills/system-prompt-authoring/` | 起草与审计指令文件的 skill |
 | `agents/` | TS→C++ 翻译流水线：`Translator.md`、`Critic.md`、`Fixer.md`、`Orchestrator.md` |
 | `workflows/ts2cpp.js` | 把四个 agent 串成流水线的工作流脚本 |
@@ -28,13 +28,13 @@
 校验插件目录（`--strict` 让警告也以退出码 1 结束，`--json` 输出结构化报告）。`qodercn` 与 `qodercli` 是同一 CLI 的两个入口，按环境选用其一：
 
 ```bash
-qodercn plugins validate .qoder/plugins/global-user-constraints
+qodercn plugins validate plugins/global-user-constraints
 ```
 
 本地安装 smoke test 使用临时目录，不要污染当前项目：
 
 ```bash
-PLUGIN_ROOT="$(pwd)/.qoder/plugins/global-user-constraints"
+PLUGIN_ROOT="$(pwd)/plugins/global-user-constraints"
 SMOKE_CWD="$(mktemp -d)"
 qodercli --cwd "$SMOKE_CWD" plugin install --scope local "$PLUGIN_ROOT"
 qodercli --cwd "$SMOKE_CWD" plugin list --json
@@ -44,10 +44,10 @@ qodercli --cwd "$SMOKE_CWD" plugin list --json
 
 ```bash
 mkdir -p ~/.qoder-cn/rules
-cp "$PLUGIN_ROOT/rules/global-user-constraints.md" ~/.qoder-cn/rules/
+cp rules/global-user-constraints.md ~/.qoder-cn/rules/
 ```
 
-`qodercli 1.1.81` 的 `plugins validate` 只加载 skills/agents/commands/hooks，不加载 `rules/`；不复制则约束不生效。
+插件包不含规则正文，规则正本在仓库根级 `rules/`。`qodercli 1.1.81` 的 `plugins validate` 只加载 skills/agents/commands/hooks，不加载 `rules/`；不复制则约束不生效。
 
 ## 工作流
 
@@ -76,7 +76,7 @@ Hook 注册在 Qoder CLI 支持 `additionalContext` 的 9 个事件上，matcher
 ## Hook 测试
 
 ```bash
-python3 -B -m unittest discover -s .qoder/plugins/global-user-constraints/scripts -p 'test_*.py'
+python3 -B -m unittest discover -s plugins/global-user-constraints/scripts -p 'test_*.py'
 ```
 
 测试覆盖 9 个受支持事件的注入输出、未支持事件和非法 payload 的静默行为。
@@ -97,6 +97,6 @@ zip 是生成物，已在 `.gitignore` 中忽略。打包成功后脚本删除�
 
 ## 边界
 
-- 规则生效目录：`~/.qoder-cn/rules`、项目 `.qoder/rules`，以及向上遍历父目录的 `.qoder*/rules`；本仓库经根 `AGENTS.md` 软链引用插件内的规则正文。安装场景见「安装与校验」的规则激活步骤。
+- 规则生效目录：`~/.qoder-cn/rules`、项目 `.qoder/rules`，以及向上遍历父目录的 `.qoder*/rules`；本仓库的规则正文在根级 `rules/`，经 `.qwen/rules` 软链供 `.qoder`、`.qoder-cn` 解析，`.qwen` 本身不匹配 `.qoder*` 模式。安装场景见「安装与校验」的规则激活步骤。
 - 不要把 zip 或规则文件上传到公网平台；只走企业内网或已批准的分发通道。
 - Hook 只注入当前时间，不拦截工具调用；规则本身仍要求人工审查与真实输出验证。
