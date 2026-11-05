@@ -9,7 +9,7 @@
 - 插件源由 `.qoder/plugins/` 迁至根级 `plugins/`，约束规则正文由插件包内迁至根级 `rules/`。
 - 插件包重新随包分发规则：包内 `rules` 软链指向根级 `rules/`，`scripts/dist.sh` 用 `cp -aL` 解引用后打包，并在结构校验中要求 `rules/global-user-constraints.md` 存在。
 - 新增 `.qwen/` 作为统一入口，其下 `rules`、`plugins` 软链指向根级同名目录；`.qoder`、`.qoder-cn` 指向 `.qwen`。
-- `scripts/dist.sh` 的 `PLUGIN_REL` 改为 `plugins/global-user-constraints`。
+- `scripts/dist.sh` 的 `PLUGIN_REL` 改为 `plugins/global-user-constraints`；版本推导把迁移前 `.qoder/plugins/` 路径的提交一并计入，避免版本回退。
 - 约束规则正文更新。
 
 **移除**

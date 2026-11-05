@@ -7,7 +7,8 @@ usage() {
 用法: scripts/dist.sh [--no-validate]
 
 版本取自当前 HEAD：0.1.<改动插件的提交数（不含 plugin.json）>，写回
-.qoder-plugin/plugin.json；同一 commit 重复运行版本不变。插件目录打成
+.qoder-plugin/plugin.json；迁移前的 .qoder/plugins 路径一并计入，同一 commit
+重复运行版本不变。插件目录打成
 <仓库根>/global-user-constraints-<commit>.zip，commit 取 HEAD 短 id。
 除 manifest 版本写回外，工作区有未提交改动时文件名追加 -dirty。
 插件目录内的 rules/ 软链会解引用为真实文件，规则正文随包分发。
@@ -26,6 +27,7 @@ esac
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 PLUGIN_REL="plugins/global-user-constraints"
+PLUGIN_LEGACY_REL=".qoder/plugins/global-user-constraints"
 PLUGIN_DIR="$REPO_ROOT/$PLUGIN_REL"
 MANIFEST_REL="$PLUGIN_REL/.qoder-plugin/plugin.json"
 
@@ -34,7 +36,9 @@ if ! COMMIT="$(git -C "$REPO_ROOT" rev-parse --short HEAD 2>/dev/null)"; then
   exit 1
 fi
 
-COUNT="$(git -C "$REPO_ROOT" rev-list --count HEAD -- "$PLUGIN_REL" ":!$PLUGIN_REL/.qoder-plugin/plugin.json")"
+# 插件曾位于 .qoder/plugins/ 下，迁移前的提交一并计入，避免版本回退
+COUNT="$(git -C "$REPO_ROOT" rev-list --count HEAD -- "$PLUGIN_REL" "$PLUGIN_LEGACY_REL" \
+  ":!$PLUGIN_REL/.qoder-plugin/plugin.json" ":!$PLUGIN_LEGACY_REL/.qoder-plugin/plugin.json")"
 VERSION="0.1.$COUNT"
 
 python3 - "$REPO_ROOT/$MANIFEST_REL" "$VERSION" <<'PY'

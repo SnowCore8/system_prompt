@@ -90,7 +90,7 @@ python3 -B -m unittest discover -s plugins/global-user-constraints/scripts -p 't
 scripts/dist.sh
 ```
 
-脚本按当前 `HEAD` 推导版本 `0.1.<改动插件的提交数（不含 plugin.json）>`，写回 manifest，再用短 commit id 生成 `global-user-constraints-<commit>.zip` 到仓库根目录；同一 commit 重复运行版本不变。
+脚本按当前 `HEAD` 推导版本 `0.1.<改动插件的提交数（不含 plugin.json）>`（迁移前位于 `.qoder/plugins/` 的提交一并计入，避免版本回退），写回 manifest，再用短 commit id 生成 `global-user-constraints-<commit>.zip` 到仓库根目录；同一 commit 重复运行版本不变。
 版本写回之外的未提交改动会让文件名追加 `-dirty`；写回的版本要随代码提交。
 打包排除 `.DS_Store`、`__pycache__`、`.pyc`、`.qoder/settings.local.json` 和嵌套的 `.qoder/` 目录。
 打包时先把插件目录复制到临时目录并用 `cp -aL` 解引用软链，`rules/` 在 zip 内是真实文件；临时目录在脚本退出时删除。
