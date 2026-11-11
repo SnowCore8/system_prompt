@@ -1,13 +1,12 @@
 # Global User Constraints Plugin
 
-把 `system-prompt-authoring` skill、TS→C++ 翻译流水线的 agent 定义、手动审查命令和每次事件注入当前时间的 hook 打成一个 Qoder 插件。规则正文唯一真源在仓库根级 `rules/global-user-constraints.md`，打包时随包分发。插件安装后规则不会自动加载；按「安装与校验」中的规则激活步骤复制一次。
+把 `system-prompt-authoring` skill、手动审查命令和每次事件注入当前时间的 hook 打成一个 Qoder 插件。规则正文唯一真源在仓库根级 `rules/global-user-constraints.md`，打包时随包分发。插件安装后规则不会自动加载；按「安装与校验」中的规则激活步骤复制一次。
 
 源文件：
 
 - 规则源：`rules/global-user-constraints.md`（仓库根级，打包时随包分发）；`.qwen/rules` 软链指向它，`.qoder`、`.qoder-cn` 经 `.qwen` 解析到同一份。安装场景需按「安装与校验」复制到用户规则目录。
 - 插件源：`plugins/global-user-constraints`；`.qwen/plugins` 软链指向根级 `plugins/`。
 - skill 源：`plugins/global-user-constraints/skills/system-prompt-authoring`。
-- agent 源：`plugins/global-user-constraints/agents`。
 
 ## 结构
 
@@ -16,8 +15,6 @@
 | `rules/` | 约束规则正文（软链到根级 `rules/`，打包时解引用为真实文件） |
 | `.qoder-plugin/plugin.json` | 插件 manifest |
 | `skills/system-prompt-authoring/` | 起草与审计指令文件的 skill |
-| `agents/` | TS→C++ 翻译流水线：`Translator.md`、`Critic.md`、`Fixer.md`、`Orchestrator.md` |
-| `workflows/ts2cpp.js` | 把四个 agent 串成流水线的工作流脚本 |
 | `commands/constraints-check.md` | 手动触发约束审查 |
 | `hooks/hooks.json` | 时间注入 hook 配置 |
 | `scripts/inject-time.py` | 向支持 `additionalContext` 的事件注入当前本地时间 |
@@ -49,17 +46,6 @@ cp <插件目录>/rules/global-user-constraints.md ~/.qoder-cn/rules/
 ```
 
 插件包内含 `rules/global-user-constraints.md`，但宿主不从包内加载约束：`qodercli 1.1.81` 的 `plugins validate` 只加载 skills/agents/commands/hooks，不加载 `rules/`。安装后仍要把规则复制到 `~/.qoder-cn/rules`，否则约束不生效。
-
-## 工作流
-
-`workflows/ts2cpp.js` 把四个 agent 串成一条流水线：Translate → Critique →（Fix → 再 Critique）→ Gate。
-
-- 脚本是纯 JavaScript，首句必须是 `export const meta`；写测试、改代码等副作用都经 `agent()` 交给各子代理执行。
-- 插件内注册名为 `global-user-constraints:ts2cpp`（`<plugin>:<meta.name>`）；用自然语言指名运行即可，例如「运行 global-user-constraints:ts2cpp，切片 xxx」。`qodercli 1.1.81` 的 `plugins validate` 不列 workflows，注册名以实际调用为准。
-- `args` 接受 `{ slice, tsPath, cppPath, maxRounds? }`，也可直接传切片描述字符串；`maxRounds` 默认 3。
-- 只有 `severity` 为 `需修复` / `阻断放行` 的分歧进入修复循环，`记录` 的不修。
-- 修复轮次用尽仍有未修分歧，或 Fixer 返回非「已修复」状态时，返回值 `escalated` 为 true，放行与否仍由 Orchestrator 门禁判定。
-- 调用 agent 时先按裸名（`Translator` 等），遇到 `Unknown agent type` 时回退到 `global-user-constraints:` 前缀，兼容项目级 agent 与插件安装两种注册方式。
 
 ## Hook 行为
 
