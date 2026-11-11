@@ -12,7 +12,8 @@ usage() {
 <仓库根>/global-user-constraints-<commit>.zip，commit 取 HEAD 短 id。
 除 manifest 版本写回外，工作区有未提交改动时文件名追加 -dirty。
 插件目录内的 rules/ 软链会解引用为真实文件，规则正文随包分发。
-打包后检查 zip 结构，默认还会用 qodercn plugins validate 校验插件目录；
+打包排除 .DS_Store、__pycache__、.pyc、.qoder/settings.local.json 与嵌套 .qoder/；
+打包后检查 zip 结构，默认还会用 qoderclicn plugins validate 校验插件目录；
 命令不存在时跳过并提示。校验通过后删除仓库根目录里的旧 zip，只保留本次产物。
 EOF
 }
@@ -96,10 +97,10 @@ print(f"zip 结构校验通过: {len(names)} 个条目")
 PY
 
 if [ "$VALIDATE" -eq 1 ]; then
-  if command -v qodercn >/dev/null 2>&1; then
-    qodercn plugins validate "$PLUGIN_DIR"
+  if command -v qoderclicn >/dev/null 2>&1; then
+    qoderclicn plugins validate "$PLUGIN_DIR"
   else
-    echo "跳过插件校验: 未找到 qodercn 命令" >&2
+    echo "跳过插件校验: 未找到 qoderclicn 命令" >&2
   fi
 fi
 
