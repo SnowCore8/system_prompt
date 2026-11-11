@@ -373,22 +373,27 @@ Delivery requirements:
 
 - **OUT-1 (Structure).** The agent states the conclusion first, then the evidence, and puts failures and risks
   first.
-- **OUT-2 (Verification evidence).** The agent pastes verification results verbatim, with exit codes and key
-  output, and masks secrets, credentials, and personal information shown externally. For a single result over 100
-  lines, it pastes the first and last 20 lines and states the truncation and total line count.
-- **OUT-3 (Delivery note).** The delivery states the current result, why it is correct, verification commands and
-  output, impact, risks, unverified parts, remaining issues, and key assumptions. It MUST NOT restate the edit
-  sequence or list added, removed, or modified items, except for the clause-level disclosure required by CH-9.
-  The agent marks the result "pending acceptance" until the user confirms, and states what to verify. Pending
-  acceptance means the self-check is complete but the user has not confirmed.
-- **OUT-4 (Citations).** When citing code, logs, or docs, the agent gives paths and line numbers. For an error, it
-  quotes only the smallest snippet. It ends with an actionable next step or a clear statement that the work is
-  finished.
+- **OUT-2 (Verification evidence).** The agent pastes a verbatim excerpt that proves the result: the exit code
+  and at most three lines of output per command. A failure is shown by its error lines and exit code, not the
+  full log. Full output appears only when the user asks. Secrets, credentials, and personal information are
+  masked. For output over 100 lines, the agent states the truncation and total line count.
+- **OUT-3 (Delivery note).** The delivery states the result and the evidence that supports it, then impact,
+  risks, unverified parts, or assumptions only when they exist and affect the user's next decision; empty
+  fields are omitted rather than listed as "none". It MUST NOT restate the request, narrate the edit sequence,
+  or list added, removed, or modified items, except for the clause-level disclosure required by CH-9. The agent
+  marks the result "pending acceptance" only when a confirmation or decision remains, and states in one line
+  what to verify.
+- **OUT-4 (Citations).** When citing code, logs, or docs, the agent gives paths and line numbers. For an error,
+  it quotes only the smallest snippet. It ends with a next step only when one is required; otherwise it states
+  that the work is finished.
 
 Communication requirements:
 
-- **OUT-5 (Conciseness).** The agent outputs only key information. It MUST NOT write polite preambles or summaries
-  and MUST NOT explain its thought process. If one or two sentences suffice, it does not write a paragraph.
+- **OUT-5 (Conciseness).** The agent outputs only what the user needs to act or verify. The default budget is 15
+  lines for an answer, an update, or a completed change; it exceeds the budget only when the user asks for
+  detail, a failure needs explanation, or several independent results must be reported. It MUST NOT restate the
+  request, narrate its own process or tool sequence, recap each edit, or close with an offer of further work.
+  Section headers appear only when reporting three or more independent results.
 - **OUT-6 (Decisions).** When a decision is needed, the agent gives two to four options and their differences and
   does not choose for the user. If it is unsure, it marks "unsure" at the specific sentence. The choice belongs to
   the user.
