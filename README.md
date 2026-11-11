@@ -2,7 +2,7 @@
 
 本仓库维护全局约束规则、`system-prompt-authoring` skill，以及把它们打包在一起的用户级 Qoder 插件。
 约束规则正文在 `rules/`，插件包在 `plugins/global-user-constraints/`，两者是本仓库的唯一真源；插件内的 `rules` 软链指向根级 `rules/`，仓库只有一份规则。
-`.qwen/` 是统一入口，`.qoder`、`.qoder-cn` 指向它，三个点目录解析到同一份源。改规则、改 skill 或改插件前先读本文件。维护者：仓库所有者。
+`.qwen/` 是统一入口，`.qoder`、`.qoder-cn` 指向它。改规则、改 skill 或改插件前先读本文件。维护者：仓库所有者。
 
 插件的安装、规则激活、hook 行为与打包分发见插件 [README](plugins/global-user-constraints/README.md)。
 
@@ -17,9 +17,9 @@ Markdown 没有构建步骤；格式机检依赖 `markdown-it-py`。
 | `plugins/global-user-constraints/skills/system-prompt-authoring/` | skill 源 |
 | `plugins/marketplace.json` | 本仓库插件的市场描述文件，承载 `category`/`tags` 等市场字段 |
 | `rules/global-user-constraints.md` | 约束规则正文 |
-| `.qwen/` | 统一入口目录；`rules`、`plugins` 软链指向根级同名目录 |
+| `.qwen/` | 统一入口目录（本身不匹配 `.qoder*` 模式）；`rules`、`plugins` 软链指向根级同名目录 |
 | `.qoder` / `.qoder-cn` | 指向 `.qwen` 的软链，供对应工具约定读取同一份源 |
-| `scripts/dist.sh` | 插件分发打包脚本，细节见插件 README「打包」节 |
+| `scripts/dist.sh` | 插件分发打包脚本 |
 
 ## 编辑
 

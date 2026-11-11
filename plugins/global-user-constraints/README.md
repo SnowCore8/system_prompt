@@ -1,18 +1,12 @@
 # Global User Constraints Plugin
 
-把 `system-prompt-authoring` skill、手动审查命令和每次事件注入当前时间的 hook 打成一个 Qoder 插件。规则正文唯一真源在仓库根级 `rules/global-user-constraints.md`，打包时随包分发。插件安装后规则不会自动加载；按「安装与校验」中的规则激活步骤复制一次。
-
-源文件：
-
-- 规则源：`rules/global-user-constraints.md`（仓库根级，打包时随包分发）；`.qwen/rules` 软链指向它，`.qoder`、`.qoder-cn` 经 `.qwen` 解析到同一份。安装场景需按「安装与校验」复制到用户规则目录。
-- 插件源：`plugins/global-user-constraints`；`.qwen/plugins` 软链指向根级 `plugins/`。
-- skill 源：`plugins/global-user-constraints/skills/system-prompt-authoring`。
+把 `system-prompt-authoring` skill、手动审查命令和每次事件注入当前时间的 hook 打成一个 Qoder 插件。规则正文随包分发，但宿主不从包内加载：安装后按「安装与校验」的规则激活步骤复制一次，否则约束不生效。
 
 ## 结构
 
 | 路径 | 作用 |
 |---|---|
-| `rules/` | 约束规则正文（软链到根级 `rules/`，打包时解引用为真实文件） |
+| `rules/` | 约束规则正文 |
 | `.qoder-plugin/plugin.json` | 插件 manifest |
 | `skills/system-prompt-authoring/` | 起草与审计指令文件的 skill |
 | `commands/constraints-check.md` | 手动触发约束审查 |
@@ -45,7 +39,7 @@ mkdir -p ~/.qoder-cn/rules
 cp <插件目录>/rules/global-user-constraints.md ~/.qoder-cn/rules/
 ```
 
-插件包内含 `rules/global-user-constraints.md`，但宿主不从包内加载约束：`qodercli 1.1.81` 的 `plugins validate` 只加载 skills/agents/commands/hooks，不加载 `rules/`。安装后仍要把规则复制到 `~/.qoder-cn/rules`，否则约束不生效。
+宿主不从包内加载约束：`qodercli 1.1.81` 的 `plugins validate` 只加载 skills/agents/commands/hooks，不加载 `rules/`。
 
 ## Hook 行为
 
@@ -85,6 +79,6 @@ zip 是生成物，已在 `.gitignore` 中忽略。打包成功后脚本删除�
 
 ## 边界
 
-- 规则生效目录：`~/.qoder-cn/rules`、项目 `.qoder/rules`，以及向上遍历父目录的 `.qoder*/rules`；本仓库的规则正文在根级 `rules/`，经 `.qwen/rules` 软链供 `.qoder`、`.qoder-cn` 解析，`.qwen` 本身不匹配 `.qoder*` 模式。安装场景见「安装与校验」的规则激活步骤。
+- 规则生效目录：`~/.qoder-cn/rules`、项目 `.qoder/rules`，以及向上遍历父目录的 `.qoder*/rules`。安装场景见「安装与校验」的规则激活步骤。
 - 不要把插件、规则文件或 zip 上传到公网平台；只走企业内网或已批准的分发通道。
 - Hook 只注入当前时间，不拦截工具调用；规则本身仍要求人工审查与真实输出验证。
