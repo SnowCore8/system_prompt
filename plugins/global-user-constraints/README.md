@@ -1,6 +1,6 @@
 # Global User Constraints Plugin
 
-把 `system-prompt-authoring` skill、手动审查命令和每次事件注入当前时间的 hook 打成一个 Qoder 插件。规则正文随包分发，但宿主不从包内加载：安装后按「规则激活」的步骤复制一次，否则约束不生效。
+用户级 Qoder 插件，组件见「结构」。规则正文随包分发，但宿主不从包内加载：安装后按「规则激活」复制一次，否则约束不生效。
 
 ## 结构
 
@@ -28,16 +28,14 @@ cp <插件目录>/rules/global-user-constraints.md ~/.qoder-cn/rules/
 
 ## Hook 行为
 
-Hook 注册在 Qoder CLI 支持 `additionalContext` 的 9 个事件上，matcher 留空以匹配全部触发源：
+Hook 注册在支持 `additionalContext` 的 9 个事件上，matcher 留空匹配全部触发源；其余事件（如 `Stop`、`PermissionRequest`、`PostCompact`、`InstructionsLoaded`）未注册：
 
 - `SessionStart`、`UserPromptSubmit`、`PreToolUse`、`PostToolUse`、`PostToolUseFailure`
 - `SubagentStart`、`Notification`、`CwdChanged`、`FileChanged`
 
-- 解释器用 `python`（PATH 上需有，3.7+），并以 `-X utf8` 启动；Windows 只提供 `python.exe` 没有 `python3`，同时该参数固定 stdin/stdout 编码，避免 ANSI 代码页下中文注入失败。
-- 读取 stdin 的事件 JSON，从 `hook_event_name` 取事件名。
-- 输出 `hookSpecificOutput.hookEventName` 与 `hookSpecificOutput.additionalContext`，内容为 `当前时间：YYYY-MM-DD HH:MM:SS +HH:MM`。
+- 解释器用 `python`（PATH 上需有，3.7+），以 `-X utf8` 启动：Windows 只有 `python.exe` 没有 `python3`，且该参数固定 stdin/stdout 编码，避免 ANSI 代码页下中文注入失败。
+- 读取 stdin 的事件 JSON，从 `hook_event_name` 取事件名；输出 `hookSpecificOutput.hookEventName` 与 `hookSpecificOutput.additionalContext`，内容为 `当前时间：YYYY-MM-DD HH:MM:SS +HH:MM`。
 - 事件名不在支持列表、stdin 不是 JSON 对象时静默退出 0，不输出内容。
-- 不支持 `additionalContext` 的事件（如 `Stop`、`PermissionRequest`、`PostCompact`、`InstructionsLoaded`）未注册。
 
 ## Hook 测试
 
@@ -49,6 +47,6 @@ python3 -B -m unittest discover -s plugins/global-user-constraints/scripts -p 't
 
 ## 边界
 
-- 规则生效目录：`~/.qoder-cn/rules`、项目 `.qoder/rules`，以及向上遍历父目录的 `.qoder*/rules`。安装场景见「规则激活」。
+- 规则生效目录：`~/.qoder-cn/rules`、项目 `.qoder/rules`，以及向上遍历父目录的 `.qoder*/rules`。
 - 不要把插件、规则文件或 zip 上传到公网平台；只走企业内网或已批准的分发通道。
-- Hook 只注入当前时间，不拦截工具调用；规则本身仍要求人工审查与真实输出验证。
+- Hook 不拦截工具调用；规则本身仍要求人工审查与真实输出验证。
