@@ -1,6 +1,6 @@
 # Global User Constraints Plugin
 
-用户级 Qoder 插件，组件见「结构」。规则正文随包分发，但宿主不从包内加载：安装后按「规则激活」复制一次，否则约束不生效。
+用户级 Qoder 插件，组件见「结构」。规则正文随包分发，但安装后必须按「规则激活」复制一次才能生效。
 
 ## 结构
 
@@ -13,18 +13,18 @@
 | `hooks/hooks.json` | 时间注入 hook 配置 |
 | `scripts/inject-time.py` | 向支持 `additionalContext` 的事件注入当前本地时间 |
 | `scripts/test_inject_time.py` | hook 的表驱动测试 |
-| `qoder.md` / `qoderwork.md` | 插件级系统指令（宿主支持时加载；qodercli 1.1.81 的 `plugins validate` 不列此组件） |
+| `qoder.md` / `qoderwork.md` | 插件级系统指令（宿主支持时加载；`plugins validate` 不列此组件） |
 
 ## 规则激活
 
-复制源取决于安装方式：本地目录安装用仓库根级 `rules/`，zip 或市场安装用插件安装目录下的 `rules/`（含 `.qoder-plugin/plugin.json` 的目录）：
+复制源取决于安装方式：源码目录安装用源码树根级 `rules/`，zip 或市场安装用插件安装目录下的 `rules/`（含 `.qoder-plugin/plugin.json` 的目录）：
 
 ```bash
 mkdir -p ~/.qoder-cn/rules
 cp <插件目录>/rules/global-user-constraints.md ~/.qoder-cn/rules/
 ```
 
-宿主不从包内加载约束：`qodercli 1.1.81` 的 `plugins validate` 只加载 skills/agents/commands/hooks，不加载 `rules/`。
+宿主不从包内加载约束：`plugins validate` 只加载 skills/agents/commands/hooks，不加载 `rules/`。
 
 ## Hook 行为
 
@@ -39,8 +39,10 @@ Hook 注册在支持 `additionalContext` 的 9 个事件上，matcher 留空匹�
 
 ## Hook 测试
 
+在插件目录下运行：
+
 ```bash
-python3 -B -m unittest discover -s plugins/global-user-constraints/scripts -p 'test_*.py'
+python3 -B -m unittest discover -s scripts -p 'test_*.py'
 ```
 
 测试覆盖 9 个受支持事件的注入输出、未支持事件和非法 payload 的静默行为。
