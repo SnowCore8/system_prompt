@@ -1,7 +1,7 @@
 {
   "name": "global-user-constraints",
   "displayName": "Global User Constraints",
-  "version": "0.1.44",
+  "version": "0.1.49",
   "description": "Always-on user-level constraints, a system-prompt authoring skill, a manual audit command, and a hook that injects the current local time.",
   "author": {
     "name": "SnowCore8"
@@ -17,7 +17,7 @@
   "commands": {
     "constraints-check": {
       "source": "./commands/constraints-check.md",
-      "description": "按全局用户约束审查当前请求或方案"
+      "description": "按用户全局约束审查当前请求或方案"
     }
   },
   "hooks": "./hooks/hooks.json"
