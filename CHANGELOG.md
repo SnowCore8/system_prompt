@@ -2,15 +2,60 @@
 
 按日期记录本仓库的可观察变更，最新在前。版本号由 `scripts/dist.sh` 按改动插件的提交数推导，不构成发布边界，因此不按版本分节。条目由 git 历史整理，同一主题的重复提交合并为一条。
 
+## 2026-11-12
+
+**新增**
+
+- `scripts/check.sh`：校验全部未忽略的 Markdown，并运行 skill 与 hook 测试、shellcheck 与 JSON 解析；`qoderclicn` 存在时再跑插件校验。
+- `requirements-dev.txt` 声明 `markdown-it-py>=3`；`.editorconfig` 统一编码、换行与缩进。
+- `GLOSSARY.md`：术语与写法约定，作为文档、注释与校验输出的统一口径。
+- `rules/global-user-constraints.zh-CN.md`：用户全局约束中文译本，条款编号与英文原文一一对应，英文原文为准。
+
+**修复**
+
+- `check.py` 的 `MD-LINK-SYNTAX` 改为按段落行范围比对，多行段落里的合法链接不再误报；补三条回归测试。
+- `dist.sh` 去掉对不存在路径的排除项；`check.sh` 纳入未跟踪但未忽略的 Markdown 与 JSON；`.gitignore` 的临时目录改为 `.qwen/tmp/`。
+
+**变更**
+
+- skill 的 `script/` 更名为 `scripts/`，SKILL 与 README 的引用同步。
+- 移除 `qoderwork.md`，插件级指令文件只保留 `qoder.md`。
+- 约束正文精修：统一关键词用法，补 Internal address 与 Delivery 定义，消除请求分类与输出条款的歧义。
+- 经 `python3` 调用的脚本改为 644，直接执行的脚本保持 755。
+
+**文档**
+
+- README 验证段改为 `scripts/check.sh`，目录表补 `check.sh` 与 `GLOSSARY.md`。
+- 中文术语按 `GLOSSARY.md` 统一：用户全局约束、约束正文、校验、校验脚本等；旧写法不再使用。
+- README 的校验说明改为准确描述；移除 `qoder.md` 中无法生效的回退句；删除变更日志里无信息的「约束正文更新」条目。
+
+## 2026-11-11
+
+**变更**
+
+- 约束正文改为条款化规范（MUST / MUST NOT / SHOULD / MAY），明确违反任一 MUST 即任务失败。
+- `.qwen/settings.local.json` 不再进入版本库。
+
+**移除**
+
+- ts2cpp 工作流与 Translator、Critic、Fixer、Orchestrator 四个 agent 定义。
+
+**修复**
+
+- 插件校验命令统一改用 `qoderclicn`，避免 `qodercn` 把仓库根的 `plugins/` 当作 IDE 目标。
+
+**文档**
+
+- 两份 README 按受众去重，修正失效命令；规则激活、打包与校验说明回流根 README。
+
 ## 2026-11-06
 
 **变更**
 
-- 插件源由 `.qoder/plugins/` 迁至根级 `plugins/`，约束规则正文由插件包内迁至根级 `rules/`。
-- 插件包重新随包分发规则：包内 `rules` 软链指向根级 `rules/`，`scripts/dist.sh` 用 `cp -aL` 解引用后打包，并在结构校验中要求 `rules/global-user-constraints.md` 存在。
+- 插件源由 `.qoder/plugins/` 迁至根级 `plugins/`，约束正文由插件包内迁至根级 `rules/`。
+- 插件包重新随包分发约束：包内 `rules` 软链指向根级 `rules/`，`scripts/dist.sh` 用 `cp -aL` 解引用后打包，并在结构校验中要求 `rules/global-user-constraints.md` 存在。
 - 新增 `.qwen/` 作为统一入口，其下 `rules`、`plugins` 软链指向根级同名目录；`.qoder`、`.qoder-cn` 指向 `.qwen`。
 - `scripts/dist.sh` 的 `PLUGIN_REL` 改为 `plugins/global-user-constraints`；版本推导把迁移前 `.qoder/plugins/` 路径的提交一并计入，避免版本回退。
-- 约束规则正文更新。
 
 **移除**
 
@@ -32,11 +77,10 @@
 **修复**
 
 - `constraints-check` 命令补 frontmatter。
-- skill 检查器的级别与长度规则矛盾。
+- skill 校验脚本的级别与长度规则矛盾。
 - agent 工作流的严重度与输出契约不对齐。
 - `dist.sh` 校验改用 `qodercn plugins validate`。
 - 插件说明补充规则激活步骤，打包说明校正。
-- 约束规则正文更新。
 
 **变更**
 
@@ -79,10 +123,9 @@
 **变更**
 
 - 插件移动到 `.qwen/plugins`，随后目录名从 `.qwen` 改为 `.qoder`。
-- 根 `AGENTS.md` 改为插件规则的软链。
+- 根 `AGENTS.md` 改为插件约束的软链。
 - skill 改为插件源软链，并直接链接整个 `skills/` 目录。
 - zip 文件名改用 commit id；版本先自动递增 patch，后改为按插件提交数推导。
-- 约束规则正文更新。
 
 **修复**
 
@@ -91,25 +134,24 @@
 **文档**
 
 - README 重写并改为简体中文。
-- 规则文档按模块拆分，并区分问题、陈述与明确动作请求。
+- 约束文档按模块拆分，并区分问题、陈述与明确动作请求。
 
 ## 2026-10-27
 
 **变更**
 
-- 约束规则正文改为英文并重写。
+- 约束正文改为英文并重写。
 - skill 文档补充决策表与状态表指南，并翻译为英文。
 
 ## 2026-10-26
 
 **新增**
 
-- Markdown 格式机检扩展为完整结构检查，补齐格式规则表。
-- 约束规则正文更新。
+- Markdown 格式校验扩展为完整结构校验，补齐格式规则表。
 
 **变更**
 
-- 机检范围收敛为 Markdown 格式，检查脚本重写。
+- 校验范围收敛为 Markdown 格式，校验脚本重写。
 - provenance 长引文折行。
 
 ## 2026-10-23
@@ -120,19 +162,19 @@
 
 **变更**
 
-- 约束规则正文多次修订：优先级声明、分节排序、语义去重与压缩。
+- 约束正文多次修订：优先级声明、分节排序、语义去重与压缩。
 - 保密范围扩展到项目内容。
 
 **文档**
 
-- README 补文件职责表与机检命令。
+- README 补文件职责表与校验命令。
 
 ## 2026-10-21
 
 **新增**
 
-- 以 `markdown-it-py` 重写的机检脚本，新增 `--strict` 与 `MD-HEAD-START`。
-- 结构检查补齐链接、图片、列表与退化表格。
+- 以 `markdown-it-py` 重写的校验脚本，新增 `--strict` 与 `MD-HEAD-START`。
+- 结构校验补齐链接、图片、列表与退化表格。
 
 **修复**
 
