@@ -1,5 +1,5 @@
 __pycache__/
 *.py[cod]
-.qoder/tmp/
+.qwen/tmp/
 .qwen/settings.local.json
 *.zip

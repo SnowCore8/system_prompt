@@ -11,9 +11,9 @@ usage() {
 重复运行版本不变。插件目录打成
 <仓库根>/global-user-constraints-<commit>.zip，commit 取 HEAD 短 id。
 除 manifest 版本写回外，工作区有未提交改动时文件名追加 -dirty。
-插件目录内的 rules/ 软链会解引用为真实文件，规则正文随包分发。
-打包排除 .DS_Store、__pycache__、.pyc、.qoder/settings.local.json 与嵌套 .qoder/；
-打包后检查 zip 结构，默认还会用 qoderclicn plugins validate 校验插件目录；
+插件目录内的 rules/ 软链会解引用为真实文件，约束正文随包分发。
+打包排除 .DS_Store、__pycache__ 与 .pyc；
+打包后校验 zip 结构，默认还会用 qoderclicn plugins validate 校验插件目录；
 命令不存在时跳过并提示。校验通过后删除仓库根目录里的旧 zip，只保留本次产物。
 EOF
 }
@@ -70,7 +70,7 @@ cp -aL "$PLUGIN_DIR/." "$STAGE/"
 (
   cd "$STAGE"
   zip -qr "$OUT" . \
-    -x "**/.DS_Store" "__MACOSX/*" "**/__pycache__/*" "**/*.pyc" ".qoder/settings.local.json" ".qoder/**"
+    -x "**/.DS_Store" "__MACOSX/*" "**/__pycache__/*" "**/*.pyc"
 )
 
 python3 - "$OUT" <<'PY'
