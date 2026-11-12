@@ -2,8 +2,8 @@
 """check.py 的自测用例。
 
 用标准库 unittest 编写，装了 pytest 也能直接跑：
-    python3 -m unittest discover -s script
-    python3 -m pytest script/test_check.py
+    python3 -m unittest discover -s scripts
+    python3 -m pytest scripts/test_check.py
 """
 
 from __future__ import annotations
@@ -303,6 +303,18 @@ class LinkTest(unittest.TestCase):
     def test_link_syntax_in_fence_ignored(self):
         text = "# 标题\n\n```\n- 读 [说明](a.md 再改。\n```\n"
         self.assertNotIn("MD-LINK-SYNTAX", rules_of(text))
+
+    def test_valid_link_on_second_line_of_paragraph(self):
+        text = "# 标题\n\n第一行。\n第二行 [说明](https://a.invalid)。\n"
+        self.assertNotIn("MD-LINK-SYNTAX", rules_of(text))
+
+    def test_broken_link_on_second_line_of_paragraph(self):
+        text = "# 标题\n\n第一行。\n第二行 [说明](a.md 再改。\n"
+        self.assertIn("MD-LINK-SYNTAX", rules_of(text))
+
+    def test_mixed_links_across_paragraph_lines(self):
+        text = "# 标题\n\n第一行 [好](https://a.invalid)。\n第二行 [坏](b.md。\n"
+        self.assertIn("MD-LINK-SYNTAX", rules_of(text))
 
 
 class LinkTargetTest(unittest.TestCase):
@@ -769,7 +781,7 @@ class EmphasisStyleTest(unittest.TestCase):
 
 
 class FormatOnlyTest(unittest.TestCase):
-    """内容问题不由脚本判断：这是纯格式检查器的边界。"""
+    """内容问题不由脚本判断：这是纯格式校验脚本的边界。"""
 
     def test_content_problems_produce_no_findings(self):
         text = "# 随便\n\n- 只写一句。\n"

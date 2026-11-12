@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""只检查 Markdown 格式。
+"""只校验 Markdown 格式。
 
 用法：python3 check.py [--strict] <目标文件>
 退出码：0 无错误；1 有错误；2 参数、依赖或文件问题。
@@ -684,7 +684,7 @@ class Doc:
             i += 1
 
     def _scan_links(self, token) -> None:
-        """收集行内链接与图片，供链接格式检查使用。"""
+        """收集行内链接与图片，供链接格式校验使用。"""
         line = token.map[0] + 1 if token.map else 0
         if not line or line in self.code_lines or line in self.html_lines:
             return
@@ -708,7 +708,7 @@ class Doc:
                 )
 
     def _scan_inline(self, i: int) -> None:
-        """检查反引号与强调标记是否配对，按解析器没消化的标记判断。"""
+        """校验反引号与强调标记是否配对，按解析器没消化的标记判断。"""
         token = self.tokens[i]
         if not token.map:
             return
@@ -771,23 +771,39 @@ class Doc:
             self.list_marker_space.append(i)
 
     def _find_broken_links(self) -> None:
-        """找没被解析成链接的 `[文字](` 与 `![文字](`。"""
-        parsed_count: dict[int, int] = {}
+        """找没被解析成链接的 `[文字](` 与 `![文字](`。
+
+        markdown-it 只给出段落的行范围，不给每个链接链接的行号，所以按
+        段落（inline token）聚合原文匹配数再与已解析数比较；否则多行段落
+        里第二行之后的合法链接会被误报。
+        """
+        ranges: list[tuple[int, int, int]] = []
         for token in self.tokens:
             if token.type != "inline" or not token.map:
                 continue
-            line = token.map[0] + 1
-            for child in token.children or []:
-                if child.type in ("link_open", "image"):
-                    parsed_count[line] = parsed_count.get(line, 0) + 1
+            parsed = sum(
+                1 for child in token.children or [] if child.type in ("link_open", "image")
+            )
+            ranges.append((token.map[0] + 1, token.map[1] + 1, parsed))
         skip = self.code_lines | self.html_lines
+        written: dict[int, int] = {}
+        first_line: dict[int, int] = {}
         for i, line in enumerate(self.raw, 1):
             if i in skip:
                 continue
             text = strip_inline_code(line)
-            written = len(re.findall(r"!?\[[^\]\n]*\]\(", text))
-            if written > parsed_count.get(i, 0):
-                self.broken_links.append((i, text.strip()[:40]))
+            found = len(re.findall(r"!?\[[^\]\n]*\]\(", text))
+            if not found:
+                continue
+            for index, (start, end, _parsed) in enumerate(ranges):
+                if start <= i < end:
+                    written[index] = written.get(index, 0) + found
+                    first_line.setdefault(index, i)
+                    break
+        for index, (_start, _end, parsed) in enumerate(ranges):
+            if written.get(index, 0) > parsed:
+                line = first_line[index]
+                self.broken_links.append((line, self.raw[line - 1].strip()[:40]))
 
     def _find_unclosed_html(self) -> None:
         """找未闭合的 HTML 注释、raw-text 块与行内注释。"""
@@ -886,7 +902,7 @@ def check_anchors(doc: Doc) -> list[Finding]:
 
 
 def check_format(doc: Doc, base: Path) -> list[Finding]:
-    """检查 Markdown 格式，返回全部发现。"""
+    """校验 Markdown 格式，返回全部发现。"""
     findings: list[Finding] = []
 
     if doc.has_bom:

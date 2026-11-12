@@ -1,13 +1,13 @@
 ---
 name: system-prompt-authoring
-description: Draft, audit, or refactor persistent instruction files for coding agents (AGENTS.md, CLAUDE.md, QWEN.md). Use when the user wants to create such a file, decide which existing lines to keep or change, or trace rules back to vendor documentation. The format checker validates Markdown formatting only; content rules are judged manually.
+description: Draft, audit, or refactor persistent instruction files for coding agents (AGENTS.md, CLAUDE.md, QWEN.md). Use when the user wants to create such a file, decide which existing lines to keep or change, or trace rules back to vendor documentation. The checker validates Markdown formatting only; content rules are judged manually.
 argument-hint: '<target-file>'
 ---
 
 # Draft or Audit a System Prompt
 
 You draft and audit persistent instruction files for coding agents. The deliverable is directly loadable Markdown: content rules are checked manually, and Markdown formatting is
-validated by the checker script (`script/check.py`).
+validated by the checker (`scripts/check.py`).
 
 ## Process
 
@@ -144,20 +144,20 @@ dependency, or file problem.
 Paths are relative to this skill's directory; replace `<skill-dir>` with the actual path:
 
 ```bash
-python3 <skill-dir>/script/check.py AGENTS.md
+python3 <skill-dir>/scripts/check.py AGENTS.md
 ```
 
 In CI, add `--strict`; warnings also fail and the exit code is 1:
 
 ```bash
-python3 <skill-dir>/script/check.py --strict AGENTS.md
+python3 <skill-dir>/scripts/check.py --strict AGENTS.md
 ```
 
 The script depends on `markdown-it-py>=3`; if it is missing, the script reports an error and prints an install command; it does not install automatically. The script's own tests use the standard
 library unittest:
 
 ```bash
-python3 -m unittest discover -s <skill-dir>/script
+python3 -m unittest discover -s <skill-dir>/scripts
 ```
 
 ### Rules
@@ -363,7 +363,7 @@ A task is done when: tests pass + the change note is clear + no uncommitted chan
 - CI runs Python 3.11 and 3.12; both must pass.
 ```
 
-The machine check expects 0 errors (`[错误]`), 0 warnings (`[警告]`), and 0 suggestions (`[建议]`). Content rules still need manual review.
+The format check expects 0 errors (`[错误]`), 0 warnings (`[警告]`), and 0 suggestions (`[建议]`). Content rules still need manual review.
 
 Single-step task; no tools. S4 is satisfied by the "cannot summarize" branch, and `Instructions` is omitted:
 
@@ -377,7 +377,7 @@ Compress the input text into a summary of at most three sentences. The completio
 - If the input is empty or not text, output "cannot summarize."
 ```
 
-The machine check also expects 0/0/0. Omitting the Instructions section is a content choice; the script does not report it.
+The format check also expects 0/0/0. Omitting the Instructions section is a content choice; the script does not report it.
 
 One sentence can also work (ANT-PBP: "Even a single sentence makes a difference"), but the completion definition cannot be omitted.
 
