@@ -2,7 +2,7 @@
   "name": "global-user-constraints",
   "displayName": "Global User Constraints",
   "version": "0.1.50",
-  "description": "Always-on user-level constraints, system-prompt authoring and naming-convention skills, a manual audit command, and a hook that injects the current local time.",
+  "description": "Always-on user-level constraints; system-prompt authoring, naming, comment, and documentation convention skills; a manual audit command; and a hook that injects the current local time.",
   "author": {
     "name": "SnowCore8"
   },
