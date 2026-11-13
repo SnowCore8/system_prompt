@@ -9,6 +9,10 @@
 - `naming-conventions` skill：通用命名规范，覆盖文件、包、类型、函数、变量、常量、布尔、集合、数量与单位、异步、错误、测试、API、数据库、配置、CLI、日志、资产、提交、基础设施、权限与发布包等维度，并提供语言矩阵、审查清单与改名迁移规则。
 - 根 `AGENTS.md` 软链指向 `rules/global-user-constraints.md`，供 DSH 作为工作区指令加载；Qoder 仍按插件规则激活。
 
+**变更**
+
+- 根入口改为 `.qoder` 实际目录；`.qwen`、`.qoder-cn` 软链指向 `.qoder`，`.gitignore` 的本地配置路径同步。
+
 ## 2026-11-12
 
 **新增**
