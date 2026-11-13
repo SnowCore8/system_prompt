@@ -14,8 +14,8 @@ DSH 从仓库根 `AGENTS.md` 加载本约束；Qoder 按插件 README 的「规�
 | `rules/global-user-constraints.md` | 用户全局约束正文 |
 | `rules/global-user-constraints.zh-CN.md` | 用户全局约束中文译本（英文原文为准） |
 | `AGENTS.md` | DSH 工作区指令入口，软链指向 `rules/global-user-constraints.md` |
-| `.qwen/` | 统一入口（本身不匹配 `.qoder*` 模式）；`rules`、`plugins` 软链指向根级同名目录 |
-| `.qoder` / `.qoder-cn` | 指向 `.qwen` 的软链 |
+| `.qoder/` | 统一入口；`rules`、`plugins` 软链指向根级同名目录 |
+| `.qwen` / `.qoder-cn` | 指向 `.qoder` 的软链 |
 | `scripts/` | `dist.sh` 打包；`check.sh` 全量校验 |
 | `GLOSSARY.md` | 术语与写法约定 |
 
