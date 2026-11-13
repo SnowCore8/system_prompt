@@ -1,6 +1,6 @@
 # AI 编码代理 system prompt
 
-本仓库维护用户全局约束、`system-prompt-authoring` skill，以及打包它们的用户级 Qoder 插件。约束正文与插件源是唯一真源，不另建副本。
+本仓库维护用户全局约束、`system-prompt-authoring` 与 `naming-conventions` 两个 skill，以及打包它们的用户级 Qoder 插件。约束正文与插件源是唯一真源，不另建副本。
 改约束、skill 或插件前先读本文件。维护者：仓库所有者。
 插件的使用者文档（规则激活、hook、边界）见插件 [README](plugins/global-user-constraints/README.md)。
 
@@ -20,7 +20,7 @@
 ## 编辑
 
 1. 改约束：编辑 `rules/global-user-constraints.md`；中文译本 `rules/global-user-constraints.zh-CN.md` 同步更新。
-2. 改 skill：编辑 `plugins/global-user-constraints/skills/system-prompt-authoring/`。
+2. 改 skill：编辑 `plugins/global-user-constraints/skills/` 下对应的 skill。
 3. 只改软链目标，不另建副本。
 
 ## 验证

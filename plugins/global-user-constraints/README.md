@@ -9,6 +9,7 @@
 | `rules/` | 用户全局约束正文与中文译本 |
 | `.qoder-plugin/plugin.json` | 插件 manifest |
 | `skills/system-prompt-authoring/` | 起草与审查指令文件的 skill |
+| `skills/naming-conventions/` | 通用命名规范 skill，覆盖代码、API、数据库、配置与提交等维度 |
 | `commands/constraints-check.md` | 手动触发约束审查 |
 | `hooks/hooks.json` | 时间注入 hook 配置 |
 | `scripts/inject-time.py` | 向支持 `additionalContext` 的事件注入当前本地时间 |
