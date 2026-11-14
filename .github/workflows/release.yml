@@ -6,7 +6,6 @@ on:
 
 permissions:
   contents: write
-  packages: write
 
 jobs:
   release:
@@ -44,11 +43,11 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
-          registry-url: 'https://npm.pkg.github.com'
-      - name: 发布 DSH bundle 到 GitHub Packages
+          registry-url: 'https://registry.npmjs.org'
+      - name: 发布 DSH bundle 到 npm
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: npm publish
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: npm publish --access public
       - name: 发布 Release
         env:
           GH_TOKEN: ${{ github.token }}

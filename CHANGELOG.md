@@ -2,6 +2,17 @@
 
 按版本从新到旧记录可观察变更。自 0.2.0 起版本采用 SemVer、发布点为 tag `v<version>`，每节记录一个发布版本；0.2.0 之前按日期记录。条目按主题合并，记录最终可观察状态；被后续提交推翻的中间状态只在修复项里说明。
 
+## 0.8.0（2026-11-14）
+
+**变更**
+
+- DSH bundle 改为发布到 npm 公共 registry：`publishConfig` 改为 `access: public`，
+  release 工作流用仓库 secret `NPM_TOKEN` 执行 `npm publish --access public`，不再发布 GitHub Packages。
+- 原因是 GitHub Packages 的元数据会把自定义 `dsh` 字段裁掉，DSH 插件页因此判定“没有声明组合包”；
+  npm 官方 registry 保留该字段，更新检测恢复可用。
+- 安装恢复到无需 `.npmrc` 的 `pnpm dsh plugin --profile web add @snowcore8/dsh-global-user-constraints@<版本>`；
+  三包版本升到 `0.8.0`，文档同步公开包说明。
+
 ## 0.7.1（2026-11-14）
 
 **修复**
