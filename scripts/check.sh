@@ -243,6 +243,8 @@ if not (root / str(dsh.get("main", ""))).is_file():
     problems.append("DSH bundle 的 main 入口不存在")
 if not dsh.get("engines", {}).get("dsh"):
     problems.append("DSH bundle 缺少 engines.dsh")
+if (dsh.get("publishConfig") or {}).get("registry") != "https://npm.pkg.github.com":
+    problems.append("DSH bundle 缺少 GitHub Packages publishConfig")
 expected_links = {
     "qoder": {"skills": "skills", "rules": "rules", "commands": "shared/commands", "scripts": "shared/scripts"},
     "qwen": {"skills": "skills", "commands": "shared/commands", "scripts": "shared/scripts"},

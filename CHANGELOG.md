@@ -2,6 +2,17 @@
 
 按版本从新到旧记录可观察变更。自 0.2.0 起版本采用 SemVer、发布点为 tag `v<version>`，每节记录一个发布版本；0.2.0 之前按日期记录。条目按主题合并，记录最终可观察状态；被后续提交推翻的中间状态只在修复项里说明。
 
+## 0.7.0（2026-11-14）
+
+**新增**
+
+- DSH bundle 发布到 GitHub Packages 私有 registry：仓库根 `package.json` 增加 `publishConfig`
+  与 `repository`，release 工作流用 `GITHUB_TOKEN` 执行 `npm publish`；消费方配置 profile 的
+  `.npmrc` 后可安装 `@snowcore8/dsh-global-user-constraints@<版本>`。
+- 走 registry 的安装可被 DSH 插件页检测到更新；Git 源安装（tag/branch spec）仍然不会检测更新，
+  文档已分别说明。
+- `check.sh` 增加 DSH `publishConfig` 校验；三包版本统一升到 `0.7.0`。
+
 ## 0.6.0（2026-11-14）
 
 **新增**

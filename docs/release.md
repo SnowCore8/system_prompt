@@ -21,7 +21,8 @@
 3. 提交 `release: <version>`，工作区保持干净。
 4. 打注释 tag：`git tag -a v<version> -m "release <version>"`。
 5. 推送：`git push origin master --tags`。
-6. GitHub Actions 的 `release` 工作流会重跑校验、构建 zip 与 SHA256，并挂到 Release。
+6. GitHub Actions 的 `release` 工作流会重跑校验、构建 zip 与 SHA256，把 DSH bundle 发布到
+   GitHub Packages，并把三个 zip 挂到 Release；包版本必须新，已发布的版本不能重发。
 7. 用 `sha256sum -c global-user-constraints-<version>.sha256` 核对下载的制品。
 
 本地出包可用 `scripts/dist.sh --require-tag`，要求 HEAD 正好带有 `v<version>` tag。
@@ -30,7 +31,7 @@
 
 - 发布内容有误：先发新的 patch 版本修复，不要复用已发布的版本号或重打同一个 tag。
 - 必须撤回时：在 GitHub 删除 Release 与 tag，再按新版本号重新走发布流程；已分发制品无法收回，
-  在 CHANGELOG 写明受影响的版本与替代版本。
+  GitHub Packages 已发布的版本也不能覆盖，必须换新版本号；在 CHANGELOG 写明受影响的版本与替代版本。
 - 安全问题的撤回与披露节奏按 [SECURITY.md](../SECURITY.md) 处理。
 
 ## 发布检查单

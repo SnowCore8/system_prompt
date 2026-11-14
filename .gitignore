@@ -15,3 +15,4 @@ __pycache__/
 *.key
 global-user-constraints-*.sha256
 /dist/
+*.tgz
