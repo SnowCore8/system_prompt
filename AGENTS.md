@@ -1,1 +1,1 @@
-rules/global-user-constraints.md
+CONTRIBUTING.md

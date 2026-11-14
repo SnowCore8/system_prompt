@@ -1,7 +1,8 @@
 # 贡献与维护约定
 
-本文件是本仓库的项目维护约定。用户全局约束在 `rules/global-user-constraints.md`，那是仓库的分发内容；
-根 `AGENTS.md` 是它的入口，供支持 `AGENTS.md` 的代理（DSH、Qwen 等）加载，不作为本仓库的贡献规则。
+本文件是本仓库的项目维护约定，根 `AGENTS.md` 软链指向本文件，供 DSH 等工作区指令消费者加载。
+用户全局约束在 `rules/global-user-constraints.md`，那是仓库的分发内容：Qwen Code 通过
+`.qwen/AGENTS.md` 软链读取，Qoder 通过插件规则激活，均不作为本仓库的贡献规则。
 
 ## 范围与优先级
 

@@ -124,12 +124,22 @@ for link in "$dsh_root"/*; do
 done
 [ "$link_count" -eq "$plugin_dirs" ] || fail "DSH: 软链 $link_count 个，插件 skill $plugin_dirs 个"
 [ -f rules/global-user-constraints.md ] || fail "DSH: 缺少约束正文 rules/global-user-constraints.md"
-if [ -L AGENTS.md ] && [ "$(readlink -f AGENTS.md)" = "$REPO_ROOT/rules/global-user-constraints.md" ]; then
+[ -f CONTRIBUTING.md ] || fail "DSH: 缺少项目维护约定 CONTRIBUTING.md"
+if [ -L AGENTS.md ] && [ "$(readlink -f AGENTS.md)" = "$REPO_ROOT/CONTRIBUTING.md" ]; then
   :
 else
-  fail "DSH: AGENTS.md 未指向约束正文（Qwen/DSH 等 AGENTS.md 消费者需要该入口）"
+  fail "DSH: AGENTS.md 未指向项目维护约定 CONTRIBUTING.md"
 fi
-[ -f CONTRIBUTING.md ] || fail "DSH: 缺少项目维护约定 CONTRIBUTING.md"
+
+echo "== Qwen 适配 =="
+if [ ! -d .qwen ] || [ -L .qwen ]; then
+  fail "Qwen: .qwen 应为普通目录"
+fi
+if [ -L .qwen/AGENTS.md ] && [ "$(readlink -f .qwen/AGENTS.md)" = "$REPO_ROOT/rules/global-user-constraints.md" ]; then
+  :
+else
+  fail "Qwen: .qwen/AGENTS.md 未指向约束正文"
+fi
 
 echo "== 插件校验 =="
 if command -v qoderclicn >/dev/null 2>&1; then
