@@ -3,7 +3,7 @@
 本仓库维护用户全局约束与十一个 skill（`system-prompt-authoring`，以及命名、注释、文档、代码风格、接口与数据、测试与质量、版本控制与协作、发布与运维、安全与合规、仓库治理十项通用规范），以及打包它们的用户级 Qoder 插件。约束正文与插件源是唯一真源，不另建副本；规范正文只有中文一份。
 改约束、skill 或插件前先读本文件。维护者：仓库所有者。
 插件的使用者文档（规则激活、hook、边界）见插件 [README](plugins/global-user-constraints/README.md)。
-支持 `AGENTS.md` 的代理（DSH、Qwen 等）从仓库根 `AGENTS.md` 加载约束正文；DSH 另从 `.dsh/skills/` 发现 skill。项目维护约定见 `CONTRIBUTING.md`。Qoder 按插件 README 的「规则激活」加载。
+DSH 从仓库根 `AGENTS.md` 加载本仓库维护约定；Qwen Code 从 `.qwen/AGENTS.md` 加载约束正文；Qoder 按插件 README 的「规则激活」加载。DSH 另从 `.dsh/skills/` 发现 skill。
 
 ## 目录
 
@@ -12,8 +12,9 @@
 | `plugins/global-user-constraints/` | 用户级 Qoder 插件包 |
 | `plugins/marketplace.json` | 市场描述文件，承载 `category`/`tags` 等市场字段 |
 | `rules/global-user-constraints.md` | 用户全局约束正文（唯一规范源） |
-| `AGENTS.md` | 约束正文入口，软链指向 `rules/global-user-constraints.md` |
+| `AGENTS.md` | 项目维护约定入口，软链指向 `CONTRIBUTING.md` |
 | `CONTRIBUTING.md` | 本仓库项目维护约定 |
+| `.qwen/AGENTS.md` | Qwen Code 约束正文入口，软链指向 `rules/global-user-constraints.md` |
 | `.dsh/skills/` | DSH 项目级 skill 入口，软链到插件内十一个 skill |
 | `.qoder/` | 统一入口；`rules`、`plugins` 软链指向根级同名目录 |
 | `.qoder-cn` | 指向 `.qoder` 的软链 |
@@ -25,7 +26,7 @@
 1. 改约束：编辑 `rules/global-user-constraints.md`（唯一规范源）。
 2. 改 skill：编辑 `plugins/global-user-constraints/skills/` 下对应的 skill。
 3. 只改软链目标，不另建副本。
-4. 根 `AGENTS.md` 是约束正文入口，不改指向；项目维护约定写 `CONTRIBUTING.md`。
+4. 根 `AGENTS.md` 是项目维护约定入口（软链 `CONTRIBUTING.md`）；Qwen 的约束入口是 `.qwen/AGENTS.md`。
 
 ## 软链约定
 
@@ -36,10 +37,15 @@
 
 ## DeepSeek Harness 适配
 
-- 指令：DSH 的 `dsh-agent-instructions` 自动加载根 `AGENTS.md`，内容即约束正文；Qwen 等其他读 `AGENTS.md` 的代理走同一入口。
-- 项目约定：`CONTRIBUTING.md` 记录本仓库的维护规则，不由代理自动加载。Qwen 不支持 `.qwen/rules`，因此仓库不保留 `.qwen` 入口。
+- 指令：DSH 的 `dsh-agent-instructions` 自动加载根 `AGENTS.md`，内容是本仓库维护约定（软链 `CONTRIBUTING.md`）。
 - skill：DSH 的 `dsh-skill-filesystem` 扫描项目根 `.dsh/skills`；该目录用相对软链指向插件内十一个 skill，不复制第二份源。文件变更由 watcher 自动生效，无需重启。
 - 校验：`scripts/check.sh` 的「DSH 适配」段检查软链可解析、`SKILL.md` 存在且 frontmatter `name` 与目录名一致。
+
+## Qwen Code 适配
+
+- 入口：Qwen Code 只读 `.qwen/AGENTS.md`；该文件用相对软链指向 `rules/global-user-constraints.md`。
+- 不提供 `.qwen/rules`：Qwen 不支持规则目录；`.qwen` 是普通目录，只放该软链。
+- 校验：`scripts/check.sh` 的「Qwen 适配」段检查 `.qwen` 为普通目录、`.qwen/AGENTS.md` 指向约束正文。
 
 ## 验证
 
