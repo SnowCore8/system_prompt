@@ -1,9 +1,8 @@
 #!/usr/bin/env python3
 """check.py 的自测用例。
 
-用标准库 unittest 编写，装了 pytest 也能直接跑：
-    python3 -m unittest discover -s scripts
-    python3 -m pytest scripts/test_check.py
+用标准库 unittest 编写：
+    python3 -B -m unittest discover -s tests/skill -p 'test_*.py'
 """
 
 from __future__ import annotations

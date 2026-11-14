@@ -45,6 +45,12 @@ function parseBoolean(value) {
   return undefined
 }
 
+/**
+ * 解析单个 SKILL.md 的 frontmatter 与正文。
+ * @param {string} raw SKILL.md 全文
+ * @returns {{name:string, description:string, whenToUse?:string, invocation:object, content:string}|undefined}
+ *   frontmatter 缺失、name 不合法或 description 为空时返回 undefined。
+ */
 export function parseSkill(raw) {
   const match = /^---\r?\n([\s\S]*?)\r?\n---\r?\n?([\s\S]*)$/.exec(raw)
   if (!match) return undefined

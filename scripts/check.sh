@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 # 全量校验：Markdown、skill 与 hook 测试、shellcheck、ruff、JSON、敏感文件、软链、三工具适配、三包清单与校验。
+# 故意不加 -e：要累积全部失败项后统一非零退出，而不是首错即停。
 set -uo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"

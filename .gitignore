@@ -16,3 +16,11 @@ __pycache__/
 global-user-constraints-*.sha256
 /dist/
 *.tgz
+.ruff_cache/
+*.sql
+*.sqlite
+*.sqlite3
+*.db
+*.dump
+credentials.*
+*.secret
