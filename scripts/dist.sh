@@ -162,20 +162,29 @@ retain() {
   fi
 }
 
+# 自检失败时 EXIT trap 不在函数作用域内运行，局部变量那时已消失；用全局变量承载临时目录。
+STAGE_DIR=""
+BUILD_DIR=""
+
+cleanup_dirs() {
+  rm -rf "${STAGE_DIR:-}" "${BUILD_DIR:-}"
+}
+
+trap cleanup_dirs EXIT
+
 build_one() {
-  local name="$1" stage build zip out sums
-  stage="$(mktemp -d)"
-  build="$(mktemp -d)"
-  trap 'rm -rf "$stage" "$build"' EXIT
+  local name="$1" zip out sums
+  STAGE_DIR="$(mktemp -d)"
+  BUILD_DIR="$(mktemp -d)"
 
-  bash scripts/materialize.sh "$name" "$stage/pkg" >/dev/null
+  bash scripts/materialize.sh "$name" "$STAGE_DIR/pkg" >/dev/null
 
-  zip="$build/out.zip"
-  find "$stage/pkg" -type d -exec chmod 755 {} +
-  find "$stage/pkg" -type f -exec chmod 644 {} +
-  find "$stage/pkg" -exec touch -t 198001010000 {} +
+  zip="$BUILD_DIR/out.zip"
+  find "$STAGE_DIR/pkg" -type d -exec chmod 755 {} +
+  find "$STAGE_DIR/pkg" -type f -exec chmod 644 {} +
+  find "$STAGE_DIR/pkg" -exec touch -t 198001010000 {} +
   (
-    cd "$stage/pkg"
+    cd "$STAGE_DIR/pkg"
     find . -mindepth 1 \
       ! -name '.DS_Store' ! -path '*/__pycache__/*' ! -name '*.pyc' \
       -printf '%P\n' | LC_ALL=C sort | zip -X -q "$zip" -@
@@ -188,7 +197,7 @@ build_one() {
       echo "插件校验失败: 未找到 qoderclicn；安装后重试，或显式使用 --no-validate 跳过" >&2
       exit 1
     fi
-    qoderclicn plugins validate "$stage/pkg"
+    qoderclicn plugins validate "$STAGE_DIR/pkg"
   fi
 
   out="$REPO_ROOT/global-user-constraints-$name-$VERSION$SUFFIX.zip"
@@ -201,8 +210,9 @@ build_one() {
   fi
   echo "已生成 $(basename "$out") 与 $(basename "$sums")"
 
-  rm -rf "$stage" "$build"
-  trap - EXIT
+  rm -rf "$STAGE_DIR" "$BUILD_DIR"
+  STAGE_DIR=""
+  BUILD_DIR=""
   retain "$name"
 }
 
