@@ -35,5 +35,6 @@ pnpm dsh plugin --profile web add /path/to/global-user-constraints-dsh-<版本>
 
 - 行 id 是 `global-user-constraints-skills`，可在 profile 的 `cordis.patch.yml` 里覆盖或禁用。
 - 版本准入由 `engines.dsh` 声明（当前 `>=0.2.2-rc.1 <0.3.0`），不匹配会被跳过。
-- 约束正文：把 `rules/global-user-constraints.md` 复制到 `~/.dsh/AGENTS.md` 即可由 DSH
-  用户级指令链加载；时间由 DSH 自身注入，本包不重复。
+- 约束正文：安装后由插件经 `ctx.systemPrompt.section()` 自动注入，无需手动复制；若 `~/.dsh/AGENTS.md`
+  或 `~/.agents/AGENTS.md` 已加载同内容（按 sha256 去重），则跳过注入避免重复。时间由 DSH 自身注入，
+  本包不重复。

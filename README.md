@@ -72,14 +72,14 @@ DeepSeek Harness（DSH）的三个插件包。`rules/`、`skills/` 与 `shared/`
 - 项目级：`.dsh/skills/` 是 rank 100 的 skill 扫描根，软链到顶层 `skills/`；根 `AGENTS.md`
   由 `dsh-agent-instructions` 作为指令链加载。
 - bundle：仓库根 `package.json` 声明 `dsh.bundle.patch`，`plugins/dsh/src/index.js` 注册
-  `ctx.skills.registerProvider`，把十八个 skill 提供给任意 profile。
+  `ctx.skills.registerProvider` 提供十八个 skill，并注册 `ctx.systemPrompt.section()` 注入约束全文。
 - 安装：发布流水线把根包发到 npm 公共 registry，直接
   `pnpm dsh plugin --profile web add @snowcore8/dsh-global-user-constraints@<版本>`，
   插件页能检测到更新。GitHub Packages 上的旧包已删除，0.8.0 起只发 npm。也可以从 GitHub 源安装（tag 方式不会检测更新）：
   `pnpm dsh plugin --profile web add "github:SnowCore8/system_prompt#v<版本>"`。
   细节见 [plugins/dsh/README.md](plugins/dsh/README.md)。
-- 约束：DSH 的用户级指令链读取 `~/.dsh/AGENTS.md`，把 `rules/global-user-constraints.md`
-  复制到该位置即可；时间由 DSH 自身注入，不需要额外 hook。
+- 约束：装完即自动注入，无需手动复制；若 `~/.dsh/AGENTS.md` 已加载同内容则按 sha256 去重跳过。
+  时间由 DSH 自身注入，不需要额外 hook。
 
 ## Qwen Code 适配
 
