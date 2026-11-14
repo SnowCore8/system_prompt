@@ -25,6 +25,25 @@ Apply the first rule that fits, and do not mix conventions inside one scope:
   docs, and fixtures, and treat any public name as an API.
 - When two rules conflict, state the conflict and the chosen rule; record the decision so the next change follows it.
 
+This skill owns name choice, the naming table, and rename mechanics; policy and workflow for the other artifact
+classes are routed by role:
+
+- vcs-collaboration-conventions owns commit and pull request workflow, merge and review policy, history, and review
+  depth.
+- api-and-data-conventions owns API versioning, pagination style, CRUD semantics, the error model, and database
+  schema-change procedure and migration safety.
+- code-style-conventions owns formatter and linter configuration, line width, configuration precedence and semantics,
+  and error and log content policy.
+- testing-and-quality-conventions owns test strategy, gates, test disposition, and skip, quarantine, and waiver
+  policy.
+- release-operations-conventions owns telemetry design, feature-flag lifecycle, CI/CD, release timing, and
+  deprecation announcement timing and placement.
+- security-compliance-conventions owns access-control and permission policy, and secret scanning, rotation, and
+  disclosure.
+- repository-governance-conventions owns package and distribution metadata and publishing policy.
+- documentation-conventions owns changelog and document updates, release-note documents, and documentation sites.
+- system-prompt-authoring owns instruction files.
+
 ## Process
 
 1. Classify the artifact: file, directory, package, type, function, variable, constant, API field, database object,
@@ -110,46 +129,50 @@ These are language-agnostic defaults. `references/languages.md` overrides them p
 | Duration | `<quantity>_ms`, `_s` | `timeout_ms` |
 | Count | `<thing>_count` | `retry_count` |
 | Money | `<amount>_cents` plus currency | `total_cents`, `currency` |
-| Ratio or percentage | `_ratio` (0–1) or `_pct` (0–100) | `success_ratio`, `discount_pct` |
+| Ratio or percentage | `_ratio` (0-1) or `_pct` (0-100) | `success_ratio`, `discount_pct` |
 
 ## Dimension Index
 
 Each dimension has detailed patterns, examples, and edge cases in `references/dimensions.md`.
 
+The number in the dimension column is the section number in that file.
+
 | Dimension | First rule |
 |---|---|
-| Files and directories | Lowercase, no spaces, match the primary export or responsibility. |
-| Packages and namespaces | Reverse domain or short lowercase, stable public surface. |
-| Types and interfaces | Singular noun; capability or role, not `I` prefix outside C#. |
-| Enums and unions | Singular type, stable members, no numeric names. |
-| Functions and methods | Verb phrase; one action; predicate names for predicates. |
-| Variables and fields | Noun, scope-sized, no type prefixes. |
-| Constants | UPPER_SNAKE, unit in the name, no magic values. |
-| Booleans | Positive `is`/`has`/`can`/`should`; never a non-boolean `isX`. |
-| Collections | Plural nouns, `by` maps, explicit keys and values. |
-| Quantities and money | Unit suffix, ISO currency, integer minor units. |
-| Time | `_at` for instants, `_ms` or `_s` for durations, UTC by default. |
-| Async and concurrency | Follow language convention; no `Async` suffix where it is not idiomatic. |
-| Errors and results | Specific error classes and stable codes; never catch-all names. |
-| Tests and doubles | Behavior plus condition; `Fake`, `Stub`, `Mock`, `Spy` mean different things. |
-| HTTP, RPC, GraphQL | Plural resources, kebab paths, one JSON casing per schema. |
-| Databases | Plural snake tables, singular columns, prefixed indexes and constraints. |
-| Configuration | UPPER_SNAKE env vars, prefixed keys, no secrets in names. |
-| CLI | Kebab flags, verb commands, consistent short flags. |
-| Logs, events, metrics | Stable snake fields, `object.action` events, unit-suffixed metrics. |
-| Assets, CSS, i18n | Kebab files, BEM or utility classes, dot-separated keys. |
-| Commits, branches, tags | `type(scope): summary`, `type/slug`, SemVer. |
-| Infrastructure and deployment | DNS-compatible lower case; environment and owner live in tags. |
-| Permissions and roles | `domain.action`; one separator; capabilities, not job titles. |
-| Published packages | Follow the registry's allowed characters and casing. |
-| Components and UI state | PascalCase components, `useX` hooks, positive state names. |
-| Domain models and events | Singular entities, past-tense events, imperative commands. |
-| Documentation and decisions | Kebab files, stable anchors, numbered ADRs. |
-| Feature flags and deprecation | Named removal path, not a permanent `legacy_` prefix. |
-| Abbreviations and acronyms | Allowlist, treat acronyms as words, no dropped vowels. |
-| Symmetry and pairs | Use the same pair everywhere: `open/close`, `add/remove`. |
-| Renaming and migration | Evidence, references, alias or deprecation, scoped change. |
-| Exemptions | Generated, vendored, and external names stay; map them at the boundary. |
+| 1. Files and Directories | Lowercase, no spaces, match the primary export or responsibility. |
+| 2. Packages and Namespaces | Reverse domain or short lowercase, stable public surface. |
+| 3. Modules and Imports | Capability nouns, short unambiguous aliases, no circular names. |
+| 4. Types and Interfaces | Singular noun; capability or role, not `I` prefix outside C#. |
+| 5. Enums and Unions | Singular type, stable members, no numeric names. |
+| 6. Functions and Methods | Verb phrase; one action; predicate names for predicates. |
+| 7. Variables, Parameters, and Fields | Noun, scope-sized, no type prefixes. |
+| 8. Constants | UPPER_SNAKE, unit in the name, no magic values. |
+| 9. Booleans and Predicates | Positive `is`/`has`/`can`/`should`; never a non-boolean `isX`. |
+| 10. Collections, Maps, Sets, and Tuples | Plural nouns, `by` maps, explicit keys and values. |
+| 11. Quantities, Units, Time, Money, Ratios, Ranges | Unit suffix, ISO currency, integer minor units; `_at` for instants, `_ms` for durations. |
+| 12. Async, Concurrency, Streams, Callbacks | Follow language convention; no `Async` suffix where it is not idiomatic. |
+| 13. Errors and Results | Specific error classes and stable codes; never catch-all names. |
+| 14. Tests and Test Doubles | Behavior plus condition; `Fake`, `Stub`, `Mock`, `Spy` mean different things. |
+| 15. HTTP, RPC, and GraphQL | Plural resources, kebab paths, one JSON casing per schema. |
+| 16. JSON and Serialization | One key case per schema; map to the code case at the boundary. |
+| 17. Databases and Migrations | Plural snake tables, singular columns, prefixed indexes and constraints. |
+| 18. Configuration and Environment | UPPER_SNAKE env vars, prefixed keys, no secrets in names. |
+| 19. CLI | Kebab flags, verb commands, consistent short flags. |
+| 20. Logs, Events, Metrics, and Traces | Stable snake fields, `object.action` events, unit-suffixed metrics. |
+| 21. Assets, CSS, HTML, and i18n | Kebab files, BEM or utility classes, dot-separated keys. |
+| 22. Commits, Branches, and Tags | `type(scope): summary`, `type/slug`, SemVer. |
+| 23. Feature Flags and Deprecation | Named removal path, not a permanent `legacy_` prefix. |
+| 24. Abbreviations, Acronyms, and Plurals | Allowlist, treat acronyms as words, no dropped vowels. |
+| 25. Symmetry and Pairs | Use the same pair everywhere: `open/close`, `add/remove`. |
+| 26. Length, Scope, and Searchability | Length follows scope; the name is unique enough to search. |
+| 27. Renaming and Migration | Evidence, references, alias or deprecation, scoped change. |
+| 28. Exemptions | Generated, vendored, and external names stay; map them at the boundary. |
+| 29. Infrastructure and Deployment | DNS-compatible lower case; environment and owner live in tags. |
+| 30. Permissions, Roles, Scopes, and Audit Actions | `domain.action`; one separator; capabilities, not job titles. |
+| 31. Published Packages and Modules | Follow the registry's allowed characters and casing. |
+| 32. Components, Hooks, and UI State | PascalCase components, `useX` hooks, positive state names. |
+| 33. Domain Models and Domain Events | Singular entities, past-tense events, imperative commands. |
+| 34. Documentation, Diagrams, and Decisions | Kebab files, stable anchors, numbered ADRs. |
 
 ## Anti-Patterns
 
@@ -163,7 +186,7 @@ Each dimension has detailed patterns, examples, and edge cases in `references/di
 | `client` / `customer` / `buyer` for one concept | Readers cannot tell whether they differ. | Pick one domain term and ban the others. |
 | `userId` and `user_id` in one layer | Breaks search and mechanical refactors. | One case per layer; map only at boundaries. |
 | `isActive` returning a count | The name states the wrong type. | `activeCount`. |
-| `getUser` for a pure getter | Implies I/O in many conventions. | `user` property, or `fetchUser` for I/O. |
+| `getUser` for a pure getter where `getX` implies I/O | Implies a read that does not happen. | `user` property, or `fetchUser` for I/O; a noun or `get` accessor is fine otherwise. |
 | `UserServiceImpl` | Leaks the implementation and adds noise. | `SqlUserRepository`, `StripePaymentGateway`. |
 | `IUserStore` in Python or Go | Imports a C# convention into a language that rejects it. | `UserStore` or `UserDirectory`. |
 | `user2`, `newUser`, `tempUser` | Numbered or temporal names rot immediately. | `importedUser`, `pendingUser`, `user`. |
@@ -200,7 +223,7 @@ Create this table at project start, keep it in the repository, and add a row bef
 - [ ] References, tests, docs, fixtures, and snapshots are updated.
 - [ ] No rename outside the authorized scope.
 - [ ] The naming table is updated.
-- [ ] The linter or formatter passes.
+- [ ] The project's naming lint rule, if configured, passes.
 
 ## Examples
 
@@ -226,7 +249,7 @@ lookup and `UserRepository` for persistence, and update call sites in one scoped
 <example>
 Naming quantities:
 `timeout` becomes `timeout_ms`; `amount` becomes `amount_cents` plus `currency`; `discount` becomes `discount_pct`
-(0–100) or `discount_ratio` (0–1), and the range is documented in the naming table.
+(0-100) or `discount_ratio` (0-1), and the range is documented in the naming table.
 </example>
 
 ## References

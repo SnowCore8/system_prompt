@@ -25,7 +25,7 @@ and the reasoning.
 |---|---|---|
 | `order_repository.py` | `repo2.py` | States the concept and responsibility. |
 | `billing/invoice_calculator.go` | `helpers.go` | A grab-bag name attracts unrelated code. |
-| `20261114_add_order_status.sql` | `migration.sql` | Ordering and intent are visible. |
+| `20261114093000_add_order_status.sql` | `migration.sql` | Ordering and intent are visible. |
 | `user-service.test.ts` | `test1.ts` | Mirrors the unit and the runner convention. |
 
 ## 2. Packages and Namespaces
@@ -162,7 +162,7 @@ and the reasoning.
 - Instants use `<event>_at` in UTC (`created_at`, `paid_at`); dates use `_date`; durations use `_ms` or `_s`.
   Do not use `timestamp` without a unit or timezone rule.
 - Money uses integer minor units plus an ISO 4217 currency: `amount_cents` and `currency`; never a float.
-- Ratios are 0–1 (`success_ratio`); percentages are 0–100 (`discount_pct`); state the range in the naming table.
+- Ratios are 0-1 (`success_ratio`); percentages are 0-100 (`discount_pct`); state the range in the naming table.
 - Ranges name both ends and the inclusion rule: `min_`/`max_`, `start_`/`end_`, `from_`/`to_`; document whether the
   end is inclusive.
 - Counts use `_count`; totals use `_total`; limits use `_limit`; avoid `num`, `qty`, `amt`.
@@ -205,24 +205,23 @@ and the reasoning.
 - Fixtures and factories are explicit: `user_fixture`, `make_user`, `UserFactory`; avoid `data1`, `sample2`.
 - Doubles have precise meanings: `Fake` is a working lightweight implementation, `Stub` returns canned values,
   `Mock` records or verifies interactions, `Spy` wraps a real object. Do not call a stub `Mock`.
-- Benchmarks use `bench_` or the language convention; property tests use `prop_`; snapshot files end in `.snap`.
+- Benchmarks use `bench_` or the language convention; property tests follow the framework's discovery convention
+  (pytest and Hypothesis use `test_*`); snapshot files end in `.snap`.
 - Test names must not encode a ticket number as the only description; put the ticket in the body or metadata.
 
 ## 15. HTTP, RPC, and GraphQL
 
 - HTTP paths use plural kebab-case resources: `/v1/order-items`; a subresource nests it:
   `/v1/orders/{orderId}/items`.
-- Use methods for CRUD; a verb appears in the path only for an action that is not CRUD: `/v1/orders/{id}/cancel`.
-- Version only the path or the media type, not each field: `/v1`, not `/orders/v1/create`.
 - Query parameters use one case per API: `created_after`, `page_size`, `sort`, `order`; do not mix `createdAfter`
   and `created_after` in one API.
-- Pagination uses `page`/`page_size` or `cursor`/`limit`, never both in one endpoint.
 - JSON fields follow the schema case; booleans `is_`/`has_`, timestamps `_at`, identifiers `<entity>_id`.
 - RPC methods are `VerbNoun`: `GetOrder`, `ListOrders`, `CreateOrder`; request and response types are
   `GetOrderRequest` and `GetOrderResponse`.
 - GraphQL types are PascalCase, fields camelCase, enums UPPER_SNAKE; mutations are verb phrases
   (`createOrder`) and inputs end in `Input`.
-- Error payloads use `code`, `message`, and `details`; codes are stable and not localized.
+- API versioning, pagination style, CRUD semantics, and error payload fields are policy owned by
+  api-and-data-conventions; this section defines only the naming grammar.
 
 ## 16. JSON and Serialization
 
@@ -231,7 +230,7 @@ and the reasoning.
 - Keys contain no spaces; avoid dots unless they express a namespace; avoid reserved words and leading digits.
 - Booleans use `is_`/`has_`; timestamps use `_at` with RFC 3339; IDs use `<entity>_id`; enums use stable values.
 - Arrays are plural; objects used as maps state the key in the field name (`users_by_id`).
-- Null and absent are different states; document which one means “missing” and never use the string `"null"`.
+- Null and absent are different states; document which one means "missing" and never use the string `"null"`.
 - Do not encode types in keys (`str_name`, `int_count`); do not wrap everything in `data` unless the protocol
   requires it.
 - A discriminator is `type` or `kind` with stable lower-case values; do not put a display label in the payload.
@@ -246,8 +245,8 @@ and the reasoning.
 - Views are `v_<name>`; materialized views `mv_<name>`; schemas are lower case.
 - Audit columns are `created_at`, `updated_at`, `created_by`, `updated_by`; soft delete is `deleted_at`.
 - Boolean columns are `is_`/`has_`; timestamps are `_at`; money is `<amount>_cents` plus `currency`.
-- Migrations are timestamped, one logical change each, and never rename or drop a column without a backfill and a
-  rollback plan.
+- Migration files are timestamped and state one logical change: `20261114093000_add_order_status.sql`;
+  schema-change procedure and migration safety belong to api-and-data-conventions.
 
 ## 18. Configuration and Environment
 
@@ -258,7 +257,8 @@ and the reasoning.
 - Config keys use one separator per system: `http.timeout_ms` or `http_timeout_ms`; do not mix.
 - Feature flags are `ff_<domain>_<name>` or `<domain>.<flag>`; an environment suffix belongs in the value, not the
   name.
-- Document defaults, units, allowed values, and whether a restart is required.
+- Units and allowed values appear in the name or its documentation; defaults, value ranges, and restart semantics
+  belong to code-style-conventions.
 
 ## 19. CLI
 
@@ -280,10 +280,12 @@ and the reasoning.
   schema.
 - Metrics are `domain_operation_unit`: `http_request_duration_ms`, `queue_depth`, `cache_hits_total`; counters end
   in `_total`, histograms carry the unit, gauges state the current value.
-- Trace identifiers are `trace_id` and `span_id`; never put a user ID or email in a metric name; keep cardinality
-  bounded.
-- Error logs include a stable `error_code` and a safe message; never log secrets, tokens, or full personal data.
-- An event schema is versioned; do not rename an event field without a migration window.
+- Trace identifiers are `trace_id` and `span_id`; telemetry design, including metric labels and cardinality, belongs
+  to release-operations-conventions.
+- Logs carry a stable `error_code`; log content policy, including secrets and personal data, belongs to
+  code-style-conventions.
+- Event field names stay stable within one schema version; event-schema versioning belongs to
+  api-and-data-conventions.
 
 ## 21. Assets, CSS, HTML, and i18n
 
@@ -301,17 +303,18 @@ and the reasoning.
 ## 22. Commits, Branches, and Tags
 
 - A commit is `type(scope): imperative summary`; types are `feat`, `fix`, `refactor`, `docs`, `test`, `chore`,
-  `perf`, `build`, and `ci`. The body states why; the footer references issues.
+  `perf`, `build`, and `ci`.
 - The summary is imperative and lower case after the colon: `fix(invoice): reject expired cards`, not
   `Fixed the bug`.
 - A branch is `type/short-description`: `feat/order-export`, `fix/expired-card`; lower case, hyphens, no spaces.
 - A tag is SemVer with a `v` prefix: `v1.4.0`, `v1.4.0-rc.1`; never a date or a build number as the release tag.
-- A PR title follows the commit convention; do not merge `WIP`, `tmp`, or a ticket number alone.
+- Commit body and footer composition, pull request titles, merge gating, and history policy belong to
+  vcs-collaboration-conventions; this section defines only the names.
 
 ## 23. Feature Flags and Deprecation
 
-- A flag states its scope and purpose: `ff_checkout_new_tax` or `checkout.new_tax`; default off, with an owner and a
-  removal date in its description.
+- A flag name states its scope and purpose: `ff_checkout_new_tax` or `checkout.new_tax`. Lifecycle rules, including
+  the default state, owner, and removal date, belong to release-operations-conventions.
 - Do not put an environment or a customer name in the flag name; that belongs in the targeting rules.
 - A deprecated name gets a removal plan: prefer an annotation or a deprecation metadata field; if a prefix is
   required, use `deprecated_` or `legacy_` and record the replacement.
@@ -367,8 +370,9 @@ Use one pair consistently across a codebase; mixing `remove` and `delete` for th
 4. Update tests and docs in the same change; do not leave a stale name in an example.
 5. Keep the diff reviewable: a rename commit should not carry behavior changes; a behavior change should not hide a
    rename.
-6. Update the naming table and the changelog; remove the alias after the deprecation window.
-7. Do not rewrite published history to hide a rename; add a follow-up commit that explains it.
+6. Update the naming table and remove the alias after the deprecation window; changelog updates belong to
+   documentation-conventions.
+7. History policy, including whether to rewrite published history, belongs to vcs-collaboration-conventions.
 
 ## 28. Exemptions
 
@@ -385,15 +389,17 @@ Use one pair consistently across a codebase; mixing `remove` and `delete` for th
 
 - DNS labels use lower-case letters, digits, and hyphens; start and end with an alphanumeric character; stay within
   63 characters; no underscores.
-- Docker images are `<registry>/<org>/<service>:<tag>`; the tag is a SemVer or a commit SHA; `latest` is for local
-  use only; container names are `<service>-<role>`.
+- Docker images are `<registry>/<org>/<service>:<tag>`; the tag is a SemVer or a commit SHA, and container names are
+  `<service>-<role>`. Version and distribution policy belong to release-operations-conventions and
+  repository-governance-conventions.
 - Kubernetes names are DNS-1123 lower kebab: `invoice-api`, `invoice-worker`; labels use the standard keys
   `app.kubernetes.io/name`, `app.kubernetes.io/component`, and `app.kubernetes.io/part-of`.
 - ConfigMaps are `<service>-config`; Secrets are `<service>-secrets`; namespaces are lower case (`billing-prod`).
 - Cloud resources include the application and environment in the name; tags carry `app`, `env`, `owner`, and
   `cost-center`; never put a secret in a resource name.
 - Terraform resources are `snake_case`, modules are `kebab-case`, and state keys are `<env>/<service>/<component>`.
-- CI jobs are lower kebab with a stage prefix (`test-unit`, `deploy-prod`); CI secrets use a `CI_` prefix.
+- CI jobs are lower kebab with a stage prefix (`test-unit`, `deploy-prod`); CI secrets use a `CI_` prefix. CI/CD and
+  secret-handling policy belong to release-operations-conventions and security-compliance-conventions.
 - Environment names are `dev`, `staging`, and `prod`; do not create `production2` or `new-prod` as a second name for
   one environment.
 
@@ -402,8 +408,8 @@ Use one pair consistently across a codebase; mixing `remove` and `delete` for th
 - Permission and role identifiers use `domain.action`: `billing.invoice.read`, `billing.invoice.void`.
 - Pick one separator per system (`.` or `:`) and keep it; `billing:invoice.read` mixes two grammars.
 - Scopes use the same grammar as permissions (`orders:read` or `read:orders`); choose one order and document it.
-- Role names describe a capability, not a job title: `billing_admin`, `support_readonly`; do not rely on a single
-  `admin` role for everything.
+- Role names describe a capability, not a job title: `billing_admin`, `support_readonly`. Access-control policy,
+  including how many admin roles exist, belongs to security-compliance-conventions.
 - Permission constants use UPPER_SNAKE (`BILLING_INVOICE_READ`) only when the language requires constants; otherwise
   use the string identifier.
 - Audit actions are `object.action` in the past tense (`invoice.voided`); the record includes actor, resource ID, and

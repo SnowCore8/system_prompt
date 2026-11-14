@@ -20,7 +20,7 @@ language has no single convention, use the default in `SKILL.md`.
 | PHP | `PascalCase` | `camelCase` | `camelCase` | `UPPER_SNAKE` | `PascalCase.php` | `*Test.php` |
 | Swift | `PascalCase` | `camelCase` | `camelCase` | `camelCase` | `PascalCase.swift` | `*Tests.swift` |
 | Dart | `PascalCase` | `camelCase` | `camelCase` | `lowerCamelCase` | `snake_case.dart` | `*_test.dart` |
-| SQL | table `snake_case`, column `snake_case` | n/a | constraint `snake_case` | n/a | `YYYYMMDD_description.sql` | migration test |
+| SQL | table `snake_case`, column `snake_case` | n/a | constraint `snake_case` | n/a | `YYYYMMDDHHMMSS_description.sql` | migration test |
 | Shell | n/a | `snake_case` | `snake_case`, env `UPPER_SNAKE` | `UPPER_SNAKE` | `kebab-case.sh` | `*_test.sh` |
 | HTML / CSS | class `kebab-case`, BEM | n/a | custom property `--kebab-case` | n/a | `kebab-case.css` | visual test |
 | JSON / YAML | object `PascalCase` or `snake_case` | n/a | key one case per schema | n/a | `kebab-case.json` | schema test |
@@ -28,7 +28,8 @@ language has no single convention, use the default in `SKILL.md`.
 ## Python
 
 - Follow PEP 8: `snake_case` functions and variables, `PascalCase` classes, `UPPER_SNAKE` constants.
-- Modules and packages are `snake_case`; a package is a directory with `__init__.py`.
+- Modules and packages are `snake_case`; a regular package is a directory with `__init__.py`, while a namespace
+  package (PEP 420) omits it.
 - A single leading underscore marks internal use; avoid double-underscore name mangling unless the class hierarchy
   needs it.
 - Do not use an `I` prefix for interfaces; protocols and ABCs use a capability name (`Readable`, `UserStore`).
@@ -94,8 +95,8 @@ language has no single convention, use the default in `SKILL.md`.
 
 - `snake_case` functions, methods, variables, modules, and crate names; `PascalCase` types, traits, enums, and
   variants; `UPPER_SNAKE` constants and statics.
-- Module files are `snake_case.rs`; `mod.rs` is legacy, prefer `module/` plus `module/mod.rs` only when the project
-  uses it.
+- Module files are `snake_case.rs`; the modern layout is `module.rs` beside `module/`, and `mod.rs` is the older
+  form still used by some projects.
 - Test functions state behavior (`rejects_expired_card`); integration tests live in `tests/` and use the public API.
 - Booleans use `is_`, `has_`, `can_`; a predicate returns `bool`.
 - Acronyms are words in snake_case: `user_id`, `http_client`, `parse_url`.
