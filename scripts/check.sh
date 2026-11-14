@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# 全量校验：Markdown 格式、两份测试、shellcheck、JSON、软链、DSH/Qoder/Qwen 适配。
+# 全量校验：Markdown、skill 与 hook 测试、shellcheck、JSON、敏感文件、软链、DSH/Qoder/Qwen 适配、插件校验。
 set -uo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -8,6 +8,7 @@ cd "$REPO_ROOT" || exit 2
 SKILL_DIR="plugins/global-user-constraints/skills/system-prompt-authoring"
 PLUGIN_DIR="plugins/global-user-constraints"
 failures=0
+skips=0
 
 fail() {
   printf '失败: %s\n' "$*" >&2
@@ -15,6 +16,7 @@ fail() {
 }
 
 skip() {
+  skips=$((skips + 1))
   printf '跳过: %s\n' "$*" >&2
 }
 
@@ -56,6 +58,15 @@ echo "== JSON =="
 while IFS= read -r -d '' file; do
   python3 -m json.tool "$file" >/dev/null 2>&1 || fail "JSON 无效: $file"
 done < <(git ls-files --cached --others --exclude-standard -z '*.json')
+
+echo "== 敏感文件 =="
+for ignored in .env .qwen/.env .qwen/settings.local.json .qwen/tmp/ .qoder/settings.local.json; do
+  git check-ignore -q --no-index "$ignored" || fail "未忽略敏感路径: $ignored"
+done
+if git grep -n -I -E '-----BEGIN (RSA |EC |OPENSSH |PGP )?PRIVATE KEY-----' -- \
+  '*.py' '*.sh' '*.json' '*.yml' '*.yaml' >/dev/null 2>&1; then
+  fail "疑似私钥内容已入库"
+fi
 
 echo "== 软链 =="
 link_fs=0
@@ -140,10 +151,10 @@ echo "== Qoder 适配 =="
 if [ ! -d .qoder ] || [ -L .qoder ]; then
   fail "Qoder: .qoder 应为普通目录"
 fi
-if [ -e .qoder-cn ]; then
+if [ -e .qoder-cn ] || [ -L .qoder-cn ]; then
   fail "Qoder: 项目级不读 .qoder-cn，应删除"
 fi
-if [ -e .qoder/plugins ]; then
+if [ -e .qoder/plugins ] || [ -L .qoder/plugins ]; then
   fail "Qoder: 项目级不扫描 .qoder/plugins，应删除"
 fi
 if [ -L .qoder/rules ] && [ "$(readlink -f .qoder/rules)" = "$REPO_ROOT/rules" ]; then
@@ -160,7 +171,7 @@ echo "== Qwen 适配 =="
 if [ ! -d .qwen ] || [ -L .qwen ]; then
   fail "Qwen: .qwen 应为普通目录"
 fi
-if [ -e .qwen/AGENTS.md ]; then
+if [ -e .qwen/AGENTS.md ] || [ -L .qwen/AGENTS.md ]; then
   fail "Qwen: 不读取项目级 .qwen/AGENTS.md，应删除"
 fi
 if [ -L .qwen/rules ] && [ "$(readlink -f .qwen/rules)" = "$REPO_ROOT/rules" ]; then
@@ -187,7 +198,11 @@ else
 fi
 
 if [ "$failures" -ne 0 ]; then
-  echo "校验失败: $failures 项" >&2
+  echo "校验失败: $failures 项（跳过 $skips 项）" >&2
   exit 1
 fi
-echo "全部通过"
+if [ "$skips" -ne 0 ]; then
+  echo "全部通过（跳过 $skips 项，见上方提示）"
+else
+  echo "全部通过"
+fi
