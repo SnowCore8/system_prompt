@@ -1,30 +1,34 @@
 # AI 编码代理 system prompt
 
-本仓库维护用户全局约束与十一个 skill（`system-prompt-authoring`，以及命名、注释、文档、代码风格、接口与数据、测试与质量、版本控制与协作、发布与运维、安全与合规、仓库治理十项通用规范），以及打包它们的用户级 Qoder 插件。约束正文与插件源是唯一真源，不另建副本；规范正文只有中文一份。
-改约束、skill 或插件前先读本文件。维护者：SnowCore8，职责与决策规则见 [GOVERNANCE.md](GOVERNANCE.md)。
-插件的使用者文档（规则激活、hook、边界）见插件 [README](plugins/global-user-constraints/README.md)。
-DSH 从仓库根 `AGENTS.md` 加载本仓库维护约定；Qwen Code 从 `.qwen/rules/`（软链到 `rules/`）加载约束正文；Qoder 项目级从 `.qoder/rules/` 读取规则，用户级按插件 README 的「规则激活」安装。DSH 另从 `.dsh/skills/` 发现 skill。
+本仓库维护用户全局约束、十一个通用规范 skill，以及分别面向 Qoder、Qwen Code 与
+DeepSeek Harness（DSH）的三个插件包。`rules/`、`skills/` 与 `shared/` 是唯一真源，
+三个包用相对软链引用它们，打包时物化成自包含目录。
+
+维护者：SnowCore8，职责与决策规则见 [GOVERNANCE.md](GOVERNANCE.md)。
+项目维护约定见 [CONTRIBUTING.md](CONTRIBUTING.md)（根 `AGENTS.md` 是它的软链入口）。
 
 ## 目录
 
 | 路径 | 作用 |
 |---|---|
-| `plugins/global-user-constraints/` | 用户级 Qoder 插件包 |
-| `plugins/marketplace.json` | 市场描述文件，承载 `category`/`tags` 等市场字段 |
 | `rules/global-user-constraints.md` | 用户全局约束正文（唯一权威来源） |
+| `skills/` | 十一个 skill 的真源 |
+| `shared/commands/` | 手动审查命令 |
+| `shared/scripts/` | 约束注入、时间注入脚本及其测试 |
+| `plugins/qoder/` | Qoder 插件包（`.qoder-plugin/plugin.json`） |
+| `plugins/qwen/` | Qwen Code 扩展包（`qwen-extension.json`） |
+| `plugins/dsh/` | DSH bundle（`package.json` + `dsh.bundle.patch`） |
+| `plugins/marketplace.json` | Qoder 本地市场描述，指向 `plugins/qoder` |
+| `.qwen/rules`、`.qwen/skills/` | Qwen Code 项目级入口，软链到顶层真源 |
+| `.qoder/rules`、`.qoder/skills/` | Qoder 项目级入口，软链到顶层真源 |
+| `.dsh/skills/` | DSH 项目级 skill 入口，软链到顶层真源 |
 | `AGENTS.md` | 项目维护约定入口，软链指向 `CONTRIBUTING.md` |
-| `CONTRIBUTING.md` | 本仓库项目维护约定 |
-| `.qwen/rules` | Qwen Code 项目级规则目录，软链指向根级 `rules/`；规则无 `paths:`，首请求生效 |
-| `.qwen/skills/` | Qwen Code 项目级 skill 入口，软链到插件内十一个 skill |
-| `.qoder/` | Qoder 项目级配置目录；`rules` 软链指向根级 `rules/` |
-| `.qoder/skills/` | Qoder 项目级 skill 入口，软链到插件内十一个 skill |
-| `.dsh/skills/` | DSH 项目级 skill 入口，软链到插件内十一个 skill |
 | `docs/agent-tooling-loading.md` | 三工具 rules/skills/plugins 加载规则调研 |
+| `docs/time-awareness.md` | Qoder/Qwen 时间注入设计 |
 | `docs/release.md` | 版本规则、tag 发布流程与回滚 |
-| `docs/time-awareness.md` | Qoder/Qwen 时间注入的设计与接线 |
-| `scripts/` | `dist.sh` 打包；`check.sh` 全量校验 |
+| `scripts/` | `check.sh` 全量校验、`dist.sh` 出包、`materialize.sh` 物化 |
 | `GLOSSARY.md` | 术语与写法约定 |
-| `CHANGELOG.md` | 按日期记录的可观察变更 |
+| `CHANGELOG.md` | 按版本记录的可观察变更 |
 | `GOVERNANCE.md` | 维护者、决策、审查与发布规则 |
 | `THIRD-PARTY-NOTICES.md` | 开发依赖与第三方许可声明 |
 | `LICENSE`、`LICENSE-CC-BY-4.0.txt`、`LICENSE-MIT.txt` | 双许可证：文档 CC BY 4.0，代码 MIT |
@@ -34,104 +38,107 @@ DSH 从仓库根 `AGENTS.md` 加载本仓库维护约定；Qwen Code 从 `.qwen/
 ## 编辑
 
 1. 改约束：编辑 `rules/global-user-constraints.md`（唯一权威来源）。
-2. 改 skill：编辑 `plugins/global-user-constraints/skills/` 下对应的 skill。
-3. 只改软链目标，不另建副本。
-4. 根 `AGENTS.md` 是项目维护约定入口（软链 `CONTRIBUTING.md`）；Qwen 的约束入口是 `.qwen/rules/`（软链 `rules/`）。
+2. 改 skill：编辑 `skills/` 下对应的 skill；三个包自动引用，不复制第二份。
+3. 改命令或注入脚本：编辑 `shared/commands/` 或 `shared/scripts/`。
+4. 改某一端的清单或 hook：编辑 `plugins/<包>/` 下对应文件，并同步三包版本。
+5. 新增入口时按「软链约定」执行，改完运行 `scripts/check.sh`。
 
 ## 软链约定
 
-- 软链只做入口，不承载内容：目标必须在仓库内，用相对路径书写，指向真实文件或目录，且不指向另一软链。
-- 每个入口只指向唯一真源（`rules/`、`plugins/` 或插件内 skill 目录），不复制第二份文件。
-- 新增或调整入口前先确认目标路径稳定；`scripts/check.sh` 的「软链」段校验未入库、缺失、绝对路径、目标出仓、指向 `.git`、链式软链、目标不存在或未跟踪等情况。
+- 软链只做入口，不承载内容：目标必须在仓库内、用相对路径、指向真实文件或目录，且不指向另一软链。
+- 每个入口只指向唯一真源（`rules/`、`skills/` 或 `shared/`），不复制第二份文件。
+- 三个包内部的 `skills/`、`rules/`、`commands/`、`scripts/` 都是指向顶层真源的软链；
+  Qoder 的 `plugins validate` 会拒绝解析到包外的路径，所以安装或校验前用
+  `scripts/materialize.sh` 物化，或直接用 Release 里的 zip。
+- `scripts/check.sh` 的「软链」「插件清单」段校验未入库、缺失、绝对路径、目标出仓、指向 `.git`、
+  链式软链、目标不存在或未跟踪，以及三个包的软链是否指向正确真源。
 - Windows 检出需启用 `core.symlinks`；否则软链会落成普通文本文件。
+
+## 三个包
+
+| 包 | 清单 | hook 形式 | 安装 |
+|---|---|---|---|
+| `plugins/qoder` | `.qoder-plugin/plugin.json` | `command` + `args`，`${QODER_PLUGIN_ROOT}` | `qoderclicn plugins install <zip> --scope user` |
+| `plugins/qwen` | `qwen-extension.json` | 单条 `command` 字符串，`${CLAUDE_PLUGIN_ROOT}` | `qwen extensions install <zip>` |
+| `plugins/dsh` | `package.json` 的 `dsh.bundle.patch` | 无 hook；注册 skill 提供者 | `dsh plugin --profile <名> add <目录>` |
+
+三包共用版本号，发布时一起出包；清单版本不一致会被 `scripts/check.sh`、`scripts/dist.sh`
+与 release 工作流拒绝。
 
 ## DeepSeek Harness 适配
 
-- 指令：DSH 的 `dsh-agent-instructions` 自动加载根 `AGENTS.md`，内容是本仓库维护约定（软链 `CONTRIBUTING.md`）。
-- skill：DSH 的 `dsh-skill-filesystem` 扫描项目根 `.dsh/skills`；该目录用相对软链指向插件内十一个 skill，不复制第二份源。文件变更由 watcher 自动生效，无需重启。
-- 校验：`scripts/check.sh` 的「DSH 适配」段校验软链可解析、`SKILL.md` 存在且 frontmatter `name` 与目录名一致。
+- 项目级：`.dsh/skills/` 是 rank 100 的 skill 扫描根，软链到顶层 `skills/`；根 `AGENTS.md`
+  由 `dsh-agent-instructions` 作为指令链加载。
+- bundle：`plugins/dsh` 注册 `ctx.skills.registerProvider`，把包内十一个 skill 提供给任意 profile；
+  安装方法与版本准入见 [plugins/dsh/README.md](plugins/dsh/README.md)。
+- 约束：DSH 的用户级指令链读取 `~/.dsh/AGENTS.md`，把 `rules/global-user-constraints.md`
+  复制到该位置即可；时间由 DSH 自身注入，不需要额外 hook。
 
 ## Qwen Code 适配
 
-- 插件：`plugins/global-user-constraints/` 同时带 `qwen-extension.json`，可执行
-  `qwen extensions install <目录或 zip>`；扩展的 `hooks` 指向 `hooks/qwen-hooks.json`，约束与时间随之生效。
-- 时间：Qwen 没有内建时间感知，扩展在 `SessionStart` 与 `UserPromptSubmit` 注入当前本地时间、UTC 偏移、
-  时区与星期；设计见 [docs/time-awareness.md](docs/time-awareness.md)。
-- 入口：Qwen Code 的项目级规则目录是 `.qwen/rules/`，用相对软链指向根级 `rules/`；其中的
-  `global-user-constraints.md` 没有 `paths:`，属 baseline，首个请求即进入 system prompt。
-- skill：Qwen Code 从 `.qwen/skills/` 发现项目级 skill，只扫一层；该目录用相对软链指向插件内十一个 skill。
-- 不提供 `.qwen/AGENTS.md`：Qwen 只在每级目录查找 `QWEN.md`/`AGENTS.md` 文件名，不进入 `.qwen/` 子目录再找，
-  项目级 `.qwen/AGENTS.md` 不会被读取。
-- 校验：`scripts/check.sh` 的「Qwen 适配」段校验 `.qwen`、`.qwen/rules`、`.qwen/skills` 的形态与软链目标，
-  `.qwen/AGENTS.md` 不存在，且约束正文 front matter 不含 `paths:`。
+- 项目级：`.qwen/rules/` 软链到 `rules/`（无 `paths:`，baseline，首请求生效）；`.qwen/skills/`
+  软链到十一个 skill；`.qwen/AGENTS.md` 不被 Qwen 读取，仓库不提供。
+- 扩展：`plugins/qwen` 的 `qwen-extension.json` 指向 `hooks/qwen-hooks.json`，安装后
+  `SessionStart` 注入约束全文与时间，`UserPromptSubmit` 刷新时间；已有同内容规则或
+  `AGENTS.md` 时跳过。
+- 时间：Qwen 没有内建时间感知，注入格式与设计见 [docs/time-awareness.md](docs/time-awareness.md)。
 
 ## Qoder 适配
 
-- 项目级：`.qoder/rules` 软链指向根级 `rules/`；Qoder 从当前目录向上查到 `.git`，逐层读取 `.qoder/rules/**/*.md`。
-- skill：Qoder 从 `.qoder/skills/` 发现项目级 skill；该目录用相对软链指向插件内十一个 skill，
-  安装插件时另提供带插件前缀的同一批 skill。
-- 时间：插件在 `SessionStart` 与 `UserPromptSubmit` 注入当前本地时间、UTC 偏移、时区与星期，
-  与约束注入共用一次安装；设计见 [docs/time-awareness.md](docs/time-awareness.md)。
-- 用户级：安装插件后由 `SessionStart` hook 自动注入约束全文；用户级或项目级已加载同内容规则或 `AGENTS.md`
-  时跳过。仍支持手动复制到 `~/.qoder-cn/rules/`，两种方式二选一。
-- 不提供两个入口：`.qoder-cn`（CN 的这个名字只用于用户级配置根）与 `.qoder/plugins`（插件包体安装在用户配置根），
-  项目级都没有加载语义。
-- 校验：`scripts/check.sh` 的「Qoder 适配」段校验 `.qoder` 为普通目录、`.qoder/rules` 指向 `rules/`、
-  `.qoder/skills` 的十一条软链，且 `.qoder-cn` 与 `.qoder/plugins` 不存在。
+- 项目级：`.qoder/rules` 软链到 `rules/`，Qoder 从当前目录向上查到 `.git` 逐层读取；
+  `.qoder/skills/` 软链到十一个 skill。
+- 插件：`plugins/qoder` 安装后 `SessionStart` 注入约束全文与时间，`UserPromptSubmit` 刷新时间；
+  去重路径覆盖 `~/.qoder-cn/rules/`（国际版 `~/.qoder/rules/`）、`AGENTS.md`、`.qoder/rules/`。
+- 项目级不提供 `.qoder-cn` 与 `.qoder/plugins`：它们在项目级没有加载语义。
 
 ## 验证
 
 ```bash
-python3 -m pip install -r requirements-dev.txt
+python3 -m pip install -r requirements-dev.txt   # 建议用虚拟环境
 scripts/check.sh
 ```
 
-`scripts/check.sh` 校验全部未忽略的 Markdown，并运行 skill 与 hook 测试、shellcheck、JSON 解析、
-敏感文件回归与 DSH/Qwen/Qoder 适配校验；`qoderclicn` 存在时再跑插件校验。
+`scripts/check.sh` 覆盖 Markdown、skill 与 hook 测试、DSH bundle 的 `node --test`、shellcheck、
+ruff、JSON、敏感文件、软链、三工具项目级适配、三包清单一致性与物化后的 Qoder 插件校验。
+缺 `shellcheck`、`node` 或 `qoderclicn` 时会打印「跳过」并在结尾计数。
 
-Markdown 校验只覆盖格式；各 skill 的内容规则按各自 `SKILL.md` 的人工核对清单检查，`MD-*` 规则只覆盖 `check.py` 的格式项。
-插件校验用 `qoderclicn` 而非入口脚本 `qodercn`：后者把首参当路径判断，仓库根有 `plugins/` 目录，会被当成 IDE 目标。
-
-本地安装 smoke test 用临时目录，避免污染当前项目；在仓库根目录运行：
+本地安装 smoke test：
 
 ```bash
-TMP="$(mktemp -d)"
-qoderclicn --cwd "$TMP" plugins install --scope local "$PWD/plugins/global-user-constraints"
-qoderclicn --cwd "$TMP" plugins list --json
+scripts/materialize.sh qoder /tmp/qoder-package
+qoderclicn --cwd /tmp plugins install --scope local /tmp/qoder-package
+qoderclicn --cwd /tmp plugins list --json
 ```
 
 ## 打包
 
-版本采用 SemVer，`plugins/global-user-constraints/.qoder-plugin/plugin.json` 的 `version` 是唯一来源；
-发布流程是「改版本与 CHANGELOG → 提交 → 打 `v<version>` 注释 tag → 推送」，由 release 工作流出包，
-详见 [docs/release.md](docs/release.md)。
+版本采用 SemVer，三个清单的 `version` 必须一致；发布流程是「改三包版本与 CHANGELOG → 提交 →
+打 `v<version>` 注释 tag → 推送」，由 release 工作流分别构建三个 zip，详见 [docs/release.md](docs/release.md)。
 
-本地出包运行 `scripts/dist.sh`：默认要求工作区干净（`--allow-dirty` 放行，文件名加 `-dirty`），
-浅克隆直接拒绝，`--require-tag` 要求 HEAD 正好带有 `v<version>` tag。包内复制双许可证，归一 mtime
-并按名称排序后输出可复现 zip 与 SHA256，保留最近三个制品。zip 制品与 `*.sha256` 被 `.gitignore` 忽略，
-不提交。
+本地出包运行 `scripts/dist.sh`：默认要求工作区干净（`--allow-dirty` 放行），浅克隆直接拒绝，
+`--require-tag` 要求 HEAD 正好带有 `v<version>` tag。每个包物化后归一 mtime 与权限、按名称排序、
+用 `zip -X` 构建，输出可复现 zip 与 SHA256，各保留最近三个制品。zip 与 `*.sha256` 被 `.gitignore`
+忽略，不提交。
 
 ## CI
 
-- `check`：push 到 `master` 与 pull request 时运行 `scripts/check.sh`，使用最小 `contents: read` 权限，
-  并先确认 runner 自带 `shellcheck` 可用。
-- `release`：推送 `v*` tag 时重跑校验、核对 tag 与 manifest 版本，构建 zip 与 SHA256 并挂到 Release；
+- `check`：push 到 `master` 与 pull request 时运行 `scripts/check.sh`，最小 `contents: read` 权限，
+  并先确认 runner 自带 `shellcheck`。
+- `release`：推送 `v*` tag 时核对三包版本与 tag，构建三个 zip 与 SHA256 并挂到 Release；
   该工作流没有 `qoderclicn`，用 `--no-validate` 换取可重复构建，插件校验在本地发布前完成。
 - 依赖更新由 Dependabot 每周检查 pip 与 GitHub Actions。
-- CI 与本地跑的是同一套校验，差异只在 `qoderclicn` 缺失时跳过插件校验；`.github/CODEOWNERS` 在合并
-  请求上生效。分支保护在私有仓库免费计划下不可用（需 GitHub Pro），升级后按 GOVERNANCE 的保护项启用。
+- 分支保护在私有仓库免费计划下不可用（需 GitHub Pro），升级后按 GOVERNANCE 的保护项启用。
 
 ## 安全
 
 漏洞报告首选 GitHub 私下漏洞报告，入口不可用时邮件联系维护者，不接受公开 issue 披露；支持版本、
-处理流程、范围与渠道可用性见 [SECURITY.md](SECURITY.md)。仓库不保存任何密钥或个人数据，
-`~/.qwen/settings.json` 等本机配置不在版本库内。
+处理流程、范围与渠道可用性见 [SECURITY.md](SECURITY.md)。仓库不保存任何密钥或个人数据。
 
 ## 许可证
 
 双许可证：文档与规范正文（`rules/`、skill 正文、`docs/`、说明类 Markdown）采用
-[CC BY 4.0](LICENSE-CC-BY-4.0.txt)，代码、脚本与配置（`scripts/`、`hooks/`、`.github/`）采用
-[MIT](LICENSE-MIT.txt)。范围划分见 [LICENSE](LICENSE)。
+[CC BY 4.0](LICENSE-CC-BY-4.0.txt)，代码、脚本与配置（`scripts/`、`shared/`、`plugins/*/hooks/`、
+`.github/`）采用 [MIT](LICENSE-MIT.txt)。范围划分见 [LICENSE](LICENSE)。
 
 ## 变更日志
 

@@ -2,6 +2,22 @@
 
 按版本从新到旧记录可观察变更。自 0.2.0 起版本采用 SemVer、发布点为 tag `v<version>`，每节记录一个发布版本；0.2.0 之前按日期记录。条目按主题合并，记录最终可观察状态；被后续提交推翻的中间状态只在修复项里说明。
 
+## 0.5.0（2026-11-14）
+
+**变更**
+
+- 拆成三个独立包：`plugins/qoder`（Qoder 插件）、`plugins/qwen`（Qwen Code 扩展）、`plugins/dsh`
+  （DSH bundle）；`rules/`、`skills/` 与 `shared/` 成为唯一真源，包内用相对软链引用，发布时物化。
+- 新增 DSH bundle `@snowcore8/dsh-global-user-constraints`：`cordis.patch.yml` 插入 skill 提供者行，
+  `src/index.js` 注册 `ctx.skills.registerProvider` 并解析 frontmatter，附 3 项 `node --test` 测试。
+- 新增 `scripts/materialize.sh` 物化带软链的包；`dist.sh` 一次构建 `qoder`、`qwen`、`dsh` 三个 zip；
+  `check.sh` 校验三包版本、包内软链指向与物化后的 Qoder 插件；release 工作流核对三包版本并挂载三个制品。
+- Qoder 本地市场 `plugins/marketplace.json` 的来源改为 `./qoder`；README 与三个包各自的使用文档同步拆分。
+
+**修复**
+
+- 约束注入脚本支持命令行传包根，Qwen 扩展 hook 不再依赖未被设置的环境变量。
+
 ## 0.4.0（2026-11-14）
 
 **新增**

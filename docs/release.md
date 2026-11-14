@@ -1,8 +1,8 @@
 # 发布手册
 
-本仓库用 SemVer 与 tag 发布。插件版本以
-`plugins/global-user-constraints/.qoder-plugin/plugin.json` 的 `version` 为唯一来源，
-`scripts/dist.sh` 不再推导或改写它。
+本仓库用 SemVer 与 tag 发布。三个包的版本必须一致：`plugins/qoder/.qoder-plugin/plugin.json`、
+`plugins/qwen/qwen-extension.json` 与 `plugins/dsh/package.json` 的 `version` 由发布者手动修改，
+`scripts/dist.sh` 只读取和校验，不推导或改写。
 
 ## 版本规则
 

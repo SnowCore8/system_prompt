@@ -29,6 +29,6 @@ GitHub Advanced Security 才有该入口；入口不可用时直接邮件联系�
 
 ## 范围
 
-- 在范围内：`plugins/global-user-constraints/hooks/` 与 `scripts/` 下的脚本、
-  `plugins/global-user-constraints/skills/*/scripts/` 的校验脚本、发布制品。
+- 在范围内：`plugins/qoder/hooks/`、`plugins/qwen/hooks/`、`shared/scripts/` 与 `scripts/` 下的脚本、
+  `skills/*/scripts/` 的校验脚本、`plugins/dsh/src/` 的提供者代码、发布制品。
 - 不在范围内：规范文本的合规性判断、第三方工具（Qoder、Qwen Code、DeepSeek Harness）自身漏洞。

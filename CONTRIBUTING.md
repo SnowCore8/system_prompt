@@ -3,7 +3,7 @@
 本文件是本仓库的项目维护约定，根 `AGENTS.md` 软链指向本文件，供 DSH 等工作区指令消费者加载。
 用户全局约束在 `rules/global-user-constraints.md`，那是仓库的分发内容：Qwen Code 通过
 `.qwen/rules/` 读取项目级规则，Qoder 项目级通过 `.qoder/rules` 读取、
-用户级按插件 README 激活，均不作为本仓库的贡献规则。
+用户级安装插件后由 hook 自动注入，均不作为本仓库的贡献规则。
 
 ## 范围与优先级
 
@@ -16,8 +16,8 @@
 ## 工作流
 
 1. 改约束、skill 或插件前先读 `README.md` 与对应目录说明。
-2. 真源位置：约束正文 `rules/global-user-constraints.md`；插件 `plugins/global-user-constraints/`；
-   skill 真源在插件内，`.qwen/skills/`、`.qoder/skills/`、`.dsh/skills/` 只是软链入口。
+2. 真源位置：约束正文 `rules/global-user-constraints.md`；skill 真源 `skills/`；命令与注入脚本
+   `shared/`；三个包在 `plugins/qoder|qwen|dsh`，包内只放清单、hook 与指向真源的软链。
 3. 新增或调整入口时保持软链约定：相对路径、目标在仓库内、不复制第二份、不指向另一软链。
 4. 提交前运行 `scripts/check.sh`，失败先修；交付时贴真实输出与退出码。
 5. 分支模型为 trunk-based：单人维护，直接提交 `master`，不强制 PR；接入远端后启用 `master` 保护与必需 CI。
@@ -28,11 +28,12 @@
 - 全量校验：`scripts/check.sh`，覆盖 Markdown、skill 与 hook 测试、shellcheck、JSON、敏感文件、
   软链与 DSH/Qwen/Qoder 适配。缺 `shellcheck` 或 `qoderclicn` 时对应段会打印「跳过」，交付时要说明缺口。
 - 单独跑测试：skill 测试
-  `python3 -B -m unittest discover -s plugins/global-user-constraints/skills/system-prompt-authoring/scripts -p 'test_*.py'`；
-  hook 测试在 `plugins/global-user-constraints/` 下运行 `python3 -B -m unittest discover -s scripts -p 'test_*.py'`。
-- 发布：版本为 SemVer，改 manifest 的 `version` 与 CHANGELOG 后打 `v<version>` tag，流程见
-  `docs/release.md`。本地出包用 `scripts/dist.sh`（默认要求干净工作区，`--require-tag` 要求 tag 匹配），
-  zip 与 `.sha256` 不入库。
+  `python3 -B -m unittest discover -s skills/system-prompt-authoring/scripts -p 'test_*.py'`；
+  hook 测试 `python3 -B -m unittest discover -s shared/scripts -p 'test_*.py'`；
+  DSH 包测试 `node --test plugins/dsh/test/provider.test.mjs`。
+- 发布：版本为 SemVer，三个清单的 `version` 必须一致；改版本与 CHANGELOG 后打 `v<version>` tag，流程见
+  `docs/release.md`。本地出包用 `scripts/dist.sh` 一次构建三个 zip（默认要求干净工作区，
+  `--require-tag` 要求 tag 匹配），zip 与 `.sha256` 不入库。
 
 ## 输出
 
