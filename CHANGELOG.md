@@ -24,6 +24,7 @@
 - `documentation-conventions` 的 `SECURITY.md` 条目只保留页面结构与行文，必需内容与响应承诺归 `security-compliance-conventions`。
 - 规范正文与十一个 skill 改为中文语义正文：`rules/global-user-constraints.zh-CN.md` 成为规范源，英文版降为参考译本；`AGENTS.md`、插件 README、命令、`qoder.md`、manifest 与 hooks 描述同步。
 - `GLOSSARY.md` 增加翻译与写作口径与中英术语对照，统一审查/审计、校验/检查、第三方引入、包仓库、运行手册/操作手册、事故复盘、制品/产物、销毁性/破坏性等写法。
+- 移除英文参考译本：中文正文改名为 `rules/global-user-constraints.md` 并成为唯一规范文件；`AGENTS.md`、插件 README、命令与 `qoder.md` 同步。
 
 **修复**
 
