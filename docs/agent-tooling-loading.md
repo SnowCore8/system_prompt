@@ -360,7 +360,7 @@ DSH 里「插件」是 TypeScript 模块，导出 `apply(ctx)`；可分发的安
   （同内容规则/`AGENTS.md` 已存在时跳过），也可手动复制到 `~/.qoder-cn/rules`（国际版 `~/.qoder/rules`）。
   `.qoder-cn` 与 `.qoder/plugins` 在项目级没有加载语义，已移除。
 - DeepSeek Harness：`.dsh/skills` 是 rank 100 的 skill 扫描根；根 `AGENTS.md` 是项目指令入口。
-- skills：`.qwen/skills`、`.qoder/skills`、`.dsh/skills` 各自软链到插件内十一个 skill；Qoder 与
+- skills：`.qwen/skills`、`.qoder/skills`、`.dsh/skills` 各自软链到插件内十二个 skill；Qoder 与
   Qwen Code 只扫描一层，DSH 也不递归发现嵌套 `SKILL.md`。
 - 三包分发：Qoder 插件在 `plugins/qoder`（`command` + `args`，`${QODER_PLUGIN_ROOT}`），
   Qwen 扩展在 `plugins/qwen`（单条 `command`，`${CLAUDE_PLUGIN_ROOT}`），DSH bundle 在

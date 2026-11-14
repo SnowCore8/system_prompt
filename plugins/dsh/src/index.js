@@ -1,7 +1,7 @@
 /**
  * DSH bundle：把包内 skills/ 注册为 skill 提供者。
  *
- * 使用方在 profile 里安装本 bundle 后，十一个通用规范 skill 会出现在会话目录中；
+ * 使用方在 profile 里安装本 bundle 后，十二个通用规范 skill 会出现在会话目录中；
  * 约束正文与时间注入由 DSH 自身的用户级 AGENTS.md 与系统时间提示承担，本模块只负责 skill。
  */
 import { existsSync } from 'node:fs'
