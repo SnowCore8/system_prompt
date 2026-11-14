@@ -100,29 +100,34 @@ done < <(find . -type l -not -path './.git/*' -print)
 link_git="$(git ls-files -s | awk '$1=="120000"' | wc -l)"
 [ "$link_fs" -eq "$link_git" ] || fail "软链数量不一致：工作区 $link_fs，版本库 $link_git"
 
+plugin_skill_dirs="$(find "$PLUGIN_DIR/skills" -mindepth 1 -maxdepth 1 -type d | wc -l)"
+
+# 校验一个项目级 skill 入口：每项都是软链、可解析、含 SKILL.md，且 frontmatter name 与目录名一致。
+check_skill_root() {
+  local label="$1" root="$2" link_count=0 link name target front_name
+  for link in "$root"/*; do
+    [ -L "$link" ] || {
+      [ -e "$link" ] && fail "$label: $link 不是软链"
+      continue
+    }
+    link_count=$((link_count + 1))
+    name="$(basename "$link")"
+    if ! target="$(readlink -f "$link")"; then
+      fail "$label: 无法解析 $link"
+      continue
+    fi
+    [ -f "$target/SKILL.md" ] || {
+      fail "$label: $name 缺少 SKILL.md"
+      continue
+    }
+    front_name="$(sed -n 's/^name:[[:space:]]*//p' "$target/SKILL.md" | head -n 1 | tr -d '\r')"
+    [ "$front_name" = "$name" ] || fail "$label: $name 的 frontmatter name 为 '$front_name'"
+  done
+  [ "$link_count" -eq "$plugin_skill_dirs" ] || fail "$label: 软链 $link_count 个，插件 skill $plugin_skill_dirs 个"
+}
+
 echo "== DSH 适配 =="
-dsh_root=".dsh/skills"
-plugin_dirs="$(find "$PLUGIN_DIR/skills" -mindepth 1 -maxdepth 1 -type d | wc -l)"
-link_count=0
-for link in "$dsh_root"/*; do
-  [ -L "$link" ] || {
-    [ -e "$link" ] && fail "DSH: $link 不是软链"
-    continue
-  }
-  link_count=$((link_count + 1))
-  name="$(basename "$link")"
-  if ! target="$(readlink -f "$link")"; then
-    fail "DSH: 无法解析 $link"
-    continue
-  fi
-  [ -f "$target/SKILL.md" ] || {
-    fail "DSH: $name 缺少 SKILL.md"
-    continue
-  }
-  front_name="$(sed -n 's/^name:[[:space:]]*//p' "$target/SKILL.md" | head -n 1 | tr -d '\r')"
-  [ "$front_name" = "$name" ] || fail "DSH: $name 的 frontmatter name 为 '$front_name'"
-done
-[ "$link_count" -eq "$plugin_dirs" ] || fail "DSH: 软链 $link_count 个，插件 skill $plugin_dirs 个"
+check_skill_root "DSH" ".dsh/skills"
 [ -f rules/global-user-constraints.md ] || fail "DSH: 缺少约束正文 rules/global-user-constraints.md"
 [ -f CONTRIBUTING.md ] || fail "DSH: 缺少项目维护约定 CONTRIBUTING.md"
 if [ -L AGENTS.md ] && [ "$(readlink -f AGENTS.md)" = "$REPO_ROOT/CONTRIBUTING.md" ]; then
@@ -146,6 +151,10 @@ if [ -L .qoder/rules ] && [ "$(readlink -f .qoder/rules)" = "$REPO_ROOT/rules" ]
 else
   fail "Qoder: .qoder/rules 未指向 rules/"
 fi
+if [ ! -d .qoder/skills ] || [ -L .qoder/skills ]; then
+  fail "Qoder: .qoder/skills 应为普通目录"
+fi
+check_skill_root "Qoder" ".qoder/skills"
 
 echo "== Qwen 适配 =="
 if [ ! -d .qwen ] || [ -L .qwen ]; then
@@ -162,6 +171,10 @@ fi
 if [ ! -f .qwen/rules/global-user-constraints.md ]; then
   fail "Qwen: .qwen/rules 下缺少约束正文"
 fi
+if [ ! -d .qwen/skills ] || [ -L .qwen/skills ]; then
+  fail "Qwen: .qwen/skills 应为普通目录"
+fi
+check_skill_root "Qwen" ".qwen/skills"
 if head -n 10 rules/global-user-constraints.md | grep -q '^paths:'; then
   fail "Qwen: 约束正文 front matter 含 paths，会变成条件规则"
 fi
