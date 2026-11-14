@@ -1,224 +1,203 @@
 ---
 name: testing-and-quality-conventions
-description: Defines, reviews, and repairs test strategy, quality gates, static analysis, and the local development environment for any programming project. Use when planning tests for a feature, deciding which checks gate a branch and at what threshold, triaging a flaky suite, or aligning a local environment with CI. Provides project-type defaults and explicit thresholds.
-argument-hint: '[path or scope]'
+description: 为任意编程项目定义、审查并修复测试策略、质量门禁、静态分析与本地开发环境。适用于：为功能规划测试、决定哪些校验作为分支门禁及阈值、排查不稳定的测试套件，或让本地环境与 CI 对齐。提供按项目类型的默认值与明确阈值。
+argument-hint: '[路径或范围]'
 ---
 
-# Testing and Quality Conventions
+# 测试与质量规范
 
-Quality practice fails in four predictable ways: tests assert nothing and prove only that the process started, gates
-are waived under deadline pressure until nobody remembers what green means, the local environment drifts from CI
-until a passing build on one machine says nothing about the other, and flaky tests are retried or ignored until a red
-suite is treated as weather. Each failure is cheap to introduce and expensive to reverse, because the team reorganizes
-its habits around the broken gate. This skill gives one decision procedure for choosing test layers, a gate set with
-honest thresholds, a policy for static analysis and dependency checks, and a rule set for a local environment that
-matches CI. It applies to any language, test runner, and CI system, and it treats the suite and the pipeline as one
-contract rather than two unrelated chores. It serves the engineer adding tests, the reviewer judging a green build,
-and the maintainer keeping the pipeline trustworthy.
+质量实践会以四种可预见的方式失效：测试不断言任何东西，只证明进程启动过；门禁在截止压力下被豁免，直到没人
+记得绿色代表什么；本地环境与 CI 逐渐漂移，直到一台机器上的构建通过说明不了另一台的情况；不稳定测试被重试
+或忽略，直到红色套件被当成天气一样只能接受。每种失效都容易引入、难以逆转，因为团队会围绕失效的门禁重组自己
+的习惯。本 skill 给出选择测试层级的单一决策流程、带诚实阈值的门禁集合、静态分析与依赖校验策略，以及让本地
+环境与 CI 一致的规则集。它适用于任何语言、测试运行器与 CI 系统，并把测试套件与流水线视为同一份契约，而不是
+两件互不相关的事务。它服务于新增测试的工程师、判断绿色构建的审查者，以及维护流水线可信度的维护者。
 
-## Scope and Precedence
+## 范围与优先级
 
-Apply the first rule that fits, and do not mix policies inside one scope:
+套用第一条适用的规则，同一范围内不要混用策略：
 
-1. Mandatory platform, toolchain, and compliance requirement. Test runners, CI capabilities, package-manager
-   constraints, and mandatory security or regulatory checks are not optional.
-2. Existing project configuration and convention. Read the CI configuration, test runner settings, coverage
-   configuration, and bootstrap scripts before inventing a threshold.
-3. This standard's defaults, when the two levels above are silent.
-4. Personal preference, which never overrides the three levels above.
+1. 平台、工具链与合规的强制要求。测试运行器、CI 能力、包管理器限制，以及强制的安全或监管校验，都不是
+   可选项。
+2. 现有项目配置与约定。在自创阈值前，先读 CI 配置、测试运行器设置、覆盖率配置与 bootstrap 脚本。
+3. 以上两级未规定时，采用本规范的默认值。
+4. 个人偏好，它永远不能覆盖以上三级。
 
-- The naming-conventions skill owns test function, file, class, fixture, and test-double names. This skill owns which
-  layers exist, what each layer asserts, and how the suite gates a branch.
-- The comment-conventions skill owns comments and docstrings in tests. This skill owns the assertions, fixtures, and
-  failure messages, and does not restate comment rules.
-- The release-operations-conventions skill owns CI/CD pipelines, environment promotion, observability, and release.
-  This skill owns which gates must exist, their thresholds, and how a failure is handled at the gate.
-- The code-style-conventions skill owns formatter and linter style rules. This skill owns which static checks are
-  gating and at what severity.
-- The security-compliance-conventions skill owns dependency vulnerability policy. This skill owns where and when the
-  vulnerability scan runs as a quality gate and how a blocking finding is reported.
-- The api-and-data-conventions skill owns contract design. This skill owns the contract and regression test coverage
-  that a contract change requires.
-- Generated code, vendored code, migration scripts, and entry-point glue are exempt from coverage and style gates.
-  Record each exclusion as path, reason, owner, and expiry; keep the generated marker, and never exclude a
-  hand-written source tree.
-- Adopting this standard in a legacy project is a staged change, not a rewrite. Baseline the existing violations with
-  a reviewed count, hold every changed file to the new rule, and delete the baseline as it shrinks. Turning on every
-  gate at blocking severity at once guarantees they are all disabled within a week.
-- The suite is part of the change. A behavior change adds or updates its test in the same change, and a reviewer who
-  cannot see the test for a behavior change treats the change as incomplete.
-- A gate is a contract: changing its command, threshold, scope, or exclusion is a reviewed change with a stated
-  reason, an owner, and a linked issue. Never lower a threshold in the same change that fails it.
-- When two rules conflict, state the conflict and the chosen rule; record the decision in the project's quality policy
-  so the next change follows it.
+- 测试函数、文件、类、fixture 与测试替身的命名归 naming-conventions skill 管。本 skill 管有哪些层级、
+  每层断言什么，以及测试套件如何对分支设门禁。
+- 测试中的注释与 docstring 归 comment-conventions skill 管。本 skill 管断言、fixture 与失败信息，不重述
+  注释规则。
+- CI/CD 流水线、环境晋升、可观测性与发布归 release-operations-conventions skill 管。本 skill 管必须存在
+  哪些门禁、其阈值，以及门禁处的失败如何处理。
+- 格式化工具与 linter 的风格规则归 code-style-conventions skill 管。本 skill 管哪些静态校验作为门禁、
+  以什么严重级别。
+- 依赖漏洞策略归 security-compliance-conventions skill 管。本 skill 管漏洞扫描作为质量门禁在何处、何时
+  运行，以及阻塞性发现如何报告。
+- 契约设计归 api-and-data-conventions skill 管。本 skill 管契约变更所需的契约测试与回归测试覆盖。
+- 生成代码、第三方引入代码、迁移脚本与入口粘合代码不受覆盖率与风格门禁约束。每个排除项都记录路径、原因、
+  负责人与到期时间；保留生成标记，禁止排除手写的源码树。
+- 在遗留项目中采用本规范是分阶段变更，不是重写。用经审查的计数为现有违规建立基线，对每个变更文件执行新
+  规则，并随着基线缩小删除它。一次性把所有门禁都开到阻塞级别，必然会在一周内被全部关闭。
+- 测试套件是变更的一部分。行为变更必须在同一次变更中新增或更新其测试；审查者看不到行为变更对应的测试时，
+  就应把该变更视为不完整。
+- 门禁是一份契约：修改其命令、阈值、范围或排除项，都属于附带说明理由、负责人与关联 issue 的受审变更。
+  禁止在导致该门禁失败的同一变更里下调阈值。
+- 两条规则冲突时，说明冲突与所选规则；把决定记录在项目的质量策略中，让后续变更遵循它。
 
-## Process
+## 流程
 
-1. Classify the risk first. Name what breaks if this code fails: money, personal data, safety, availability, or
-   internal convenience. Risk decides the required layers and whether a gate blocks or only reports; a payment path
-   and a settings label do not get the same test budget.
-2. Pick the cheapest layer that can catch the failure. Prefer a unit test to integration and integration to
-   end-to-end, using the Test Layer Matrix below. When only an end-to-end test can fail, record why the seam cannot
-   be tested lower in the test or the ticket, so the next reviewer does not reconstruct the decision.
-3. Define the gate and the threshold before writing the test. Name the command, the event it runs on, the required
-   status check, the threshold, and the owner. A check with no threshold and no owner is decoration. Publish the gate
-   in the project's quality policy, so a contributor can read the rule before pushing.
-4. Make the test deterministic. Remove wall-clock time, randomness, network access, ordering, shared state, and
-   environment differences; inject a clock, seed the generator, isolate the data, and wait on a condition instead of
-   sleeping. Run the suite twice locally and compare results; a test that passed once has not shown determinism.
-5. Wire it locally and in CI from one definition. Add the target to the bootstrap or build script, call that target
-   from CI, and confirm both paths read the same tool versions, environment variables, and service versions.
-6. Verify the failure path. Break the code or the assertion once and confirm the gate fails with a readable message;
-   a gate that cannot fail is not a gate. Keep the observed failure in the pull request, so the gate has a record of
-   catching something rather than a claim that it does.
-7. Document the waiver policy. State who may waive which gate, the required record, the maximum duration, and the
-   review that removes it; an undocumented waiver becomes a permanent exclusion.
+1. 先给风险分类。写明这段代码失败会破坏什么：资金、个人数据、安全、可用性，还是内部便利。风险决定所需
+   层级，以及门禁是阻塞还是只报告；支付路径与设置页标签不应得到同样的测试预算。
+2. 选择能捕获该失败的最廉价层级。优先单元测试而非集成测试，优先集成测试而非端到端测试，参照下面的测试
+   层级矩阵。只有端到端测试能失败时，在测试或工单中记录该接缝为何无法在更低层级测试，免得下一位审查者
+   重新还原这个决定。
+3. 写测试之前先定义门禁与阈值。写明命令、触发事件、必需状态校验、阈值与负责人。既无阈值又无负责人的
+   校验只是装饰。把门禁公布在项目的质量策略中，让贡献者推送前就能读到规则。
+4. 让测试具备确定性。去掉墙钟时间、随机性、网络访问、顺序依赖、共享状态与环境差异；注入时钟、给生成器设种子、
+   隔离数据，并等待条件而不是 sleep。本地运行测试套件两次并比对结果；只通过一次的测试还没有证明确定性。
+5. 用同一份定义同时接入本地与 CI。把目标加入 bootstrap 或构建脚本，由 CI 调用该目标，并确认两条路径读取
+   相同的工具版本、环境变量与服务版本。
+6. 验证失败路径。破坏一次代码或断言，确认门禁以可读信息失败；不会失败的门禁不是门禁。把观察到的失败保留
+   在 PR 中，让门禁有捕获过问题的记录，而不是只有一句声称。
+7. 记录豁免策略。说明谁可以豁免哪个门禁、需要的记录、最长时限，以及由谁审查并在何时移除；没有记录的豁免
+   会变成永久排除。
 
-## Core Rules
+## 核心规则
 
-- **A test must be able to fail.** Assert observable behavior with a specific expected value. A test that only
-  asserts no exception, or asserts that a mock was called without checking the outcome, cannot distinguish working
-  code from broken code. An assertion that cannot name the wrong value it would catch is not testing a behavior.
-- **Test behavior at the public seam.** Call the unit through the interface its callers use. Do not test private
-  helpers directly; a refactor that keeps behavior unchanged must not break the suite.
-- **Mock at the process boundary, never inside it.** Replace the network, clock, randomness, filesystem, and
-  third-party services. Use a fake or an in-memory adapter when persistence cannot be real in that layer. Never mock
-  the unit under test, a value object, or the project's own serialization. A mock that needs a dozen setup lines is a
-  sign the seam is in the wrong place.
-- **One reason to fail per test.** Each test covers one behavior and reports one clear failure. A test with ten
-  assertions reports the first and hides the other nine; table-driven cases keep one assertion each.
-- **No weakened tests.** Never delete, skip, or loosen a test to make a build green. Fix the code or record the
-  defect; a weakened test is a review rejection and, when it must ship, a waiver.
-- **Determinism is a gate.** A test that depends on time, ordering, network, or shared state is quarantined, not
-  retried. A suite whose result varies is not evidence.
-- **Coverage is a floor, not a target.** Enforce change coverage and a project floor derived from the measured
-  baseline. Do not chase 100%, and do not exclude source code to reach a number. A coverage number reviewed without
-  the command and tool version that produced it is not reproducible.
-- **Every gate has an owner and a failure path.** Name the owner, the threshold, and what happens on failure; an
-  unowned gate is the first one waived.
-- **Failures stop the merge.** A red required check blocks integration. Retry only for proven infrastructure errors,
-  once, and keep the first failure visible; do not merge on a retry-only green.
-- **Quarantine flaky tests with a deadline.** A flaky test gets an owner and a fix-by date, leaves the blocking
-  suite, and is fixed or deleted by the deadline. Retries do not count as a fix.
-- **A waiver is recorded and expires.** A waiver names the gate, scope, approver, reason, and expiry date. A waiver
-  without an expiry is an exclusion, and an exclusion without an owner is a defect.
-- **Static checks gate at a severity the team acts on.** New violations fail; existing violations are baselined and
-  the baseline only shrinks. A check everyone ignores is worse than no check, because it trains people to scroll past
-  red output. When a check is noisy, fix its configuration or its baseline instead of learning to ignore it.
-- **Local and CI run the same commands.** A passing local run and a failing CI run is a parity defect, not an
-  acceptable difference. Fix parity before adding checks.
-- **Pin versions and clean up test data.** Pin tool versions, service images, and fixtures in the repository. Use
-  synthetic data with a unique namespace per run, and remove what the run creates.
+- **测试必须有能力失败。** 用具体的期望值断言可观察行为。只断言不抛异常，或只断言 mock 被调用却不检查结果
+  的测试，无法区分正常代码与损坏代码。说不出自己会捕获哪个错误值的断言，就没有在测试行为。
+- **在公共接缝处测试行为。** 通过调用方使用的接口调用被测单元。不要直接测试私有辅助函数；不改变行为的重构
+  不得让测试套件失败。
+- **在进程边界处 mock，禁止在进程内部 mock。** 替换网络、时钟、随机性、文件系统与第三方服务。该层无法使用
+  真实持久化时，用 fake 或内存内适配器。禁止 mock 被测单元、值对象或项目自身的序列化。需要十几行初始化
+  代码的 mock 说明接缝位置不对。
+- **每个测试只有一个失败原因。** 每个测试覆盖一种行为，报告一个明确的失败。有十个断言的测试只报告第一个，
+  掩盖其余九个；表驱动用例每个只保留一个断言。
+- **不弱化测试。** 禁止为了构建变绿而删除、跳过或放松测试。修代码或记录缺陷；被弱化的测试会被审查驳回，
+  确实必须发布时走豁免。
+- **确定性是门禁。** 依赖时间、顺序、网络或共享状态的测试应被隔离，而不是重试。结果会变化的测试套件不是
+  证据。
+- **覆盖率是下限，不是目标。** 执行变更覆盖率，以及根据实测基线推导的项目下限。不要追求 100%，也不要为
+  凑数字而排除源码。查看覆盖率数字却不看产生它的命令与工具版本，结果不可复现。
+- **每个门禁都有负责人与失败路径。** 写明负责人、阈值以及失败时怎么办；无人负责的门禁总是最先被豁免。
+- **失败阻止合并。** 红色的必需校验会阻塞集成。只有已证实的基础设施错误才允许重试一次，并保留首次失败
+  可见；不要凭仅靠重试得到的绿色就合并。
+- **带期限隔离不稳定测试。** 不稳定测试要有负责人与修复截止日期，退出阻塞性测试套件，并在期限前修复或
+  删除。重试不算修复。
+- **豁免要记录且会到期。** 豁免写明门禁、范围、批准人、理由与到期日。没有到期时间的豁免就是排除项，没有
+  负责人的排除项就是缺陷。
+- **静态校验以团队真正会处理的严重级别设门禁。** 新违规必须失败；现有违规建立基线，基线只缩不增。人人
+  无视的校验比没有校验更糟，因为它训练人们滑过红色输出。校验噪声大时，修它的配置或基线，而不是学会无视
+  它。
+- **本地与 CI 运行相同命令。** 本地通过而 CI 失败属于一致性缺陷，不是可接受的差异。先修一致性，再加校验。
+- **固定版本并清理测试数据。** 在仓库中固定工具版本、服务镜像与 fixture。使用合成数据，每次运行分配唯一
+  命名空间，并清理该次运行创建的内容。
 
-## Test Layer Matrix
+## 测试层级矩阵
 
-Use the cheapest layer that can fail for the risk. The speed budget is per test and per suite on a standard CI
-runner; a test that exceeds it moves down a layer or is split. Treat the budget as a gate of its own: a test that
-blows the budget is a maintenance defect even when it passes.
+针对该风险使用能失败的最廉价层级。速度预算是针对标准 CI 运行器上的每个测试与每个套件；超出预算的测试下移
+一层或被拆分。把预算本身当作门禁：超出预算的测试即使通过也是维护缺陷。
 
-| Layer | Scope | Speed budget | What it may mock | Gate |
+| 层级 | 范围 | 速度预算 | 可以 mock 什么 | 门禁 |
 |---|---|---|---|---|
-| Unit | One public function, class, or module; all I/O replaced | 100 ms per test; suite 2 min | Clock, randomness, network, filesystem, third-party clients | Required on every commit and pull request |
-| Component | One module with its real in-process collaborators: router, renderer, serializer | 1 s per test; suite 5 min | Third-party network and platform services only | Required on pull request |
-| Integration | One real boundary: database, queue, cache, or the project's own service over the wire | 5 s per test; suite 15 min | External providers outside the system boundary | Required on pull request for touched services |
-| Contract | Request and response agreement between provider and consumer | 1 s per interaction; suite 3 min | The other side, replaced by a verified contract artifact | Required on pull request for the changed side |
-| End-to-end | Entry point through persistence on a production-like stack | 60 s per test; suite 20 min | External providers via sandbox; nothing internal | Required on main; a subset on pull request |
-| Smoke | Deployed artifact: health, login, one core transaction | 5 min in total | Nothing; it uses real dependencies | Required after deploy and on a schedule |
-| Performance | Throughput and latency of a defined workload against a baseline | Budget per test; suite 60 min nightly | Nothing; fixed data set and pinned hardware | Required on main for critical paths, advisory otherwise |
-| Property and fuzz | Generated inputs against parser, protocol, and calculation invariants | 30 s per property; suite 10 min | Same as unit; the generator supplies inputs | Nightly, plus changed parsers on pull request |
+| 单元 | 一个公共函数、类或模块；所有 I/O 都被替换 | 每个测试 100 ms；套件 2 分钟 | 时钟、随机性、网络、文件系统、第三方客户端 | 每次提交与 PR 都必须 |
+| 组件 | 一个模块及其真实的进程内协作者：路由、渲染器、序列化器 | 每个测试 1 秒；套件 5 分钟 | 仅第三方网络与平台服务 | PR 上必须 |
+| 集成 | 一个真实边界：数据库、队列、缓存，或项目自身服务的网络调用 | 每个测试 5 秒；套件 15 分钟 | 系统边界之外的外部提供方 | 涉及的服务在 PR 上必须 |
+| 契约 | 提供方与消费方之间的请求与响应约定 | 每次交互 1 秒；套件 3 分钟 | 另一方，由经验证的契约制品替代 | 变更方在 PR 上必须 |
+| 端到端 | 从入口到持久化，运行在类生产栈上 | 每个测试 60 秒；套件 20 分钟 | 外部提供方走沙箱；内部一律不 mock | main 上必须；PR 上跑子集 |
+| 冒烟 | 已部署制品：健康检查、登录、一笔核心交易 | 总计 5 分钟 | 不 mock；使用真实依赖 | 部署后必须，并按计划运行 |
+| 性能 | 定义负载相对基线的吞吐量与延迟 | 每个测试有预算；夜间套件 60 分钟 | 不 mock；固定数据集与固定硬件 | 关键路径在 main 上必须，其余为提示性 |
+| 属性与模糊 | 生成输入，针对解析器、协议与计算不变式 | 每个属性 30 秒；套件 10 分钟 | 与单元相同；输入由生成器提供 | 夜间运行；变更的解析器在 PR 上另跑 |
 
-## Dimension Index
+## 维度索引
 
-Each dimension has detailed rules, examples, and edge cases in `references/dimensions.md`; the number in the
-dimension column is the section number in that file.
+每个维度的详细规则、示例与边界情况见 `references/dimensions.md`；维度列中的编号就是该文件中的节号。
 
-| Dimension | First rule |
+| 维度 | 首条规则 |
 |---|---|
-| 1. Test strategy and layering | Choose the cheapest layer that can catch the failure and never mock what the layer is meant to prove. |
-| 2. Quality gates and coverage | Gates block merges; coverage is a floor derived from a measured baseline, not a target. |
-| 3. Static analysis and dependency checks | New violations fail, baselines only shrink, and secrets and vulnerable dependencies block. |
-| 4. Local development environment | One command builds the environment, and local and CI read the same pins and targets. |
+| 1. 测试策略与分层 | 选择能捕获该失败的最廉价层级，禁止 mock 该层要证明的东西。 |
+| 2. 质量门禁与覆盖率 | 门禁阻塞合并；覆盖率是由实测基线推导的下限，不是目标。 |
+| 3. 静态分析与依赖校验 | 新违规失败，基线只缩不增，机密与存在漏洞的依赖阻塞。 |
+| 4. 本地开发环境 | 一条命令构建环境，本地与 CI 读取相同的固定版本与目标。 |
 
-## Anti-Patterns
+## 反模式
 
-| Anti-pattern | Why it fails | Fix |
+| 反模式 | 失败原因 | 修复 |
 |---|---|---|
-| Test with no assertion, or `assert True` | Proves the code ran, not that it worked; behavior can regress while the suite stays green | Assert an observable outcome for both the success and the failure case |
-| Mocking the class under test | The test verifies the mock and a broken unit still passes | Test the real object and replace only its boundaries |
-| Over-mocking every collaborator | The suite stays green while the system cannot run | Keep real collaborators in-process and fake only I/O boundaries |
-| `sleep()` before asserting async work | Timing-dependent and slow; fails on a loaded runner | Wait on a condition or event with a bounded timeout |
-| Passing coverage by excluding source | The number improves while untested code grows | Exclude only generated, vendored, migration, and entry-point glue, each recorded as path, reason, owner, and expiry |
-| Waiving a red gate under release pressure | One waiver becomes a habit and the gate stops being a gate | Record a waiver with an owner and expiry; schedule the fix |
-| Retrying a test until it passes | Hides a real race or a broken test and normalizes failure | Quarantine with an owner and a deadline, then fix the cause |
-| Asserting that a private method was called | Locks the implementation; harmless refactors fail | Assert through the public interface and observable state |
-| A whole-page snapshot as the only assertion | One unrelated change fails everything and reviewers approve blindly | Assert the fields or elements that carry the behavior |
-| Testing against a shared development database | Order dependence and data drift make failures irreproducible | Create a per-run schema or container and drop it after |
-| Floating tool versions such as `latest` | Local and CI disagree and the old failure returns | Pin versions in the repository and read them in both paths |
-| Secrets or personal data in fixtures | Test data ships with the suite and leaks on the next share | Use synthetic values and `example.test.invalid` addresses |
-| Lowering a threshold to land a change | The regression the gate exists to catch now passes | Fix the finding or record a scoped, time-boxed waiver |
-| Skipping a flaky test with no owner | The regression it covered is now untested and nobody knows | Quarantine, assign an owner, and open the tracking issue |
-| An end-to-end test for a unit rule | Slow, brittle, and debugged at the wrong layer | Move the assertion down and keep one end-to-end happy path |
-| Updating the expected value to match current output | The test now certifies the bug and blocks the fix | Link the spec or issue that authorizes the new value, or fix the code |
+| 没有断言的测试，或 `assert True` | 只证明代码运行过，不证明它工作正常；行为可能回退而套件仍然绿色 | 对成功与失败两种情形都断言可观察结果 |
+| mock 被测类 | 测试校验的是 mock，损坏的单元仍能通过 | 测试真实对象，只替换其边界 |
+| 过度 mock 所有协作者 | 系统跑不起来时套件仍是绿色 | 进程内保留真实协作者，只 fake I/O 边界 |
+| 断言异步工作前先 `sleep()` | 依赖时序且慢；运行器负载高时失败 | 等待条件或事件，并设有时限 |
+| 通过排除源码来通过覆盖率 | 数字变好，未测试代码却在增长 | 只排除生成、第三方引入、迁移与入口粘合代码，每项记录路径、原因、负责人与到期时间 |
+| 发布压力下豁免红色门禁 | 一次豁免变成习惯，门禁不再是门禁 | 记录带负责人与到期时间的豁免；安排修复 |
+| 反复重试测试直到通过 | 掩盖真实竞态或损坏的测试，并把失败正常化 | 带负责人与期限隔离，然后修复根因 |
+| 断言私有方法被调用 | 锁死实现；无害重构会失败 | 通过公共接口与可观察状态断言 |
+| 只用整页快照作断言 | 一处无关改动就让全部失败，审查者盲目通过 | 断言承载该行为的字段或元素 |
+| 针对共享开发数据库测试 | 顺序依赖与数据漂移让失败无法复现 | 每次运行创建独立 schema 或容器，结束后删除 |
+| 使用 `latest` 这类浮动工具版本 | 本地与 CI 不一致，旧问题重现 | 在仓库中固定版本，两条路径都读取它 |
+| fixture 中含机密或个人信息 | 测试数据随套件分发，下次共享就外泄 | 使用合成值与 `example.test.invalid` 地址 |
+| 为落地变更而下调阈值 | 门禁本要捕获的回退现在通过了 | 修复发现，或记录限定范围、有时限的豁免 |
+| 跳过不稳定测试且无负责人 | 它覆盖的回退现在无人测试，也没人知道 | 隔离、指定负责人并开跟踪 issue |
+| 用端到端测试验证单元规则 | 慢、脆弱，还在错误的层级调试 | 把断言下移，只保留一条端到端正常路径 |
+| 把期望值改成与当前输出一致 | 测试从此为这个 bug 背书，并阻碍修复 | 链接授权新值的规范或 issue，或修代码 |
 
-## Review Checklist
+## 审查清单
 
-- [ ] Each test states one behavior and can fail for that reason alone.
-- [ ] Assertions check observable outcomes, values, and error paths, not only that a call returned.
-- [ ] The lowest sufficient layer covers the behavior, and every end-to-end test is justified.
-- [ ] Only process boundaries are mocked; the unit under test and the project's own contracts are real.
-- [ ] The test is deterministic: injected clock, seeded randomness, no sleep, no ordering dependence.
-- [ ] Test data is synthetic, namespaced per run, and removed after the run.
-- [ ] Factories build the minimum valid state; no test mutates a shared fixture.
-- [ ] Every required gate names its command, owner, and threshold in CI configuration.
-- [ ] Coverage gates combine change coverage with a project floor derived from a measured baseline.
-- [ ] This change does not lower a threshold, widen an exclusion, or grow a baseline.
-- [ ] Static checks fail on new violations and the baseline did not grow.
-- [ ] New direct dependencies pass the audit at the blocking severity, and the secrets scan is clean.
-- [ ] Every flaky test touched by this change has an owner and a fix-by date.
-- [ ] The bootstrap reaches the same tool and service versions that CI uses.
-- [ ] Local and CI run the same target command, not two copies of it.
-- [ ] Failure output names the failing test, the input, and the expected and actual value.
-- [ ] A waiver, if present, names the gate, scope, approver, reason, expiry, and tracking issue.
-- [ ] Every exclusion is one of generated, vendored, migration, or entry-point glue, recorded as path, reason,
-  owner, and expiry.
-- [ ] New tests finish within the speed budget of their layer in the pull request pipeline.
-- [ ] The new test was observed failing before the fix and passing after it.
+- [ ] 每个测试只声明一种行为，且能仅因该原因失败。
+- [ ] 断言检查可观察结果、值与错误路径，而不仅是某次调用有返回。
+- [ ] 由足够的最低层级覆盖该行为，每个端到端测试都有理由。
+- [ ] 只 mock 进程边界；被测单元与项目自身的契约都是真实的。
+- [ ] 测试是确定的：注入时钟、随机数带种子、不用 sleep、不依赖顺序。
+- [ ] 测试数据是合成的、每次运行带命名空间，并在运行后清理。
+- [ ] 工厂构建最小有效状态；没有测试改动共享 fixture。
+- [ ] 每个必需门禁都在 CI 配置中写明命令、负责人与阈值。
+- [ ] 覆盖率门禁把变更覆盖率与由实测基线推导的项目下限结合起来。
+- [ ] 本次变更没有下调阈值、扩大排除范围或增大基线。
+- [ ] 静态校验对新违规失败，基线没有增长。
+- [ ] 新增直接依赖通过阻塞级别的审查，机密扫描干净。
+- [ ] 本次变更涉及的每个不稳定测试都有负责人与修复截止日期。
+- [ ] bootstrap 达到与 CI 相同的工具与服务版本。
+- [ ] 本地与 CI 运行同一个目标命令，而不是两份副本。
+- [ ] 失败输出写明失败的测试、输入，以及期望值与实际值。
+- [ ] 若有豁免，写明门禁、范围、批准人、理由、到期时间与跟踪 issue。
+- [ ] 每个排除项都属于生成、第三方引入、迁移或入口粘合代码之一，并记录路径、原因、负责人与到期时间。
+- [ ] 新测试在 PR 流水线中不超过其层级的速度预算。
+- [ ] 新测试在修复前被观察到失败，修复后通过。
 
-## Examples
+## 示例
 
 <example>
-A unit test for an invoice total:
-`assert calculate_total(items) == 1800` over a table of empty, single-item, and boundary cases. The tax client
-is replaced at the boundary; mocking the calculation would test the mock, not the arithmetic.
+针对发票总额的单元测试：
+`assert calculate_total(items) == 1800`，覆盖空、单项与边界用例表。税客户端在边界处被替换；mock 计算本身
+只会测到 mock，而不是算术。
 </example>
 
 <example>
-A contract test for an order service:
-the consumer records `POST /v1/orders` expectations and the provider verifies them in its own pipeline. A field
-rename fails the provider before an end-to-end test could ever see it.
+订单服务的契约测试：
+消费方记录 `POST /v1/orders` 的期望，提供方在自己的流水线中验证它们。字段重命名会让提供方在端到端测试
+看到之前就失败。
 </example>
 
 <example>
-Coverage on a change:
-the pull request adds 120 executable lines and covers 96, so change coverage is 80% and passes; the project floor
-of 75% stays untouched because the measured baseline is unchanged. Lowering the floor would hide the drop.
+变更上的覆盖率：
+PR 新增 120 行可执行代码并覆盖了 96 行，因此变更覆盖率为 80%，通过；项目下限 75% 保持不变，因为实测基线
+未变。下调下限会掩盖这次下降。
 </example>
 
 <example>
-A flaky login test:
-it passes alone and fails in the full suite because an earlier test leaves a session open. Quarantine moves it out
-of the blocking set with an owner and a 14-day deadline; the fix is per-test isolation, not a retry loop.
+一个不稳定的登录测试：
+它单独运行时通过，在完整套件中失败，因为更早的测试留下了一个未关闭的会话。隔离把它移出阻塞集合，并指定
+负责人与 14 天期限；修复方式是逐测试隔离，而不是重试循环。
 </example>
 
 <example>
-Local parity:
-`make test` and the CI job run the same target against the pinned database image, so a local pass and a CI failure
-point at a real defect. Reimplementing the test command in CI configuration is how the two paths drift apart.
+本地一致性：
+`make test` 与 CI 作业针对固定的数据库镜像运行同一个目标，因此本地通过而 CI 失败就指向真实缺陷。在 CI
+配置里重新实现测试命令，正是两条路径漂移的原因。
 </example>
 
-## References
+## 参考
 
-Read [references/dimensions.md](references/dimensions.md) for the full rule set behind the four dimensions, and
-[references/gates.md](references/gates.md) for stack-specific commands, default thresholds, the coverage worksheet,
-the flaky-test workflow, and the waiver template. Read both before defining a project's gate set; during routine
-work, read the dimension that applies and the stack section that applies.
+四个维度背后的完整规则集见 [references/dimensions.md](references/dimensions.md)；按技术栈的命令、默认阈值、
+覆盖率工作表、不稳定测试流程与豁免模板见 [references/gates.md](references/gates.md)。定义项目门禁集合前先读
+这两份文件；日常工作中只读适用的维度与适用的技术栈一节。

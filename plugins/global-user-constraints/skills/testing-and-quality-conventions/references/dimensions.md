@@ -1,274 +1,227 @@
-# Testing and Quality Dimensions
+# 测试与质量维度
 
-Use this file with `SKILL.md`. Each section gives the decisions, examples, and edge cases for one quality
-dimension. When a project already has a policy, read it first and apply the higher-precedence rule; this file supplies
-the default and the reason. Read the section that matches the tests you are changing or the gate you are moving.
+本文件与 `SKILL.md` 配合使用。每一节给出一个质量维度的决策、示例与边界情况。项目已有策略时，先读策略并执行
+效力更高的规则；本文件提供默认值与理由。只读与你要改的测试或要调整的门禁相匹配的那一节。
 
-## 1. Test Strategy and Layering
+## 1. 测试策略与分层
 
-Layering decides where each risk is proven. A suite with the wrong shape either takes an hour to answer a question a
-unit test could answer in a millisecond, or reports green while the integration it never crossed is broken.
+分层决定每种风险在哪里被证明。形状不对的测试套件，要么花一小时回答单元测试一毫秒就能回答的问题，要么在它
+从未跨越的集成已经损坏时仍报绿色。
 
-- Choose the shape by project type and failure cost. A domain service uses a pyramid: many unit tests, fewer
-  integration tests, and a thin end-to-end layer for critical flows. A UI product with heavy client logic uses a
-  trophy: solid unit and component layers with fewer, broader integration tests. A data pipeline or CLI uses mostly
-  integration tests with contract checks at its inputs and outputs. Avoid the ice-cream cone, where end-to-end tests
-  dominate and every failure is debugged through a browser. Record the chosen shape in the repository's testing
-  note and revisit it when the main risk changes; a shape chosen once and never reviewed becomes folklore.
-- Draw layer boundaries by what is real, not by directory name. A unit test replaces every I/O; a component test
-  keeps its in-process collaborators real; an integration test crosses exactly one real boundary; an end-to-end test
-  crosses from entry point to persistence; a contract test checks an interface agreement without deploying both
-  sides. Check the classification by asking which dependency outage the test would notice: if stopping the database
-  cannot fail it, it is a unit or component test whatever folder it lives in.
-- Use contract tests for every pair of deployables that share a request and response shape. The consumer records
-  expectations, the provider verifies them in its own pipeline, and either side fails when the shape changes. Do not
-  substitute a shared staging environment for a contract test: staging is shared, slow, and drifts for reasons that
-  have nothing to do with the contract. Keep the contract artifact with the consumer and bump it deliberately, so a
-  provider change produces a migration window rather than a surprise outage.
-- Never mock the unit under test, a value object, the project's own serialization, database constraints and
-  migrations, an authorization decision, or the behavior the test claims to prove. A unit test may replace the
-  project's repository with a fake when persistence is not the behavior under test; an integration test must use the
-  real engine, because a mock there proves only that the mock was called. When a fake replaces the database, run the
-  real migration path against it and verify the production dialect, or the tests will approve SQL that production
-  rejects.
-- Never make real in a test: payment capture, email or SMS delivery, external APIs with quotas or cost, production
-  data, and anything that needs a person. Replace each with a sandbox, a fake adapter at the boundary, or a recorded
-  contract artifact, and keep every replacement beside the other test doubles so the fake cannot spread into
-  production code. Make each fake fail on an unexpected interaction, so a newly added production call cannot pass
-  silently because no test thought to assert it.
-- Build test data from factories that produce a valid default and accept per-test overrides. No test mutates a
-  fixture another test shares. Isolate with a transaction rollback, a per-run schema, a container, or unique
-  namespaces, and delete what cannot be rolled back; a test that leaves rows behind makes the next run
-  order-dependent. Prefer explicit values in assertions over randomness; a randomized failure must print its seed
-  and input, or the person who sees it cannot reproduce it.
-- Promote a defect upward only when the lower layer cannot see it. Reproduce the production bug at the cheapest layer
-  that can fail, add the regression test there, and add at most one end-to-end guard for the uncovered path.
-  Duplicating the same assertion at three layers buys no signal and triples the maintenance. Record the promotion in
-  the bug ticket, with the layer, the test, and the guard, so the next similar defect follows the same route.
-- Enforce a runtime budget per layer. Keep the unit suite under 2 minutes, and hold the pull request test stage to
-  the project-type budget up to 20 minutes. Apply the 10-second rule to unit, component, integration, and contract
-  tests: one over 10 seconds needs a stated reason and a separate job. End-to-end and property tests follow the
-  per-test budgets in the layer matrix instead. Split or demote a test that exceeds its budget instead of tolerating a
-  suite everyone stops running. Measure the budget in CI on a standard runner, not on a developer laptop, because
-  the laptop number is not the one the pull request waits for.
+- 按项目类型与失败代价选择形状。领域服务用金字塔：大量单元测试、较少的集成测试，以及一层薄薄的、针对关键
+  流程的端到端测试。客户端逻辑很重的 UI 产品用奖杯形：扎实的单元与组件层，加上更少但更宽的集成测试。数据
+  管道或 CLI 主要用集成测试，并在输入与输出处做契约校验。避免冰淇淋锥形：端到端测试占主导，每个失败都要
+  通过浏览器调试。把选定的形状记录在仓库的测试说明中，并在主要风险变化时重新审视；只选一次、从不复查的
+  形状会变成民间传说。
+- 按「什么是真实的」划分层级边界，而不是按目录名。单元测试替换所有 I/O；组件测试保留进程内协作者为真实；
+  集成测试恰好跨越一个真实边界；端到端测试从入口跨越到持久化；契约测试在不部署双方的情况下检查接口约定。
+  通过「该测试会注意到哪种依赖故障」来检查分类：停掉数据库也不能让它失败，那它无论放在哪个目录都是单元或
+  组件测试。
+- 每一对共享请求与响应形状的可部署单元都使用契约测试。消费方记录期望，提供方在自己的流水线中验证，形状变更
+  时任意一方都会失败。不要用共享预发环境替代契约测试：预发是共享的、慢的，而且会因与契约无关的原因漂移。
+  把契约制品与消费方放在一起，并有意识地升级其版本，使提供方的变更产生迁移窗口，而不是意外故障。
+- 禁止 mock 被测单元、值对象、项目自身的序列化、数据库约束与迁移、授权决策，或测试声称要证明的行为。持久化
+  不是被测行为时，单元测试可以用 fake 替换项目的 repository；集成测试必须使用真实引擎，因为那里的 mock 只能
+  证明 mock 被调用过。用 fake 替换数据库时，对它运行真实的迁移路径并验证生产方言，否则测试会批准生产环境
+  拒绝的 SQL。
+- 在测试中永远不要真实执行：支付扣款、邮件或短信发送、带配额或成本的外部 API、生产数据，以及任何需要人参与
+  的事。用沙箱、边界处的 fake 适配器或录制的契约制品替换它们，并把每个替换物与其他测试替身放在一起，避免
+  fake 扩散进生产代码。让每个 fake 在遇到意外交互时失败，这样新加的生产调用不会因为没人想到要断言它而静默
+  通过。
+- 用工厂构建测试数据：工厂产出有效的默认值，并接受逐测试覆盖。没有测试会改动其他测试共享的 fixture。用事务
+  回滚、每次运行独立 schema、容器或唯一命名空间来隔离，并删除无法回滚的内容；留下数据行的测试会让下一次
+  运行依赖顺序。断言中优先使用显式值而非随机；随机导致的失败必须打印其种子与输入，否则看到它的人无法复现。
+- 只有低层看不到缺陷时才向上提升。在能失败的最廉价层级复现生产 bug，在那里添加回归测试，并为未覆盖的路径最
+  多添加一条端到端防护。在三个层级重复同一断言不会带来信号，只会把维护量增至三倍。在 bug 工单中记录这次
+  提升，包括层级、测试与防护，让下一个类似缺陷沿同一路径处理。
+- 每个层级执行运行时间预算。单元套件保持在 2 分钟以内，PR 测试阶段控制在项目类型预算内，最多 20 分钟。对
+  单元、组件、集成与契约测试适用 10 秒规则：超过 10 秒的测试需要说明理由并放入单独作业。端到端与属性测试
+  则遵循层级矩阵中的逐测试预算。超出预算的测试应拆分或降级，而不是容忍一个所有人最终都不再运行的套件。
+  在 CI 的标准运行器上测量预算，而不是在开发者笔记本电脑上，因为 PR 等的是前者的数字。
 
-Default shape by project type:
+按项目类型的默认形状：
 
-| Project type | Dominant layer | Supporting layers | Thin layer | Pull request budget |
+| 项目类型 | 主导层 | 支撑层 | 薄层 | PR 预算 |
 |---|---|---|---|---|
-| Domain service | Unit | Integration, contract per dependency | End-to-end on critical flows | 10 min |
-| UI product | Component | Unit, contract for the API client | End-to-end on core journeys | 15 min |
-| Data pipeline or batch job | Integration on a fixture data set | Unit for transforms, contract on inputs and outputs | Smoke on one full run | 20 min |
-| CLI or library | Unit | Integration of the public interface | Smoke on the documented command | 5 min |
-| Multi-service platform | Integration and contract | Unit for logic | End-to-end per service pair | 20 min |
+| 领域服务 | 单元 | 集成、每个依赖的契约 | 关键流程上的端到端 | 10 分钟 |
+| UI 产品 | 组件 | 单元、API 客户端的契约 | 核心旅程上的端到端 | 15 分钟 |
+| 数据管道或批处理作业 | 基于固定数据集的集成 | 转换逻辑的单元、输入与输出上的契约 | 一次完整运行的冒烟 | 20 分钟 |
+| CLI 或库 | 单元 | 公共接口的集成 | 文档化命令上的冒烟 | 5 分钟 |
+| 多服务平台 | 集成与契约 | 逻辑的单元 | 每个服务对的端到端 | 20 分钟 |
 
-| Good | Bad | Why |
+| 好做法 | 坏做法 | 原因 |
 |---|---|---|
-| Repository test against the pinned database container | Repository test against a mocked ORM | The mock hides SQL, constraints, and migration failures |
-| Table-driven unit test for the discount rule | End-to-end checkout for every discount case | The rule fails fastest where it lives |
-| Consumer contract verified in provider CI | Shared staging environment treated as the contract | Staging drifts and fails for unrelated reasons |
-| One fake payment adapter at the boundary | Mocking `PaymentClient` inside the service | Mocking inside the unit verifies the mock, not the charge |
-| Regression test at the layer that first sees the bug | Same assertion at unit, integration, and end-to-end | Duplicates cost maintenance and add no signal |
+| 针对固定数据库容器做 repository 测试 | 针对 mock 的 ORM 做 repository 测试 | mock 会掩盖 SQL、约束与迁移失败 |
+| 折扣规则用表驱动单元测试 | 每个折扣用例都跑端到端结账 | 规则在它所在的位置失败得最快 |
+| 消费方契约在提供方 CI 中验证 | 把共享预发环境当作契约 | 预发会漂移，并因无关原因失败 |
+| 边界处一个 fake 支付适配器 | 在服务内部 mock `PaymentClient` | 在单元内部 mock 校验的是 mock，不是扣款 |
+| 在最先看到 bug 的层级加回归测试 | 在单元、集成与端到端重复同一断言 | 重复增加维护成本，不增加信号 |
 
-## 2. Quality Gates and Coverage
+## 2. 质量门禁与覆盖率
 
-A gate is where quality stops being a preference. The gate set must be small enough that everyone can name it and
-strict enough that a green run means something; coverage is the most misused member of the set.
+门禁是质量不再是偏好的地方。门禁集合必须小到人人都能说出来，又严格到让绿色运行有意义；覆盖率是这个
+集合里最常被误用的成员。
 
-- Define the required gates per branch and make each one a required status check. On every pull request: format
-  check, lint, type check, unit tests, integration tests for touched services, build, secrets scan, dependency audit
-  at the blocking severity, contract verification for the changed side, and static application security testing on
-  changed code. On main, add full end-to-end tests, the full coverage report, full contract verification, and the
-  full static application security scan. On release, add smoke tests against the artifact and performance tests on
-  critical paths. Name the pipeline job that implements each gate, and never let two jobs claim the same gate.
-- Measure three coverage numbers and gate each honestly: line coverage for the project floor, branch coverage where
-  conditions carry money, permissions, or data loss, and change coverage for the diff. Set the change floor at 80% of
-  new and modified executable lines and the project floor from the measured baseline; a floor chosen from ambition
-  fails the next pull request for work it did not touch. Ratchet the floor up only after measured coverage stays five
-  points above it for a full release cycle, and require a scoped waiver for any fall below it.
-- Exclude only generated, vendored, migration, and entry-point glue code, and record each entry as path, reason,
-  owner, and expiry. Excluding hand-written logic requires a waiver, and a per-file coverage pragma needs a stated
-  cause. A coverage run that excludes a file without that record is a defect, because the number then measures the
-  exclusion rather than the code. Keep the exclusion list in the coverage configuration with the same review path as
-  the threshold.
-- Write waivers as records, not conversations. A waiver names one gate, the exact scope, an approver who is not the
-  change author, the reason, an expiry no longer than 90 days, and a tracking issue. Re-review every waiver at
-  expiry and either fix the finding or extend it with new evidence; a waiver renewed without evidence is an
-  exclusion. Publish the open waiver list where the team reads build status, so a waived gate cannot quietly become
-  the normal state.
-- Handle failure through the gate, not around it. A red required check blocks merge, and the gate owner holds the
-  escalation path, the dashboard, and the investigation. Retry only for a proven infrastructure error, at most once,
-  and keep the first failure in the record; a pull request whose only green run came from a retry is not green.
-  Review gate data every month for pass rate, duration, and waiver count, and treat a falling pass rate as a defect in
-  the gate or the code rather than as noise.
-- Detect flaky tests before users do: repeat the blocking suite in a scheduled job, for example 20 runs, and record
-  every test whose result differs on the same commit. Quarantine a confirmed flake out of the blocking set into a
-  scheduled job, assign one owner and a 14-day fix-by date, and cap quarantined tests at five or one percent of the
-  suite, whichever is smaller. Treat a flake caused by a race in production code as a production defect, not as test
-  noise, and do not substitute automatic retries for quarantine.
-- Treat weakening a test as a review defect. Deleting, skipping, or loosening an assertion to get green requires
-  evidence that the behavior change is intended, and the review must ask for a replacement assertion. A skipped
-  test with no owner and no issue is untested behavior that the coverage report will not show. When the expected
-  value must change, link the specification or issue that authorizes the new behavior in the test or the change
-  description.
-- Report what the suite does not prove. Coverage measures execution, not verification; run mutation testing on
-  modules that carry money or permissions, and state the unverified paths and known risks in the delivery instead of
-  presenting a green run as proof of correctness. A reviewer who reads only the check marks will assume coverage
-  that the suite does not have unless the gap is written down.
+- 按分支定义必需门禁，并让每一项成为必需状态校验。每个 PR 上：格式校验、lint、类型校验、单元测试、涉及
+  服务的集成测试、构建、机密扫描、阻塞级别的依赖审查、变更方的契约验证，以及对变更代码的静态应用安全测试。
+  在 main 上追加完整端到端测试、完整覆盖率报告、完整契约验证与完整静态应用安全扫描。发布时追加针对制品的
+  冒烟测试与关键路径的性能测试。写明实现每个门禁的流水线作业，禁止两个作业声称覆盖同一门禁。
+- 测量三个覆盖率数字，并诚实地为每个设门禁：行覆盖率用于项目下限，分支覆盖率用于条件涉及资金、权限或数据
+  丢失的模块，变更覆盖率用于 diff。变更下限设为新增与修改的可执行行的 80%，项目下限取自实测基线；凭雄心
+  设定的下限会让下一个 PR 因为自己没碰过的工作而失败。只有当实测覆盖率连续一个完整发布周期高出下限五个
+  百分点后，才上调下限，且任何低于下限的情况都需要限定范围的豁免。
+- 只排除生成代码、第三方引入代码、迁移代码与入口粘合代码，并逐项记录路径、原因、负责人与到期时间。排除手写
+  逻辑需要豁免，逐文件覆盖率 pragma 需要说明原因。没有上述记录就排除文件的覆盖率运行是缺陷，因为此时数字
+  衡量的是排除而非代码。把排除清单放在覆盖率配置中，与阈值走相同的审查路径。
+- 把豁免写成记录，而不是对话。一条豁免写明一个门禁、确切范围、非变更作者的批准人、理由、不超过 90 天的
+  到期时间，以及跟踪 issue。到期时重新审查每条豁免，要么修复发现，要么用新证据延长；没有证据就续期的豁免
+  就是排除项。把未关闭的豁免清单发布在团队查看构建状态的地方，使被豁免的门禁无法悄悄变成常态。
+- 通过门禁处理失败，不要绕开它。红色的必需校验会阻塞合并，门禁负责人掌握升级路径、看板与调查。只有已证实
+  的基础设施错误才允许重试，最多一次，并把首次失败留在记录中；唯一一次绿色运行来自重试的 PR 不算绿色。
+  每月审查门禁数据：通过率、时长与豁免数量；把通过率下降视为门禁或代码的缺陷，而不是噪声。
+- 在用户之前发现不稳定测试：在计划作业中重复运行阻塞性套件，例如 20 次，并记录同一提交上结果不同的每个
+  测试。把确认的不稳定测试移出阻塞集合、放入计划作业，指定一名负责人与 14 天修复期限，并把隔离测试数量
+  限制为五个或套件的 1%，取较小者。生产代码竞态导致的不稳定应视为生产缺陷，而不是测试噪声，也不要用自动
+  重试替代隔离。
+- 把弱化测试当作审查缺陷。为变绿而删除、跳过或放松断言，需要有证据表明该行为变化是有意为之，且审查必须
+  要求补上替代断言。没有负责人、没有 issue 的跳过测试就是未被测试的行为，覆盖率报告不会显示它。期望值必须
+  改变时，在测试或变更说明中链接授权新行为的规范或 issue。
+- 报告测试套件没有证明什么。覆盖率衡量的是执行，不是验证；对承载资金或权限的模块运行变异测试，并在交付中
+  说明未验证路径与已知风险，而不是把绿色运行当作正确性证明。只看勾选标记的审查者会假设套件具有它实际没有
+  的覆盖，除非缺口被写下来。
 
-Required gates by branch:
+按分支的必需门禁：
 
-| Gate | Pull request | Main | Release |
+| 门禁 | PR | main | 发布 |
 |---|---|---|---|
-| Format, lint, type check | Required | Required | Required |
-| Unit and component tests | Required | Required | Required |
-| Integration tests | Required for touched services | Required | Required |
-| Contract verification | Required for the changed side | Required | Required |
-| Coverage report | Change coverage | Full report and floor | Full report and floor |
-| Secrets scan | Required, no waiver | Required, no waiver | Required, no waiver |
-| Dependency audit | Changed manifests and lockfiles | Full tree, plus nightly | Full tree |
-| Static application security test | Changed code | Full scan | Full scan |
-| End-to-end tests | Subset | Full | Full |
-| Smoke and performance | Not run | Critical paths | Required on the artifact |
+| 格式、lint、类型校验 | 必需 | 必需 | 必需 |
+| 单元与组件测试 | 必需 | 必需 | 必需 |
+| 集成测试 | 涉及的服务必需 | 必需 | 必需 |
+| 契约验证 | 变更方必需 | 必需 | 必需 |
+| 覆盖率报告 | 变更覆盖率 | 完整报告与下限 | 完整报告与下限 |
+| 机密扫描 | 必需，不可豁免 | 必需，不可豁免 | 必需，不可豁免 |
+| 依赖审查 | 变更的 manifest 与 lockfile | 完整依赖树，外加夜间 | 完整依赖树 |
+| 静态应用安全测试 | 变更代码 | 完整扫描 | 完整扫描 |
+| 端到端测试 | 子集 | 完整 | 完整 |
+| 冒烟与性能 | 不运行 | 关键路径 | 在制品上必需 |
 
-Coverage metrics and their default gates:
+覆盖率指标及其默认门禁：
 
-| Metric | What it proves | Default gate |
+| 指标 | 证明什么 | 默认门禁 |
 |---|---|---|
-| Line coverage | Code was executed, not that it was verified | Project floor from the measured baseline |
-| Branch coverage | Both sides of each condition ran | 70% on modules with money, permissions, or data loss |
-| Change coverage | New and modified executable lines were exercised | 80% on every pull request |
-| Mutation score | Tests detect deliberately injected defects | 60-70% on critical modules, scheduled job |
-| Contract coverage | Every changed public operation has a contract test | 100% of changed operations |
+| 行覆盖率 | 代码被执行过，不代表已被验证 | 由实测基线推导的项目下限 |
+| 分支覆盖率 | 每个条件的两个分支都运行过 | 涉及资金、权限或数据丢失的模块 70% |
+| 变更覆盖率 | 新增与修改的可执行行被覆盖 | 每个 PR 80% |
+| 变异分数 | 测试能发现故意注入的缺陷 | 关键模块 60-70%，计划作业 |
+| 契约覆盖率 | 每个变更的公共操作都有契约测试 | 变更操作的 100% |
 
-| Good | Bad | Why |
+| 好做法 | 坏做法 | 原因 |
 |---|---|---|
-| Floor set from the last measured main build | Floor raised to an aspirational 95% | The first pull request fails for old work |
-| Ratchet raised when coverage stays above the floor | Floor lowered to merge a regression | The gate now protects less than before |
-| Quarantine with an owner and a fix-by date | Skip marker with no issue | Untested behavior becomes invisible |
-| Waiver with a 90-day expiry and a ticket | Permanent exclude in configuration | A temporary bypass becomes policy |
-| Change coverage gated on the diff | Coverage gate on the whole repository only | Old green code hides untested new code |
-| Mutation testing on the payment module | Line coverage target raised to 100% | Executed lines with no assertion prove nothing |
+| 下限取自最近一次实测的 main 构建 | 把下限提到理想化的 95% | 第一个 PR 会因旧工作而失败 |
+| 覆盖率持续高于下限后才上调 | 为合并回退而下调下限 | 门禁现在保护得比以前少 |
+| 带负责人与修复期限的隔离 | 没有 issue 的跳过标记 | 未测试行为变得不可见 |
+| 带 90 天到期时间与工单的豁免 | 配置中的永久排除 | 临时绕过变成政策 |
+| 在 diff 上设变更覆盖率门禁 | 只在整个仓库上设覆盖率门禁 | 旧的绿色代码掩盖未测试的新代码 |
+| 支付模块做变异测试 | 把行覆盖率目标提到 100% | 执行过但没有断言的行证明不了什么 |
 
-## 3. Static Analysis and Dependency Checks
+## 3. 静态分析与依赖校验
 
-Static checks are cheap evidence: they find whole classes of defects before a test runs. They stop being useful when
-the output is noisy enough that people scroll past it, so the gate is only as good as its severity mapping.
+静态校验是廉价证据：它们在测试运行前就能发现整类缺陷。当输出嘈杂到人们直接滑过时，它们就不再有用，因此
+门禁的好坏取决于其严重级别映射。
 
-- Gate type checking everywhere the stack supports it: Pyright or `mypy --strict` on new Python modules, `tsc
-  --noEmit` with strict options, Go vet and build, Rust `cargo clippy -- -D warnings`, Java compiler warnings as
-  errors, and C# analyzers with warnings as errors. Hold new modules to the strict setting from their first commit,
-  and baseline existing modules with a migration ticket and an owner. A type checker that runs only in the editor is
-  a suggestion; the gate is what makes it a rule.
-- Map every tool's severity output to three buckets once, in configuration: error blocks the merge, warning must not
-  grow and is reviewed, information never blocks. Do not re-map severities per pull request; a check whose level
-  changes with the author is not a gate, and a warning that nobody reads is the same as a suppressed finding. Put
-  the mapping in the tool configuration file, where the next person can find it and the review can see it change.
-- Bound complexity and duplication on changed code: cyclomatic complexity at most 10 per function, cognitive
-  complexity at most 15, and duplication under 3% of lines with a 50-token minimum block (jscpd's default); the 3%
-  ceiling is a team threshold.
-  Report these on the diff, propagate them as review comments, and promote them to blocking after the codebase
-  meets the threshold; turning them on blocking at adoption time blocks every pull request at once and gets the
-  check disabled in a week. Exempt generated data tables and exhaustive dispatch code explicitly, with a reason
-  in the configuration.
-- Scan for secrets in the working tree before every commit and in CI, and scan history on a schedule. Any detection
-  blocks the pipeline, including a likely false positive, which needs triage before it is suppressed. On a real
-  finding, rotate the credential first and purge history under the security policy; deleting the line alone leaves
-  the secret in every clone. Keep the scanner ruleset and its version pinned with the rest of the toolchain so a rule
-  update is a reviewed change.
-- Run the dependency audit in two places: on pull requests for changed manifests and lockfiles, and nightly for the
-  full resolved tree. Fail the gate at the severity the vulnerability policy sets, and keep the policy owner
-  separate from the engineer who disables the finding; the scan location and failure handling are this skill's
-  responsibility, the vulnerability policy is not. Record accepted exceptions against the dependency and version,
-  not against the whole tool, so a new dependency cannot inherit the exception.
-- Hand security findings to their owner instead of renaming the check. A static application security test runs on
-  changed code in CI; triage results, assign an owner to each finding, and block at the severity the security policy
-  sets. A suppression is reviewed like code, with a reason and an expiry, and never silently added to a baseline.
-  Route findings that need design work to the owning team's backlog and keep the gate result visible until the fix
-  lands.
-- Use the formatter as a gate in verify mode. CI runs the formatter's check mode and never rewrites files in the
-  pipeline; tool choice, version pinning, and local auto-fix belong to the code-style-conventions role. Format before
-  pushing and keep formatting-only edits in their own commit, so behavior reviews stay readable and a reformat from a
-  tool upgrade never hides inside a feature change.
-- Keep a baseline only for existing violations and only as a ratchet. Generate it once with the pinned tool version,
-  review the count, and commit it beside the tool configuration. New violations fail, the baseline count only
-  shrinks, and regenerating a baseline to absorb a new violation is a review defect. Re-measure after a tool upgrade
-  in a separate change so that the new rules are reviewed as rules, not as anonymous baseline noise.
+- 在技术栈支持的地方都把类型校验设为门禁：新 Python 模块用 Pyright 或 `mypy --strict`，`tsc --noEmit` 加
+  严格选项，Go vet 与 build，Rust `cargo clippy -- -D warnings`，Java 编译器警告视为错误，C# 分析器警告
+  视为错误。新模块从首次提交起就采用严格设置，现有模块用迁移工单与负责人建立基线。只在编辑器里运行的类型
+  校验只是建议；门禁才使它成为规则。
+- 在配置中一次性把每个工具的严重级别输出映射到三个桶：错误阻塞合并，警告不得增长且需审查，信息永不阻塞。
+  不要按 PR 重新映射级别；级别随作者变化的校验不是门禁，没人读的警告与被抑制的发现没有区别。把映射放在
+  工具配置文件中，让下一个人找得到、审查时能看到它变化。
+- 对变更代码限定复杂度与重复度：每个函数的圈复杂度最多 10，认知复杂度最多 15，重复度低于代码行的 3%，最小
+  块为 50 个 token（jscpd 默认值）；3% 上限是团队阈值。在 diff 上报告这些指标，作为审查意见传播，并在
+  代码库达到阈值后升级为阻塞；采用时就直接设为阻塞会一次性阻塞所有 PR，一周内该校验就会被关闭。生成的数据
+  表与穷举式分派代码要显式豁免，并在配置中说明理由。
+- 每次提交前与 CI 中都扫描工作区中的机密，并按计划扫描历史。任何检出都会阻塞流水线，包括很可能是误报的
+  情况，误报必须先排查再抑制。确认是真实发现时，先轮换凭据，并按安全策略清理历史；只删掉那一行，机密仍
+  留在每个克隆中。把扫描器规则集及其版本与其余工具链一起固定，使规则更新成为受审变更。
+- 在两个地方运行依赖审查：PR 上针对变更的 manifest 与 lockfile，夜间针对完整解析后的依赖树。以漏洞策略
+  设定的严重级别让门禁失败，并让策略负责人与关闭发现的工程师分离；扫描位置与失败处理是本 skill 的职责，
+  漏洞策略则不是。已接受的例外记录到具体依赖与版本上，而不是整个工具上，这样新依赖无法继承该例外。
+- 把安全发现交给其负责人，而不是给校验改名。静态应用安全测试在 CI 中对变更代码运行；对结果做排查，为每个
+  发现指定负责人，并以安全策略设定的严重级别阻塞。抑制像代码一样受审，需有理由与到期时间，绝不能悄悄加入
+  基线。需要设计工作的发现转给所属团队的待办，并保持门禁结果可见，直到修复落地。
+- 把格式化工具作为校验模式下的门禁。CI 运行格式化工具的校验模式，从不在流水线中重写文件；工具选择、版本
+  固定与本地自动修复属于 code-style-conventions 的职责。推送前格式化，纯格式化编辑单独提交，让行为审查保持
+  可读，工具升级导致的重排也永远不会藏在功能变更里。
+- 只为现有违规保留基线，且只作为棘轮。用固定工具版本生成一次，审查计数，并提交在工具配置旁。新违规失败，
+  基线计数只减不增，为吸收新违规而重新生成基线是审查缺陷。工具升级后在单独变更中重新测量，让新规则作为
+  规则被审查，而不是作为匿名的基线噪声。
 
-Baseline adoption order:
+基线采用顺序：
 
-| Stage | What is enabled | Evidence required | Promotion rule |
+| 阶段 | 启用的内容 | 需要的证据 | 升级规则 |
 |---|---|---|---|
-| Existing code | The check runs and records its current violations | A reviewed baseline count and the pinned tool version | No new violation is allowed from the first day |
-| New modules | The strict setting, with no baseline entries | A clean run on the strict setting in the first commit | The strict setting stays for the life of the module |
-| Changed code | Zero-new-warnings check on the diff | A warning count that stays equal or falls | Blocking after a quarter with no regression |
-| Whole repository | Blocking gate | A baseline at zero | The baseline file is deleted |
+| 现有代码 | 校验运行并记录当前违规 | 经审查的基线计数与固定的工具版本 | 从第一天起不允许新增违规 |
+| 新模块 | 严格设置，无基线条目 | 首次提交即在严格设置下干净运行 | 严格设置在该模块整个生命周期内保留 |
+| 变更代码 | diff 上的零新增警告校验 | 警告计数持平或下降 | 连续一个季度无回退后转为阻塞 |
+| 整个仓库 | 阻塞门禁 | 基线为零 | 删除基线文件 |
 
-| Good | Bad | Why |
+| 好做法 | 坏做法 | 原因 |
 |---|---|---|
-| New modules pass `mypy --strict` from the first commit | Strict mode enabled repo-wide with 4000 existing errors baselined | The strict rule never changes behavior |
-| Warning count held at the current value and reviewed | Warnings ignored because "the build is green" | Warning noise grows into new defects |
-| Suppression with a reason and an expiry date | Inline `# noqa` or `// nolint` with no reason | An unexplained suppression lives forever |
-| Pre-commit secrets scan plus CI | Secrets scan once before release | A leaked credential is already in history |
-| Formatter check in CI | CI runs the formatter and commits the fix | The diff under review is not the diff tested |
-| Audit on changed lockfiles plus a nightly full scan | Audit only when someone remembers | New vulnerable transitive dependencies pass unnoticed |
+| 新模块从首次提交起通过 `mypy --strict` | 全仓启用严格模式并把 4000 个现有错误放入基线 | 严格规则从不改变行为 |
+| 警告计数保持在当前值并接受审查 | 因为「构建是绿的」就无视警告 | 警告噪声会滋长成新缺陷 |
+| 带理由与到期时间的抑制 | 没有理由的行内 `# noqa` 或 `// nolint` | 没有解释的抑制会永远存在 |
+| 提交前机密扫描加 CI | 发布前只扫一次机密 | 泄漏的凭据已经进入历史 |
+| CI 中做格式校验 | CI 运行格式化工具并提交修复 | 受审的 diff 不是被测试的 diff |
+| 审查变更的 lockfile 并夜间全量扫描 | 只在有人想起来时审查 | 新增的有漏洞传递依赖悄悄通过 |
 
-## 4. Local Development Environment
+## 4. 本地开发环境
 
-A local environment is a product with one user: the next developer. If it takes a day to build by hand, people
-improvise, and an improvised environment produces results that CI cannot reproduce.
+本地环境是一个只有一个用户的产品：下一位开发者。如果手工搭建要花一天，人们就会临时凑合，而凑合出来的环境
+产生的结果 CI 无法复现。
 
-- Provide one command from a fresh clone to a running environment: `./scripts/bootstrap`, `make setup`, or the
-  project's equivalent. Make it idempotent, safe to re-run, loud about the missing prerequisite, and finish by
-  printing the resolved tool and service versions so the first bug report includes them. Test the command on a clean
-  clone or container whenever the toolchain changes; a bootstrap that only works on the author's machine is not a
-  bootstrap.
-- Pin every version in a file the repository owns: `.python-version`, `.nvmrc` or `packageManager`, `.tool-versions`,
-  `rust-toolchain.toml`, `global.json`, committed lockfiles, and container images by digest or minor tag. CI reads the
-  same pin files; duplicate version literals in a pipeline or a document always drift eventually. Review a pin bump
-  like any dependency change, and state in the change why the new version is safe for the test matrix.
-- Provide a devcontainer or an equivalent reproducible environment: a `devcontainer.json` with compose services, or
-  Nix, Devbox, or a documented OS setup. Match the major and minor versions of the language runtime, database, queue,
-  and cache that CI uses; a floating `latest` anywhere is a defect because it silently changes what the test proves.
-  Prefer a container image that CI already uses, so local reproduction of a CI failure needs no translation.
-- Keep one target between local and CI. CI calls `make test` rather than a second copy of the command in YAML.
-  Enumerate the allowed differences, such as an ephemeral database or CI resource limits, and state them in the
-  environment documentation. When a local pass fails in CI, fix the parity defect before touching the test; the
-  difference is the bug until proven otherwise.
-- Start test dependencies with healthchecks and wait for readiness with a bounded timeout. Create a dedicated test
-  database or schema per run, apply migrations, and drop it after. Never run destructive tests against the shared
-  development database, and never depend on data that a colleague happened to leave there. When a service cannot
-  run locally, document the substitute and mark the tests that need the real service as integration tests.
-- Commit `.env.example` with every required key, a fake default, and a one-line description; ignore `.env`. Validate
-  configuration at startup and fail fast with the offending key, so a missing variable is a clear error rather than a
-  default that silently changes behavior. Never put a secret or a personal value in an example file, fixture, or
-  default; use synthetic values and `example.test.invalid` addresses, and scan the repository for violations of that
-  rule.
-- Version deterministic seed data in the repository, keep seeding idempotent, and keep it separate from test
-  fixtures. Seed accounts use synthetic identities, and a `reset` target returns the environment to a known state
-  that tests can rely on; data created by hand is not a fixture. Document which seed sets are safe for demos and
-  which exist only to make the test suite start from a known state.
-- Provide a healthcheck and a cleanup target: `make doctor` verifies tools, versions, ports, and service health;
-  `make clean` stops containers, removes volumes, caches, and build artifacts. Run the same cleanup in CI teardown,
-  and leave no container, process, or temporary database behind after a test run. A failed test run needs its
-  evidence preserved before cleanup, so the cleanup command never runs while a debug session is using the services.
+- 提供一条命令，从全新克隆到可运行环境：`./scripts/bootstrap`、`make setup` 或项目等价物。让它幂等、可安全
+  重跑、缺少前置条件时大声报错，并在结束时打印解析出的工具与服务版本，好让第一份 bug 报告就带上它们。工具链
+  变化时，在干净克隆或容器上测试该命令；只在作者机器上能用的 bootstrap 不算 bootstrap。
+- 把每个版本固定在仓库拥有的文件里：`.python-version`、`.nvmrc` 或 `packageManager`、`.tool-versions`、
+  `rust-toolchain.toml`、`global.json`、提交的 lockfile，以及按 digest 或次版本标签指定的容器镜像。CI 读取
+  同一批固定文件；流水线或文档中重复的版本字面量最终总会漂移。像审查任何依赖变更一样审查版本固定值的上调，
+  并在变更中说明新版本为何对测试矩阵安全。
+- 提供 devcontainer 或等价的可复现环境：带 compose 服务的 `devcontainer.json`，或 Nix、Devbox，或文档化的
+  操作系统搭建步骤。语言运行时、数据库、队列与缓存的主版本和次版本要与 CI 一致；任何地方出现浮动的
+  `latest` 都是缺陷，因为它会悄悄改变测试所证明的内容。优先使用 CI 已经在用的容器镜像，让 CI 失败的本地
+  复现无需转换。
+- 本地与 CI 之间只保留一个目标。CI 调用 `make test`，而不是在 YAML 里再抄一份命令。枚举允许的差异，例如
+  临时数据库或 CI 资源限制，并在环境文档中说明。本地通过而 CI 失败时，先修一致性缺陷再动测试；在证明相反
+  之前，差异就是 bug。
+- 启动测试依赖时带健康检查，并设有时限地等待就绪。每次运行创建专用测试数据库或 schema，执行迁移，结束后
+  删除。禁止对共享开发数据库运行销毁性测试，也禁止依赖同事碰巧留在那里的数据。服务无法在本地运行时，记录
+  替代方案，并把需要真实服务的测试标记为集成测试。
+- 提交 `.env.example`，包含每个必需键、假默认值与一行说明；忽略 `.env`。启动时校验配置，并以违规键快速
+  失败，让缺失变量成为明确错误，而不是静默改变行为的默认值。禁止在示例文件、fixture 或默认值中放入机密或
+  个人值；使用合成值与 `example.test.invalid` 地址，并扫描仓库中违反该规则的情况。
+- 把确定性的种子数据纳入版本控制，让播种操作幂等，并与测试 fixture 分开。种子账户使用合成身份，`reset`
+  目标把环境恢复到测试可依赖的已知状态；手工创建的数据不是 fixture。记录哪些种子集可用于演示，哪些只是
+  为了让测试套件从已知状态启动。
+- 提供健康检查与清理目标：`make doctor` 校验工具、版本、端口与服务健康；`make clean` 停止容器，删除卷、
+  缓存与构建制品。在 CI teardown 中运行同样的清理，测试运行后不留下容器、进程或临时数据库。失败的测试
+  运行需要在清理前保留证据，因此在调试会话使用这些服务时，绝不运行清理命令。
 
-Local and CI parity matrix:
+本地与 CI 一致性矩阵：
 
-| Concern | Local | CI | Rule |
+| 关注点 | 本地 | CI | 规则 |
 |---|---|---|---|
-| Runtime version | Read from the pin file | Read from the same pin file | One source for each version |
-| Database | Compose service, pinned image | Service container, same pinned image | Same major and minor version |
-| Environment variables | `.env.example` plus a local `.env` | Variables set in CI configuration | Same keys; values differ only by environment |
-| Test command | `make test` | `make test` | One definition, no copy in pipeline YAML |
-| Test data | Seeded database plus a per-run schema | Per-run schema only | Synthetic data in both paths |
-| Cleanup | `make clean` | Teardown job | Containers, volumes, and caches removed |
+| 运行时版本 | 从固定文件读取 | 从同一固定文件读取 | 每个版本只有一个来源 |
+| 数据库 | Compose 服务，固定镜像 | 服务容器，相同固定镜像 | 主版本与次版本相同 |
+| 环境变量 | `.env.example` 加本地 `.env` | CI 配置中设置的变量 | 键相同；值仅因环境而异 |
+| 测试命令 | `make test` | `make test` | 一份定义，流水线 YAML 中不复制 |
+| 测试数据 | 播种数据库加每次运行独立 schema | 只有每次运行独立 schema | 两条路径都使用合成数据 |
+| 清理 | `make clean` | teardown 作业 | 容器、卷与缓存都被删除 |
 
-| Good | Bad | Why |
+| 好做法 | 坏做法 | 原因 |
 |---|---|---|
-| Bootstrap script documented in the README | Six-step wiki page with unstated versions | The script survives; the page drifts |
-| Image pinned to `postgres:16.4` | `postgres:latest` | CI and local can silently run different engines |
-| Per-run schema created and dropped | Shared development database | Order dependence and data drift |
-| `make test` called by CI | Test command copied into the pipeline | The copy drifts from the local target |
-| `make doctor` prints resolved versions | "Works on my machine" | Versions are the first thing to compare |
-| Seed data committed and idempotent | Manual SQL run once by one developer | Every later environment starts from a different state |
+| README 中记录的 bootstrap 脚本 | 步骤版本不明的六步 wiki 页面 | 脚本会存活，页面会漂移 |
+| 镜像固定为 `postgres:16.4` | `postgres:latest` | CI 与本地可能悄悄运行不同引擎 |
+| 每次运行创建并删除独立 schema | 共享开发数据库 | 顺序依赖与数据漂移 |
+| CI 调用 `make test` | 把测试命令复制进流水线 | 副本会与本地目标漂移 |
+| `make doctor` 打印解析后的版本 | 「在我机器上是好的」 | 版本是首先要比对的东西 |
+| 种子数据已提交且幂等 | 由某位开发者手工执行一次的 SQL | 之后每个环境都从不同状态启动 |

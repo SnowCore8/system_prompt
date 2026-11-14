@@ -1,207 +1,190 @@
-# Quality Gates
+# 质量门禁
 
-This file is the operational companion to `SKILL.md`: stack-specific commands, default thresholds, and the templates
-a team adapts when it defines its gate set. Read the stack section when configuring a pipeline, the coverage
-worksheet when setting thresholds, the flaky workflow when a suite becomes unreliable, and the waiver template when a
-gate must be bypassed. Every command is a default; adopt the project's actual tool, pin its version, and keep the
-pipeline and the local target in one definition. Blocking means the required status check fails the merge; advisory
-means the result is reported and reviewed but never blocks. A stack that needs a service the runner cannot provide
-documents the substitute it runs instead.
+本文件是 `SKILL.md` 的操作配套：按技术栈的命令、默认阈值，以及团队定义门禁集合时会改造的模板。配置流水线时
+读技术栈一节，设定阈值时读覆盖率工作表，套件变得不可靠时读不稳定测试流程，必须绕过门禁时读豁免模板。每条
+命令都是默认值；采用项目的实际工具、固定其版本，并让流水线与本地目标共用一份定义。阻塞意味着必需状态校验
+使合并失败；提示性意味着结果会被报告和审查，但从不阻塞。若某个技术栈需要运行器无法提供的服务，则记录它实际
+运行的替代方案。
 
-## Gate Matrix by Stack
+## 按技术栈的门禁矩阵
 
-Each row names one required check, a default command, and the threshold that makes it fail. Run these on pull
-requests unless the row says otherwise; a stack that cannot run a row without a paid service documents the
-equivalent it runs instead.
+每行给出一个必需校验、一条默认命令，以及使它失败的阈值。除行中另有说明外，都在 PR 上运行；若某技术栈没有
+付费服务就无法运行某行，则记录它改为运行的等价方案。
 
-Two required gates have no universal command, so each stack invokes its project tooling for them:
+有两个必需门禁没有通用命令，各技术栈需调用自己的项目工具：
 
-| Cross-stack gate | Default command | Default threshold |
+| 跨栈门禁 | 默认命令 | 默认阈值 |
 |---|---|---|
-| Contract verification | The contract target for the changed side, for example a `contract` test marker | Any failed interaction fails; both sides must pass before deploy |
-| Static application security test | The scanner named by the security policy, for example `semgrep ci` | Blocking at the policy severity; changed code on pull requests, full scan on main |
+| 契约验证 | 变更方的契约目标，例如 `contract` 测试标记 | 任何失败的交互都算失败；部署前双方都必须通过 |
+| 静态应用安全测试 | 安全策略指定的扫描器，例如 `semgrep ci` | 按策略严重级别阻塞；PR 上扫描变更代码，main 上完整扫描 |
 
-List both as required status checks beside the stack rows.
+把这两项与各技术栈的行并列，作为必需状态校验。
 
 ### Python
 
-| Gate | Default command | Default threshold |
+| 门禁 | 默认命令 | 默认阈值 |
 |---|---|---|
-| Format | `black --check .` or `ruff format --check .` | Any diff fails |
-| Lint | `ruff check .` | New violations fail; the baseline only shrinks |
-| Type check | `mypy --strict` on new modules, `mypy` on baselined modules | Any error fails; a new module must stay strict |
-| Unit tests | `pytest -m "not integration" --cov --cov-branch` | Suite 2 min; change coverage 80% |
-| Integration tests | `pytest -m integration` | Suite 15 min |
-| Dependency audit | `pip-audit` against the lockfile | High or critical with a fix fails |
-| Secrets scan | `gitleaks detect --no-banner` | Any finding fails |
+| 格式 | `black --check .` 或 `ruff format --check .` | 任何 diff 都失败 |
+| lint | `ruff check .` | 新违规失败；基线只缩不增 |
+| 类型校验 | 新模块用 `mypy --strict`，已建基线的模块用 `mypy` | 任何错误失败；新模块必须保持严格 |
+| 单元测试 | `pytest -m "not integration" --cov --cov-branch` | 套件 2 分钟；变更覆盖率 80% |
+| 集成测试 | `pytest -m integration` | 套件 15 分钟 |
+| 依赖审查 | 针对 lockfile 运行 `pip-audit` | 有修复方案的高危或严重漏洞失败 |
+| 机密扫描 | `gitleaks detect --no-banner` | 任何发现失败 |
 
-### TypeScript and JavaScript
+### TypeScript 与 JavaScript
 
-| Gate | Default command | Default threshold |
+| 门禁 | 默认命令 | 默认阈值 |
 |---|---|---|
-| Format | `prettier --check .` | Any diff fails |
-| Lint | `eslint . --max-warnings=0` | Any error or warning fails |
-| Type check | `tsc --noEmit` | Any error fails |
-| Unit tests | `vitest run --coverage` | Suite 2 min; change coverage 80% |
-| Integration tests | `vitest run --config vitest.integration.config.ts` | Suite 15 min |
-| Dependency audit | `npm audit --audit-level=high` | High or critical fails |
-| Secrets scan | `gitleaks detect --no-banner` | Any finding fails |
+| 格式 | `prettier --check .` | 任何 diff 都失败 |
+| lint | `eslint . --max-warnings=0` | 任何错误或警告失败 |
+| 类型校验 | `tsc --noEmit` | 任何错误失败 |
+| 单元测试 | `vitest run --coverage` | 套件 2 分钟；变更覆盖率 80% |
+| 集成测试 | `vitest run --config vitest.integration.config.ts` | 套件 15 分钟 |
+| 依赖审查 | `npm audit --audit-level=high` | 高危或严重漏洞失败 |
+| 机密扫描 | `gitleaks detect --no-banner` | 任何发现失败 |
 
 ### Java
 
-| Gate | Default command | Default threshold |
+| 门禁 | 默认命令 | 默认阈值 |
 |---|---|---|
-| Format | `./mvnw spotless:check` or `./gradlew spotlessCheck` | Any diff fails |
-| Lint and analyzers | SpotBugs and Checkstyle through `./mvnw verify` | New violations fail; the baseline only shrinks |
-| Type check | `javac -Xlint:all -Werror` as part of compile | Any warning fails |
-| Unit tests | `./mvnw test` with Surefire | Suite 2 min; change coverage 80% |
-| Integration tests | `./mvnw verify -P integration` with Failsafe | Suite 15 min |
-| Coverage | JaCoCo report from the same run | Line floor from the baseline; 70% branches on critical modules |
-| Dependency audit | `./mvnw dependency-check:check` | CVSS 7 or higher with a fix fails |
-| Secrets scan | `gitleaks detect --no-banner` | Any finding fails |
+| 格式 | `./mvnw spotless:check` 或 `./gradlew spotlessCheck` | 任何 diff 都失败 |
+| lint 与分析器 | 通过 `./mvnw verify` 运行 SpotBugs 与 Checkstyle | 新违规失败；基线只缩不增 |
+| 类型校验 | 编译时使用 `javac -Xlint:all -Werror` | 任何警告失败 |
+| 单元测试 | 用 Surefire 运行 `./mvnw test` | 套件 2 分钟；变更覆盖率 80% |
+| 集成测试 | 用 Failsafe 运行 `./mvnw verify -P integration` | 套件 15 分钟 |
+| 覆盖率 | 同一次运行产生的 JaCoCo 报告 | 行覆盖下限取自基线；关键模块分支 70% |
+| 依赖审查 | `./mvnw dependency-check:check` | 有修复方案的 CVSS 7 及以上漏洞失败 |
+| 机密扫描 | `gitleaks detect --no-banner` | 任何发现失败 |
 
 ### Go
 
-| Gate | Default command | Default threshold |
+| 门禁 | 默认命令 | 默认阈值 |
 |---|---|---|
-| Format | `gofmt -l .` | Any file listed fails |
-| Lint | `golangci-lint run` | New issues fail; the baseline only shrinks |
-| Type check and vet | `go build ./...` and `go vet ./...` | Any error fails |
-| Unit tests | `go test -race -coverprofile=coverage.out ./...` | Suite 2 min; change coverage 80% |
-| Integration tests | `go test -race -tags=integration ./...` | Suite 15 min |
-| Dependency audit | `govulncheck ./...` | Any reachable vulnerability fails |
-| Secrets scan | `gitleaks detect --no-banner` | Any finding fails |
+| 格式 | `gofmt -l .` | 列出任何文件都算失败 |
+| lint | `golangci-lint run` | 新问题失败；基线只缩不增 |
+| 类型校验与 vet | `go build ./...` 与 `go vet ./...` | 任何错误失败 |
+| 单元测试 | `go test -race -coverprofile=coverage.out ./...` | 套件 2 分钟；变更覆盖率 80% |
+| 集成测试 | `go test -race -tags=integration ./...` | 套件 15 分钟 |
+| 依赖审查 | `govulncheck ./...` | 任何可触达漏洞失败 |
+| 机密扫描 | `gitleaks detect --no-banner` | 任何发现失败 |
 
 ### Rust
 
-| Gate | Default command | Default threshold |
+| 门禁 | 默认命令 | 默认阈值 |
 |---|---|---|
-| Format | `cargo fmt --check` | Any diff fails |
-| Lint | `cargo clippy --all-targets -- -D warnings` | Any warning fails |
-| Type check | `cargo check --all-targets` | Any error fails |
-| Unit tests | `cargo test --lib` with `cargo llvm-cov` | Suite 2 min; change coverage 80% |
-| Integration tests | `cargo test --test integration` | Suite 15 min |
-| Dependency audit | `cargo deny check advisories` | Any advisory fails |
-| Secrets scan | `gitleaks detect --no-banner` | Any finding fails |
+| 格式 | `cargo fmt --check` | 任何 diff 都失败 |
+| lint | `cargo clippy --all-targets -- -D warnings` | 任何警告失败 |
+| 类型校验 | `cargo check --all-targets` | 任何错误失败 |
+| 单元测试 | 用 `cargo llvm-cov` 运行 `cargo test --lib` | 套件 2 分钟；变更覆盖率 80% |
+| 集成测试 | `cargo test --test integration` | 套件 15 分钟 |
+| 依赖审查 | `cargo deny check advisories` | 任何安全公告失败 |
+| 机密扫描 | `gitleaks detect --no-banner` | 任何发现失败 |
 
 ### C#
 
-| Gate | Default command | Default threshold |
+| 门禁 | 默认命令 | 默认阈值 |
 |---|---|---|
-| Format | `dotnet format --verify-no-changes` | Any diff fails |
-| Lint and analyzers | `dotnet build -p:TreatWarningsAsErrors=true` | Any analyzer warning fails |
-| Type check | Roslyn compile with nullable reference types enabled | Any error fails |
-| Unit tests | `dotnet test --collect:"XPlat Code Coverage"` | Suite 2 min; change coverage 80% |
-| Integration tests | `dotnet test --filter Category=Integration` | Suite 15 min |
-| Dependency audit | `dotnet list package --vulnerable --include-transitive` | High or critical fails |
-| Secrets scan | `gitleaks detect --no-banner` | Any finding fails |
+| 格式 | `dotnet format --verify-no-changes` | 任何 diff 都失败 |
+| lint 与分析器 | `dotnet build -p:TreatWarningsAsErrors=true` | 任何分析器警告失败 |
+| 类型校验 | 启用可空引用类型后的 Roslyn 编译 | 任何错误失败 |
+| 单元测试 | `dotnet test --collect:"XPlat Code Coverage"` | 套件 2 分钟；变更覆盖率 80% |
+| 集成测试 | `dotnet test --filter Category=Integration` | 套件 15 分钟 |
+| 依赖审查 | `dotnet list package --vulnerable --include-transitive` | 高危或严重漏洞失败 |
+| 机密扫描 | `gitleaks detect --no-banner` | 任何发现失败 |
 
-Name every row as a required status check in the pipeline, and run the test gate and the coverage gate from one
-execution. A row that only appears in a dashboard is not a gate, and a row that runs but is not required is a
-suggestion that the next deadline removes.
+在流水线中把每一行都设为必需状态校验，并让测试门禁与覆盖率门禁来自同一次执行。只出现在看板上的行不是
+门禁；会运行但非必需的行只是建议，下一个截止日期就会把它删掉。
 
-## Coverage Policy Worksheet
+## 覆盖率策略工作表
 
-Fill this worksheet once per repository from measured values, review it quarterly and after every incident, and commit
-it beside the coverage configuration. A policy that exists only in a dashboard is renegotiated in every review.
+每个仓库根据实测值填写一次本工作表，每季度以及每次事故后复查，并提交在覆盖率配置旁。只存在于看板上的策略
+会在每次审查中被重新商量。
 
-| Item | Default policy | How to set it |
+| 项目 | 默认策略 | 如何设定 |
 |---|---|---|
-| Project line floor | Measured main-branch coverage, rounded down to the nearest 5 | Read the last green main build report |
-| Change floor | 80% of new and modified executable lines | Compute on the diff in the same run as the test results |
-| Branch floor | 70% on modules that handle money, permissions, or data loss | List the module paths in the policy file |
-| Mutation target | 60-70% on critical modules | Run the mutation tool on those modules in a scheduled job |
-| Ratchet step | Raise the floor by 5 points | Raise when measured coverage stays 5 above the floor for a release cycle |
-| Exclusion list | Generated, vendored, migration, and entry-point glue | Record the path, reason, owner, and expiry for each entry |
-| Waiver limit | 90 days per waiver | Review at expiry, then remove it or renew it with evidence |
-| Review cadence | Quarterly and after every incident | Re-measure with the pinned tool version and record the command |
+| 项目行覆盖下限 | 实测 main 分支覆盖率，向下取整到最近的 5 | 读取最近一次绿色的 main 构建报告 |
+| 变更下限 | 新增与修改的可执行行的 80% | 在与测试结果同一次运行中按 diff 计算 |
+| 分支下限 | 处理资金、权限或数据丢失的模块 70% | 在策略文件中列出模块路径 |
+| 变异目标 | 关键模块 60-70% | 在计划作业中对这些模块运行变异工具 |
+| 上调步长 | 下限提高 5 个百分点 | 实测覆盖率连续一个发布周期高出下限 5 时上调 |
+| 排除清单 | 生成、第三方引入、迁移与入口粘合代码 | 每项记录路径、原因、负责人与到期时间 |
+| 豁免时限 | 每条豁免 90 天 | 到期时复查，然后移除或用证据续期 |
+| 复查节奏 | 每季度及每次事故后 | 用固定工具版本重新测量并记录命令 |
 
-- Compute change coverage as covered changed executable lines divided by all changed executable lines, measured on the
-  same run that produced the test results; a separate coverage run can disagree with the suite it describes.
-- Set the floor with the tool and configuration committed in the repository, because a local run and a CI run with
-  different coverage tools produce numbers that are not comparable.
-- Give the policy file an owner and a review trigger, so the numbers survive personnel changes and are not silently
-  renegotiated by an unrelated pull request.
-- Re-run the worksheet after a coverage tool upgrade, because a new tool can count generated lines or partial
-  branches differently and turn a stable floor into an accidental failure.
+- 变更覆盖率按「已覆盖的变更可执行行 ÷ 全部变更可执行行」计算，并在产生测试结果的同一次运行中测量；单独的
+  覆盖率运行可能与其所描述的套件不一致。
+- 设定下限时使用提交在仓库中的工具与配置，因为用不同覆盖率工具的本地运行与 CI 运行会产生不可比的数字。
+- 给策略文件指定负责人与复查触发条件，让这些数字在人事变动后仍能存续，也不会被无关 PR 悄悄重新商量。
+- 覆盖率工具升级后重新运行工作表，因为新工具可能以不同方式统计生成行或部分分支，把稳定的下限变成意外失败。
 
-## Flaky-Test Workflow
+## 不稳定测试流程
 
-A test is flaky when the same commit fails on one run and passes on another in the same environment; a test that
-fails only before a fix is not flaky. Move a flake through the stages below and keep it out of the blocking suite
-until the cause is fixed.
+同一提交在同一环境中一次运行失败、另一次通过，该测试就是不稳定的；只在修复前失败的测试不算不稳定。让不稳定
+测试走完下面的阶段，并在根因修复前把它留在阻塞性套件之外。
 
-| Stage | Trigger | Required action | Owner | Deadline |
+| 阶段 | 触发条件 | 必须动作 | 负责人 | 期限 |
 |---|---|---|---|---|
-| Detect | An observed intermittent failure or a repeat run with mixed results | Record the commit, the seed or input, and the failure rate | CI owner | Within 1 day |
-| Confirm | A mixed result on an unchanged commit or under repeat | Open a ticket with logs and the repeat command | Test author | 2 days |
-| Quarantine | A confirmed flake in the blocking suite | Remove it from the blocking set and add it to the scheduled quarantine job with the ticket | Test author | Same day |
-| Assign | After quarantine | Name one fixing owner and a fix-by date | Team lead | 1 day |
-| Fix or remove | Fix-by date reached | Fix the cause, or delete the test and record the coverage gap in the ticket | Fixing owner | 14 days |
-| Re-enable | Fix merged | Run it 20 times green in CI, then return it to the blocking suite | Fixing owner | 2 days |
+| 检测 | 观察到间歇性失败，或重复运行结果不一 | 记录提交、种子或输入，以及失败率 | CI 负责人 | 1 天内 |
+| 确认 | 未变更的提交上或重复运行下出现混合结果 | 开工单，附日志与复现命令 | 测试作者 | 2 天 |
+| 隔离 | 阻塞性套件中确认的不稳定测试 | 把它移出阻塞集合，连同工单加入计划隔离作业 | 测试作者 | 当天 |
+| 指派 | 隔离之后 | 指定一名修复负责人与修复截止日期 | 团队负责人 | 1 天 |
+| 修复或移除 | 到达修复截止日期 | 修复根因，或删除该测试并在工单中记录覆盖缺口 | 修复负责人 | 14 天 |
+| 重新启用 | 修复已合并 | 在 CI 中连续 20 次绿色运行，然后放回阻塞性套件 | 修复负责人 | 2 天 |
 
-- Cap quarantined tests at five or one percent of the suite, whichever is smaller; a suite above the cap adds no new
-  tests until it drops below.
-- Keep the quarantine marker, the ticket, and the owner in the project's test configuration, so the next reader sees
-  why the test is absent from the blocking set.
-- Treat a flake caused by a race in production code as a production defect with incident severity, not as test noise.
-- Do not substitute automatic retries for quarantine; a retry hides the failure from the metric that would catch it.
-- Export the quarantine list next to the build status, so the team sees the debt without opening each ticket and a
-  quarantine that outlives its deadline is visible in review.
+- 隔离测试数量上限为五个或套件的 1%，取较小者；超过上限的套件在降回之前不得新增测试。
+- 把隔离标记、工单与负责人放在项目的测试配置中，让下一个读者看到该测试为何不在阻塞集合里。
+- 生产代码竞态导致的不稳定应视为事故级的生产缺陷，而不是测试噪声。
+- 不要用自动重试替代隔离；重试会把失败从本应捕获它的指标中藏起来。
+- 把隔离清单导出到构建状态旁，让团队无需逐个打开工单就能看到这笔债，超期未解除的隔离在审查中也可见。
 
-## Static Analysis Severity and Baseline
+## 静态分析严重级别与基线
 
-Map each tool's output to these buckets once, in the tool configuration, and keep the mapping under review with the
-rest of the quality policy.
+在工具配置中一次性把每个工具的输出映射到这些桶，并让该映射随质量策略其余部分一起受审。
 
-| Check | Default severity | Gate effect | Baseline policy |
+| 校验 | 默认严重级别 | 门禁效果 | 基线策略 |
 |---|---|---|---|
-| Type check | Error | Blocks the merge | Allowed per module with a migration ticket; new modules stay strict |
-| Lint errors | Error | Blocks the merge | Allowed per file; the count may not grow |
-| Lint warnings | Warning | Fails the zero-new-warnings check | Existing warnings baselined; the count may not grow |
-| Complexity and duplication | Warning on changed code | Review comment; blocking after adoption | Change-level only; no repository-wide baseline |
-| Secrets scan | Error | Blocks immediately | No baseline; triage false positives and rotate real findings |
-| Dependency audit | Error at the policy severity | Blocks per the vulnerability policy | No baseline; the policy owner accepts exceptions |
-| Static application security test | Error at the policy severity | Blocks when the security policy requires it | Per-finding acceptance with an owner and an expiry |
-| Formatter | Error | Blocks when the working tree differs | No baseline; format before committing |
+| 类型校验 | 错误 | 阻塞合并 | 按模块允许，需迁移工单；新模块保持严格 |
+| lint 错误 | 错误 | 阻塞合并 | 按文件允许；计数不得增长 |
+| lint 警告 | 警告 | 使零新增警告校验失败 | 现有警告入基线；计数不得增长 |
+| 复杂度与重复度 | 变更代码上为警告 | 审查意见；采用后转为阻塞 | 仅变更级别；不做全仓基线 |
+| 机密扫描 | 错误 | 立即阻塞 | 无基线；排查误报，轮换真实发现的凭据 |
+| 依赖审查 | 策略严重级别上的错误 | 按漏洞策略阻塞 | 无基线；策略负责人接受例外 |
+| 静态应用安全测试 | 策略严重级别上的错误 | 安全策略要求时阻塞 | 逐项接受，带负责人与到期时间 |
+| 格式化工具 | 错误 | 工作区有差异时阻塞 | 无基线；提交前格式化 |
 
-- Generate a baseline with the tool version pinned in the repository, review the count, and commit the file beside the
-  tool configuration so the baseline and the rules that produced it move together.
-- Review every baseline change like code: a shrink is welcome, and a growth needs a linked reason, an owner, and an
-  expiry rather than a regenerated file.
-- Keep suppressions local, at line or function scope, with a reason and an expiry; a file-level suppression needs a
-  named owner and a cleanup ticket.
-- Re-measure after a tool upgrade and review the diff before regenerating, because new rules find new violations that
-  deserve their own decision.
-- Record every accepted finding with its owner, the rule that produced it, and a review date, so the security and
-  quality review can read the same list instead of reconstructing it from tool output.
+- 用仓库中固定的工具版本生成基线，审查计数，并把文件提交在工具配置旁，让基线与产生它的规则一起变动。
+- 像审查代码一样审查每次基线变化：缩小受欢迎，增长则需要关联理由、负责人与到期时间，而不是重新生成的文件。
+- 抑制保持局部，限定在行或函数范围，并附理由与到期时间；文件级抑制需要具名负责人与清理工单。
+- 工具升级后重新测量，并在重新生成前审查差异，因为新规则会发现值得单独决策的新违规。
+- 记录每个已接受的发现，包括负责人、产生它的规则与审查日期，让安全审查与质量审查读同一份清单，而不是各自
+  从工具输出重建。
 
-## Local Environment Checklist
+## 本地环境清单
 
-Run this checklist against a fresh clone before changing the bootstrap or the pipeline:
+改动 bootstrap 或流水线前，对全新克隆运行本清单：
 
-- [ ] One command from a fresh clone reaches a running environment and prints the resolved versions.
-- [ ] The bootstrap is idempotent and names the missing prerequisite when it fails.
-- [ ] Runtime, package manager, and service versions come from pinned files.
-- [ ] Container images are pinned by digest or minor tag; no `latest` anywhere.
-- [ ] A devcontainer or equivalent reproduces the CI toolchain.
-- [ ] `.env.example` lists every required key with a fake default; `.env` is ignored.
-- [ ] Configuration validation fails fast at startup with the offending key.
-- [ ] Test services expose healthchecks and tests wait with a bounded timeout.
-- [ ] The test database or schema is created per run and dropped after.
-- [ ] Seed data is deterministic, idempotent, and synthetic.
-- [ ] The test command is the same target that CI runs.
-- [ ] `make doctor` checks tools, ports, and service health.
-- [ ] `make clean` removes containers, volumes, caches, and build artifacts.
-- [ ] The bootstrap and the CI setup read the same pinned configuration files.
-- [ ] A failed service start leaves a clear error, and the recovery step is documented.
-- [ ] The full pull request gate set runs on a fresh clone without undocumented steps.
-- [ ] No secret, token, or personal datum appears in committed local configuration.
+- [ ] 一条命令从全新克隆到达可运行环境，并打印解析后的版本。
+- [ ] bootstrap 幂等，失败时指出缺失的前置条件。
+- [ ] 运行时、包管理器与服务版本来自固定文件。
+- [ ] 容器镜像按 digest 或次版本标签固定；任何地方都没有 `latest`。
+- [ ] devcontainer 或等价方案能复现 CI 工具链。
+- [ ] `.env.example` 列出每个必需键并提供假默认值；`.env` 被忽略。
+- [ ] 配置校验在启动时快速失败，并指出违规键。
+- [ ] 测试服务暴露健康检查，测试带有超时上限地等待就绪。
+- [ ] 测试数据库或 schema 每次运行创建，结束后删除。
+- [ ] 种子数据是确定性的、幂等的，且为合成数据。
+- [ ] 测试命令与 CI 运行的是同一个目标。
+- [ ] `make doctor` 校验工具、端口与服务健康。
+- [ ] `make clean` 删除容器、卷、缓存与构建制品。
+- [ ] bootstrap 与 CI 配置读取相同的固定配置文件。
+- [ ] 服务启动失败会留下清晰错误，恢复步骤有文档记录。
+- [ ] 完整的 PR 门禁集合能在全新克隆上运行，且无需未记录的步骤。
+- [ ] 提交的本地配置中不出现机密、令牌或个人数据。
 
-## Waiver Template
+## 豁免模板
 
-Copy this template into the repository's quality policy or the pull request, fill every field, and delete the record
-when the fix lands or the expiry passes.
+把本模板复制到仓库的质量策略或 PR 中，填写每个字段，并在修复落地或到期后删除该记录。
 
 ```markdown
 ## Waiver: <gate> on <scope>
@@ -214,11 +197,9 @@ when the fix lands or the expiry passes.
 - Remediation: <change that removes the waiver>
 ```
 
-- A waiver without an expiry date or without a named approver is invalid and is rejected in review.
-- A waiver covers exactly one gate and one scope; two gates need two records.
-- Never waive a secrets-scan finding or a blocked dependency vulnerability; rotate the credential, purge the history,
-  or use the policy owner's exception process instead.
-- At expiry, remove the waiver or renew it with new evidence; a waiver renewed without evidence is an exclusion.
-- Record the waiver in the repository or the pull request, not in chat, so the next reviewer can find it and judge it.
-- Land the waiver record and any gate configuration change in the same reviewed change, so the bypass and the rule
-  that made it necessary are visible together.
+- 没有到期时间或没有具名批准人的豁免无效，会在审查中被拒绝。
+- 一条豁免只覆盖一个门禁与一个范围；两个门禁需要两条记录。
+- 禁止豁免机密扫描发现或被阻塞的依赖漏洞；改为轮换凭据、清理历史，或走策略负责人的例外流程。
+- 到期时移除豁免，或用新证据续期；没有证据就续期的豁免就是排除项。
+- 把豁免记录在仓库或 PR 中，而不是聊天里，让下一位审查者找得到并评判它。
+- 把豁免记录与任何门禁配置变更放在同一次受审变更中落地，让绕过操作与使其必要的规则同时可见。
