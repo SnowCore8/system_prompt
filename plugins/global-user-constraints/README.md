@@ -61,6 +61,6 @@ python3 -B -m unittest discover -s scripts -p 'test_*.py'
 
 ## 边界
 
-- 约束生效目录：`~/.qoder-cn/rules`、项目 `.qoder/rules`，以及向上遍历父目录的 `.qoder*/rules`。
+- 约束生效目录：用户级 `~/.qoder-cn/rules`（国际版 `~/.qoder/rules`）；项目级 `.qoder/rules`（Qoder 从当前目录向上查到 `.git`，逐层读取）。
 - 不要把插件、约束文件或 zip 上传到公网平台；只走企业内网或已批准的分发通道。
 - Hook 不拦截工具调用；约束本身仍要求人工审查与真实输出验证。
