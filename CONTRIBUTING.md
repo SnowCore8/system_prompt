@@ -5,6 +5,9 @@
 `.qwen/rules/` 读取项目级规则，Qoder 项目级通过 `.qoder/rules` 读取、
 用户级安装插件后由 hook 自动注入，均不作为本仓库的贡献规则。
 
+何时阅读：在本仓库改约束、skill、插件或脚本之前；维护者：SnowCore8（仓库所有者）。完成定义：
+变更在范围内、`scripts/check.sh` 通过并粘贴真实输出。
+
 ## 范围与优先级
 
 - 本文件只约束本仓库的维护工作；若用户级约束已加载，两者冲突时以用户级约束为准。
@@ -25,8 +28,9 @@
 ## 校验与打包
 
 - 依赖：`python3 -m pip install -r requirements-dev.txt`。
-- 全量校验：`scripts/check.sh`，覆盖 Markdown、skill 与 hook 测试、shellcheck、JSON、敏感文件、
-  软链与 DSH/Qwen/Qoder 适配。缺 `shellcheck` 或 `qoderclicn` 时对应段会打印「跳过」，交付时要说明缺口。
+- 全量校验：`scripts/check.sh`，覆盖 Markdown、skill 与 hook 测试、DSH bundle 的 `node --test`、
+  shellcheck、ruff、JSON、敏感文件、软链、三工具项目级适配与三包清单一致性。缺 `shellcheck`、
+  `node` 或 `qoderclicn` 时对应段会打印「跳过」，交付时要说明缺口。
 - 单独跑测试：skill 测试
   `python3 -B -m unittest discover -s tests/skill -p 'test_*.py'`；
   hook 测试 `python3 -B -m unittest discover -s tests/hooks -p 'test_*.py'`；

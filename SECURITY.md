@@ -1,7 +1,10 @@
 # 安全策略
 
-本仓库内容是面向编码代理的规范文本、skill 与一个 Qoder 插件；可执行部分为插件 hooks、
-skill 内的 Python 校验脚本与 `scripts/` 下的发布/校验脚本。
+维护者：SnowCore8；何时阅读：报告或处置安全漏洞时。
+
+本仓库内容是面向编码代理的规范文本、十三个 skill，以及面向 Qoder、Qwen Code、DeepSeek Harness
+的三个插件包；可执行部分为插件 hooks、`plugins/dsh/src/` 的提供者代码、skill 内的 Python 校验
+脚本与 `scripts/` 下的发布/校验脚本。
 
 ## 支持的版本
 

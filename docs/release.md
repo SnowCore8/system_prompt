@@ -1,5 +1,7 @@
 # 发布手册
 
+维护者：SnowCore8；何时阅读：切版本、打 tag 或回滚发布时。
+
 本仓库用 SemVer 与 tag 发布。三个包的版本必须一致：`plugins/qoder/.qoder-plugin/plugin.json`、
 `plugins/qwen/qwen-extension.json` 与仓库根 `package.json`（DSH bundle）的 `version` 由发布者手动修改，
 `scripts/dist.sh` 只读取和校验，不推导或改写。
@@ -31,8 +33,10 @@
 ## 回滚
 
 - 发布内容有误：先发新的 patch 版本修复，不要复用已发布的版本号或重打同一个 tag。
-- 必须撤回时：在 GitHub 删除 Release 与 tag，再按新版本号重新走发布流程；已分发制品无法收回，
-  npm 已发布的版本也不能覆盖，必须换新版本号；在 CHANGELOG 写明受影响的版本与替代版本。
+- 已发布的 tag 与 Release 不可变：禁止删除或移动它们。确需撤回时，发新的 patch 版本弃用旧版本，
+  在 CHANGELOG 写明受影响的版本与替代版本；npm 已发布的版本不能覆盖，已分发制品无法收回，
+  只能靠弃用与新版本替代。
+- 发布门禁失败时，在发布前删除尚未对外引用的 tag，重新走门禁；已发布后不再删除。
 - 安全问题的撤回与披露节奏按 [SECURITY.md](../SECURITY.md) 处理。
 
 ## 发布检查单

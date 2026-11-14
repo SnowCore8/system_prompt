@@ -1,5 +1,7 @@
 # 时间感知设计
 
+维护者：SnowCore8；何时阅读：修改或排查时间注入 hook 时。
+
 Qoder 与 Qwen Code 都不向模型注入当前时间。模型只能靠对话里偶然出现的日期去猜，
 跨天、排期、日志时间戳、节假日判断都会失准。本仓库用 hook 把时间变成显式的会话上下文。
 
@@ -26,7 +28,8 @@ Qoder 与 Qwen Code 都不向模型注入当前时间。模型只能靠对话里
 | Qoder | `.qoder-plugin/plugin.json` | `hooks/hooks.json` | `command` + `args`，根目录 `${QODER_PLUGIN_ROOT}` |
 | Qwen Code | `qwen-extension.json` | `hooks/qwen-hooks.json` | 单条 `command` 字符串，根目录 `${CLAUDE_PLUGIN_ROOT}` |
 
-- 两个清单版本必须一致；`scripts/check.sh`、`scripts/dist.sh` 与 release 工作流都会校验。
+- 三包版本必须一致（本页只涉及 Qoder/Qwen 双端 hook）；`scripts/check.sh`、`scripts/dist.sh`
+  与 release 工作流都会校验。
 - Qwen 会自动加载 `<extension>/hooks/hooks.json`，这里用清单的 `hooks` 字段显式指向
   `qwen-hooks.json`，避免把只有 Qoder 才认的 `args` 形式喂给 Qwen。
 - Qwen 的 `UserPromptSubmit` 上下文会被包进 `<qwen:user-prompt-submit-context>` 标签，这是宿主加的来源标记。

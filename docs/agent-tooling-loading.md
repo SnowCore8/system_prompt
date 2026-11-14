@@ -1,5 +1,7 @@
 # 三工具加载规则：rules、skills、plugins
 
+维护者：SnowCore8；何时阅读：调整各工具入口或调研加载行为时。
+
 本文分别整理 Qoder、Qwen Code 与 DeepSeek Harness（DSH）三类工件的加载规则与目录结构。
 取证口径：官方文档优先，能读源码的读源码；DSH 以本地实现树为准，因为它就是运行中的版本。
 
@@ -369,7 +371,8 @@ DSH 里「插件」是 TypeScript 模块，导出 `apply(ctx)`；可分发的安
   见 `docs/time-awareness.md`。
 - 根 `AGENTS.md` 也会被 Qwen Code 当作项目级 `AGENTS.md` 读取，所以它只承载本仓库维护约定，
   不承载用户全局约束。
-- 插件包内的 `rules/` 仍随包分发，供安装后复制到用户级；宿主当前不加载它（见 Qoder 一节）。
+- 插件包内 Qoder 与 DSH 随包分发 `rules/`、Qwen 分发 `constraints/`（Qwen 把扩展的 `rules/` 当作
+  条件规则，见 Qwen 一节）；Qoder 宿主当前不加载插件的 `rules/`（见 Qoder 一节）。
 
 ## 未验证与文档矛盾
 

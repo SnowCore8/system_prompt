@@ -1,11 +1,11 @@
 本仓库采用双许可证，按文件类型划分：
 
 - 文档与规范正文：CC BY 4.0，全文见 LICENSE-CC-BY-4.0.txt。
-  适用 rules/、plugins/global-user-constraints/skills/、docs/、README.md、
-  CONTRIBUTING.md、GLOSSARY.md、CHANGELOG.md 等 Markdown 与说明内容。
+  适用 rules/、skills/、docs/、shared/commands/、README.md、CONTRIBUTING.md、
+  GLOSSARY.md、CHANGELOG.md、GOVERNANCE.md、SECURITY.md 与三个插件包的说明类 Markdown。
 - 代码、脚本与配置：MIT，全文见 LICENSE-MIT.txt。
-  适用 scripts/、plugins/global-user-constraints/scripts/、
-  plugins/global-user-constraints/hooks/、.github/ 等可执行代码与配置。
+  适用 scripts/、shared/scripts/、plugins/*/hooks/、plugins/*/src/、tests/、
+  .github/、各包清单与根 package.json 等可执行代码与配置。
 
 软链入口（AGENTS.md、.qwen/、.qoder/、.dsh/）随目标文件适用相应许可证。
 
