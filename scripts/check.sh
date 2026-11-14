@@ -32,6 +32,10 @@ python3 -c 'import markdown_it' >/dev/null 2>&1 || {
   echo "缺少 markdown-it-py，先运行 python3 -m pip install -r requirements-dev.txt" >&2
   exit 2
 }
+python3 -m ruff --version >/dev/null 2>&1 || {
+  echo "缺少 ruff，先运行 python3 -m pip install -r requirements-dev.txt" >&2
+  exit 2
+}
 
 echo "== Markdown 格式 =="
 while IFS= read -r -d '' file; do
@@ -54,6 +58,9 @@ else
   skip "未安装 shellcheck"
 fi
 
+echo "== Python lint =="
+python3 -m ruff check . || fail "ruff"
+
 echo "== JSON =="
 while IFS= read -r -d '' file; do
   python3 -m json.tool "$file" >/dev/null 2>&1 || fail "JSON 无效: $file"
@@ -72,6 +79,9 @@ echo "== 软链 =="
 link_fs=0
 while IFS= read -r link; do
   link="${link#./}"
+  if git check-ignore -q --no-index "$link"; then
+    continue
+  fi
   link_fs=$((link_fs + 1))
   git ls-files --error-unmatch "$link" >/dev/null 2>&1 || fail "软链未纳入版本库: $link"
   target="$(readlink "$link")"
