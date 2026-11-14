@@ -1,246 +1,235 @@
 ---
 name: comment-conventions
-description: Defines, reviews, and repairs code comments and doc comments in any programming project, covering API documentation embedded in source, inline and block comments, file headers, markers, deprecation notices, legal headers, tool directives, and commented-out code. Use when writing or revising a function, reviewing a diff for misleading comments, or fixing stale doc comments. Provides language-agnostic defaults with per-language overrides.
-argument-hint: '[path or symbol]'
+description: 在任何编程项目中定义、审查与修复代码注释与文档注释，覆盖嵌入源码的 API 文档、行内与块注释、文件头、标记、弃用声明、法律声明头、工具指令与被注释掉的代码。适用于编写或修改函数、审查 diff 中误导性的注释，或修复过时的文档注释。提供与语言无关的默认值，并按语言给出覆盖规则。
+argument-hint: '[路径或符号]'
 ---
 
-# Comment Conventions
+# 注释规范
 
-Comments fail in three ways: they restate what the code already says, they go stale while the code moves on, and
-they hide intent behind a summary of mechanics. A comment earns its maintenance cost only when it records what a
-reader cannot recover from the code: the contract, the reason, the hazard, or the plan. This skill gives one
-decision procedure and a complete rule set for every comment a project writes, from doc comments that generate the
-API reference to markers, directives, legal headers, and commented-out code. It serves the writer adding a comment
-and the reviewer judging one, because the same rules decide whether a comment should exist and whether it can be
-trusted.
+注释以三种方式失败：重述代码已经说明的内容、在代码演进时变得过时、用机械的概括掩盖意图。只有当注释记录
+了读者无法从代码中恢复的信息——契约、理由、隐患或计划——它才值得付出维护成本。本 skill 给出一套决策
+流程，以及项目写出的每一种注释所需的完整规则集，从生成 API 参考的文档注释，到标记、指令、法律声明头
+与被注释掉的代码。它既服务于添加注释的作者，也服务于评判注释的审查者，因为同一套规则既决定注释是否
+该存在，也决定它是否可信。
 
-## Scope and Precedence
+## 范围与优先级
 
-Apply the first rule that fits, and do not mix conventions inside one scope:
+应用第一条匹配的规则，不要在同一范围内混用约定：
 
-1. Mandatory language or documentation-tool convention, plus a comment linter when one is configured. Javadoc
-   doclint, rustdoc, TSDoc, and godoc comment placement are not optional.
-2. Existing project convention. Read the code, the doc-tool configuration, and the linter before inventing a rule.
-3. This standard's defaults, when the two levels above are silent.
-4. Personal preference, which never overrides the three levels above.
+1. 语言或文档工具的强制约定，以及已配置时的注释 linter。Javadoc doclint、rustdoc、TSDoc 与 godoc
+   的注释位置都不是可选项。
+2. 现有项目约定。发明规则之前先读代码、文档工具配置与 linter。
+3. 上面两级都没有规定时，采用本标准的默认值。
+4. 个人偏好，它永远不能覆盖上面三级。
 
-- Comments versus documentation. This skill covers comments embedded in source, API documentation generated from
-  doc comments, markers, directives, and legal headers. Standalone documents (README, docs sites, ADRs,
-  changelogs, release notes, API reference pages) are out of scope; documentation-conventions owns them, and
-  release-operations-conventions owns deprecation announcement timing and placement. When a comment grows into a
-  document, move it and link it instead of copying it.
-- Generated, vendored, and third-party code is exempt from style edits. Keep the generated marker and the upstream
-  comments; regenerate or re-vendor instead of hand-editing, and record local patches outside the file.
-- One natural language per repository. Declare it (English by default for libraries and open source, the team
-  language for internal code), apply it to every comment type, and keep identifiers, API terms, and quoted
-  upstream text in their original form.
-- A comment change is a code change. Update it in the same commit, review it like code, update generated docs and
-  doctests, and rerun the doc build; a doc comment on a public symbol is part of the API contract.
-- When two rules conflict, state the conflict and the chosen rule; record the decision so the next change follows
-  it.
-- A comment is not a substitute for a test, a type, or a clear name. When correctness matters, encode it in code or
-  in a test; a comment that only promises behavior the code does not enforce is a wish, not a contract.
-- Within comment review, follow the symbol's visibility. A public symbol's doc comment gets the same review as its
-  signature; an internal helper's comment is judged by whether it prevents a future mistake.
-- Formatter, line-width, and linter configuration belong to code-style-conventions; this skill owns comment content,
-  placement, and directive syntax.
-- Gate thresholds and skip, quarantine, and waiver policy belong to testing-and-quality-conventions.
-- Secret scanning, rotation, and disclosure belong to security-compliance-conventions.
-- Overall change review depth and merge gating belong to vcs-collaboration-conventions.
+- 注释与文档之分。本 skill 覆盖嵌入源码的注释、由文档注释生成的 API 文档、标记、指令与法律声明头。
+  独立文档（README、文档站点、ADR、变更日志、发布说明、API 参考页面）不在范围内；它们由
+  documentation-conventions 负责，弃用声明的时间与位置由 release-operations-conventions 负责。
+  注释长成文档时，移动它并链接，而不是复制。
+- 生成代码、第三方引入代码与第三方代码不受风格修改约束。保留生成标记与上游注释；重新生成或重新引入，
+  而不是手工编辑，并把本地补丁记录在文件之外。
+- 每个仓库只用一种自然语言。明确声明它（库与开源项目默认英语，内部代码用团队语言），应用到每一种
+  注释类型，并让标识符、API 术语与引用的上游文本保持原样。
+- 注释变更也是代码变更。在同一次提交中更新它，像审查代码一样审查它，更新生成的文档与 doctest，
+  并重新运行文档构建；公开符号上的文档注释是 API 契约的一部分。
+- 两条规则冲突时，说明冲突与选定的规则；记录该决定，让后续变更遵循它。
+- 注释不能替代测试、类型或清晰的名称。正确性重要时，把它写进代码或测试；只承诺代码并不强制执行的
+  行为的注释是愿望，不是契约。
+- 审查注释时，遵循符号的可见性。公开符号的文档注释与其签名接受同样的审查；内部辅助函数的注释则看它
+  是否能防止将来的错误。
+- 格式化工具、行宽与 linter 配置属于 code-style-conventions；本 skill 负责注释内容、位置与指令语法。
+- 门禁阈值以及跳过、隔离与豁免策略属于 testing-and-quality-conventions。
+- 机密扫描、轮换与披露属于 security-compliance-conventions。
+- 整体变更审查深度与合并门禁属于 vcs-collaboration-conventions。
 
-## Process
+## 流程
 
-1. Decide whether a comment is needed at all. If the code already states the fact, delete the comment or improve
-   the code; a missing comment is not a defect when the code is clear.
-2. Classify the comment: doc comment, module or file header, inline why, block explanation, marker, deprecation,
-   legal header, tool directive, or commented-out code. The classification decides the required fields and the
-   checklist item that will judge it.
-3. Read the surrounding code, the project convention, and the doc-tool configuration; find the linter rule that
-   will judge the result when one is configured. The doc build and the configured linter are the acceptance test,
-   not decoration.
-4. Write the content the reader cannot get from the code: the contract, the reason, the hazard, the external
-   constraint, or the plan. Prefer one precise sentence to three vague ones.
-5. Apply the form: correct syntax and position, required tags or sections, one natural language, the project's
-   line width and punctuation.
-6. Update every related comment in the same change: callers, generated docs, examples, deprecation notices, and
-   markers that the change resolves.
-7. Verify against the current code: re-read the comment after the final edit, run the doc build, doctests, and
-   comment linter, and delete anything that no longer holds. Verification is what separates a comment from a guess.
+1. 判断到底是否需要注释。如果代码已经说明事实，删除注释或改进代码；代码清晰时，缺少注释不是缺陷。
+2. 为注释分类：文档注释、模块或文件头、行内理由、块说明、标记、弃用、法律声明头、工具指令或被注释
+   掉的代码。分类决定必填字段以及将评判它的清单项。
+3. 阅读周边代码、项目约定与文档工具配置；配置了 linter 时，找出将评判结果的 lint 规则。文档构建与
+   已配置的 linter 是验收测试，不是装饰。
+4. 写出读者无法从代码中获得的内容：契约、理由、隐患、外部约束或计划。宁可一句精确的话，也不要三句
+   含糊的话。
+5. 套用形式：正确的语法与位置、必需的标签或小节、一种自然语言、项目的行宽与标点。
+6. 在同一次变更中更新所有相关注释：调用方、生成的文档、示例、弃用声明，以及被这次变更解决的标记。
+7. 对照当前代码验证：最终编辑之后重读注释，运行文档构建、doctest 与注释 linter，并删除任何不再成立
+   的内容。验证是注释与猜测的分界线。
 
-## Core Rules
+## 核心规则
 
-- **Explain why, not what.** A comment that repeats the code doubles the maintenance cost and goes stale first.
-  State the reason, the contract, or the hazard; if the code can say it instead, rewrite the code.
-- **A doc comment is a contract.** At every public boundary, document parameters, return values, errors, side
-  effects, and invariants. Callers read the contract before the body, and changing it changes the API.
-- **The code is the source of truth.** A comment that contradicts the current code is a defect; fix or delete it in
-  the same change. Never leave a wrong comment because "the code is obvious".
-- **No comment beats a wrong comment.** A missing explanation costs a look at the implementation; a false one costs
-  a bug. Delete uncertain comments and recover the fact from the code or the author.
-- **Delete code instead of commenting it out.** Version control keeps the history; a commented-out block rots,
-  hides dead APIs, and confuses search. If disabling is temporary, mark owner, ticket, and expiry.
-- **Markers carry what their kind requires.** `TODO`, `FIXME`, and `HACK` include an owner and a removal trigger;
-  `NOTE` and `WARNING` state the condition, the consequence, and the required action. All follow the project's
-  marker spelling.
-- **Deprecation names the replacement and the removal.** Use the language's deprecation mechanism with a migration
-  note and a version or date; a bare `@deprecated` leaves the caller without a path.
-- **Tool directives are minimal and justified.** Start at the narrowest scope, one line and then one function; every
-  directive needs a reason, a file-level suppression also needs a cleanup ticket, and nothing disables a rule
-  repository-wide for one site.
-- **Legal headers and generated markers stay byte-identical.** They are read by tools and licenses; do not
-  reformat, translate, or hand-edit them, and never remove a third-party notice.
-- **Document the non-obvious, not the familiar.** Record external constraints, workarounds, unsafe invariants,
-  surprising edge cases, and measured performance bounds; skip the language tutorial. When an explanation grows
-  past a paragraph, it belongs in a design note that the comment links.
-- **State units, ranges, nullability, and ownership.** When the type cannot carry them, the doc comment must state:
-  milliseconds versus seconds, inclusive versus exclusive, absent versus empty, borrowed versus owned.
-- **Attach the comment to its subject.** A doc comment sits on the declaration, an inline comment on the line or
-  block it explains, and a file header on the file. A stranded comment is read against the wrong code, and a
-  duplicated comment drifts from its twin.
-- **Write in the format's voice.** Sentence case, complete sentences, correct punctuation, and the project's line
-  width; doc-comment descriptions state behavior in the present tense and instructions in the imperative.
-- **Density follows surprise, not line count.** Comment the non-obvious and leave the obvious alone; a file where
-  every line carries a comment is as hard to read as one with none, and each comment is another thing to maintain.
+- **解释原因，而不是行为。** 重述代码的注释让维护成本翻倍，而且最先过时。说明理由、契约或隐患；
+  如果代码本身能表达，就重写代码。
+- **文档注释是契约。** 在每个公开边界上记录参数、返回值、错误、副作用与不变量。调用方先读契约再读
+  函数体，改变契约就改变了 API。
+- **代码是事实来源。** 与当前代码矛盾的注释是缺陷；在同一次变更中修复或删除它。绝不要因为
+  「代码很明显」就留下错误注释。
+- **没有注释胜过错注释。** 缺少解释只需看一眼实现；错误的解释会带来缺陷。删除不确定的注释，从代码
+  或作者那里恢复事实。
+- **删除代码，而不是把它注释掉。** 版本控制保留历史；被注释掉的代码块会腐化、掩盖废弃 API，并干扰
+  搜索。禁用只是临时措施时，标明负责人、工单与到期时间。
+- **标记要带上其类型要求的内容。** `TODO`、`FIXME` 与 `HACK` 包含负责人与移除触发条件；`NOTE` 与
+  `WARNING` 说明条件、后果与必需动作。所有标记都遵循项目的拼写。
+- **弃用要写明替代项与移除计划。** 使用语言的弃用机制，并附迁移说明与版本或日期；只有 `@deprecated`
+  会让调用方无路可走。
+- **工具指令要最少且有理由。** 从最窄范围开始，先一行再一个函数；每条指令都需要理由，文件级抑制还
+  需要清理工单，任何情况下都不要为一个位置在仓库范围禁用规则。
+- **法律声明头与生成标记保持字节级一致。** 工具与许可证会读取它们；不要重排格式、翻译或手工编辑，
+  也绝不删除第三方声明。
+- **记录不显而易见的内容，而不是熟悉的内容。** 记录外部约束、变通做法、unsafe 不变量、令人意外的
+  边界情况与实测性能界限；跳过语言教程。解释超出一段时，它属于设计说明，注释只负责链接。
+- **写明单位、范围、可空性与所有权。** 类型无法承载时，文档注释必须说明：毫秒还是秒、包含还是不包含、
+  缺失还是为空、借用还是拥有。
+- **把注释附着在其对象上。** 文档注释放在声明上，行内注释放在它所解释的行或块上，文件头放在文件上。
+  脱离对象的注释会被对照错误的代码阅读，重复的注释会与它的孪生条目产生漂移。
+- **按格式的语气写作。** 句首大写、完整句子、正确标点、项目的行宽；文档注释中的描述用现在时陈述行为，
+  指令用祈使式。
+- **密度取决于意外程度，而不是行数。** 注释不显而易见的内容，放过显而易见的内容；每行都有注释的文件
+  与完全没有注释的文件一样难读，而且每条注释都是额外的维护负担。
 
-## Comment Type Matrix
+## 注释类型矩阵
 
-The comment type decides the syntax, the placement, and the required fields. Choose the type before writing, because
-a doc comment and an inline comment obey different rules:
+注释类型决定语法、位置与必填字段。写之前先选定类型，因为文档注释与行内注释遵循不同的规则：
 
-| Type | Purpose | Required form | Example |
+| 类型 | 用途 | 必需形式 | 示例 |
 |---|---|---|---|
-| Doc comment (docstring) | Public contract of a declaration | Tool syntax directly above the declaration; summary, contract, tags | `"""Return the invoice total in cents."""` |
-| File or module header | Purpose, scope, and invariants of the file | First comment after the legal header; no change history | `// Package billing reconciles invoices.` |
-| Inline why | Explain a non-obvious choice on the next line | `//` or `#` above the line, same indent, one idea | `# Retry once: the gateway resets idle connections.` |
-| Block explanation | Multi-line rationale, algorithm, external constraint | Project block syntax, wrapped, no decorative border | `/* The vendor caps a batch at 500 items. */` |
-| API doc tags | Machine-readable fields for generated reference | Language tag syntax and order required by the tool | `@throws InvoiceNotFoundError when the id is unknown` |
-| TODO | Owned, planned work | Marker plus owner, action, issue or removal trigger | `// TODO(maria): drop the shim after v2 ships (#512).` |
-| FIXME / HACK / NOTE / WARNING | Defect, shortcut, context, or hazard | FIXME/HACK: wrong behavior, owner, removal trigger; NOTE/WARNING: condition, consequence, action | `// WARNING: without the caller's lock, the balance read races writers; acquire the lock first (#318).` |
-| Deprecation marker | Migration path and removal plan | Language mechanism plus replacement and version | `@deprecated Use create_invoice; removed in v3.0.` |
-| Legal header | License and copyright obligations | Exact SPDX and copyright lines in the required position | `// SPDX-License-Identifier: Apache-2.0` |
-| Tool directive | Instruction to a linter, formatter, or generator | Exact tool syntax at the narrowest scope, with reason | `// eslint-disable-next-line no-console -- CLI output.` |
-| Generated marker | Prevent hand edits and point to the generator | Tool-native marker at the top, byte-identical | `// Code generated by sqlc. DO NOT EDIT.` |
-| Commented-out code | None: version control owns old code | Delete it; use the build system or a marked directive with expiry | `n/a` |
+| 文档注释（docstring） | 声明的公开契约 | 紧跟声明上方的工具语法；摘要、契约、标签 | `"""Return the invoice total in cents."""` |
+| 文件或模块头 | 文件的用途、范围与不变量 | 法律声明头之后的第一个注释；不写变更历史 | `// Package billing reconciles invoices.` |
+| 行内理由 | 解释下一行中不显而易见的选择 | 行上方的 `//` 或 `#`，同缩进，一个想法 | `# Retry once: the gateway resets idle connections.` |
+| 块说明 | 多行理由、算法、外部约束 | 项目的块注释语法，折行，无装饰边框 | `/* The vendor caps a batch at 500 items. */` |
+| API 文档标签 | 供生成的参考文档使用的机器可读字段 | 工具要求的语言标签语法与顺序 | `@throws InvoiceNotFoundError when the id is unknown` |
+| TODO | 有负责人的计划内工作 | 标记加负责人、动作、issue 或移除触发条件 | `// TODO(maria): drop the shim after v2 ships (#512).` |
+| FIXME / HACK / NOTE / WARNING | 缺陷、捷径、上下文或隐患 | FIXME/HACK：错误行为、负责人、移除触发条件；NOTE/WARNING：条件、后果、动作 | `// WARNING: without the caller's lock, the balance read races writers; acquire the lock first (#318).` |
+| 弃用标记 | 迁移路径与移除计划 | 语言机制加替代项与版本 | `@deprecated Use create_invoice; removed in v3.0.` |
+| 法律声明头 | 许可证与版权义务 | 位于要求位置的精确 SPDX 与版权行 | `// SPDX-License-Identifier: Apache-2.0` |
+| 工具指令 | 给 linter、格式化工具或生成器的指令 | 最窄范围内的精确工具语法，并给出理由 | `// eslint-disable-next-line no-console -- CLI output.` |
+| 生成标记 | 阻止手工编辑并指向生成器 | 位于顶部的工具原生标记，字节级一致 | `// Code generated by sqlc. DO NOT EDIT.` |
+| 被注释掉的代码 | 无：旧代码由版本控制负责 | 删除它；使用构建系统，或带到期时间的标记指令 | `n/a` |
 
-## Dimension Index
+## 维度索引
 
-Each dimension has detailed rules, examples, and edge cases in `references/dimensions.md`; the number in the
-dimension column is the section number in that file.
+每个维度的详细规则、示例与边界情况见 `references/dimensions.md`；维度列中的数字是该文件中的节号。
 
-| Dimension | First rule |
+| 维度 | 第一条规则 |
 |---|---|
-| 1. Doc comments and public contracts | Document the visible contract, not the signature. |
-| 2. Module, file, and value headers | State the unit's purpose and invariants, never its history. |
-| 3. Functions and methods | Document parameters, returns, errors, and side effects at the boundary. |
-| 4. Types, fields, enums, constants | Document invariants and member meaning, not the field name. |
-| 5. Units, ranges, nullability, ownership | State what the type cannot carry. |
-| 6. Side effects, mutation, concurrency | State the effect, the hazard, and the required action. |
-| 7. Deprecation notices | Name the replacement and the removal trigger. |
-| 8. TODOs and planning notes | TODO/FIXME/HACK carry an owner and removal trigger. |
-| 9. Commented-out code | Delete it; version control keeps the history. |
-| 10. Change history and journal comments | The change log lives in version control. |
-| 11. Code examples in doc comments | A doc example is executable documentation. |
-| 12. Generated and vendored code markers | Regenerate or re-vendor; never hand-edit. |
-| 13. Legal and license headers | Keep them byte-identical where the tool expects them. |
-| 14. Tool directives | Narrowest scope; reason for every directive; file-level cleanup ticket. |
-| 15. Tests and fixtures | Explain the scenario, not the call sequence. |
-| 16. Configuration and infrastructure | Use the format's comment syntax and state the constraint. |
-| 17. Shell scripts | Document purpose, arguments, and non-obvious quoting. |
-| 18. Markup, CSS, template comments | Comply with the format, and never ship secrets. |
-| 19. i18n and localized comments | One declared language per repository. |
-| 20. Secrets and privacy in comments | Comments are public; never store credentials. |
-| 21. Density, width, punctuation, capitalization | Complete sentences, project line width, no decoration. |
-| 22. Stale and lying comments | A false comment is a defect with a fix deadline. |
-| 23. Refactoring and moving comments | Move the comment with the code. |
-| 24. Comment review workflow | Read every comment in the diff against the code. |
+| 1. 文档注释与公开契约 | 记录可见契约，而不是签名。 |
+| 2. 模块、文件与取值头 | 说明单元的用途与不变量，绝不写历史。 |
+| 3. 函数与方法 | 在边界处记录参数、返回值、错误与副作用。 |
+| 4. 类型、字段、枚举、常量 | 记录不变量与成员含义，而不是字段名。 |
+| 5. 单位、范围、可空性、所有权 | 说明类型无法承载的内容。 |
+| 6. 副作用、变更、并发 | 说明效果、隐患与必需动作。 |
+| 7. 弃用声明 | 写明替代项与移除触发条件。 |
+| 8. TODO 与计划说明 | TODO/FIXME/HACK 带负责人与移除触发条件。 |
+| 9. 被注释掉的代码 | 删除它；历史由版本控制保留。 |
+| 10. 变更历史与日志式注释 | 变更日志在版本控制里。 |
+| 11. 文档注释中的代码示例 | 文档示例是可执行的文档。 |
+| 12. 生成代码与第三方引入代码的标记 | 重新生成或重新引入；绝不手工编辑。 |
+| 13. 法律与许可证头 | 在工具要求的位置保持字节级一致。 |
+| 14. 工具指令 | 最窄范围；每条指令都有理由；文件级抑制还要清理工单。 |
+| 15. 测试与 fixture | 解释场景，而不是调用顺序。 |
+| 16. 配置与基础设施 | 使用该格式的注释语法，并说明约束。 |
+| 17. Shell 脚本 | 记录用途、参数与不显而易见的引号处理。 |
+| 18. 标记语言、CSS、模板注释 | 遵守格式，绝不随代码发布机密。 |
+| 19. i18n 与本地化注释 | 每个仓库只用一种声明的语言。 |
+| 20. 注释中的机密与隐私 | 注释是公开的；绝不存放凭据。 |
+| 21. 密度、行宽、标点、大小写 | 完整句子，项目行宽，无装饰。 |
+| 22. 过时与说谎的注释 | 错误注释是有修复期限的缺陷。 |
+| 23. 重构与移动注释 | 注释随代码一起移动。 |
+| 24. 注释审查流程 | 对照代码阅读 diff 中的每条注释。 |
 
-## Anti-Patterns
+## 反模式
 
-| Anti-pattern | Why it fails | Fix |
+| 反模式 | 为什么失败 | 修复 |
 |---|---|---|
-| Comment restating the line (`// increment i`) | Duplicates the code and rots first | Delete it; rename the identifier if intent is unclear. |
-| Stale comment that contradicts the code | Sends every reader the wrong way | Fix or delete it in the same change; audit after every behavior change. |
-| Bare `// TODO: fix later` | No owner, no trigger, no review path | `TODO(owner): action and reason` plus an issue. |
-| Commented-out code block | Hides dead APIs and confuses search and coverage | Delete it; rely on version control. |
-| `@param user the user` | Repeats the signature and adds no contract | State format, range, nullability, or ownership. |
-| Change history in a file header | Duplicates version control and goes stale immediately | Remove it; the commit message carries history. |
-| Whole-file lint suppression without a reason | Hides every future violation and outlives its justification | Use file scope only when line or function scope cannot work; add the reason and a cleanup ticket. |
-| Deprecation without a replacement | Leaves callers no migration path | Add the replacement, version, and removal ticket. |
-| Commented-out debug output | Pollution that reappears in commits | Use the logger at a configurable level. |
-| Warning that names no action | The reader cannot act on the hazard | State condition, consequence, and required action. |
-| Secret or personal data in an example | Comments ship and leak with the source | Use `example.test.invalid` and placeholder identifiers. |
-| Comment in a foreign language | Breaks the one-language rule and slows review | Use the declared repository language. |
-| Comment instead of a named constant | Hides meaning from the code itself | Extract `DEFAULT_TIMEOUT_MS` and delete the note. |
-| Doc comment copied across functions | The copies drift apart | Link one owner or write the contract once. |
-| Author or date banner | Noise no tool or reader needs | Remove it; commit metadata owns that information. |
-| Change entry in a comment (`// 2026-02-11: changed order`) | Duplicates commit history and rots on the next change | Remove it; the commit message owns the change. |
+| 逐行重述的注释（`// increment i`） | 重复代码，而且最先腐化 | 删除它；意图不明时重命名标识符。 |
+| 与代码矛盾的过时注释 | 把每个读者带错方向 | 在同一次变更中修复或删除；每次行为变更后审查。 |
+| 裸的 `// TODO: fix later` | 没有负责人、没有触发条件、没有审查路径 | `TODO(owner): action and reason` 加一个 issue。 |
+| 被注释掉的代码块 | 掩盖废弃 API，干扰搜索与覆盖率 | 删除它；依赖版本控制。 |
+| `@param user the user` | 重复签名，没有增加任何契约 | 写明格式、范围、可空性或所有权。 |
+| 文件头里的变更历史 | 重复版本控制，而且立刻过时 | 删除它；提交消息承载历史。 |
+| 没有理由的整文件 lint 抑制 | 掩盖未来所有违规，并比理由活得更久 | 只有行级或函数级范围不可行时才用文件级；补上理由与清理工单。 |
+| 没有替代项的弃用 | 让调用方没有迁移路径 | 补上替代项、版本与移除工单。 |
+| 被注释掉的调试输出 | 污染，还会在提交中再次出现 | 使用可配置级别的 logger。 |
+| 未指明动作的警告 | 读者无法针对隐患采取行动 | 写明条件、后果与必需动作。 |
+| 示例中的机密或个人数据 | 注释随源码一起发布并泄露 | 使用 `example.test.invalid` 与占位标识符。 |
+| 外语注释 | 破坏单一语言规则，拖慢审查 | 使用仓库声明的语言。 |
+| 用注释代替具名常量 | 把含义藏在代码之外 | 提取 `DEFAULT_TIMEOUT_MS` 并删除该说明。 |
+| 在多个函数间复制的文档注释 | 副本之间互相漂移 | 链接到唯一的归属处，或只写一次契约。 |
+| 作者或日期横幅 | 工具与读者都不需要的噪音 | 删除它；提交元数据承载该信息。 |
+| 注释里的变更记录（`// 2026-02-11: changed order`） | 重复提交历史，并在下次变更时腐化 | 删除它；提交消息承载变更。 |
 
-## Review Checklist
+## 审查清单
 
-- [ ] The comment adds information the code does not state.
-- [ ] Every doc comment matches the current signature, behavior, and errors.
-- [ ] Public parameters, returns, errors, side effects, and invariants are documented.
-- [ ] Units, ranges, nullability, and ownership are explicit where the type cannot carry them.
-- [ ] The summary is one sentence: present tense for descriptions, imperative for instructions, with end punctuation.
-- [ ] Inline comments sit above or beside the line they explain, at the same indentation.
-- [ ] Every TODO, FIXME, and HACK has an owner and a tracked issue or removal trigger.
-- [ ] No commented-out code or debug output is left in the change.
-- [ ] Deprecations name a replacement and a removal version or date.
-- [ ] Legal headers and generated markers are intact and unmodified.
-- [ ] Tool directives are minimal and include a reason; file-level suppressions also have a cleanup ticket.
-- [ ] No secret, token, personal datum, or internal address appears in any comment.
-- [ ] The comment language is the declared repository language, with identifiers unchanged.
-- [ ] Line width, punctuation, capitalization, and spacing match the project.
-- [ ] Code examples in doc comments were executed and produce the stated output.
-- [ ] Generated and vendored files were regenerated, not hand-edited.
-- [ ] Comments moved or deleted by a refactor left no orphan or stale reference.
-- [ ] The doc build, doctests, and comment linter pass.
-- [ ] Comments that duplicate a standalone document are linked, not copied.
-- [ ] Every behavior change in the diff includes its comment update.
+- [ ] 注释补充了代码没有说明的信息。
+- [ ] 每条文档注释都与当前签名、行为与错误一致。
+- [ ] 公开的参数、返回值、错误、副作用与不变量都有记录。
+- [ ] 类型无法承载时，单位、范围、可空性与所有权都是显式的。
+- [ ] 摘要只有一句：描述用现在时，指令用祈使式，并带句末标点。
+- [ ] 行内注释位于所解释行的上方或旁边，缩进相同。
+- [ ] 每个 TODO、FIXME 与 HACK 都有负责人，以及被跟踪的 issue 或移除触发条件。
+- [ ] 变更中没有留下被注释掉的代码或调试输出。
+- [ ] 弃用声明写明替代项与移除版本或日期。
+- [ ] 法律声明头与生成标记完整且未被修改。
+- [ ] 工具指令最少且包含理由；文件级抑制还有清理工单。
+- [ ] 任何注释中都没有机密、令牌、个人数据或内部地址。
+- [ ] 注释语言是仓库声明的语言，标识符保持不变。
+- [ ] 行宽、标点、大小写与间距都符合项目约定。
+- [ ] 文档注释中的代码示例已执行，并产生所述输出。
+- [ ] 生成文件与引入文件是重新生成的，而不是手工编辑的。
+- [ ] 被重构移动或删除的注释没有留下孤立或过时的引用。
+- [ ] 文档构建、doctest 与注释 linter 通过。
+- [ ] 与独立文档重复的注释改为链接，而不是复制。
+- [ ] diff 中的每个行为变更都包含对应的注释更新。
 
-## Examples
+## 示例
 
 <example>
-Doc comment for a public function:
-`"""Charge the invoice and return the payment id; raise PaymentDeclinedError when the gateway declines."""`
-Add `Args:` and `Raises:` sections when the project uses Google style, and never repeat type hints in prose.
-The comment states both the successful result and the failure a caller must handle; the body does not repeat it.
+为公开函数写文档注释：
+
+```python
+"""Charge the invoice and return the payment id; raise PaymentDeclinedError when the gateway declines."""
+```
+
+项目使用 Google 风格时补上 `Args:` 与 `Raises:` 小节，绝不在正文里重复类型提示。
+该注释同时说明成功结果与调用方必须处理的失败；函数体不再重复。
+
 </example>
 
 <example>
-Inline why above a non-obvious statement:
+在不显而易见的语句上方写行内理由：
 `# Sort by created_at, not id: imports can insert older rows after the initial load.`
-Write it directly above the sort call; if the comparator name already says this, delete the comment.
-One idea per comment; a second reason gets its own line and its own review.
+把它直接写在排序调用上方；如果比较器名称已经说明这一点，就删掉注释。
+每条注释一个想法；第二个理由单独一行、单独审查。
 </example>
 
 <example>
-Concurrency warning on a lock-free read:
-`// WARNING: the snapshot may be stale if a writer commits; take the write lock before comparing versions (#412).`
-State the condition, the consequence, and the required action in that order, and link the full history to the
-issue. Never bury a hazard inside a paragraph of description.
+对无锁读取写并发警告：
+
+```text
+// WARNING: the snapshot may be stale if a writer commits; take the write lock before comparing versions (#412).
+```
+
+按条件、后果、必需动作的顺序说明，并把完整历史链接到 issue。绝不要把隐患埋在一段描述里。
+
 </example>
 
 <example>
-Marker with an owner and a removal trigger:
+带负责人与移除触发条件的标记：
 `// TODO(maria): drop the retry shim when gateway v2 is the only client (#512, target v2.4).`
-A bare `// TODO: fix this` fails review; work that is not tracked does not stay in the code.
-The issue number and version make the marker removable by someone who is not its author.
+裸的 `// TODO: fix this` 通不过审查；未被跟踪的工作不会留在代码里。
+issue 编号与版本让不是作者的人也能移除该标记。
 </example>
 
 <example>
-Stale doc comment repair:
-The comment says `Return the cached user or None`, but the function now raises `UserNotFoundError`.
-Rewrite the contract in the same change, update the caller comment that still promises null, and fix the doctest
-that asserts `is None`. Search the repository for the old promise; a behavior change usually leaves more than one
-stale comment.
+修复过时的文档注释：
+注释写着 `Return the cached user or None`，但函数现在会抛出 `UserNotFoundError`。
+在同一次变更中重写契约，更新仍然承诺 null 的调用方注释，并修正断言 `is None` 的 doctest。
+在仓库中搜索旧的承诺；一次行为变更通常留下不止一条过时注释。
 </example>
 
-## References
+## 参考资料
 
-Read [references/dimensions.md](references/dimensions.md) for the full rule set by comment type and hazard, and
-[references/languages.md](references/languages.md) for exact syntax, doc tools, and marker conventions per
-language. Read both before establishing a project's comment policy; the comment linter is configured under
-code-style-conventions. During routine work, read the dimension that applies and the language row that applies. When
-a reference file disagrees with this file, the language file wins for syntax and the dimension file wins for the rule;
-report the conflict instead of blending both.
+按注释类型与隐患分类的完整规则集见 [references/dimensions.md](references/dimensions.md)，每种语言的精确
+语法、文档工具与标记约定见 [references/languages.md](references/languages.md)。制定项目的注释策略之前
+先读这两份文件；注释 linter 在 code-style-conventions 下配置。日常工作中，读适用的维度与适用的语言行。
+参考文件与本文件不一致时，语法以语言文件为准，规则以维度文件为准；报告冲突，而不是把两者混在一起。
