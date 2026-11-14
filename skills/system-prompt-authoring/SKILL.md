@@ -23,6 +23,8 @@ argument-hint: '<目标文件>'
 - 必需文件的存在与元数据：`repository-governance-conventions`。
 - 凭据与机密：`security-compliance-conventions`。
 - 门禁与 CI：`testing-and-quality-conventions` 与 `release-operations-conventions`。
+- 一次性或产品提示词（非常驻指令）：`prompt-authoring`。
+- skill 包（SKILL.md 及其 references/scripts）的结构与打包：`skill-authoring`。
 
 ## 流程
 
@@ -164,11 +166,11 @@ python3 <skill-dir>/scripts/check.py --strict AGENTS.md
 `--strict` 下，任何警告都会使运行失败；必须在源头消除（对已记录的误报，改造该写法或修改校验脚本），因为
 只记录解释并不会改变退出码。
 
-脚本依赖 `markdown-it-py>=3`；缺失时脚本报错并打印安装命令，不会自动安装。脚本自身的测试使用标准库
+脚本依赖 `markdown-it-py==4.2.0`；缺失时脚本报错并打印安装命令，不会自动安装。脚本自身的测试使用标准库
 unittest：
 
 ```bash
-python3 -m unittest discover -s <skill-dir>/scripts
+python3 -B -m unittest discover -s tests/skill -p 'test_*.py'
 ```
 
 ### 规则

@@ -32,6 +32,9 @@ argument-hint: '[路径或文档类型]'
   `release-operations-conventions`；本 skill 负责要校验哪些链接、示例与页面。
 - 源代码注释、docstring 与文档注释归 `comment-conventions`；由文档注释生成的参考页，结构取自本 skill，
   文笔取自该 skill。
+- 常驻指令文件（AGENTS.md、CLAUDE.md、QWEN.md 及其软链目标）的结构与条款归 `system-prompt-authoring`；
+  本 skill 只负责普通项目文档。本仓库根 `AGENTS.md` 指向 `CONTRIBUTING.md`，同一文件同时充当指令入口
+  与项目维护说明，边界以 `system-prompt-authoring` 为准。
 - 生成的文档、第三方引入文档与复制的第三方指南不适用本 skill。绝不要手工编辑生成产物，保留生成标记，
   并在页面或索引中记录上游来源。
 - 每项事实只保留一个权威归属。其他页面链接到该归属；第二份副本即使仍然准确也是缺陷，因为第一次编辑

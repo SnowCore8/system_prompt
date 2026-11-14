@@ -1,5 +1,7 @@
 # 用户全局约束：DeepSeek Harness bundle
 
+维护者：SnowCore8；何时阅读：安装或排查本 bundle 时。
+
 安装到 profile 后，以 skill 提供者形式提供十三个通用规范 skill。
 
 ## 结构

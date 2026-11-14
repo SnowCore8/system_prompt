@@ -15,7 +15,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from urllib.parse import unquote
 
-DEPENDENCY = "markdown-it-py==4.2.0"
+DEPENDENCY = "markdown-it-py==4.2.0"  # 与仓库根 requirements-dev.txt 保持一致
 
 ERROR = "错误"
 WARNING = "警告"

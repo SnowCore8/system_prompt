@@ -1,5 +1,7 @@
 # 用户全局约束：Qoder 插件
 
+维护者：SnowCore8；何时阅读：安装或排查本插件时。
+
 安装后由 `SessionStart` hook 注入约束全文，并在 `SessionStart` 与 `UserPromptSubmit`
 注入当前时间；已经通过规则或 `AGENTS.md` 加载同一份约束时自动跳过。
 
