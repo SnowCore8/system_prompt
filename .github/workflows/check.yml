@@ -12,14 +12,24 @@ jobs:
   check:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      # fetch-depth 0：gitleaks 需要完整历史做历史机密扫描。
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262  # v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065  # v5
         with:
           python-version: '3.12'
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020  # v4
+        with:
+          node-version: '20'
       - name: 安装校验依赖
         run: python3 -m pip install -r requirements-dev.txt
       - name: 确认 shellcheck 可用
         run: shellcheck --version
+      - name: 机密扫描（gitleaks，含历史）
+        run: |
+          curl -fsSL https://github.com/gitleaks/gitleaks/releases/download/v8.30.1/gitleaks_8.30.1_linux_x64.tar.gz | tar xz gitleaks
+          ./gitleaks detect --no-banner --source .
       # qoderclicn（Qoder CLI CN）不在 runner 镜像内，插件校验段会跳过；
       # 发布前必须在装有 qoderclicn 的机器上运行 scripts/dist.sh。
       - name: 全量校验

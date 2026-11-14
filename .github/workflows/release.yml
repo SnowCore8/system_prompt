@@ -11,10 +11,10 @@ jobs:
   release:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262  # v4
         with:
           fetch-depth: 0
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065  # v5
         with:
           python-version: '3.12'
       - name: 安装校验依赖
@@ -42,7 +42,7 @@ jobs:
         run: ./scripts/dist.sh --no-validate --require-tag
       - name: 物化 DSH 包
         run: scripts/materialize.sh dsh /tmp/dsh-package
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020  # v4
         with:
           node-version: '20'
           registry-url: 'https://registry.npmjs.org'
@@ -51,6 +51,12 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: npm publish --access public
+      - name: 生成 SBOM
+        uses: anchore/sbom-action@e22c389904149dbc22b58101806040fa8d37a610  # v0
+        with:
+          path: ./
+          format: spdx-json
+          output-file: sbom.spdx.json
       - name: 发布 Release
         env:
           GH_TOKEN: ${{ github.token }}
@@ -58,5 +64,7 @@ jobs:
           gh release create "$GITHUB_REF_NAME" \
             global-user-constraints-*.zip \
             global-user-constraints-*.sha256 \
+            THIRD-PARTY-NOTICES.md \
+            sbom.spdx.json \
             --title "$GITHUB_REF_NAME" \
             --generate-notes
