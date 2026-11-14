@@ -1,1 +1,1 @@
-rules/global-user-constraints.zh-CN.md
+rules/global-user-constraints.md
