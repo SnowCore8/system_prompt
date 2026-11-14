@@ -353,7 +353,7 @@ DSH 里「插件」是 TypeScript 模块，导出 `apply(ctx)`；可分发的安
 
 本仓库按上文的规则整改后，各工具的项目级入口如下：
 
-- Qwen Code：`.qwen/rules/global-user-constraints.md`。该规则没有 `paths:`，属 baseline，
+- Qwen Code：`.qwen/rules`（目录软链到 `rules/`）。其中的规则没有 `paths:`，属 baseline，
   首个请求进入 system prompt；`.qwen/AGENTS.md` 会被 Qwen 忽略，因此不再提供。
 - Qoder：项目级 `.qoder/rules`，软链指向根级 `rules/`；用户级另按插件 README 复制到
   `~/.qoder-cn/rules`（国际版 `~/.qoder/rules`）。`.qoder-cn` 与 `.qoder/plugins` 在项目级

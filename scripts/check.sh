@@ -154,14 +154,13 @@ fi
 if [ -e .qwen/AGENTS.md ]; then
   fail "Qwen: 不读取项目级 .qwen/AGENTS.md，应删除"
 fi
-if [ ! -d .qwen/rules ] || [ -L .qwen/rules ]; then
-  fail "Qwen: .qwen/rules 应为普通目录"
-fi
-if [ -L .qwen/rules/global-user-constraints.md ] \
-  && [ "$(readlink -f .qwen/rules/global-user-constraints.md)" = "$REPO_ROOT/rules/global-user-constraints.md" ]; then
+if [ -L .qwen/rules ] && [ "$(readlink -f .qwen/rules)" = "$REPO_ROOT/rules" ]; then
   :
 else
-  fail "Qwen: .qwen/rules/global-user-constraints.md 未指向约束正文"
+  fail "Qwen: .qwen/rules 未指向 rules/"
+fi
+if [ ! -f .qwen/rules/global-user-constraints.md ]; then
+  fail "Qwen: .qwen/rules 下缺少约束正文"
 fi
 if head -n 10 rules/global-user-constraints.md | grep -q '^paths:'; then
   fail "Qwen: 约束正文 front matter 含 paths，会变成条件规则"

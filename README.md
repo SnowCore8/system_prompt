@@ -3,7 +3,7 @@
 本仓库维护用户全局约束与十一个 skill（`system-prompt-authoring`，以及命名、注释、文档、代码风格、接口与数据、测试与质量、版本控制与协作、发布与运维、安全与合规、仓库治理十项通用规范），以及打包它们的用户级 Qoder 插件。约束正文与插件源是唯一真源，不另建副本；规范正文只有中文一份。
 改约束、skill 或插件前先读本文件。维护者：仓库所有者。
 插件的使用者文档（规则激活、hook、边界）见插件 [README](plugins/global-user-constraints/README.md)。
-DSH 从仓库根 `AGENTS.md` 加载本仓库维护约定；Qwen Code 从 `.qwen/rules/global-user-constraints.md` 加载约束正文；Qoder 项目级从 `.qoder/rules/` 读取规则，用户级按插件 README 的「规则激活」安装。DSH 另从 `.dsh/skills/` 发现 skill。
+DSH 从仓库根 `AGENTS.md` 加载本仓库维护约定；Qwen Code 从 `.qwen/rules/`（软链到 `rules/`）加载约束正文；Qoder 项目级从 `.qoder/rules/` 读取规则，用户级按插件 README 的「规则激活」安装。DSH 另从 `.dsh/skills/` 发现 skill。
 
 ## 目录
 
@@ -14,7 +14,7 @@ DSH 从仓库根 `AGENTS.md` 加载本仓库维护约定；Qwen Code 从 `.qwen/
 | `rules/global-user-constraints.md` | 用户全局约束正文（唯一规范源） |
 | `AGENTS.md` | 项目维护约定入口，软链指向 `CONTRIBUTING.md` |
 | `CONTRIBUTING.md` | 本仓库项目维护约定 |
-| `.qwen/rules/global-user-constraints.md` | Qwen Code 项目级规则入口，软链指向约束正文；无 `paths:`，首请求生效 |
+| `.qwen/rules` | Qwen Code 项目级规则目录，软链指向根级 `rules/`；规则无 `paths:`，首请求生效 |
 | `.dsh/skills/` | DSH 项目级 skill 入口，软链到插件内十一个 skill |
 | `.qoder/` | Qoder 项目级配置目录；`rules` 软链指向根级 `rules/` |
 | `scripts/` | `dist.sh` 打包；`check.sh` 全量校验 |
@@ -25,7 +25,7 @@ DSH 从仓库根 `AGENTS.md` 加载本仓库维护约定；Qwen Code 从 `.qwen/
 1. 改约束：编辑 `rules/global-user-constraints.md`（唯一规范源）。
 2. 改 skill：编辑 `plugins/global-user-constraints/skills/` 下对应的 skill。
 3. 只改软链目标，不另建副本。
-4. 根 `AGENTS.md` 是项目维护约定入口（软链 `CONTRIBUTING.md`）；Qwen 的约束入口是 `.qwen/rules/global-user-constraints.md`。
+4. 根 `AGENTS.md` 是项目维护约定入口（软链 `CONTRIBUTING.md`）；Qwen 的约束入口是 `.qwen/rules/`（软链 `rules/`）。
 
 ## 软链约定
 
@@ -42,12 +42,12 @@ DSH 从仓库根 `AGENTS.md` 加载本仓库维护约定；Qwen Code 从 `.qwen/
 
 ## Qwen Code 适配
 
-- 入口：Qwen Code 的项目级规则目录是 `.qwen/rules/`；`.qwen/rules/global-user-constraints.md` 用相对软链指向
-  `rules/global-user-constraints.md`。该规则没有 `paths:`，属 baseline，首个请求即进入 system prompt。
+- 入口：Qwen Code 的项目级规则目录是 `.qwen/rules/`，用相对软链指向根级 `rules/`；其中的
+  `global-user-constraints.md` 没有 `paths:`，属 baseline，首个请求即进入 system prompt。
 - 不提供 `.qwen/AGENTS.md`：Qwen 只在每级目录查找 `QWEN.md`/`AGENTS.md` 文件名，不进入 `.qwen/` 子目录再找，
   项目级 `.qwen/AGENTS.md` 不会被读取。
-- 校验：`scripts/check.sh` 的「Qwen 适配」段检查 `.qwen` 与 `.qwen/rules` 为普通目录、规则软链指向约束正文、
-  `.qwen/AGENTS.md` 不存在，且约束正文 front matter 不含 `paths:`。
+- 校验：`scripts/check.sh` 的「Qwen 适配」段检查 `.qwen` 为普通目录、`.qwen/rules` 软链指向 `rules/` 且含
+  约束正文、`.qwen/AGENTS.md` 不存在，且约束正文 front matter 不含 `paths:`。
 
 ## Qoder 适配
 

@@ -2,7 +2,7 @@
 
 本文件是本仓库的项目维护约定，根 `AGENTS.md` 软链指向本文件，供 DSH 等工作区指令消费者加载。
 用户全局约束在 `rules/global-user-constraints.md`，那是仓库的分发内容：Qwen Code 通过
-`.qwen/rules/global-user-constraints.md` 读取项目级规则，Qoder 项目级通过 `.qoder/rules` 读取、
+`.qwen/rules/` 读取项目级规则，Qoder 项目级通过 `.qoder/rules` 读取、
 用户级按插件 README 激活，均不作为本仓库的贡献规则。
 
 ## 范围与优先级
