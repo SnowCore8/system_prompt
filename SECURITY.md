@@ -5,13 +5,14 @@ skill 内的 Python 校验脚本与 `scripts/` 下的发布/校验脚本。
 
 ## 支持的版本
 
-安全修复只进入 `master` 最新提交。插件版本由改动插件的提交数推导（见 README「打包」），
+安全修复只进入 `master` 最新提交，并按 SemVer 发新的 patch 版本（见 README「打包」）。
 仓库不维护旧版本分支，也不为历史版本单独回补。
 
 ## 报告漏洞
 
-仓库接入 GitHub 远端后，使用仓库页 Security → Report a vulnerability 的私下漏洞报告，
-不要开公开 issue。接入前如需报告，请通过维护者已知的私有渠道联系，不要公开披露。
+首选 GitHub 的私下漏洞报告：仓库页 Security → Report a vulnerability。私有仓库需要
+GitHub Advanced Security 才有该入口；入口不可用时直接邮件联系维护者 snowcore8@gmail.com，
+不要开公开 issue，也不要在其他公开渠道披露细节。
 报告请包含：
 
 - 受影响的文件或路径；

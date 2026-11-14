@@ -17,6 +17,12 @@
 - 发布脚本：`--require-tag` 校验 tag 与 manifest 版本，`--no-validate` 供没有 `qoderclicn` 的 CI 使用；
   构建失败不落制品。
 
+**限制**
+
+- 仓库为私有仓库且未使用 GitHub Pro：经典分支保护与仓库规则集不可用（API 返回 403），
+  私有漏洞报告需要 GitHub Advanced Security；`SECURITY.md` 提供邮箱兜底，分支约束暂由 `check` 工作流、
+  CODEOWNERS 与 PR 模板承担。
+
 ## 2026-11-14
 
 **新增**

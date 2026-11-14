@@ -111,13 +111,14 @@ qoderclicn --cwd "$TMP" plugins list --json
 - `release`：推送 `v*` tag 时重跑校验、核对 tag 与 manifest 版本，构建 zip 与 SHA256 并挂到 Release；
   该工作流没有 `qoderclicn`，用 `--no-validate` 换取可重复构建，插件校验在本地发布前完成。
 - 依赖更新由 Dependabot 每周检查 pip 与 GitHub Actions。
-- CI 与本地跑的是同一套校验，差异只在 `qoderclicn` 缺失时跳过插件校验；分支保护与 `.github/CODEOWNERS`
-  在接入 GitHub 远端后启用，保护项见 [GOVERNANCE.md](GOVERNANCE.md)。
+- CI 与本地跑的是同一套校验，差异只在 `qoderclicn` 缺失时跳过插件校验；`.github/CODEOWNERS` 在合并
+  请求上生效。分支保护在私有仓库免费计划下不可用（需 GitHub Pro），升级后按 GOVERNANCE 的保护项启用。
 
 ## 安全
 
-漏洞报告走 GitHub 私下漏洞报告，不接受公开 issue 披露；支持版本、处理流程与范围见
-[SECURITY.md](SECURITY.md)。仓库不保存任何密钥或个人数据，`~/.qwen/settings.json` 等本机配置不在版本库内。
+漏洞报告首选 GitHub 私下漏洞报告，入口不可用时邮件联系维护者，不接受公开 issue 披露；支持版本、
+处理流程、范围与渠道可用性见 [SECURITY.md](SECURITY.md)。仓库不保存任何密钥或个人数据，
+`~/.qwen/settings.json` 等本机配置不在版本库内。
 
 ## 许可证
 
@@ -127,4 +128,5 @@ qoderclicn --cwd "$TMP" plugins list --json
 
 ## 变更日志
 
-可观察变更按日期记录在 [CHANGELOG.md](CHANGELOG.md)，版本号由插件提交数推导，不构成发布边界。
+可观察变更按版本记录在 [CHANGELOG.md](CHANGELOG.md)；版本采用 SemVer，发布点为 tag `v<version>`，
+对应的 zip 与 SHA256 挂在 GitHub Release。
