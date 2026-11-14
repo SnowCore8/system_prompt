@@ -1,207 +1,197 @@
-# Security and Compliance Checklists
+# 安全与合规检查清单
 
-Use these worksheets and runbooks with `SKILL.md` and `references/dimensions.md`. Each section is operational: fill
-it in during design or review, attach the completed record to the change or release, and keep it with the project.
-Replace example values with project values, and never record a real secret or real personal data in a completed
-checklist; use fake values such as `security@example.test.invalid` and `example.test.invalid`.
+把这些工作表与运行手册同 `SKILL.md` 和 `references/dimensions.md` 配合使用。每一节都是可操作的：在设计
+或审查时填写，把填好的记录附到变更或发布上，并与项目一起保存。用项目值替换示例值，绝不在填好的检查
+清单中记录真实机密或个人数据；使用 `security@example.test.invalid` 和 `example.test.invalid` 之类的假值。
 
-## 1. Lightweight Threat-Model Worksheet
+## 1. 轻量威胁模型工作表
 
-Fill one row per asset and trust boundary. The result is a one-page note, not a catalogue; time-box the exercise to
-30-60 minutes and record residual risk instead of pretending it is zero.
+每个资产和信任边界填一行。结果是一页说明，不是一份目录；把练习限制在 30-60 分钟内，并记录残余风险，
+而不是假装它为零。
 
-| Field | Prompt | Example |
+| 字段 | 提示 | 示例 |
 |---|---|---|
-| Feature and owner | What is being built, and who owns the model? | Order export, billing team |
-| Assets | What does the feature protect or expose, and what is each worth? | Customer addresses, export files, API token |
-| Entry points | How does untrusted input reach the feature? | `POST /v1/exports`, webhook callback, file upload |
-| Trust boundaries | Where does data or control pass between components with different trust? | Browser to API, API to object storage, worker to mail provider |
-| Abuse cases | How would an attacker misuse the feature, and to what effect? | Read another tenant's export, cause a cost spike, inject a formula into a CSV |
-| Existing controls | What already blocks each abuse case? | Tenant filter in the query, per-tenant rate limit, CSV formula escaping |
-| Data classes | Which data classes does the feature store or transmit, and which is the highest? | Confidential addresses, internal metrics |
-| Dependencies and processors | Which third-party services, packages, or processors participate? | Object storage, CSV library, mail provider |
-| Gaps and residual risk | What remains, and who accepts it? | No per-object audit log; accepted by the billing lead until Q3 |
-| Decision | Ship, ship with conditions, or block; what condition applies? | Ship with the audit log before public launch |
-| Review date | When is the model revisited? | At the next trust-boundary change or in 6 months |
+| 功能与负责人 | 正在构建什么，谁负责该模型？ | 订单导出，计费团队 |
+| 资产 | 该功能保护或暴露什么，每项价值如何？ | 客户地址、导出文件、API 令牌 |
+| 入口点 | 不可信输入如何到达该功能？ | `POST /v1/exports`、webhook 回调、文件上传 |
+| 信任边界 | 数据或控制权在哪里于不同信任级别的组件之间传递？ | 浏览器到 API、API 到对象存储、worker 到邮件服务商 |
+| 滥用场景 | 攻击者会如何滥用该功能，造成什么效果？ | 读取另一租户的导出、造成成本激增、向 CSV 注入公式 |
+| 现有控制措施 | 已经有什么在阻止每个滥用场景？ | 查询中的租户过滤、按租户的速率限制、CSV 公式转义 |
+| 数据类别 | 该功能存储或传输哪些数据类别，其中最高是哪一级？ | 保密级地址、内部指标 |
+| 依赖与处理者 | 涉及哪些第三方服务、包或处理者？ | 对象存储、CSV 库、邮件服务商 |
+| 缺口与残余风险 | 还剩下什么，由谁接受？ | 没有按对象的审计日志；由计费负责人接受，直到第三季度 |
+| 决定 | 发布、有条件发布还是阻塞；适用什么条件？ | 在公开发布前补上审计日志再发布 |
+| 审查日期 | 何时重新审视该模型？ | 下次信任边界变更时，或 6 个月后 |
 
-A model is complete when every asset and abuse case names a control, every gap has an owner and a date, and the
-decision is recorded with the feature design. A model that lists generic risks without naming this feature's data
-and entry points is a template, not a review.
+当每个资产和滥用场景都对应到控制措施、每个缺口都有负责人和日期、决定与功能设计一起记录时，模型才算
+完整。只列出通用风险而不点名本功能的数据与入口点的模型只是模板，不是审查。
 
-## 2. Security Review Trigger Checklist
+## 2. 安全审查触发条件清单
 
-Route the change to the security reviewer when any line is true. When no line is true, record that this list was
-checked in the change description.
+任一条为真时，把变更分派给安全审查人。所有条目都不成立时，在变更描述中记录已核对本清单。
 
-- [ ] Authentication, session handling, password reset, or token issuance changes.
-- [ ] The authorization model, roles, scopes, or tenant isolation changes.
-- [ ] Cryptography, key management, hashing, or random-number use changes.
-- [ ] A new external interface, webhook, public endpoint, or callback exists.
-- [ ] A new processor, SDK, or hosted service receives project data.
-- [ ] Payment, pricing, billing, or financial calculation logic changes.
-- [ ] File upload, file parsing, archive extraction, or user-controlled URL fetching is added.
-- [ ] Personal-data fields, analytics events, or consent behavior change.
-- [ ] Administrative tooling, impersonation, or break-glass access is added or changed.
-- [ ] Infrastructure identity, network rules, IAM policy, or secrets management changes.
-- [ ] Deserialization, template rendering, dynamic code execution, or shell invocation changes.
-- [ ] A new native dependency, install script, or build-time executable enters the supply chain.
-- [ ] Distribution, licensing, notice, or export classification changes.
-- [ ] An open security finding or disclosed vulnerability affects the change.
-- [ ] The change touches production data, a backup restore path, or a deletion job.
-- [ ] A new data export, bulk download, or report exposes records beyond their current audience.
-- [ ] An upgrade changes native code, install behavior, or the effective license of a dependency.
+- [ ] 认证、会话处理、密码重置或令牌签发发生变更。
+- [ ] 授权模型、角色、范围或租户隔离发生变更。
+- [ ] 密码学、密钥管理、哈希或随机数使用发生变更。
+- [ ] 出现新的外部接口、webhook、公共端点或回调。
+- [ ] 新的处理者、SDK 或托管服务接收项目数据。
+- [ ] 支付、定价、计费或财务计算逻辑发生变更。
+- [ ] 新增文件上传、文件解析、归档解压或用户可控的 URL 抓取。
+- [ ] 个人数据字段、分析事件或同意行为发生变更。
+- [ ] 新增或变更管理工具、身份冒充或紧急访问。
+- [ ] 基础设施身份、网络规则、IAM 策略或机密管理发生变更。
+- [ ] 反序列化、模板渲染、动态代码执行或 shell 调用发生变更。
+- [ ] 新的原生依赖、安装脚本或构建时可执行文件进入供应链。
+- [ ] 分发、许可证、声明或出口分类发生变更。
+- [ ] 未关闭的安全发现项或已披露漏洞影响本次变更。
+- [ ] 变更触及生产数据、备份恢复路径或删除任务。
+- [ ] 新的数据导出、批量下载或报告使记录超出当前受众范围。
+- [ ] 升级改变了原生代码、安装行为或依赖的实际许可证。
 
-## 3. Secret Lifecycle Register
+## 3. 机密生命周期登记册
 
-Record every secret in one register and review it quarterly. The owner is a person or a team, never a ticket; a
-secret without a next rotation date is overdue by default.
+把所有机密记录在同一个登记册中，并每季度审查。负责人是人或团队，绝不能是工单；没有下次轮换日期的
+机密默认已逾期。
 
-| Type | Storage | Rotation | Owner |
+| 类型 | 存储 | 轮换 | 负责人 |
 |---|---|---|---|
-| CI deploy token | CI secret store, environment-scoped | 90 days, and immediately after exposure | Release owner |
-| Service API key | Secret manager, injected at runtime | 180 days, with two-key overlap | Service owner |
-| Database credential | Secret manager or dynamic database credentials | 90 days | Data owner |
-| Signing key | KMS or HSM with key versioning | 365 days, with rollover overlap | Release owner |
-| Encryption key | KMS with rotation enabled | Annual, with a re-encryption plan for old data | Security owner |
-| OAuth client secret | Secret manager | 180 days | Identity owner |
-| Developer access token | Identity provider, short-lived | 30 days maximum, revoked on role change | Identity team |
-| Third-party integration key | Secret manager | 180 days | Integration owner |
-| Webhook signing secret | Secret manager, two active values during rollover | 180 days | Endpoint owner |
-| Local development secret | Git-ignored local file or developer vault | 90 days, never shared | Each developer |
+| CI 部署令牌 | CI 机密存储，按环境限定范围 | 90 天，暴露后立即轮换 | 发布负责人 |
+| 服务 API 密钥 | 机密管理器，运行时注入 | 180 天，双密钥重叠 | 服务负责人 |
+| 数据库凭据 | 机密管理器或动态数据库凭据 | 90 天 | 数据负责人 |
+| 签名密钥 | 带密钥版本管理的 KMS 或 HSM | 365 天，带轮换重叠期 | 发布负责人 |
+| 加密密钥 | 启用轮换的 KMS | 每年，并针对旧数据制定重新加密计划 | 安全负责人 |
+| OAuth 客户端机密 | 机密管理器 | 180 天 | 身份负责人 |
+| 开发者访问令牌 | 身份提供方，短期有效 | 最长 30 天，角色变更时吊销 | 身份团队 |
+| 第三方集成密钥 | 机密管理器 | 180 天 | 集成负责人 |
+| webhook 签名机密 | 机密管理器，轮换期间两个有效值 | 180 天 | 端点负责人 |
+| 本地开发机密 | 被 Git 忽略的本地文件或开发者 vault | 90 天，绝不共享 | 每位开发者 |
 
-- Retire a credential only after traffic on the new value is verified and no audit log shows the old value in use.
-- A secret that is not in the register has no rotation date; register it or remove it.
-- Rotate any credential exposed in a log, artifact, screenshot, or ticket, even when the exposure looks harmless.
-- Development and test credentials never carry production scopes or production data.
+- 只有在验证新值上的流量、且审计日志中不再显示旧值仍在使用之后，才能停用凭据。
+- 不在登记册中的机密没有轮换日期；登记它或移除它。
+- 任何在日志、制品、截图或工单中暴露的凭据都要轮换，即使暴露看起来无害。
+- 开发与测试凭据绝不带有生产范围或生产数据。
 
-## 4. Dependency and Supply-Chain Control Checklist
+## 4. 依赖与供应链控制清单
 
-Apply this list to every new dependency and to every upgrade that changes a maintained version; attach the answers
-to the dependency review.
+对每个新依赖以及每个改变受维护版本的升级都应用本清单；把答案附到依赖审查上。
 
-- [ ] The package name and source are verified against the intended project, not a lookalike.
-- [ ] Maintainers and release history show active, credible ownership.
-- [ ] The package is fetched from the configured registry and pinned in the lockfile with a hash.
-- [ ] Direct and transitive dependency counts are acceptable for the value provided.
-- [ ] No install script, post-install hook, or build-time download runs unless reviewed and approved.
-- [ ] The license passes the gate, including transitive components.
-- [ ] No known critical or high vulnerability lacks a documented mitigation.
-- [ ] The version is supported upstream and not end-of-life.
-- [ ] Native code, binaries, and prebuilt artifacts are identified and scanned.
-- [ ] The build produces provenance or a signed artifact where the ecosystem supports it.
-- [ ] Automated update pull requests are enabled and merged after tests.
-- [ ] Container base images are minimal, pinned by digest, and scanned.
-- [ ] Unused dependencies are removed rather than left installed.
-- [ ] A private registry allowlist blocks packages outside the approved set.
-- [ ] The SBOM is regenerated after the change and diffed against the previous release.
+- [ ] 包名与来源已对照预期项目核实，确认不是相似的仿冒包。
+- [ ] 维护者与发布历史显示项目处于活跃且可信的维护之下。
+- [ ] 包从配置的包仓库获取，并以哈希固定在锁文件中。
+- [ ] 直接与传递依赖数量相对于所提供的价值可以接受。
+- [ ] 除非经过审查批准，否则不运行安装脚本、post-install hook 或构建时下载。
+- [ ] 许可证通过门禁，包括传递组件。
+- [ ] 没有已知的严重或高危漏洞缺少书面缓解措施。
+- [ ] 该版本仍受上游支持，且未停止维护。
+- [ ] 原生代码、二进制文件和预构建制品已识别并扫描。
+- [ ] 在生态支持时，构建会产出来源证明或签名制品。
+- [ ] 自动更新拉取请求已启用，并在测试后合并。
+- [ ] 容器基础镜像最小化、按摘要固定并已扫描。
+- [ ] 未使用的依赖已删除，而不是保留安装状态。
+- [ ] 私有包仓库允许列表会阻止已批准集合之外的包。
+- [ ] 变更后重新生成 SBOM，并与上一发布版本做差异对比。
 
-## 5. License Policy Categories
+## 5. 许可证策略类别
 
-Record the category and the action in the license inventory. A category is not a legal opinion; counsel approves an
-exception and the owner records it.
+在许可证清单中记录类别与动作。类别不是法律意见；例外由法务批准，由负责人记录。
 
-| Category | Examples | Action |
+| 类别 | 示例 | 动作 |
 |---|---|---|
-| Allowed | MIT, BSD-2-Clause, BSD-3-Clause, ISC, 0BSD, Apache-2.0 | Use it; preserve the license text, copyright lines, and any upstream `NOTICE`. |
-| Review | MPL-2.0, LGPL-2.1, LGPL-3.0, EPL-2.0, CDDL-1.0, public-domain dedications with unclear patent terms | Route to the license owner and counsel; record linking, modification, and notice facts before approval. |
-| Forbidden | GPL-2.0 and GPL-3.0 in distributed code, AGPL-3.0 also for network-served code, SSPL, BUSL-1.1, Commons Clause, non-commercial-only terms, no license | Do not add it; replace the dependency or obtain a written counsel-approved exception with an owner and expiry. |
-| Unknown | Custom terms, copied source with no header, a version-pinned fork | Treat it as forbidden until a human identifies the terms and records the decision. |
+| 允许 | MIT、BSD-2-Clause、BSD-3-Clause、ISC、0BSD、Apache-2.0 | 可以使用；保留许可证文本、版权行和任何上游 `NOTICE`。 |
+| 审查 | MPL-2.0、LGPL-2.1、LGPL-3.0、EPL-2.0、CDDL-1.0、专利条款不清晰的公有领域声明 | 分派给许可证负责人和法务；在批准前记录链接方式、修改情况和声明事实。 |
+| 禁止 | 分发代码中的 GPL-2.0 和 GPL-3.0、网络服务代码中的 AGPL-3.0、SSPL、BUSL-1.1、Commons Clause、仅限非商业使用的条款、无许可证 | 不要添加；替换该依赖，或取得经法务批准的书面例外，注明负责人和到期日。 |
+| 未知 | 自定义条款、没有许可证头的复制源码、固定版本的 fork | 在人工识别条款并记录决定之前，按禁止处理。 |
 
-- Record the license actually chosen for a dual-licensed package, not both licenses.
-- Keep the upstream license file with vendored code and record every local patch.
-- Check documentation and asset licenses separately from code licenses.
-- Treat a license change in an existing dependency as a new dependency review.
-- Share-alike content such as CC BY-SA is not merged into code without review; the obligation can reach the
-  combined work.
-- Generated clients and schemas from a third-party specification keep the upstream license and notice.
+- 双许可证包记录实际选择的那个许可证，而不是两个都记。
+- 内置代码要保留上游许可证文件，并记录每个本地补丁。
+- 文档与素材的许可证要与代码许可证分开检查。
+- 把现有依赖的许可证变更当作新依赖审查处理。
+- CC BY-SA 等相同方式共享内容未经审查不得并入代码；该义务可能覆盖组合作品。
+- 从第三方规范生成的客户端与 schema 保留上游许可证和声明。
 
-## 6. SBOM and Notice Checklist
+## 6. SBOM 与声明清单
 
-Generate both artifacts from the same resolved dependency graph; a hand-maintained list is stale before the release
-notes are written.
+从同一份已解析依赖图生成这两种制品；手工维护的列表在发布说明写好之前就已过时。
 
-- [ ] The SBOM is generated in CI from the dependency graph used to build the artifact.
-- [ ] Direct and transitive components include versions, package identifiers, licenses, and hashes.
-- [ ] Container base images and operating-system packages are included.
-- [ ] The SBOM format and specification version are recorded (SPDX or CycloneDX).
-- [ ] The SBOM is attached to the release and stored with the artifact, not only in CI logs.
-- [ ] The SBOM is diffed against the previous release and new components are reviewed.
-- [ ] The notice file lists every component whose license requires attribution.
-- [ ] Full license texts are included where required, and upstream `NOTICE` content is preserved.
-- [ ] The notice file ships at the distribution root and inside packaged artifacts.
-- [ ] The retention period is recorded and the SBOM is retrievable for every supported release.
-- [ ] The SBOM matches the artifact: spot-check three components against the installed versions.
-- [ ] The SBOM generator name and version are recorded with the release.
-- [ ] Component hashes are spot-checked against the lockfile entries that built the artifact.
-- [ ] Exceptions and review-category licenses link to their recorded approval.
+- [ ] SBOM 在 CI 中从构建制品所用的依赖图生成。
+- [ ] 直接与传递组件包含版本、包标识符、许可证和哈希。
+- [ ] 包含容器基础镜像和操作系统包。
+- [ ] 记录 SBOM 格式与规范版本（SPDX 或 CycloneDX）。
+- [ ] SBOM 附到发布上并与制品一起存储，而不只是放在 CI 日志中。
+- [ ] SBOM 与上一发布版本做差异对比，并审查新组件。
+- [ ] 声明文件列出许可证要求署名的每个组件。
+- [ ] 在需要处包含完整许可证文本，并保留上游 `NOTICE` 内容。
+- [ ] 声明文件随制品放在分发根目录和打包制品内部。
+- [ ] 记录保留期限，每个受支持的发布版本都能取回其 SBOM。
+- [ ] SBOM 与制品一致：抽查三个组件与已安装版本比对。
+- [ ] SBOM 生成器名称与版本随发布记录。
+- [ ] 组件哈希与构建该制品的锁文件条目抽查比对。
+- [ ] 例外和审查类许可证链接到其有记录的批准。
 
-## 7. PII Inventory and Privacy Review Worksheet
+## 7. PII 清单与隐私审查工作表
 
-Fill one row per data element and one pass per flow. If a field cannot complete the row, it is not ready for
-production.
+每个数据元素填一行，每条数据流转填一遍。如果某字段无法填完整行，它就不具备上生产的条件。
 
-| Field | Prompt | Example |
+| 字段 | 提示 | 示例 |
 |---|---|---|
-| Data element | What is collected, in what form, and at what granularity? | Customer email address, exact string |
-| Subject | Whose data is it, and can it include minors or employees? | End customers of business accounts |
-| Source | Where does it come from, and is the source authorized? | Checkout form, support import |
-| Purpose | Which named purpose requires it, and who owns that purpose? | Order receipt and support lookup, commerce team |
-| Systems and flows | Where is it stored, and which systems does it traverse? | Orders database, email processor, support tool |
-| Processors and region | Which vendors receive it, under which agreement and in which region? | Mail provider in the approved region |
-| Retention and deletion | How long is it kept, and what deletes it? | 24 months, nightly deletion job plus processor deletion |
-| Access | Which roles can read it, and is access logged? | Support read-only, audited |
-| Classification | Public, internal, confidential, or restricted? | Confidential |
-| Consent or lawful basis | What is the recorded basis, and who confirmed it? | Contract performance, confirmed by counsel |
-| Retention owner | Who runs the deletion, and where is the evidence it ran? | Data platform role, monthly job report |
+| 数据元素 | 收集什么，以什么形式，粒度如何？ | 客户电子邮箱地址，精确字符串 |
+| 数据主体 | 这是谁的数据，是否可能包括未成年人或员工？ | 企业账户的终端客户 |
+| 来源 | 数据来自哪里，来源是否获授权？ | 结算表单、客服导入 |
+| 用途 | 哪个明确用途需要它，谁负责该用途？ | 订单收据与客服查询，商务团队 |
+| 系统与流转 | 它存放在哪里，经过哪些系统？ | 订单数据库、邮件处理者、客服工具 |
+| 处理者与区域 | 哪些供应商接收它，依据哪份协议，位于哪个区域？ | 经批准区域内的邮件服务商 |
+| 保留与删除 | 保留多久，由什么删除？ | 24 个月，每夜删除任务加处理者删除 |
+| 访问 | 哪些角色可以读取，访问是否记录日志？ | 客服只读，经审计 |
+| 分级 | 公开、内部、保密还是受限？ | 保密 |
+| 同意或合法性依据 | 记录了哪项依据，由谁确认？ | 合同履行，由法务确认 |
+| 保留负责人 | 谁执行删除，任务已运行的证据在哪里？ | 数据平台角色，月度任务报告 |
 
-Review the completed inventory against this list before the change merges:
+在变更合并前，用以下清单审查填写好的数据清单：
 
-- [ ] The purpose is specific, and the data is not reused for an unrecorded purpose.
-- [ ] Collection is minimized: no field lacks a purpose, and no direct identifier can be replaced.
-- [ ] Consent, where required, is opt-in, versioned, and gated before collection starts.
-- [ ] The inventory row, flow map, and retention period exist before production traffic.
-- [ ] Processors and transfers have an agreement, a region, and a deletion commitment.
-- [ ] No personal data appears in logs, analytics properties, URLs, test fixtures, or screenshots.
-- [ ] A data subject request can be satisfied from the inventory, including processor copies.
+- [ ] 用途具体明确，且数据未被复用于未记录的用途。
+- [ ] 收集已最小化：没有字段缺少用途，且没有直接标识符可以替换。
+- [ ] 要求同意时，同意是选择加入、有版本记录，并在收集开始前设置门禁。
+- [ ] 清单行、流转图和保留期限在生产流量到达之前已经存在。
+- [ ] 处理者与传输有协议、区域和删除承诺。
+- [ ] 日志、分析属性、URL、测试夹具或截图中不出现个人数据。
+- [ ] 仅凭清单即可满足数据主体请求，包括处理者副本。
 
-## 8. Data Subject Request Runbook
+## 8. 数据主体请求运行手册
 
-Use the inventory as the search map. The adopted response target is 30 days or the statutory deadline counsel
-confirms, whichever is shorter; record the dates even when the request is refused.
+把清单当作检索图谱。采用的答复目标是 30 天或法务确认的法定期限，以较短者为准；即使请求被拒绝，也要
+记录日期。
 
-1. Log the request: date received, channel, requester, right requested, and the deadline.
-2. Verify identity with a method proportionate to the data; do not collect extra data to verify.
-3. Classify the request: access, correction, deletion, portability, objection, or restriction.
-4. Search every system in the inventory: primary stores, warehouses, logs, backups, and processors. Record each
-   system searched and each one excluded, with the reason.
-5. Apply legal holds and third-party rights; counsel decides when a record must be kept or withheld.
-6. Fulfil the request: export in the requested format, correct the record, or delete on the documented schedule.
-   Where deletion is refused, give the reason the law or a hold requires.
-7. Notify processors and confirm completion; record what was sent and when.
-8. Respond to the requester within the deadline and record the outcome, including any refusal and its reason.
+1. 登记请求：收到日期、渠道、请求者、所请求的权利和期限。
+2. 用与数据相称的方法核实身份；不要为核实而收集额外数据。
+3. 对请求分类：访问、更正、删除、可携带、反对或限制。
+4. 检索清单中的每个系统：主存储、数据仓库、日志、备份和处理者。记录每个已检索和每个被排除的系统
+   及原因。
+5. 应用法律保留和第三方权利；某条记录何时必须保留或拒绝提供，由法务决定。
+6. 履行请求：按请求的格式导出、更正记录，或按有记录的安排删除。拒绝删除时，给出法律或法律保留所
+   要求的理由。
+7. 通知处理者并确认完成；记录发送了什么以及何时发送。
+8. 在期限内答复请求者并记录结果，包括任何拒绝及其理由。
 
-## 9. Vulnerability Disclosure Runbook and Timeline
+## 9. 漏洞披露运行手册与时间线
 
-These are the commitments published in the `SECURITY.md` content. Put slack in the calendar, not in the table.
+这些是 `SECURITY.md` 内容中公布的承诺。把缓冲时间放进日历，而不是放进表格。
 
-| Stage | Deadline | Action | Owner |
+| 阶段 | 期限 | 动作 | 负责人 |
 |---|---|---|---|
-| Receipt | T+0 | Log the report and reply with the channel and the timeline. | Security contact |
-| Acknowledgement | 2 business days | Confirm receipt and name the person handling it. | Security contact |
-| Triage | 5 business days | Reproduce, scope versions, assign severity and owner, agree the next milestone. | Security reviewer |
-| Update | Every 10 business days | Send status, blockers, and any revised date. | Report owner |
-| Critical fix | 7 calendar days | Ship an out-of-band patch and backport to supported versions. | Engineering owner |
-| High fix | 30 calendar days | Ship in the next patch release. | Engineering owner |
-| Medium fix | 90 calendar days | Schedule within the release train. | Engineering owner |
-| Low fix | 180 calendar days | Bundle with other work. | Engineering owner |
-| Advisory | 2 business days after the fixed release | Publish the advisory, CVE identifier, affected and fixed versions, workaround, and credit. | Security owner |
-| Embargo end | Report date plus 90 calendar days | Publish, or extend only with the reporter's agreement and a recorded reason. | Security owner |
+| 接收 | T+0 | 登记报告，并回复渠道与时间线。 | 安全联系人 |
+| 确认收到 | 2 个工作日 | 确认收到，并说明处理人。 | 安全联系人 |
+| 初步分诊 | 5 个工作日 | 复现、确定影响版本、指定严重程度与负责人、商定下一个里程碑。 | 安全审查人 |
+| 更新 | 每 10 个工作日 | 发送状态、阻塞项和任何修订后的日期。 | 报告负责人 |
+| 严重漏洞修复 | 7 个自然日 | 发布计划外补丁，并回移植到支持的版本。 | 工程负责人 |
+| 高危漏洞修复 | 30 个自然日 | 在下一个补丁版本中发布。 | 工程负责人 |
+| 中危漏洞修复 | 90 个自然日 | 纳入发布计划。 | 工程负责人 |
+| 低危漏洞修复 | 180 个自然日 | 与其他工作合并处理。 | 工程负责人 |
+| 公告 | 修复版本发布后 2 个工作日 | 发布公告、CVE 编号、受影响版本与修复版本、临时缓解措施和署名。 | 安全负责人 |
+| 禁发期结束 | 报告日期加 90 个自然日 | 发布，或仅在报告者同意并记录原因后延长。 | 安全负责人 |
 
-- A duplicate or already-fixed report gets a reply and a reference to the advisory, with credit where it helped.
-- An out-of-scope report gets a reply explaining why, with the scope entry that applies.
-- A dependency vulnerability follows the maintainer's advisory, and the project publishes its own notice when its
-  users are affected.
-- An actively exploited issue shortens the embargo to the time needed to ship the fix and briefs the incident owner.
-- A report against an unsupported version still gets a reply; the team decides whether to fix, document a
-  workaround, or advise an upgrade.
-- The advisory is linked from the `SECURITY.md` content and from the release notes for the fixed version.
+- 重复或已修复的报告也要答复，并附上公告引用；在确有帮助处给予署名。
+- 范围外的报告也要答复，说明原因，并附上适用的范围条目。
+- 依赖漏洞遵循维护者的公告；用户受影响时，项目发布自己的声明。
+- 正在被利用的问题会把禁发期缩短到发布修复并通报事件负责人所需的时间。
+- 针对不受支持版本的报告仍要答复；团队决定是修复、记录临时缓解措施，还是建议升级。
+- 公告要从 `SECURITY.md` 内容和修复版本的发布说明中链接过去。

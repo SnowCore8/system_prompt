@@ -1,231 +1,204 @@
 ---
 name: security-compliance-conventions
-description: Defines, reviews, and repairs security, credential, license, privacy, and vulnerability-disclosure practice for any project, covering threat models, secret storage and rotation, dependency supply chains, SBOMs and attribution notices, PII inventories, and coordinated disclosure. Use when starting a feature or project, reviewing a change for security or privacy impact, adding a dependency, handling a credential, preparing a release, or responding to a reported vulnerability.
-argument-hint: '[path or scope]'
+description: 定义、审查并修复任意项目的安全、凭据、许可证、隐私与漏洞披露实践，涵盖威胁模型、机密存储与轮换、依赖供应链、SBOM 与署名声明、PII 清单以及协同披露。在启动功能或项目、审查变更的安全或隐私影响、新增依赖、处理凭据、准备发布或响应漏洞报告时使用。
+argument-hint: '[路径或范围]'
 ---
 
-# Security and Compliance Conventions
+# 安全与合规规范
 
-Security and compliance failures are asymmetric. A missed naming rule costs a review comment and a later rename; a
-credential committed to history, a copyleft library shipped in a binary, or personal data sent to an unapproved
-processor cannot be repaired by later work, because the disclosure already happened. This skill defines the
-project-side rules for secure development, credentials and secrets, licensing, privacy, and vulnerability
-disclosure, together with the evidence each rule requires. It serves the engineer designing a feature, the reviewer
-judging a change, and the maintainer preparing a release or answering a report. It sets project policy only: agent
-conduct is governed by the host and user instruction layer and is not restated here. Where a question turns on a
-statute or a contract, counsel decides; nothing in this skill is legal advice.
+安全与合规失效是不对称的。漏掉一条命名规则，代价只是审查意见和事后的改名；而凭据进入提交历史、copyleft
+库随二进制产物分发、个人数据被发送给未经批准的处理者，都无法靠后续工作修复，因为披露已经发生。本 skill
+规定项目侧的安全开发、凭据与机密、许可证、隐私与漏洞披露规则，以及每条规则所需的证据。它服务于设计功能的
+工程师、评判变更的审查人，以及准备发布或答复报告的维护者。它只规定项目策略：代理行为由宿主与用户指令层
+管辖，此处不再重述。当问题取决于法律条文或合同时，由法务决定；本 skill 的任何内容都不构成法律建议。
 
-## Scope and Precedence
+## 范围与优先级
 
-Apply the first rule that fits, and do not mix standards inside one scope:
+适用第一条匹配的规则，不要在同一范围内混用多套标准：
 
-1. Mandatory law, regulation, binding contract, license terms, and the host or user instruction layer. A statutory
-   deadline, a data processing agreement, a license obligation, or an agent-level conduct rule is not optional.
-2. Existing project policy: `SECURITY.md`, `LICENSE`, the data inventory, approved architecture decisions, and any
-   stricter local rule. Read them before inventing a rule.
-3. This standard's defaults, when the two levels above are silent.
-4. Personal preference, which never overrides the three levels above.
+1. 强制性法律、法规、有约束力的合同、许可证条款，以及宿主或用户指令层。法定截止期限、数据处理协议、
+   许可证义务或代理层面的行为规则都不是可选项。
+2. 现有项目策略：`SECURITY.md`、`LICENSE`、数据清单、已批准的架构决策，以及任何更严格的本地规则。
+   在自创规则之前先读它们。
+3. 当上述两层均未规定时，采用本规范的默认值。
+4. 个人偏好，它绝不覆盖上述三层。
 
-- Agent behavior versus project policy. What an agent may place in its output, and when it must obtain consent for
-  an irreversible action, is set by the host and user instruction layer; those rules outrank this skill and are not
-  restated here. This skill sets project policy: what data may be stored, shipped, collected, or disclosed, and who
-  approves each of those acts.
-- Comment and documentation rules forbid secret values in comments, examples, and documents. This skill owns where
-  the real value is stored, how it is scanned, rotated, and disclosed; apply both, and trace an exposed value to its
-  storage entry instead of only deleting the visible copy.
-- Release and incident-response roles own pipeline execution and incident command. This skill owns the security gates
-  those pipelines run, the severity and remediation policy behind each gate, and the disclosure process before an
-  incident becomes public.
-- API and data roles own retention mechanics, deletion jobs, and migrations. This skill owns PII classification,
-  privacy review, and the legal obligations the team adopts; retention policy is set here and implemented there.
-- Repository governance owns only the presence, location, and basic metadata (owner, review date) of `SECURITY.md`;
-  the documentation conventions own its page structure and prose. This skill owns the required content, the reporting
-  and response commitments, and the advisory process published there.
-- Testing and quality roles own where scans run as quality gates. This skill owns the severity policy, the
-  remediation deadlines, and the decision to fix, accept, or block on a finding.
-- Third-party code is report-only: vendored, generated, and externally maintained code is inventoried and scanned,
-  never hand-edited. Report the issue upstream, or carry a documented patch in a separate fork and record it.
-- Reporting outranks convenience. A failing scan, an unlicensed dependency, a privacy defect, or a suspected leak is
-  reported even when it blocks a release; convenience never justifies silence, and a report is not a fix.
-- When two rules conflict, state the conflict, follow the higher level, and record the decision with its owner so
-  the next change follows it.
+- 代理行为与项目策略。代理可以在输出中放什么、何时必须为不可逆操作取得同意，由宿主与用户指令层规定；
+  那些规则优先于本 skill，此处不再重述。本 skill 规定项目策略：哪些数据可以存储、分发、收集或披露，
+  以及每一项由谁批准。
+- 注释与文档规则禁止在注释、示例和文档中出现机密值。本 skill 负责真实值存放在哪里，以及它如何被扫描、
+  轮换和披露；两者都要执行，并且要把已暴露的值追溯到其存储条目，而不是只删掉可见副本。
+- 发布与事件响应角色负责流水线执行与事件指挥。本 skill 负责这些流水线运行的安全门禁、每个门禁背后的
+  严重程度与修复策略，以及事件公开之前的披露流程。
+- API 与数据角色负责保留机制、删除任务与迁移。本 skill 负责 PII 分级、隐私审查以及团队采纳的法律义务；
+  保留策略在此制定，在那里实现。
+- `repository-governance-conventions` 只负责 `SECURITY.md` 是否存在、位置与基本元数据（负责人、审查日期）；
+  `documentation-conventions` 负责其页面结构与行文。本 skill 负责必需内容、报告与响应承诺，以及在该文件中
+  发布的公告流程。
+- 测试与质量角色负责把扫描放在哪里作为质量门禁运行。本 skill 负责严重程度策略、修复期限，以及针对
+  发现项决定修复、接受还是阻塞。
+- 第三方代码只报告、不改动：内置、生成和外部维护的代码只做清点与扫描，绝不手工编辑。把问题报告给上游，
+  或者在独立的 fork 中维护一个有记录的补丁，并记录该补丁。
+- 报告优先于便利。扫描失败、依赖没有许可证、隐私缺陷或疑似泄露，即使会阻塞发布也要报告；便利绝不能
+  成为沉默的理由，而报告并不等于修复。
+- 当两条规则冲突时，说明冲突，遵循更高层级，并连同负责人一起记录该决定，使后续变更遵循它。
 
-## Process
+## 流程
 
-1. Classify the change and the data it touches: assets, entry points, trust boundaries, credential paths,
-   dependencies, personal data, third-party code, and distribution targets. Work from the diff or the design, not
-   from a generic checklist.
-2. Read the obligations already in force: the project's `SECURITY.md` content, `LICENSE`, data inventory, and
-   accepted-risk register. Note which obligation this change adds, changes, or removes.
-3. Build or update a lightweight threat model for each new or changed trust boundary: assets, abuse cases, existing
-   controls, residual risk, and owner. Record it with the design or in `docs/security/`.
-4. Apply controls in order: secure defaults, server-side validation with context-appropriate encoding,
-   authentication separated from authorization, scoped runtime credentials, dependency and license gates. Record
-   anything deferred as security debt with an owner and a review date.
-5. Route required reviews before merge: security review for a trigger, privacy review for personal data or a new
-   processor, license review for a dependency or distribution change, and counsel for a legal question. Do not merge
-   while a required review is open.
-6. Produce the release evidence: regenerated SBOM, notice file, license inventory, scan results, and residual risk.
-   Attach it to the release, not to a chat thread or a passing comment.
-7. Verify and hand off: rerun the gates, confirm remediation deadlines and accepted-risk expiry dates, update
-   `SECURITY.md` content and advisories, and state what remains open with its owner.
+1. 对变更及其触及的数据分类：资产、入口点、信任边界、凭据路径、依赖、个人数据、第三方代码和分发目标。
+   依据 diff 或设计开展工作，不要照搬通用清单。
+2. 阅读已经生效的义务：项目的 `SECURITY.md` 内容、`LICENSE`、数据清单和已接受风险登记册。记下本次变更
+   新增、改变或移除了哪些义务。
+3. 为每个新增或变更的信任边界构建或更新轻量威胁模型：资产、滥用场景、现有控制措施、残余风险和负责人。
+   把它与设计一起记录，或放在 `docs/security/` 中。
+4. 按顺序应用控制措施：安全默认值、服务端校验配合与上下文相符的编码、认证与授权分离、限定范围的运行时
+   凭据、依赖与许可证门禁。任何被推迟的事项都记为安全债务，附上负责人和审查日期。
+5. 在合并前分派必需的审查：触发安全审查条件的走安全审查，涉及个人数据或新处理者的走隐私审查，涉及依赖
+   或分发变更的走许可证审查，涉及法律问题的找法务。必需的审查尚未完成时不要合并。
+6. 产出发布证据：重新生成的 SBOM、声明文件、许可证清单、扫描结果和残余风险。把它附到发布上，而不是
+   放在聊天线程或随口一句评论里。
+7. 验证并交接：重跑门禁，确认修复期限和已接受风险的到期日期，更新 `SECURITY.md` 内容与公告，并说明
+   仍有哪些事项未完成及其负责人。
 
-## Core Rules
+## 核心规则
 
-- **Model every trust boundary, proportionally.** A feature that takes untrusted input, crosses a service, or grants
-  access gets a lightweight model of assets, entry points, abuse cases, controls, and residual risk; a feature that
-  crosses no boundary records a one-line "no boundary crossed" note. The effort follows the risk, not a ceremony.
-- **Default to deny and fail closed.** New permissions are absent, new fields are private, new flags are off, and
-  new endpoints require authentication until opened deliberately. A control that fails open when its dependency is
-  unavailable is a defect, even when every scan is clean.
-- **Validate on the server and encode for the context.** Allowlist type, length, range, and format at each boundary;
-  canonicalize before checking; parameterize queries; encode HTML, attributes, JavaScript, URLs, and shell
-  arguments separately. Client-side validation is user experience, never a control.
-- **Authenticate at the edge and authorize at the resource.** Every request gets a server-side permission decision
-  for the specific object and tenant, independent of what the interface hides. Log denials on privileged actions,
-  and require a stronger factor for administration and destructive operations.
-- **Keep secret values out of the repository.** Commit only a reference to a secret: environment injection, a
-  secret manager, or a platform secret store. `.env.example` carries variable names and non-functional fake values,
-  and secret scanning covers commits, pull requests, history, and build logs.
-- **Scope a credential to one job and give it an owner.** Issue one credential per service, job, and environment,
-  limited to the resources and actions it needs. Record who owns it, what it can reach, and when it rotates; a shared
-  administrator credential is a permanent finding, not a convenience.
-- **Treat dependencies as code you ship.** Review a new dependency for maintenance, known vulnerabilities, license,
-  transitive size, and install scripts. Pin it in a lockfile, fetch it from a verified registry, and ship the SBOM
-  that lists it; an unused dependency is removed, not disabled.
-- **Pass the license gate before the dependency lands.** Check the SPDX identifier and the transitive licenses
-  against the allowed, review, and forbidden categories; an unidentified license is forbidden until a human
-  identifies it. Every exception is written, owned, and dated.
-- **Generate the SBOM and notice file for every release.** Build both from the dependency graph used for the
-  artifact, include transitive components and required attribution, attach them to the release, and keep them for
-  the support lifetime plus the retention period the team adopted.
-- **Classify personal data before collecting it.** Each data element gets a class, a purpose, a system, a retention
-  period, a recipient list, and a region in the data inventory before production traffic reaches it; collection
-  hidden in logs or analytics is still collection.
-- **Minimize personal data and bound its life.** No field without a documented purpose, no PII in logs, URLs, or
-  event names, no production data in development or test. Pseudonymize where identity is not needed, and pair every
-  retention period with the deletion path that enforces it.
-- **Rate findings with a policy, not a scanner.** Assign severity from exploitability, exposure, and data
-  sensitivity; give every finding an owner and a remediation deadline; record risk acceptance with an expiry and a
-  compensating control. A scanner report without an owner is not a decision.
-- **Disclose on a committed timeline.** Publish the reporting channel and scope, acknowledge within 2 business days
-  and triage within 5, fix critical issues within 7 calendar days, and publish an advisory with a CVE identifier
-  when the fix ships, or with the CVE request status if assignment is delayed. A silent fix leaves users unable to
-  assess their exposure.
-- **Report and never edit around the gate.** A suspected leak, an unknown license, or a privacy defect stops the
-  affected step and is reported with the evidence; do not rewrite history, delete logs, or disable the gate as a
-  workaround. Third-party code is reported upstream, not patched in place.
+- **按比例对每个信任边界建模。** 接受不可信输入、跨服务或授予访问权限的功能，都要有一份轻量模型，涵盖
+  资产、入口点、滥用场景、控制措施和残余风险；不跨越任何边界的功能则记录一行“未跨越边界”的说明。投入
+  程度跟随风险，而不是走形式。
+- **默认拒绝并失效关闭。** 新权限默认不存在，新字段默认私有，新开关默认关闭，新端点默认要求认证，直到
+  有意开放。依赖不可用时反而失效开放的控制措施是缺陷，即使所有扫描都干净。
+- **在服务端校验，并按上下文编码。** 在每个边界用允许列表校验类型、长度、范围和格式；先规范化再校验；
+  参数化查询；分别对 HTML、属性、JavaScript、URL 和 shell 参数编码。客户端校验只是用户体验，绝不是
+  控制措施。
+- **在边缘认证，在资源处授权。** 每个请求都要针对具体对象和租户在服务端做出权限决定，不受界面隐藏
+  内容的影响。对特权操作记录拒绝日志，对管理操作和销毁性操作要求更强的认证因素。
+- **不让机密值进入仓库。** 只提交对机密的引用：环境变量注入、机密管理器或平台机密存储。`.env.example`
+  只包含变量名和不可用的假值，机密扫描覆盖提交、拉取请求、历史和构建日志。
+- **把凭据限定到单一任务并指定负责人。** 每个服务、任务和环境各签发一个凭据，并限制到它需要的资源和
+  操作。记录谁负责它、它能触达什么、何时轮换；共享的管理员凭据是永久性发现项，不是便利。
+- **把依赖当作要分发的代码。** 审查新依赖的维护情况、已知漏洞、许可证、传递依赖规模和安装脚本。把它
+  固定到锁文件，从经验证的包仓库获取，并随制品分发列出它的 SBOM；未使用的依赖要删除，而不是禁用。
+- **依赖进入代码库之前先通过许可证门禁。** 对照允许、审查和禁止三类检查 SPDX 标识符与传递依赖的
+  许可证；未识别的许可证在人工识别之前一律禁止。每个例外都要有书面记录、负责人和日期。
+- **每次发布都生成 SBOM 和声明文件。** 两者都基于构建制品所用的依赖图生成，包含传递组件和必需的署名，
+  附到发布上，并保留到支持周期加上团队采用的保留期限。
+- **收集个人数据之前先分级。** 在生产流量到达之前，每个数据元素都要在数据清单中拥有类别、用途、系统、
+  保留期限、接收方列表和区域；藏在日志或分析中的收集仍然是收集。
+- **最小化个人数据并限定其生命周期。** 没有书面用途的字段一律不要，日志、URL 或事件名称中不得出现
+  PII，开发或测试环境不得使用生产数据。不需要身份时使用假名化，并为每个保留期限配上强制执行它的
+  删除路径。
+- **用策略而不是扫描器来评定发现项。** 依据可利用性、暴露程度和数据敏感度确定严重程度；每个发现项都要
+  有负责人和修复期限；风险接受要记录到期日和补偿性控制措施。没有负责人的扫描器报告不算决定。
+- **按承诺的时间线披露。** 公布报告渠道与范围，在 2 个工作日内确认收到、5 个工作日内完成初步分诊，
+  严重问题在 7 个自然日内修复，并在修复发布时发布带 CVE 编号的公告；若编号分配延迟，则公告中说明
+  CVE 申请状态。静默修复会让用户无法评估自身暴露面。
+- **报告，绝不绕过门禁改动。** 疑似泄露、未知许可证或隐私缺陷会中止受影响的步骤，并连同证据一起报告；
+  不要重写历史、删除日志或禁用来绕过门禁。第三方代码要报告给上游，而不是就地打补丁。
 
-## Risk Control Matrix
+## 风险控制矩阵
 
-Each row pairs an asset or obligation with the failure it faces, the minimum control, and the evidence a review
-checks.
+每一行把一个资产或义务与它面临的失效、最低控制措施以及审查核对的证据对应起来。
 
-| Asset or obligation | Threat or failure | Minimum control | Evidence |
+| 资产或义务 | 威胁或失效 | 最低控制措施 | 证据 |
 |---|---|---|---|
-| Source repository | A credential or personal data enters commit history and cannot be withdrawn | Secret scanning on push and in CI; `.gitignore` covers local config and data dumps; every diff reviewed for new files | Scan result on the pull request; rotation record if a hit is confirmed |
-| Runtime credentials | A leaked long-lived key grants broad access to production | Secret manager injection, per-service scoped credentials, scheduled rotation with an owner | Credential inventory row with scope, owner, and next rotation date |
-| Identities and permissions | A missing object-level check lets one tenant read another tenant's data | Server-side authorization at the resource, default deny, tenant filter tested per endpoint | Authorization test for the endpoint; review approval in the change |
-| Dependencies and build | A malicious, typosquatted, or compromised package runs in the build | Reviewed dependency, pinned lockfile, verified registry, disabled install scripts, provenance check | Dependency review entry, lockfile diff, build attestation |
-| Inbound licenses | Copyleft or unlicensed code is distributed inside the product | License gate on direct and transitive components, written exceptions only | License report per release; signed exception with owner and expiry |
-| Outbound license and attribution | The product ships without required notices or with incompatible terms | `LICENSE` at the distribution root, generated notice file, inbound and outbound compatibility check | Release archive with license and notice files; SBOM |
-| Personal data and telemetry | Unbounded collection creates regulatory and trust exposure | Purpose review before collection, event-schema allowlist, minimization, consent gate | Data inventory row and approved event schema |
-| Data subject requests | A request is missed because data sits in logs, backups, or a processor | Published runbook, complete search map, processor deletion clauses | Request log with dates, systems searched, and completion |
-| Vulnerability reports | A report is lost, or disclosure happens before users can patch | Monitored channel, acknowledgement and triage deadlines, embargo, advisory with a CVE identifier | Report timestamps, advisory, CVE identifier, credited reporter |
-| Release pipeline | An unreviewed or unsigned artifact reaches users | Required review gate, signed artifact and provenance, least-privilege deploy identity | Pipeline run showing the gate and signature verification |
-| Third-party code | A local patch is lost at the next vendor update, or an upstream flaw ships | Vendor boundary with recorded license and version; upstream report; documented fork patch | Vendor inventory entry; upstream issue reference; fork patch file |
+| 源代码仓库 | 凭据或个人数据进入提交历史且无法撤回 | 推送时与 CI 中运行机密扫描；`.gitignore` 覆盖本地配置与数据库转储；每个 diff 都审查新增文件 | 拉取请求上的扫描结果；命中确认后的轮换记录 |
+| 运行时凭据 | 泄露的长期密钥可广泛访问生产环境 | 从机密管理器注入、按服务限定范围的凭据、有负责人的计划轮换 | 包含范围、负责人和下次轮换日期的凭据清单行 |
+| 身份与权限 | 缺少对象级检查会让一个租户读取另一个租户的数据 | 在资源处做服务端授权、默认拒绝、逐个端点测试租户过滤 | 端点的授权测试；变更中的审查批准 |
+| 依赖与构建 | 恶意、仿冒或已被攻陷的包在构建中运行 | 经过审查的依赖、固定的锁文件、经验证的包仓库、禁用的安装脚本、来源证明检查 | 依赖审查条目、锁文件 diff、构建证明 |
+| 入站许可证 | copyleft 或无许可证代码随产品分发 | 对直接与传递组件执行许可证门禁，只允许书面例外 | 每次发布的许可证报告；经签署的例外，注明负责人和到期日 |
+| 出站许可证与署名 | 产品发布时缺少必需的声明，或条款不兼容 | 分发根目录的 `LICENSE`、生成的声明文件、入站与出站兼容性检查 | 含许可证与声明文件的发布归档；SBOM |
+| 个人数据与遥测 | 无限制收集会带来监管与信任风险 | 收集前的用途审查、事件 schema 允许列表、最小化、同意门禁 | 数据清单行与已批准的事件 schema |
+| 数据主体请求 | 数据位于日志、备份或处理者处而导致请求被遗漏 | 已发布的运行手册、完整的检索图谱、处理者删除条款 | 含日期、已检索系统和完成情况的请求日志 |
+| 漏洞报告 | 报告丢失，或在用户能够打补丁之前就披露 | 受监控的渠道、确认与分诊期限、禁发期、带 CVE 编号的公告 | 报告时间戳、公告、CVE 编号、已署名报告者 |
+| 发布流水线 | 未经审查或未签名的制品到达用户 | 必需的审查门禁、签名制品与来源证明、最小权限部署身份 | 显示门禁与签名验证的流水线运行记录 |
+| 第三方代码 | 本地补丁在下次供应商更新时丢失，或上游缺陷随产品发布 | 记录许可证与版本的供应商边界；上游报告；有记录的 fork 补丁 | 供应商清单条目；上游问题单引用；fork 补丁文件 |
 
-## Dimension Index
+## 维度索引
 
-Each dimension has the detailed controls, failure modes, and examples in `references/dimensions.md`.
+每个维度的详细控制措施、失效模式和示例见 `references/dimensions.md`。
 
-| Dimension | First rule |
+| 维度 | 首条规则 |
 |---|---|
-| 1. Secure development | Model each trust boundary, then default to deny and validate at every boundary. |
-| 2. Credentials and secrets | Inject secret values at runtime, never commit them, and scope and rotate each credential. |
-| 3. Licensing and compliance | Pass the license gate before code lands, then ship the SBOM and notices. |
-| 4. Privacy | Classify personal data and record its purpose, flow, and retention before collecting it. |
-| 5. Vulnerability disclosure | Publish the channel, meet the timelines, and disclose with an advisory and CVE. |
+| 1. 安全开发 | 对每个信任边界建模，然后默认拒绝，并在每个边界校验。 |
+| 2. 凭据与机密 | 在运行时注入机密值，绝不提交它们，并对每个凭据限定范围并轮换。 |
+| 3. 许可证与合规 | 代码进入之前先通过许可证门禁，然后随发布提供 SBOM 与声明。 |
+| 4. 隐私 | 收集个人数据之前先分级，并记录其用途、流转与保留。 |
+| 5. 漏洞披露 | 公布渠道，遵守时间线，并随公告与 CVE 披露。 |
 
-## Anti-Patterns
+## 反模式
 
-| Anti-pattern | Why it fails | Fix |
+| 反模式 | 为何失败 | 修复 |
 |---|---|---|
-| A clean scan with no owner | A scanner proves only that its rules did not match; findings without an owner and date never close | Assign severity, owner, and deadline; register accepted risk |
-| "Rotate the key later" | A leaked long-lived credential keeps working while the task is deferred | Revoke or rotate first, within 24 hours of suspicion, then clean up |
-| One shared administrator credential | A single leak grants every action and leaves no attribution | One scoped credential per service, job, and environment |
-| A committed `.env` file, "temporarily" | History keeps the value after the file is removed | Gitignore the real file, commit names only, scan history |
-| Authorization enforced only in the interface | A direct API call bypasses the hidden button | Server-side object-level check on every request |
-| Home-grown cryptography or session handling | Subtle flaws are invisible to review and tests | Use framework and approved libraries; require crypto review |
-| "It is public on a repository host, so it is free" | A repository with no license is all rights reserved | License gate: identify the SPDX term or reject the package |
-| A hand-maintained SBOM | It drifts at the first dependency change and hides new components | Generate it in CI from the lockfile and attach it to the release |
-| "Add an analytics field, review it later" | Field-level collection escapes purpose limits and review | Event-schema review and inventory row before deployment |
-| "Internal tool, so no threat model" | Internal tools become reachable, and administrative tools hold the highest privilege | Same triggers and defaults; model an assumed-compromised network |
-| Critical fix in the next scheduled release | The exploitation window stays open for a release cycle | Out-of-band patch within 7 calendar days |
-| Silent security fix | Users cannot assess exposure, and researchers duplicate the report | Advisory, CVE identifier, changelog entry, credit |
-| Publishing before the fix ships | Users are exploited while the report is public | Hold the embargo, coordinate the date, publish with the fix |
-| Patching vendored code in place | The patch disappears at the next vendor update | Report upstream, or maintain a documented fork patch |
-| Accepting risk in a chat thread | No owner, no expiry, and no record for the next reviewer | Risk register entry with owner, expiry, and compensating control |
+| 扫描干净却无人负责 | 扫描器只能证明它的规则没有匹配上；没有负责人和日期的发现项永远不会关闭 | 指定严重程度、负责人和期限；登记已接受风险 |
+| “稍后再轮换密钥” | 泄露的长期凭据在任务被推迟期间仍然有效 | 怀疑泄露后 24 小时内先吊销或轮换，然后再清理 |
+| 一个共享的管理员凭据 | 一次泄露就授予所有操作，且无法归因 | 每个服务、任务和环境一个限定范围的凭据 |
+| 提交了 `.env` 文件，还说是“临时” | 文件删除后历史仍保留该值 | 用 `.gitignore` 忽略真实文件，只提交名称，扫描历史 |
+| 只在界面中执行授权 | 直接调用 API 会绕过被隐藏的按钮 | 每个请求都做服务端对象级检查 |
+| 自研密码学或会话处理 | 细微缺陷对审查和测试都不可见 | 使用框架和经批准的库；要求密码学审查 |
+| “它在仓库托管平台上公开，所以可以免费使用” | 没有许可证的仓库保留所有权利 | 许可证门禁：识别 SPDX 条款，否则拒绝该包 |
+| 手工维护的 SBOM | 第一次依赖变更就会失准，并掩盖新组件 | 在 CI 中从锁文件生成，并附到发布上 |
+| “先加一个分析字段，以后再审查” | 字段级收集会绕过用途限制与审查 | 部署前完成事件 schema 审查并登记清单行 |
+| “内部工具，所以不用威胁模型” | 内部工具会变得可访问，而管理工具持有最高权限 | 同样的触发条件与默认值；按网络已被攻陷的假设建模 |
+| 严重修复留到下一个计划发布 | 利用窗口会开放整个发布周期 | 7 个自然日内发布计划外补丁 |
+| 静默安全修复 | 用户无法评估暴露面，研究人员会重复报告 | 公告、CVE 编号、变更日志条目、署名 |
+| 修复发布之前就公开 | 报告公开期间用户会被利用 | 遵守禁发期，协调发布日期，随修复一起发布 |
+| 就地修改内置的第三方代码 | 下次供应商更新时补丁会消失 | 报告上游，或维护有记录的 fork 补丁 |
+| 在聊天线程中接受风险 | 没有负责人、没有到期日，下一位审查人也找不到记录 | 风险登记册条目包含负责人、到期日与补偿性控制措施 |
 
-## Review Checklist
+## 审查清单
 
-- [ ] Every new or changed trust boundary has a threat model or a one-line "none crossed" note.
-- [ ] Assets, entry points, and abuse cases are named, with controls and residual risk.
-- [ ] Server-side validation covers type, length, range, and format for every new input.
-- [ ] Output is encoded for its context; queries are parameterized and shell calls avoid interpolation.
-- [ ] Authorization is enforced per resource and tenant, not only in the interface.
-- [ ] Secure defaults are on: deny, private fields, disabled flags, no debug in production.
-- [ ] No secret value, key, token, `.env` file, or credential-bearing connection string is in the diff.
-- [ ] Every changed credential has a scope, an owner, a rotation interval, and a next rotation date.
-- [ ] CI secrets are masked, scoped per environment, and withheld from untrusted fork builds.
-- [ ] Secret scanning covers commits, pull requests, history, and build logs.
-- [ ] Every new dependency is reviewed, pinned, and carries an allowed license or a recorded exception.
-- [ ] The SBOM and notice file are regenerated and attached to the release.
-- [ ] Personal data fields have inventory entries with purpose, retention, recipients, and region.
-- [ ] No PII appears in logs, URLs, analytics events, test fixtures, or screenshots.
-- [ ] Processor, cross-border, or consent changes have privacy review and counsel where required.
-- [ ] Findings have severity, owner, and deadline; accepted risks have an expiry.
-- [ ] Vulnerability reports are acknowledged and triaged within the committed timelines.
-- [ ] Third-party code is reported upstream rather than hand-edited.
-- [ ] The `SECURITY.md` content, advisory, and release notes match the shipped state.
+- [ ] 每个新增或变更的信任边界都有威胁模型，或有一行“未跨越边界”的说明。
+- [ ] 资产、入口点和滥用场景都有明确名称，并给出控制措施与残余风险。
+- [ ] 服务端校验覆盖每个新输入的类型、长度、范围和格式。
+- [ ] 输出按上下文编码；查询已参数化，shell 调用避免插值。
+- [ ] 授权按资源和租户执行，而不只在界面中执行。
+- [ ] 安全默认值已开启：拒绝、私有字段、关闭的开关、生产环境不输出调试信息。
+- [ ] diff 中没有机密值、密钥、令牌、`.env` 文件或携带凭据的连接字符串。
+- [ ] 每个变更过的凭据都有范围、负责人、轮换间隔和下次轮换日期。
+- [ ] CI 机密已打码、按环境限定范围，并且不提供给不受信任的 fork 构建。
+- [ ] 机密扫描覆盖提交、拉取请求、历史和构建日志。
+- [ ] 每个新依赖都经过审查、被固定，并带有允许的许可证或有记录的例外。
+- [ ] SBOM 与声明文件已重新生成并附到发布上。
+- [ ] 个人数据字段都有清单条目，包含用途、保留期限、接收方和区域。
+- [ ] 日志、URL、分析事件、测试夹具或截图中都不出现 PII。
+- [ ] 处理者、跨境或同意相关变更已做隐私审查，需要时已经过法务。
+- [ ] 发现项都有严重程度、负责人和期限；已接受风险都有到期日。
+- [ ] 漏洞报告在承诺的时间线内确认收到并完成初步分诊。
+- [ ] 第三方代码报告给上游，而不是手工修改。
+- [ ] `SECURITY.md` 内容、公告和发布说明与实际发布状态一致。
 
-## Examples
+## 示例
 
 <example>
-Adding a file-upload endpoint: assets are user files and storage credentials; the trust boundary is browser to API.
-Abuse cases are oversized files, executable content, decompression bombs, and path traversal. Controls are a
-content-type allowlist, a size cap, image re-encoding, storage outside the web root, and a scan before serving.
-Residual risk and its owner go in the threat-model note.
+新增文件上传端点：资产是用户文件和存储凭据；信任边界是浏览器到 API。滥用场景是超大文件、可执行内容、
+解压缩炸弹和路径遍历。控制措施是内容类型允许列表、大小上限、图片重新编码、存储在 web 根目录之外，
+以及提供前扫描。残余风险及其负责人写入威胁模型说明。
 </example>
 
 <example>
-A dependency carries LGPL-3.0, so the license gate moves it to review. The review records dynamic linking, no source
-modification, the notice obligation, and the owner, and counsel approves the use before merge. If an existing MIT
-alternative covers the need, prefer it and drop the review.
+某个依赖使用 LGPL-3.0，许可证门禁将其转入审查。审查记录动态链接、未修改源码、声明义务和负责人，
+并由法务在合并前批准使用。如果现有 MIT 替代方案能满足需求，优先采用它并取消审查。
 </example>
 
 <example>
-Analytics asks for a `user_email` property on a checkout event. Privacy review rejects it: the event needs only the
-internal account identifier and the order value. The event schema is updated, the purpose is recorded, and the
-property never reaches production.
+分析团队要求在结算事件中加入 `user_email` 属性。隐私审查予以拒绝：该事件只需要内部账户标识符和
+订单金额。事件 schema 已更新，用途已记录，该属性从未进入生产环境。
 </example>
 
 <example>
-A researcher reports remote code execution on a Friday. Acknowledge within 2 business days, triage within 5, and
-rate it critical. The fix ships within 7 calendar days, the CVE identifier is assigned, and the advisory publishes
-with the release, the affected and fixed versions, and the reporter's credit.
+一名研究者在周五报告远程代码执行漏洞。在 2 个工作日内确认收到，5 个工作日内完成初步分诊，并评为
+严重。修复在 7 个自然日内发布，CVE 编号已分配，公告随发布一起发布，包含受影响版本与修复版本，
+以及报告者署名。
 </example>
 
 <example>
-A build log prints a deployment token. Revoke and rotate the token first, then audit its use, scrub the log, remove
-the value from any artifact or cache, and record the incident. Do not rewrite history as the first step; the token
-stays valid either way.
+构建日志打印出了部署令牌。先吊销并轮换该令牌，然后审计其使用情况、清理日志、从所有制品或缓存中移除
+该值，并记录该事件。不要把重写历史当作第一步；无论是否重写，令牌都仍然有效。
 </example>
 
-## References
+## 参考
 
-Read [references/dimensions.md](references/dimensions.md) for the detailed rule set behind each dimension, one
-section per dimension with examples and a Good/Bad/Why table. Read
-[references/checklists.md](references/checklists.md) for the worksheets, registers, timelines, and runbooks used to
-execute a review or a disclosure. Read both before a project's first security or privacy review; during routine
-work, read only the dimension and checklist that match the change.
+阅读 [references/dimensions.md](references/dimensions.md) 了解每个维度背后的详细规则集，每个维度一节，
+附示例和好/坏/原因表。阅读 [references/checklists.md](references/checklists.md) 了解执行审查或披露所用的
+工作表、登记册、时间线和运行手册。在项目首次安全或隐私审查之前阅读这两份文件；日常工作中，只读与本次
+变更匹配的维度和检查清单。

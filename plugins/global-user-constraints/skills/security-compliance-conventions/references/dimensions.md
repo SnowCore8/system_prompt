@@ -1,295 +1,246 @@
-# Security and Compliance Dimensions
+# 安全与合规维度
 
-Use this file with `SKILL.md`. Each section covers one dimension of the standard: the controls a project adopts, the
-failure each control prevents, and the evidence a reviewer expects. Read the section that matches the change; read
-all five before a project's first security review, when writing the `SECURITY.md` content, or when building the data
-inventory. The rules are defaults a team adopts, not legal conclusions: when a decision turns on a statute, a
-contract, or a jurisdiction, route the question to counsel and record the answer with its owner.
+本文件与 `SKILL.md` 配合使用。每一节覆盖本规范的一个维度：项目采用的控制措施、每项控制措施防止的失效，
+以及审查人期望的证据。阅读与本次变更匹配的一节；在项目首次安全审查之前、编写 `SECURITY.md` 内容时，
+或建立数据清单时，阅读全部五节。这些规则是团队采用的默认值，不是法律结论：当决定取决于法律条文、合同
+或司法管辖区时，把问题交给法务，并连同负责人记录答复。
 
-## 1. Secure Development
+## 1. 安全开发
 
-Security is a property of the design before it is a property of the scan. Apply this dimension when a feature
-crosses a trust boundary, when a new interface, permission, or data class exists, and when a dependency enters the
-build; the output is a threat-model note, controls in code, and a review record.
+安全首先是设计的属性，然后才是扫描的属性。当功能跨越信任边界、出现新接口、新权限或新数据类别、依赖
+进入构建时，应用本维度；产出是威胁模型说明、代码中的控制措施和审查记录。
 
-- **Threat-model each feature lightly.** Spend 30-60 minutes on a one-page note: assets and their value, entry
-  points, trust boundaries, abuse cases, existing controls, residual risk, and owner. A feature that crosses no
-  boundary records one line saying so. Update the note when an entry point, data class, or trust boundary changes; a
-  model from the first release is evidence of history, not of the current design.
-- **Choose secure defaults.** New permissions are absent, new fields are private, new flags are off, and new
-  endpoints require authentication until opened deliberately. Set secure cookie flags, require TLS, restrict CORS to
-  named origins, enable rate limits, and keep debug output and verbose errors off in production. An operator who
-  forgets to configure the system must get the safe behavior, not the exposed one.
-- **Validate at every boundary.** Check allowlisted type, length, range, format, and encoding on the server;
-  canonicalize before validating; cap body and upload size; validate file type by content rather than extension;
-  reject unknown fields on sensitive endpoints. Where the server makes an outbound request from user input, use an
-  allowlist to prevent server-side request forgery. Client validation is a convenience and is bypassed by editing
-  the request.
-- **Encode output for its context.** Encode HTML text, attributes, JavaScript, CSS, URLs, and shell arguments
-  separately; rely on framework auto-escaping rather than manual escaping; use parameterized queries or an ORM for
-  SQL; never pass user input to `eval`, a dynamic import, or a shell string. The same value can be safe in a text
-  node and unsafe in an attribute or a URL, so the encoding decision belongs to the sink, not the source.
-- **Separate authentication from authorization.** Authentication establishes who is calling; authorization decides
-  which object and action the caller may touch. Enforce the decision on the server for every request, including
-  direct API calls and internal service calls; filter by tenant in the query; log denials; require a stronger factor
-  for administration, permission changes, and destructive actions. Hiding a control in the interface is not an
-  authorization boundary.
-- **Control the dependency and supply chain.** Before adding a dependency, check maintenance activity, known
-  vulnerabilities, license, transitive count, native code, and install scripts. Pin it in a lockfile, fetch it from a
-  verified registry, and disable install scripts unless reviewed. Generate updates automatically and merge them only
-  after tests; remove unused dependencies; rebuild from minimal container images; verify signatures or provenance
-  where the ecosystem supports them. A package name one character off is a working attack.
-- **Route security review triggers before merge.** Require review for changes to authentication or permissions,
-  cryptography, payments, file handling, new external interfaces, administrative tooling, personal-data fields,
-  processors, infrastructure identity or network rules, deserialization, secret handling, and new native
-  dependencies. Record the reviewer and the decision in the change; a review that happens after deployment is an
-  incident review, not a gate.
-- **Track security debt with an expiry.** Every accepted risk gets a register entry: description, impact, owner,
-  compensating control, review date, and tracking identifier. Re-review the register at least quarterly and on any
-  ownership change; an exception that expires without review becomes an unreviewed risk. Do not accept a risk in a
-  chat thread where the next reviewer cannot find it.
+- **对每个功能做轻量威胁建模。** 花 30-60 分钟写一页说明：资产及其价值、入口点、信任边界、滥用场景、
+  现有控制措施、残余风险和负责人。不跨越任何边界的功能记录一行说明。入口点、数据类别或信任边界变化时
+  更新该说明；首版留下的模型只能证明历史，不能证明当前设计。
+- **选择安全默认值。** 新权限默认不存在，新字段默认私有，新开关默认关闭，新端点默认要求认证，直到有意
+  开放。设置安全的 cookie 标志，要求 TLS，把 CORS 限制到具名来源，启用速率限制，并在生产环境关闭
+  调试输出和详细错误。忘记配置系统的运维者也必须得到安全行为，而不是暴露行为。
+- **在每个边界校验。** 在服务端校验允许列表中的类型、长度、范围、格式和编码；先规范化再校验；限制
+  请求体与上传大小；按内容而不是扩展名校验文件类型；在敏感端点上拒绝未知字段。服务端根据用户输入
+  发起出站请求时，用允许列表防止服务端请求伪造。客户端校验只是便利，改一下请求就能绕过。
+- **按上下文编码输出。** 分别对 HTML 文本、属性、JavaScript、CSS、URL 和 shell 参数编码；依赖框架
+  自动转义，而不是手工转义；对 SQL 使用参数化查询或 ORM；绝不把用户输入传给 `eval`、动态 import 或
+  shell 字符串。同一个值在文本节点中可能安全，在属性或 URL 中可能不安全，因此编码方式由输出位置决定，
+  而不由来源决定。
+- **把认证与授权分离。** 认证确认调用者是谁；授权决定调用者可以触碰哪个对象和操作。每个请求都在
+  服务端执行该决定，包括直接 API 调用和内部服务调用；在查询中按租户过滤；记录拒绝日志；对管理操作、
+  权限变更和销毁性操作要求更强的认证因素。把控件藏在界面里不构成授权边界。
+- **控制依赖与供应链。** 新增依赖之前，检查维护活跃度、已知漏洞、许可证、传递依赖数量、原生代码和
+  安装脚本。把它固定到锁文件，从经验证的包仓库获取，除非经过审查，否则禁用安装脚本。自动生成更新，
+  测试通过后再合并；删除未使用的依赖；从最小容器镜像重建；在生态支持时验证签名或来源证明。包名只差
+  一个字符就是一种可用的攻击。
+- **在合并前按触发条件分派安全审查。** 涉及认证或权限、密码学、支付、文件处理、新外部接口、管理工具、
+  个人数据字段、处理者、基础设施身份或网络规则、反序列化、机密处理以及新增原生依赖的变更，都要求
+  审查。在变更中记录审查人和决定；部署之后才做的审查是事件审查，不是门禁。
+- **为安全债务设定到期日并跟踪。** 每个已接受风险都要有登记册条目：描述、影响、负责人、补偿性控制
+  措施、审查日期和跟踪标识符。至少每季度以及在所有权变更时重新审查登记册；未经审查就过期的例外会
+  变成未审查的风险。不要在聊天线程中接受风险，下一位审查人在那里找不到它。
 
-| Good | Bad | Why |
+| 好 | 坏 | 原因 |
 |---|---|---|
-| Default-deny permission with a per-resource check | Button hidden in the interface | Direct API calls skip presentation logic. |
-| Allowlist validation with size caps | Client-side check only | The client is attacker-controlled. |
-| Parameterized query | Manual quote escaping | Hand-escaping misses encodings and contexts. |
-| Per-service scoped credential | Shared administrator token | One leak escalates everywhere and attribution is lost. |
-| Pinned lockfile with a review gate | Open version range resolved at install | The build can select an unreviewed package. |
-| Threat model updated with the boundary | Model written once at kickoff | The design moved and the model did not. |
-| Risk register entry with an expiry | Risk accepted in a chat thread | No owner, no deadline, no record. |
+| 默认拒绝权限并逐资源检查 | 在界面中隐藏按钮 | 直接 API 调用会跳过展示逻辑。 |
+| 带大小上限的允许列表校验 | 只做客户端校验 | 客户端由攻击者控制。 |
+| 参数化查询 | 手工转义引号 | 手工转义会漏掉编码与上下文。 |
+| 按服务限定范围的凭据 | 共享管理员令牌 | 一次泄露就在各处升级，且无法归因。 |
+| 带审查门禁的固定锁文件 | 安装时解析的开放版本范围 | 构建可能选中未经审查的包。 |
+| 随边界更新威胁模型 | 启动时写一次模型 | 设计变了，模型没变。 |
+| 有到期日的风险登记册条目 | 在聊天线程中接受风险 | 没有负责人、没有期限、没有记录。 |
 
-Defaults a reviewer checks before reading code:
+审查人在阅读代码之前检查的默认值：
 
-| Control | Safe default | Failure mode when left open |
+| 控制措施 | 安全默认值 | 放任时的失效模式 |
 |---|---|---|
-| Access decision | Deny unless a permission grants the action | A forgotten check becomes an open endpoint. |
-| New data field | Private, excluded from APIs and logs | A field added for one feature is exposed everywhere. |
-| Feature flag | Off until intentionally enabled | Unfinished code reaches all users. |
-| Error response | Generic message plus a correlation identifier | Stack traces, queries, and internal hosts leak. |
-| Session cookie | `HttpOnly`, `Secure`, `SameSite=Lax` or stricter | Script access and cross-site requests are enabled. |
-| Administrative route | Authenticated, authorized, rate limited, and audited | An internal tool becomes the easiest way in. |
-| Resource limits | Request size, time, and rate capped | One client exhausts the service for everyone. |
+| 访问决定 | 除非有权限授予该操作，否则拒绝 | 被遗忘的检查会变成开放端点。 |
+| 新数据字段 | 私有，从 API 和日志中排除 | 为一个功能添加的字段会在各处暴露。 |
+| 功能开关 | 在有意启用之前保持关闭 | 未完成的代码会到达所有用户。 |
+| 错误响应 | 通用消息加关联标识符 | 堆栈跟踪、查询和内部主机会泄露。 |
+| 会话 cookie | `HttpOnly`、`Secure`、`SameSite=Lax` 或更严格 | 脚本访问和跨站请求会被启用。 |
+| 管理路由 | 已认证、已授权、有限速且已审计 | 内部工具会成为最容易的入口。 |
+| 资源限制 | 请求大小、时间和速率都有上限 | 一个客户端就会耗尽所有人的服务。 |
 
-## 2. Credentials and Secrets
+## 2. 凭据与机密
 
-A secret is the smallest, highest-value artifact a project holds: one readable value can grant every action its
-scope allows. This dimension covers the whole lifecycle, from classification and storage to rotation and leak
-response, and it applies to application credentials, CI tokens, signing keys, and local development values.
+机密是项目持有的最小、价值最高的对象：一个可读的值就能授予其范围允许的所有操作。本维度覆盖完整生命
+周期，从分类、存储到轮换和泄露响应，适用于应用凭据、CI 令牌、签名密钥和本地开发值。
 
-- **Tell a secret from a public identifier.** A secret is a password, private key, API secret, session token, webhook
-  signing value, or a connection string that embeds credentials. A public key, publishable key, OAuth client
-  identifier, or application identifier is not automatically public: confirm that exposure is safe, then restrict it
-  by origin, scope, or rate limit. A publishable key with an unrestricted scope is a secret in practice.
-- **Store secrets outside the repository.** Keep values in a secret manager or platform secret store and inject them
-  at runtime through environment variables, mounted files, or a runtime API. Code holds a name, never a value;
-  `.env.example` holds variable names and non-functional fake values. Kubernetes `Secret` objects are base64
-  encoding, not encryption, so enable encryption at rest or use an external store for production values.
-- **Apply least privilege and scoped tokens.** Issue one credential per service, job, and environment, with only the
-  resources and actions it needs; separate read from write and test from production. Use short-lived tokens with
-  audience restrictions where the platform supports them, and route human access through single sign-on with a
-  logged break-glass path. A credential shared by several services cannot be rotated, attributed, or scoped safely.
-- **Set a rotation cadence and one owner.** Every credential has an owner, a rotation interval, and a next rotation
-  date in the inventory; rotate on schedule, on role or staff change, and on any suspicion of exposure. Keep two
-  valid keys during an overlap window, deploy the new value, verify traffic, then retire the old one. Rotation that
-  deletes the old key before clients reload breaks production and teaches teams to skip rotation.
-- **Control CI secret exposure.** Inject CI secrets from the CI secret store at runtime, mask them in logs, and
-  withhold them from untrusted fork builds; scope deploy credentials to one environment and one action. Prefer
-  short-lived identity federation over a static cloud key; pin third-party actions to reviewed versions; keep secrets
-  out of artifacts, caches, and test reports. Treat any value printed by a tool as exposed and rotate it.
-- **Keep local development secrets local.** Keep development credentials separate from production, scoped to
-  development data, and stored in a git-ignored file or a local secret store; never share a personal token as a team
-  credential, and never point development at production data. A `.env.example` that documents every variable with
-  fake values lets a contributor start without ever seeing a real secret.
-- **Detect and respond to leaks in the right order.** Scan commits, pull requests, history, build logs, and release
-  artifacts for secret patterns. On a hit, revoke or rotate first, within 24 hours and immediately for a
-  production-critical credential; then audit its use, preserve the evidence, remove the value from artifacts and
-  logs, and record the incident. Deleting the commit while the key remains valid removes evidence and leaves the
-  exposure open.
-- **Keep a secret inventory.** Register each secret with its purpose, owner, storage location, scope, rotation
-  interval, and dependent services; review the register quarterly. A value that is not in the register has no owner
-  and no rotation date, so it is registered or retired, not left running.
+- **区分机密与公开标识符。** 机密是密码、私钥、API 密钥、会话令牌、webhook 签名值，或内嵌凭据的
+  连接字符串。公钥、可发布密钥、OAuth 客户端标识符或应用标识符并不天然公开：先确认暴露是安全的，
+  再按来源、范围或速率限制加以限制。范围不受限制的可发布密钥在实践中就是机密。
+- **把机密存放在仓库之外。** 把值保存在机密管理器或平台机密存储中，并在运行时通过环境变量、挂载文件
+  或运行时 API 注入。代码里只保留名称，绝不保留值；`.env.example` 只包含变量名和不可用的假值。
+  Kubernetes 的 `Secret` 对象只是 base64 编码，不是加密，因此要为生产值启用静态加密，或使用外部存储。
+- **应用最小权限和限定范围的令牌。** 每个服务、任务和环境各签发一个凭据，只授予它需要的资源和操作；
+  把读与写、测试与生产分开。在平台支持时使用带受众限制的短期令牌，并让人工访问经过单点登录，同时
+  保留有日志的紧急访问通道。被多个服务共享的凭据无法安全地轮换、归因或限定范围。
+- **设定轮换节奏并指定唯一负责人。** 每个凭据在清单中都有负责人、轮换间隔和下次轮换日期；按计划
+  轮换，在角色或人员变更时轮换，并在任何怀疑暴露时轮换。在重叠窗口内保留两个有效密钥，部署新值，
+  验证流量，然后停用旧值。在客户端重新加载之前就删除旧密钥的轮换会破坏生产环境，并让团队学会跳过
+  轮换。
+- **控制 CI 机密暴露。** 在运行时从 CI 机密存储注入 CI 机密，在日志中打码，并且不提供给不受信任的
+  fork 构建；把部署凭据限定到一个环境和一个操作。优先使用短期身份联合而不是静态云密钥；把第三方
+  action 固定到已审查的版本；不让机密进入制品、缓存和测试报告。工具打印出的任何值都视为已暴露，并
+  轮换它。
+- **把本地开发机密留在本地。** 开发凭据要与生产分离，限定到开发数据，并存放在被 git 忽略的文件或
+  本地机密存储中；绝不把个人令牌当作团队凭据共享，绝不让开发环境指向生产数据。一个用假值记录每个
+  变量的 `.env.example`，能让贡献者无需看到真实机密即可开始工作。
+- **按正确顺序检测和响应泄露。** 扫描提交、拉取请求、历史、构建日志和发布制品中的机密模式。命中时，
+  先在 24 小时内吊销或轮换，对生产关键凭据则立即执行；然后审计其使用情况、保留证据、从制品和日志中
+  移除该值，并记录事件。在密钥仍然有效时删除提交，只会抹掉证据并让暴露继续存在。
+- **维护机密清单。** 登记每个机密的用途、负责人、存储位置、范围、轮换间隔和依赖服务；每季度审查
+  登记册。不在登记册中的值没有负责人也没有轮换日期，因此要么登记，要么停用，不能放任其继续运行。
 
-| Good | Bad | Why |
+| 好 | 坏 | 原因 |
 |---|---|---|
-| Runtime injection from a secret manager | Value in a committed configuration file | Repository readers and history retain it. |
-| Scoped per-service token | Shared administrator credential | One leak reaches every service. |
-| Rotation with an overlap window | Delete the old key immediately | In-flight clients fail, and teams revert. |
-| Short-lived CI identity federation | Long-lived static deploy key | The static key outlives the pipeline compromise. |
-| `.env.example` with names and fake values | Example file with real development values | The example gets committed and copied. |
-| Revoke first, then clean logs | Delete the commit first | The credential stays valid and evidence is gone. |
+| 从机密管理器在运行时注入 | 值写在已提交的配置文件中 | 仓库读者与历史都会保留它。 |
+| 按服务限定范围的令牌 | 共享管理员凭据 | 一次泄露会波及每个服务。 |
+| 带重叠窗口的轮换 | 立即删除旧密钥 | 正在处理的客户端会失败，团队随后回退。 |
+| 短期 CI 身份联合 | 长期静态部署密钥 | 静态密钥的寿命超过流水线被攻陷的时间。 |
+| 含名称和假值的 `.env.example` | 含真实开发值的示例文件 | 示例文件会被提交并被复制。 |
+| 先吊销，再清理日志 | 先删除提交 | 凭据仍然有效，证据却没了。 |
 
-## 3. Licensing and Compliance
+## 3. 许可证与合规
 
-Every dependency and every distribution carries license obligations. This dimension defines how a project admits
-third-party code, chooses its own license, records what it ships, and routes the questions that belong to counsel.
+每个依赖和每次分发都带有许可证义务。本维度定义项目如何接纳第三方代码、如何选择自己的许可证、如何
+记录所分发的内容，以及如何分派属于法务的问题。
 
-- **Classify inbound licenses into allowed, review, and forbidden.** Allowed examples are MIT, BSD-2-Clause,
-  BSD-3-Clause, ISC, 0BSD, and Apache-2.0, subject to attribution and notice obligations; review examples include
-  MPL-2.0, LGPL-2.1, LGPL-3.0, EPL-2.0, CDDL-1.0, and public-domain dedications with unclear patent language;
-  forbidden includes GPL-2.0 and GPL-3.0 in distributed code, AGPL-3.0 additionally for network-served code, SSPL,
-  BUSL-1.1, Commons Clause, non-commercial-only terms, and code with no license. An unknown license is forbidden
-  until a human identifies it and records the decision.
-- **Check the whole tree, not the top of it.** Read the SPDX identifier from the package metadata and the license
-  file, then check direct and transitive components, build tools, container base images, and vendored code.
-  Copyleft obligations can hide several levels down, and a dual-licensed package forces an explicit choice. Record
-  the resolved license per component, not a summary that cannot be audited later.
-- **Choose the outbound license deliberately.** Default to a permissive license for reusable libraries, with a
-  patent grant where the project can accept one, and decide copyleft only as an explicit product decision with
-  counsel. Put the license in `LICENSE` at the distribution root, in package metadata, and in source headers where
-  the ecosystem expects them; confirm that outbound terms are compatible with the inbound licenses and the
-  contributions actually used. A license change is a release decision, not an edit.
-- **Keep a license inventory.** Record each component with name, version, SPDX identifier, source, usage (runtime,
-  build, development, optional), modification status, obligations, and owner. Regenerate it for every release; a
-  development-only dependency is still recorded because it can become a shipped one. The inventory is the source of
-  the notice file and the SBOM, never a separate hand-written list.
-- **Generate an SBOM for every release.** Produce SPDX or CycloneDX JSON from the resolved dependency graph used to
-  build the artifact, including transitive components, versions, package identifiers, licenses, and hashes. Attach
-  it to the release, retain it for the support lifetime plus the retention period the team adopted, and diff it
-  against the previous release so new components are visible. Include container base images and operating-system
-  packages; a source-only SBOM understates what is deployed.
-- **Ship notices and attribution.** Generate `NOTICE` or `THIRD_PARTY_NOTICES` from the inventory, include the full
-  license text where the license requires it, preserve upstream `NOTICE` content for Apache-2.0 components, and
-  record the copyright line the license requires. Put the notice file at the distribution root and inside packaged
-  artifacts; attribution that lives only on a website fails the obligation for the binary that ships.
-- **Settle contribution agreements.** Default to a Developer Certificate of Origin sign-off on every commit; use a
-  contributor license agreement only when the organization requires one, and state which in `CONTRIBUTING`. The
-  inbound license is the outbound license unless counsel approves otherwise; never merge code with unknown
-  provenance, code copied from an incompatible source, or a contribution without the required sign-off.
-- **Flag export and regulatory questions.** When a product uses cryptography, is distributed to regulated or
-  sanctioned markets, or belongs to a regulated sector, route the classification question to counsel and record the
-  decision or the "not applicable" determination. Do not write a legal conclusion into the repository; keep the
-  documented decision and its owner, and revisit it when distribution or functionality changes.
+- **把入站许可证分为允许、审查和禁止三类。** 允许的例子有 MIT、BSD-2-Clause、BSD-3-Clause、ISC、
+  0BSD 和 Apache-2.0，但须遵守署名与声明义务；审查的例子包括 MPL-2.0、LGPL-2.1、LGPL-3.0、
+  EPL-2.0、CDDL-1.0，以及专利条款不清晰的公有领域声明；禁止的包括在分发代码中使用 GPL-2.0 和
+  GPL-3.0，在网络服务代码中额外包括 AGPL-3.0，以及 SSPL、BUSL-1.1、Commons Clause、仅限非商业
+  使用的条款和无许可证代码。未知许可证在人工识别并记录决定之前一律禁止。
+- **检查整棵依赖树，而不只是顶层。** 从包元数据和许可证文件中读取 SPDX 标识符，然后检查直接与传递
+  组件、构建工具、容器基础镜像和内置代码。copyleft 义务可能藏在好几层之下，双许可证包会迫使你做出
+  明确选择。按组件记录解析出的许可证，而不是记录一份日后无法审计的摘要。
+- **有意识地选择出站许可证。** 可复用库默认采用宽松许可证，项目能接受时附带专利授权；只有在法务参与
+  并作为明确的产品决策时才选择 copyleft。把许可证放在分发根目录的 `LICENSE`、包元数据，以及生态
+  期望的源码文件头中；确认出站条款与入站许可证及实际使用的贡献兼容。许可证变更是一项发布决定，
+  不是一次编辑。
+- **维护许可证清单。** 记录每个组件的名称、版本、SPDX 标识符、来源、用途（运行时、构建、开发、可选）、
+  修改状态、义务和负责人。每次发布都重新生成；仅用于开发的依赖也要记录，因为它可能变成随产品分发的
+  依赖。该清单是声明文件和 SBOM 的来源，绝不是另一份手写列表。
+- **每次发布都生成 SBOM。** 基于构建制品所用的已解析依赖图生成 SPDX 或 CycloneDX JSON，包含传递
+  组件、版本、包标识符、许可证和哈希。把它附到发布上，保留到支持周期加上团队采用的保留期限，并与
+  上一发布版本做差异对比，使新组件可见。包含容器基础镜像和操作系统包；只含源码的 SBOM 会低估实际
+  部署的内容。
+- **随制品提供声明与署名。** 从清单生成 `NOTICE` 或 `THIRD_PARTY_NOTICES`，在许可证要求时包含完整
+  许可证文本，为 Apache-2.0 组件保留上游 `NOTICE` 内容，并记录许可证要求的版权行。把声明文件放在
+  分发根目录和打包制品内部；只挂在网站上的署名无法满足随二进制分发的义务。
+- **确定贡献协议。** 默认要求每个提交都有 Developer Certificate of Origin 签署；仅在组织要求时使用
+  贡献者许可协议，并在 `CONTRIBUTING` 中说明采用哪一种。除非法务另有批准，入站许可证就是出站
+  许可证；绝不合并来源不明的代码、从互不兼容来源复制的代码，或缺少所需签署的贡献。
+- **标记出口与监管问题。** 当产品使用密码学、分发到受监管或受制裁市场，或属于受监管行业时，把分类
+  问题交给法务，并记录决定或“不适用”的判定。不要把法律结论写进仓库；保留有记录的决定及其负责人，
+  并在分发或功能变化时重新审视。
 
-| Good | Bad | Why |
+| 好 | 坏 | 原因 |
 |---|---|---|
-| SPDX identifier checked against policy | "It is public on a repository host, so it is reusable" | No license means all rights are reserved. |
-| Transitive license scan | Direct dependencies only | Copyleft obligations hide below the top level. |
-| Apache-2.0 use with upstream `NOTICE` preserved | Source copied without the `NOTICE` file | The attribution obligation is violated on distribution. |
-| Notice file generated from the inventory | Hand-copied attribution list | It drifts at the first dependency change. |
-| Sign-off on every contribution | Merging unsigned code | Rights and provenance are unknown. |
-| Counsel-approved exception with owner and expiry | Verbal approval from counsel | No record, and the exception outlives its context. |
+| 按策略检查 SPDX 标识符 | “它在仓库托管平台上公开，所以可以复用” | 没有许可证意味着保留所有权利。 |
+| 扫描传递依赖的许可证 | 只检查直接依赖 | copyleft 义务藏在顶层之下。 |
+| 使用 Apache-2.0 并保留上游 `NOTICE` | 复制源码时没有 `NOTICE` 文件 | 分发时违反了署名义务。 |
+| 从清单生成声明文件 | 手工复制的署名列表 | 第一次依赖变更就会失准。 |
+| 每个贡献都有签署 | 合并未签署的代码 | 权利与来源都不明确。 |
+| 经法务批准、带负责人和到期日的例外 | 法务的口头批准 | 没有记录，且例外会超出当时语境继续有效。 |
 
-Outbound defaults by distribution type, subject to counsel and the organization's policy:
+按分发类型划分的出站默认许可证，须经法务并根据组织策略确定：
 
-| Project type | Default outbound license | Reason |
+| 项目类型 | 默认出站许可证 | 原因 |
 |---|---|---|
-| Reusable library or SDK | Apache-2.0 | Permissive use plus an explicit patent grant. |
-| Small internal tool released publicly | MIT | Short, permissive, and widely understood. |
-| Hosted application | Proprietary or no license grant | The service is not distributed, so a source license is a separate decision. |
-| Documentation and specifications | CC BY 4.0 | Content reuse with attribution; not for code. |
-| Sample code inside documentation | Match the project license | Snippets are copied, so their terms must be clear. |
+| 可复用库或 SDK | Apache-2.0 | 宽松使用外加明确的专利授权。 |
+| 公开发布的小型内部工具 | MIT | 简短、宽松且广为人知。 |
+| 托管应用 | 专有或不授予许可证 | 服务不分发，因此源码许可证是另一个决定。 |
+| 文档与规范 | CC BY 4.0 | 允许带署名复用内容；不适用于代码。 |
+| 文档内的示例代码 | 与项目许可证一致 | 代码片段会被复制，因此条款必须清晰。 |
 
-## 4. Privacy
+## 4. 隐私
 
-Privacy work starts before a field is collected and ends only when the data is deleted. This dimension covers
-classification, inventory, purpose, minimization, retention, data subject requests, processors, transfers, and
-breach notification; where a rule depends on jurisdiction, counsel decides and the decision is recorded.
+隐私工作从字段被收集之前开始，只有数据被删除时才结束。本维度覆盖分级、清单、用途、最小化、保留、
+数据主体请求、处理者、传输和泄露通知；规则取决于司法管辖区时，由法务决定并记录决定。
 
-- **Classify personal data.** Classify each element by sensitivity and access, using public, internal, confidential,
-  and restricted. Names, email addresses, phone numbers, account identifiers, and support messages are confidential;
-  government identifiers, financial accounts, health information, precise location, and authentication secrets are
-  restricted. Treat IP addresses, device identifiers, and pseudonymous identifiers as personal data in the
-  inventory, and let counsel settle jurisdiction-specific classification.
-- **Map the inventory and the flows.** Record for each element: subject, source, purpose, system, storage location,
-  recipients and processors, region, retention, and access roles. Tabulate or draw the flows between service,
-  warehouse, logs, backups, and vendors; the map is what makes a deletion request or a breach assessment possible.
-  A new field, system, vendor, or export adds an inventory row before production traffic reaches it.
-- **State the purpose and record consent where required.** Collect for a named purpose and do not reuse the data for
-  a new purpose without review; let counsel determine the lawful basis and where consent is required. Marketing
-  consent is opt-in and never pre-checked, cookie and SDK categories are gated on the matching consent, and a
-  consent record captures the version, timestamp, and scope. "We may use data for any purpose" states no purpose.
-- **Minimize what exists.** Remove any field without a documented purpose; prefer internal identifiers over direct
-  identifiers; hash, truncate, or aggregate where the identity is not needed; keep personal data out of logs, URLs,
-  query strings, error messages, event names, and test fixtures. Treat each analytics event as a data collection:
-  name its purpose and owner, review its property schema, truncate IP addresses, never capture page text or form
-  input, and gate it on the same consent decision as the SDK that sends it.
-- **Bound retention and hand off the mechanism.** Set a retention period per element in the inventory and define the
-  deletion path, including backups, caches, logs, and processor copies. The data and platform roles own deletion jobs
-  and migrations; this standard sets the policy and requires evidence that the job ran. A legal hold is a counsel
-  decision; until counsel lifts it, deletion for that element pauses and the reason is recorded.
-- **Handle data subject requests.** Publish an intake channel, verify the requester's identity, and respond within
-  the team's adopted 30 days or the statutory deadline counsel sets, whichever is shorter. Search every system in
-  the inventory, including logs and processors, deliver the result in the requested format, and record the date,
-  systems searched, and outcome. Deletion requests propagate to processors and backups on the documented schedule.
-- **Review processors and transfers.** No processor receives personal data before a data processing agreement, a
-  security review, a documented data location, and a deletion commitment; keep the subprocessor list current and
-  reassess annually. A cross-border transfer needs the mechanism counsel approves, a storage region, and a rule for
-  remote support access; copying production data to a laptop or a local development database is a transfer that
-  bypasses every control.
-- **Prepare breach notification before the breach.** On detection, classify and contain within 24 hours, preserve
-  the evidence, and brief the incident owner and counsel. Counsel sets the legal notification deadline and the
-  recipients; the team prepares the facts and the timeline, notifies parties the contract requires, and prevents any
-  public statement before approval. Complete a post-incident review that records the gap and the control that
-  prevents a repeat.
+- **对个人数据分级。** 按敏感度和访问权限对每个元素分级，使用公开、内部、保密和受限四级。姓名、
+  电子邮箱地址、电话号码、账户标识符和客服消息属于保密级；政府标识符、金融账户、健康信息、精确
+  位置和认证机密属于受限级。在清单中把 IP 地址、设备标识符和假名标识符视为个人数据，司法管辖区
+  特有的分级交由法务确定。
+- **绘制清单与流转。** 为每个元素记录：数据主体、来源、用途、系统、存储位置、接收方与处理者、区域、
+  保留期限和访问角色。用表格或图画出服务、数据仓库、日志、备份和供应商之间的流转；正是这张图让删除
+  请求或泄露评估成为可能。新字段、系统、供应商或导出在生产流量到达之前先增加一行清单。
+- **说明用途，并在要求时记录同意。** 为明确的用途收集数据，未经审查不得把数据复用于新用途；由法务
+  确定合法性依据以及何处需要同意。营销同意必须是选择加入，绝不预先勾选；cookie 与 SDK 类别按对应的
+  同意情况放行；同意记录包含版本、时间戳和范围。“我们可以将数据用于任何用途”等于没有说明用途。
+- **最小化存在的数据。** 删除任何没有书面用途的字段；优先使用内部标识符而不是直接标识符；在不需要
+  身份时进行哈希、截断或聚合；不让个人数据进入日志、URL、查询字符串、错误消息、事件名称和测试
+  夹具。把每个分析事件都当作一次数据收集：明确其用途和负责人，审查其属性 schema，截断 IP 地址，
+  绝不捕获页面文本或表单输入，并用与发送它的 SDK 相同的同意决定来控制。
+- **限定保留期限并交接执行机制。** 在清单中为每个元素设定保留期限，并定义删除路径，包括备份、缓存、
+  日志和处理者副本。数据与平台角色负责删除任务和迁移；本规范制定策略，并要求提供任务已运行的证据。
+  法律保留由法务决定；在法务解除之前，该元素的删除暂停并记录原因。
+- **处理数据主体请求。** 公布受理渠道，核实请求者身份，并在团队采用的 30 天期限或法务确定的法定
+  期限内答复，以较短者为准。检索清单中的每个系统，包括日志和处理者；按请求的格式交付结果；记录
+  日期、已检索的系统和结果。删除请求按有记录的安排传递给处理者和备份。
+- **审查处理者与传输。** 在处理者满足数据处理协议、安全审查、有记录的数据存放位置和删除承诺之前，
+  不得向其提供个人数据；保持次处理者列表最新，并每年重新评估。跨境传输需要法务批准的机制、存储
+  区域，以及远程支持访问规则；把生产数据复制到笔记本电脑或本地开发数据库是一种绕过所有控制措施的
+  传输。
+- **在泄露发生之前准备好泄露通知。** 发现后 24 小时内完成分级与遏制，保留证据，并向事件负责人和
+  法务通报。法务确定法定的通知期限和通知对象；团队准备事实与时间线，通知合同要求的各方，并阻止
+  任何未经批准的公开声明。完成事后审查，记录缺口以及防止再次发生的控制措施。
 
-| Class | Examples | Handling |
+| 级别 | 示例 | 处理方式 |
 |---|---|---|
-| Public | Published documentation, marketing pages | No restriction beyond the approval to publish |
-| Internal | Internal metrics, non-sensitive configuration | Authenticated staff access |
-| Confidential | Name, email address, phone number, account identifier, support message | Role-based access, encryption in transit and at rest, no logs |
-| Restricted | Government identifier, financial account, health data, precise location, credential | Explicit approval, field-level encryption, audited access, minimum retention |
+| 公开 | 已发布的文档、营销页面 | 除发布批准外没有其他限制 |
+| 内部 | 内部指标、非敏感配置 | 已认证员工可访问 |
+| 保密 | 姓名、电子邮箱地址、电话号码、账户标识符、客服消息 | 基于角色的访问、传输与静态加密、不写日志 |
+| 受限 | 政府标识符、金融账户、健康数据、精确位置、凭据 | 明确批准、字段级加密、访问经审计、最小保留 |
 
-| Good | Bad | Why |
+| 好 | 坏 | 原因 |
 |---|---|---|
-| Inventory row with purpose, retention, and region | "It is only an email address" | Every identifier carries obligations and a deletion path. |
-| Event schema reviewed before deployment | Field added by the analytics team | Collection escapes purpose and review. |
-| Pseudonymous identifier in analytics | Raw email in an event property | The warehouse becomes a second identity store. |
-| Consent gate before the SDK loads | Banner that only informs | Consent recorded after collection does not authorize it. |
-| Deletion verified against backups and processors | Delete from the primary table only | Copies survive in logs, backups, and vendors. |
-| Processor reviewed before data flows | SDK added and disclosed later | Data already left under unagreed terms. |
-| Counsel sets the notification deadline | Team guesses the deadline and notifies publicly | A wrong disclosure creates its own liability. |
+| 含用途、保留期限和区域的清单行 | “这只是一个电子邮箱地址” | 每个标识符都带有义务和删除路径。 |
+| 部署前审查事件 schema | 分析团队自行添加字段 | 收集绕过了用途限制与审查。 |
+| 分析中使用假名标识符 | 事件属性中使用原始邮箱 | 数据仓库变成第二个身份存储。 |
+| SDK 加载前设置同意门禁 | 只做告知的横幅 | 收集之后记录的同意不能授权该收集。 |
+| 对照备份和处理者验证删除 | 只从主表删除 | 副本仍留在日志、备份和供应商处。 |
+| 数据流转之前审查处理者 | 先加 SDK、事后再披露 | 数据已经在未约定的条款下离开。 |
+| 由法务确定通知期限 | 团队猜测期限并公开通知 | 错误的披露本身会带来责任。 |
 
-## 5. Vulnerability Disclosure
+## 5. 漏洞披露
 
-Disclosure is a process with promises attached: a reporter must reach a human, the team must meet the timelines it
-publishes, and users must be able to patch before the details become public. This dimension covers the channel, the
-rating, the fix, the advisory, credit, CVE handling, bounty boundaries, and the embargo.
+披露是一个附带承诺的流程：报告者必须能找到人，团队必须遵守自己公布的时间线，用户必须能在细节公开
+之前完成打补丁。本维度覆盖渠道、评级、修复、公告、署名、CVE 处理、赏金边界和禁发期。
 
-- **Publish the channel and the scope.** The `SECURITY.md` content names a monitored reporting address, an encrypted
-  channel where available, supported versions, in-scope components, out-of-scope categories such as social
-  engineering and physical access, the safe-harbor terms for good-faith research, and the response commitments
-  below. Repository governance owns only the file's presence, location, and basic metadata (owner, review date), and
-  the documentation conventions own its page structure and prose; this standard owns the content and the
-  commitments it publishes. Confirm that the
-  address resolves and the channel is monitored at least quarterly.
-- **Acknowledge and triage on the clock.** Acknowledge a report within 2 business days, complete initial triage
-  within 5 business days, and give the reporter a severity, an owner, and the next milestone. Send a status update
-  at least every 10 business days while the report is open, and record the timestamps in the report log. A report
-  that receives no acknowledgement is a reporter who goes public or gives up.
-- **Rate severity with a published scale.** Assign CVSS v3.1 or v4.0 with the metric vector recorded, then adjust
-  for exposure, exploit availability, data sensitivity, and compensating controls in the advisory notes. Severity
-  drives the remediation deadline: critical 7 calendar days, high 30, medium 90, low 180 or the next scheduled minor
-  release. A disagreement is escalated to the security owner and the rating is recorded, not negotiated in the
-  report thread.
-- **Coordinate the fix and the release.** Reproduce the issue, fix it on a private branch or fork, add a regression
-  test in the same change, and ship an out-of-band patch for critical and high findings rather than waiting for the
-  scheduled release. Backport to every supported version, coordinate with the maintainers of a vulnerable dependency
-  or downstream distributor, and give major customers advance notice under the embargo where a contract requires
-  it.
-- **Publish an advisory with the fix.** After the fixed release, publish an advisory with the CVE identifier,
-  affected and fixed versions, severity and vector, impact, workarounds, and reporter credit; add the entry to the
-  changelog and release notes. Publish within 2 business days of the release and before the embargo ends, and keep
-  exploitation details out of the advisory until users have had a patch window.
-- **Keep credit predictable.** Offer credit by name or handle and link, default to crediting every reporter who
-  followed the process, and honor a request to stay anonymous. Credit is independent of a bounty payment and of the
-  severity; a duplicate report that helped confirm the issue can still be credited. Never use credit, or its
-  withdrawal, as leverage in a dispute.
-- **Request a CVE identifier.** Request a CVE through the project's CNA or an authorized CNA before publishing the
-  advisory; include the affected versions, the weakness type, and a description of the impact. Record the identifier
-  in the advisory, the changelog, and the release notes. If assignment is delayed, publish the advisory with the
-  request status and update it when the identifier is assigned.
-- **Set bounty and embargo boundaries explicitly.** Run a bounty program only where budget, rules, and a triage
-  process exist; state in-scope assets, prohibited tests, reward criteria, and that access to other people's data is
-  never authorized. The embargo default is 90 calendar days from the report; shorten it for active exploitation or a
-  publicly known issue, extend it only with the reporter's agreement and a recorded reason, and if another party
-  publishes first, publish the mitigation and advisory immediately rather than holding the embargo alone.
+- **公布渠道与范围。** `SECURITY.md` 内容包括受监控的报告地址、可用的加密渠道、支持的版本、范围内
+  的组件、范围外的类别（如社会工程和物理访问）、善意研究的安全港条款，以及下文列出的响应承诺。
+  `repository-governance-conventions` 只负责该文件是否存在、位置和基本元数据（负责人、审查日期），
+  `documentation-conventions` 负责其页面结构与行文；本规范负责内容及其公布的承诺。至少每季度确认该地址可送达、
+  渠道有人监控。
+- **按时间要求确认并分诊。** 在 2 个工作日内确认收到报告，在 5 个工作日内完成初步分诊，并向报告者
+  给出严重程度、负责人和下一个里程碑。报告处理期间至少每 10 个工作日发送一次状态更新，并在报告
+  日志中记录时间戳。得不到确认的报告，只会让报告者选择公开或放弃。
+- **用公开的评分标准评定严重程度。** 采用 CVSS v3.1 或 v4.0 评分并记录指标向量，然后在公告备注中
+  依据暴露程度、利用可得性、数据敏感度和补偿性控制措施进行调整。严重程度决定修复期限：严重 7 个
+  自然日、高危 30 个自然日、中危 90 个自然日、低危 180 个自然日或下一个计划的小版本发布。分歧
+  上报给安全负责人并记录评级，不在报告线程中协商。
+- **协调修复与发布。** 复现问题，在私有分支或 fork 上修复，在同一变更中加入回归测试，对严重和高危
+  发现项发布计划外补丁，而不是等待计划发布。向每个支持的版本回移植，与存在漏洞的依赖的维护者或
+  下游分发者协调，并在合同要求时于禁发期内提前通知重要客户。
+- **随修复发布公告。** 修复版本发布后，发布包含 CVE 编号、受影响版本与修复版本、严重程度与向量、
+  影响、临时缓解措施和报告者署名的公告；并把该条目加入变更日志和发布说明。在发布后 2 个工作日内、
+  禁发期结束之前发布，并在用户获得打补丁窗口之前，不在公告中放入利用细节。
+- **让署名规则可预期。** 按姓名或昵称加链接提供署名，默认给每位遵循流程的报告者署名，并尊重匿名
+  请求。署名独立于赏金支付和严重程度；有助于确认问题的重复报告仍可获得署名。绝不把署名或撤销署名
+  当作争议中的筹码。
+- **申请 CVE 编号。** 在发布公告之前，通过项目的 CNA 或授权的 CNA 申请 CVE；包含受影响版本、弱点
+  类型和影响描述。在公告、变更日志和发布说明中记录该编号。如果编号分配延迟，先发布公告并说明申请
+  状态，待编号分配后更新。
+- **明确设定赏金与禁发期边界。** 只有在有预算、规则和分诊流程时才运行赏金计划；说明范围内的资产、
+  禁止的测试、奖励标准，并说明访问他人数据永远不被授权。禁发期默认从报告之日起 90 个自然日；对
+  正在被利用或已公开的问题缩短它，只有经报告者同意并记录原因才延长；如果其他方先公开，立即发布
+  缓解措施和公告，而不是独自继续遵守禁发期。
 
-| Good | Bad | Why |
+| 好 | 坏 | 原因 |
 |---|---|---|
-| Monitored channel with published commitments | Security mailbox nobody reads | Reports are lost, and researchers publish instead. |
-| Fix and advisory on the same day | Silent patch with no advisory | Users cannot assess exposure or verify the fix. |
-| CVSS vector recorded in the advisory | Severity chosen by intuition | No comparable basis and no audit trail. |
-| CVE requested before publication | Advisory without an identifier | Downstream scanners and customers cannot track it. |
-| Credit offered and opt-out honored | Reporter's name published without consent | Trust is broken with the next researcher. |
-| Published embargo with a recorded end date | Indefinite embargo with no date | Reporters escalate to public disclosure. |
+| 受监控的渠道与已公布的承诺 | 无人查看的安全邮箱 | 报告会丢失，研究者转而公开。 |
+| 当天完成修复与公告 | 静默打补丁、不发公告 | 用户无法评估暴露面或验证修复。 |
+| 公告中记录 CVSS 向量 | 凭直觉选择严重程度 | 没有可比较的依据，也没有审计轨迹。 |
+| 发布前申请 CVE | 公告没有编号 | 下游扫描器和客户无法跟踪。 |
+| 提供署名并尊重退出 | 未经同意公开报告者姓名 | 会失去下一位研究者的信任。 |
+| 公布禁发期并记录结束日期 | 没有日期的无限期禁发 | 报告者会升级为公开披露。 |
