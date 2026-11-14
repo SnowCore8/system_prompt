@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# 全量校验：Markdown 格式、两份测试、shellcheck、JSON、软链、DSH 适配。
+# 全量校验：Markdown 格式、两份测试、shellcheck、JSON、软链、DSH/Qoder/Qwen 适配。
 set -uo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -131,14 +131,40 @@ else
   fail "DSH: AGENTS.md 未指向项目维护约定 CONTRIBUTING.md"
 fi
 
+echo "== Qoder 适配 =="
+if [ ! -d .qoder ] || [ -L .qoder ]; then
+  fail "Qoder: .qoder 应为普通目录"
+fi
+if [ -e .qoder-cn ]; then
+  fail "Qoder: 项目级不读 .qoder-cn，应删除"
+fi
+if [ -e .qoder/plugins ]; then
+  fail "Qoder: 项目级不扫描 .qoder/plugins，应删除"
+fi
+if [ -L .qoder/rules ] && [ "$(readlink -f .qoder/rules)" = "$REPO_ROOT/rules" ]; then
+  :
+else
+  fail "Qoder: .qoder/rules 未指向 rules/"
+fi
+
 echo "== Qwen 适配 =="
 if [ ! -d .qwen ] || [ -L .qwen ]; then
   fail "Qwen: .qwen 应为普通目录"
 fi
-if [ -L .qwen/AGENTS.md ] && [ "$(readlink -f .qwen/AGENTS.md)" = "$REPO_ROOT/rules/global-user-constraints.md" ]; then
+if [ -e .qwen/AGENTS.md ]; then
+  fail "Qwen: 不读取项目级 .qwen/AGENTS.md，应删除"
+fi
+if [ ! -d .qwen/rules ] || [ -L .qwen/rules ]; then
+  fail "Qwen: .qwen/rules 应为普通目录"
+fi
+if [ -L .qwen/rules/global-user-constraints.md ] \
+  && [ "$(readlink -f .qwen/rules/global-user-constraints.md)" = "$REPO_ROOT/rules/global-user-constraints.md" ]; then
   :
 else
-  fail "Qwen: .qwen/AGENTS.md 未指向约束正文"
+  fail "Qwen: .qwen/rules/global-user-constraints.md 未指向约束正文"
+fi
+if head -n 10 rules/global-user-constraints.md | grep -q '^paths:'; then
+  fail "Qwen: 约束正文 front matter 含 paths，会变成条件规则"
 fi
 
 echo "== 插件校验 =="
