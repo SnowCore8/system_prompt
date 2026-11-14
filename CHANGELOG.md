@@ -23,6 +23,11 @@
 - 根入口改为 `.qoder` 实际目录；`.qwen`、`.qoder-cn` 软链指向 `.qoder`，`.gitignore` 的本地配置路径同步。
 - `documentation-conventions` 的 `SECURITY.md` 条目只保留页面结构与行文，必需内容与响应承诺归 `security-compliance-conventions`。
 
+**修复**
+
+- 旧 skill 治理：`naming-conventions`、`comment-conventions`、`documentation-conventions`、`system-prompt-authoring` 补齐与七个通用规范的归属边界，移除重复的教学与流程内容；命名索引与 34 个维度章节一一对应。
+- `system-prompt-authoring` 补 Scope 与 Review Checklist，核验来源并修正过期引文，`--strict` 说明与 checker 行为对齐；仓库 README 与术语表不再把内容规则限定为 S1–S13。
+
 ## 2026-11-12
 
 **新增**
