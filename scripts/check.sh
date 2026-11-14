@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# 全量校验：Markdown 格式、两份测试、shellcheck、JSON。
+# 全量校验：Markdown 格式、两份测试、shellcheck、JSON、DSH 适配。
 set -uo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -56,6 +56,35 @@ echo "== JSON =="
 while IFS= read -r -d '' file; do
   python3 -m json.tool "$file" >/dev/null 2>&1 || fail "JSON 无效: $file"
 done < <(git ls-files --cached --others --exclude-standard -z '*.json')
+
+echo "== DSH 适配 =="
+dsh_root=".dsh/skills"
+plugin_dirs="$(find "$PLUGIN_DIR/skills" -mindepth 1 -maxdepth 1 -type d | wc -l)"
+link_count=0
+for link in "$dsh_root"/*; do
+  [ -L "$link" ] || {
+    [ -e "$link" ] && fail "DSH: $link 不是软链"
+    continue
+  }
+  link_count=$((link_count + 1))
+  name="$(basename "$link")"
+  if ! target="$(readlink -f "$link")"; then
+    fail "DSH: 无法解析 $link"
+    continue
+  fi
+  [ -f "$target/SKILL.md" ] || {
+    fail "DSH: $name 缺少 SKILL.md"
+    continue
+  }
+  front_name="$(sed -n 's/^name:[[:space:]]*//p' "$target/SKILL.md" | head -n 1 | tr -d '\r')"
+  [ "$front_name" = "$name" ] || fail "DSH: $name 的 frontmatter name 为 '$front_name'"
+done
+[ "$link_count" -eq "$plugin_dirs" ] || fail "DSH: 软链 $link_count 个，插件 skill $plugin_dirs 个"
+if [ -L AGENTS.md ] && [ "$(readlink -f AGENTS.md)" = "$REPO_ROOT/rules/global-user-constraints.md" ]; then
+  :
+else
+  fail "DSH: AGENTS.md 未指向唯一规范正文"
+fi
 
 echo "== 插件校验 =="
 if command -v qoderclicn >/dev/null 2>&1; then
