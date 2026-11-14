@@ -11,7 +11,7 @@
 - `dist.sh` 增加按包 allowlist：qwen 不再允许 `rules/`，并要求 `constraints/` 存在；测试文件黑名单
   阻止开发测试进入任何包。三包版本升到 `0.8.4`。
 - `check.sh` 在本地校验包内容（Qwen `constraints/`、Qoder `rules/`、包内不得有测试）；README 与
-  发布手册说明 GitHub Packages 旧包停在 `0.7.1`，npm 是唯一发布通道。
+  发布手册说明 GitHub Packages 旧包已删除，npm 是唯一发布通道。
 
 ## 0.8.3（2026-11-14）
 
