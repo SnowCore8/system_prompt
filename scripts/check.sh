@@ -123,11 +123,9 @@ for link in "$dsh_root"/*; do
   [ "$front_name" = "$name" ] || fail "DSH: $name 的 frontmatter name 为 '$front_name'"
 done
 [ "$link_count" -eq "$plugin_dirs" ] || fail "DSH: 软链 $link_count 个，插件 skill $plugin_dirs 个"
-if [ -L AGENTS.md ] && [ "$(readlink -f AGENTS.md)" = "$REPO_ROOT/rules/global-user-constraints.md" ]; then
-  :
-else
-  fail "DSH: AGENTS.md 未指向唯一规范正文"
-fi
+[ -f AGENTS.md ] || fail "DSH: 缺少项目指令文件 AGENTS.md"
+[ -L AGENTS.md ] && fail "DSH: AGENTS.md 应为项目约定文件，不是约束正文软链"
+[ -f rules/global-user-constraints.md ] || fail "DSH: 缺少约束正文 rules/global-user-constraints.md"
 
 echo "== 插件校验 =="
 if command -v qoderclicn >/dev/null 2>&1; then
