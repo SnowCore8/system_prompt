@@ -1,151 +1,137 @@
-# Collaboration Playbooks
+# 协作操作手册
 
-Use these playbooks with `SKILL.md` and `references/dimensions.md`. Each playbook takes one recurring collaboration
-decision from question to result; follow the steps in order, record the answer where the next person will read it,
-and apply a stricter local policy when one exists.
+这些操作手册与 `SKILL.md` 和 `references/dimensions.md` 配合使用。每个操作手册把一个反复出现的协作决策从问题带到
+结果；按顺序执行步骤，把答案记录在下一个人会读到的地方，本地有更严格策略时应用它。
 
-## Branch Model Selection Worksheet
+## 分支模型选择工作表
 
-Answer these questions for the repository, then choose the first model that fits every answer:
+针对仓库回答这些问题，然后选择第一个与所有答案都相符的模型：
 
-1. Can every commit on the integration branch deploy to production without a separate stabilization step? If yes,
-   prefer trunk-based.
-2. Does a release need a code freeze, qualification, or a supported-version window? If yes, add release branches to
-   trunk-based or choose release-train branches.
-3. Must several shipped versions be supported for months, with fixes on each? If yes, choose GitFlow or per-version
-   maintenance branches, and budget the forward-port work.
-4. Do contributors lack write access to the repository? If yes, use fork-and-pull, protect the target branch, and
-   require a maintainer to merge.
-5. Is the team smaller than ten engineers with one deployable service? If yes, GitHub flow or plain trunk-based is
-   enough; do not adopt GitFlow for its ceremony.
-6. Does a regulator or customer require a release record separate from the commit history? If yes, keep release tags
-   immutable and attach the record to the tag; do not simulate the audit with environment branches.
+1. 集成分支上的每个提交都能不经单独稳定化步骤直接部署到生产吗？能，就优先主干开发。
+2. 发布需要代码冻结、资格验证或受支持版本窗口吗？需要，就在主干开发上加发布分支，或选择发布列车分支。
+3. 多个已交付版本必须支持数月，且每个都要修复吗？是，就选择 GitFlow 或按版本维护分支，并为向前移植工作做预算。
+4. 贡献者对仓库没有写权限吗？是，就用 fork-and-pull，保护目标分支，并要求维护者合并。
+5. 团队少于十名工程师且只有一个可部署服务吗？是，GitHub flow 或纯主干开发就够了；不要为了仪式感采用 GitFlow。
+6. 监管机构或客户要求独立于提交历史的发布记录吗？是，就让发布标签不可变，并把记录附到标签上；不要用环境分支
+   模拟这项审查。
 
-Record the outcome as branch classes, merge method per class, lifetime limit, hotfix path, and next review date.
-The answer pattern selects the model:
+把结果记录为分支类别、每个类别的合并方式、生命周期上限、热修复路径和下次审查日期。答案组合决定模型：
 
-| Answer pattern | Model |
+| 答案组合 | 模型 |
 |---|---|
-| Every commit deployable, one environment, small team | Trunk-based, no release branches |
-| Every commit deployable, versioned or pinned releases | Trunk-based with release branches |
-| One production environment, review-based flow | GitHub flow |
-| Code freeze, qualification, several supported versions | Release-train branches |
-| Shipped or installed software with support windows | GitFlow |
-| Untrusted contributors without write access | Fork-and-pull |
+| 每个提交都可部署、一个环境、小团队 | 主干开发，无发布分支 |
+| 每个提交都可部署、版本化或固定版本发布 | 主干开发，带发布分支 |
+| 一个生产环境、基于审查的流程 | GitHub flow |
+| 代码冻结、资格验证、多个受支持版本 | 发布列车分支 |
+| 有支持窗口的交付或安装型软件 | GitFlow |
+| 没有写权限的不可信贡献者 | Fork-and-pull |
 
-## Pull Request Description and Size Checklist
+## PR 描述与体量检查清单
 
-A description is complete when a reviewer can decide without opening the diff; a request is small enough when a
-reviewer can hold it in one pass. Check both before requesting review.
+当审查者不打开 diff 就能做出决定时，描述才算完整；当审查者能一次看完时，请求才算足够小。请求审查前先检查这两点。
 
-Required decision content:
+必须包含的决定内容：
 
-- Problem and impact: what breaks or is missing today, and who notices it.
-- Approach: the change in two or three sentences, plus the rejected alternative when the choice is not obvious.
-- Verification: commands run with their results, test names added, and manual steps or screenshots for UI changes.
-- Risk and rollback: the risky hunks, the blast radius, the flag or revert path, and the migration or backfill plan.
-- Linked issue and follow-ups: what this closes, what it defers, and which stacked request it depends on.
+- 问题与影响：现在哪里坏了或缺了什么，谁会注意到。
+- 做法：用两三句话说明变更，并在选择不明显时补充被否决的备选方案。
+- 验证：运行过的命令及其结果、新增的测试名称，以及 UI 变更的手工步骤或截图。
+- 风险与回滚：有风险的 hunk、影响范围、开关或 revert 路径，以及迁移或回填计划。
+- 关联 issue 与后续事项：这次关闭什么、推迟什么，以及依赖哪个堆叠请求。
 
-Size thresholds:
+体量阈值：
 
-- Under 200 changed lines: normal review; one reviewer unless the risk class says otherwise.
-- 200 to 400 changed lines: state why the change is one unit, and split when any part can land independently.
-- 400 to 800 changed lines: split or stack before review; when it cannot be split, add a design note and a second
-  reviewer.
-- Over 800 changed lines: reject as one request unless it is mechanical (generated output, lockfile, rename) with
-  the mechanical part isolated and the command that reproduces it.
+- 改动少于 200 行：常规审查；除非风险级别另有要求，一名审查者。
+- 改动 200 至 400 行：说明为什么这是一个单位，任何部分能独立合入时就拆分。
+- 改动 400 至 800 行：审查前拆分或堆叠；无法拆分时，补一份设计说明和第二名审查者。
+- 改动超过 800 行：作为一个请求予以拒绝，除非它属机械性变更（生成产物、锁文件、重命名），并且机械部分已隔离
+  且有可复现它的命令。
 
-Before requesting review:
+请求审查之前：
 
-- [ ] The title states the outcome and follows the commit format.
-- [ ] The description answers the required content points.
-- [ ] The linked issue closes only when its acceptance criteria are met.
-- [ ] The diff contains no debug output, commented-out code, or unrelated edit.
-- [ ] The author has read every hunk of the diff, including generated changes.
-- [ ] The required checks are green, or the request stays a draft.
+- [ ] 标题说明结果并遵循提交格式。
+- [ ] 描述回答了必须包含的内容要点。
+- [ ] 只有在验收标准满足时才关闭关联 issue。
+- [ ] diff 中没有调试输出、被注释掉的代码或无关改动。
+- [ ] 作者读过 diff 的每个 hunk，包括生成内容。
+- [ ] 必需校验全绿，否则请求保持草稿。
 
-Self-review procedure before requesting review:
+请求审查之前的自审流程：
 
-1. Read the diff hunk by hunk and mark every hunk the description does not explain.
-2. Run the checks the review will run, including the linters and the documentation build.
-3. Remove debug output, commented-out code, and unrelated edits from the diff.
-4. Re-read the description against the final diff and correct stale statements before marking ready.
+1. 逐 hunk 阅读 diff，标出描述没有解释的每个 hunk。
+2. 运行审查将要运行的校验，包括 linter 和文档构建。
+3. 从 diff 中删除调试输出、被注释掉的代码和无关改动。
+4. 对照最终 diff 重读描述，在标记就绪前改正过期表述。
 
-## Review Level Table
+## 审查级别表
 
-| Change class | Examples | Reviewers | Tests required | Docs required |
+| 变更级别 | 示例 | 审查者 | 所需测试 | 所需文档 |
 |---|---|---|---|---|
-| Light | Comments, docs, formatting, test-only refactor, patch-level dependency update | 1 | Existing suite; a new test only when behavior changed | Update when a user-visible statement changes |
-| Standard | Feature, bug fix, internal refactor, configuration default | 1 owner | A new or updated test proving the behavior, plus the affected suite | Update the page that documents the behavior |
-| Risky | Auth, payments, permissions, crypto, data migration, public API, CI or release tooling | 2, including a domain or security owner | Unit, integration, negative and failure-path tests, and staging verification | Runbook, migration note, or API reference updated in the same request |
+| 轻量 | 注释、文档、格式化、仅测试的重构、补丁级依赖更新 | 1 | 现有测试套件；只有行为改变时才加新测试 | 用户可见表述变化时更新 |
+| 标准 | 功能、缺陷修复、内部重构、配置默认值 | 1 名所有者 | 一个证明该行为的新增或更新测试，加上受影响的测试套件 | 更新记录该行为的页面 |
+| 高风险 | 认证、支付、权限、加密、数据迁移、公共 API、CI 或发布工具 | 2 名，包含领域或安全负责人 | 单元、集成、负向和失败路径测试，以及 staging 验证 | 在同一请求中更新运行手册、迁移说明或 API 参考 |
 
-Rules: escalate a class rather than downgrade it when reviewers disagree; a light change that touches a risky path
-becomes risky; record the class in the request; a risky change without its second reviewer waits instead of merging
-with a promise of later review. A domain reviewer may join an unfamiliar area, but the owner's approval remains the
-requirement, and only risky code changes require two approvals (governance and ownership changes take the
-governance rule's two approvers).
+规则：审查者有分歧时上调级别而不是下调；触及高风险路径的轻量变更变成高风险；在请求中记录级别；缺少第二名
+审查者的高风险变更应当等待，而不是带着「之后再审查」的承诺合并。领域审查者可以加入不熟悉的区域，但所有者批准
+仍是要求，只有高风险代码变更需要两名批准者（治理与所有权变更按治理规则需要两名批准者）。
 
-## Review Comment Severity Taxonomy
+## 审查评论严重级别分类
 
-| Severity | Prefix | Meaning | Author action | Merge effect |
+| 严重级别 | 前缀 | 含义 | 作者行动 | 合并影响 |
 |---|---|---|---|---|
-| Blocking | `must:` | Defect, missing evidence, security or data risk | Fix and reply with the fix link | Blocks until resolved and approval renewed |
-| Non-blocking | `should:` | Improvement worth doing now or explaining | Fix or reply with the reason not to | Does not block; the thread stays open until answered |
-| Nit | `nit:` | Local preference or polish | Apply or ignore | Never blocks; the author decides |
-| Question | `q:` | Question that needs an answer; asks for no change | Reply with evidence | Does not block |
+| 阻塞 | `must:` | 缺陷、缺少证据、安全或数据风险 | 修复并回复修复链接 | 阻塞，直到问题解决并重新批准 |
+| 非阻塞 | `should:` | 值得现在做或值得解释的改进 | 修复，或回复不做的理由 | 不阻塞；线程保持打开直到得到回答 |
+| Nit | `nit:` | 局部偏好或润色 | 采纳或忽略 | 从不阻塞；由作者决定 |
+| 疑问 | `q:` | 需要回答、但不要求改动的问题 | 用证据回复 | 不阻塞 |
 
-Rules:
+规则：
 
-- Use exactly one severity per comment and write the ask, not only the observation: "move validation into the handler
-  so the CLI path is covered" beats "this feels wrong".
-- Treat an unmarked comment as `should:` and answer it; a review that is only nits is still a review, so mark them.
-- Do not reopen a resolved thread without new evidence; open a new thread that references the resolved one.
-- Take a disputed blocking comment to the decision owner for a ruling, never to a merge.
-- Withdraw a comment the reviewer can no longer defend; a withdrawn comment is cheaper than an unresolved one.
+- 每条评论只用一个严重级别，并写出要求，而不只是观察：「把校验移到 handler 里，这样 CLI 路径也能覆盖」胜过
+  「感觉不对」。
+- 未标记的评论按 `should:` 处理并回答；只有 nit 的审查仍是审查，所以要标记它们。
+- 没有新证据不要重开已解决的线程；开一个新线程并引用已解决的那个。
+- 有争议的阻塞评论交给决策负责人裁决，绝不交给合并来决定。
+- 审查者无法再辩护的评论应撤回；撤回的评论比未解决的评论代价更低。
 
-## Branch Protection Rules Table
+## 分支保护规则表
 
-| Setting | Protected default | Exception and tradeoff |
+| 设置 | 受保护默认值 | 例外与取舍 |
 |---|---|---|
-| Required approvals | 1 for standard, 2 for risky paths; dismiss stale approvals on push | A solo-maintainer repository sets 0 and records a self-review, reported as a known gap |
-| Required status checks | Build, test, lint, type check, secret scan, docs build where published | Skipping a check needs a policy change, not a per-request label |
-| Linear history | Enabled on trunk when squash or rebase is the merge method | Release branches keep merge commits; configure per branch class |
-| Force-push and deletion | Disabled on every protected branch and release tag | Revert forward; a rewrite of protected history is an incident |
-| Administrator bypass | Off for the routine path; break-glass group only | Every bypass needs an actor, a reason, a request link, and a post-merge review |
-| Conversation resolution | Required for blocking threads | Nits may stay unresolved after the author replies |
-| Merge queue | Enabled when merge volume causes repeated integration failures | A low-volume repository runs the same checks on the head commit |
-| Credentials | Never exposed to untrusted fork builds; storage policy belongs to the security process | A trusted branch receives only the credentials its job needs |
+| 必需批准 | 标准 1 名，高风险路径 2 名；推送时使过期批准失效 | 单人维护者仓库设为 0 并记录自审，作为已知缺口上报 |
+| 必需状态校验 | 构建、测试、lint、类型校验、机密扫描，以及发布处的文档构建 | 跳过校验需要修改策略，而不是打一个按请求的标签 |
+| 线性历史 | 合并方式为压缩合并或变基时在主干启用 | 发布分支保留合并提交；按分支类别配置 |
+| 强制推送与删除 | 在每个受保护分支和发布标签上禁用 | 向前 revert；重写受保护历史属于事故 |
+| 管理员绕过 | 常规路径关闭；只留给紧急通道组 | 每次绕过都需要操作者、原因、请求链接和合并后审查 |
+| 对话解决 | 阻塞线程必须解决 | 作者回复后 nit 可以保持未解决 |
+| 合并队列 | 合并量导致反复集成失败时启用 | 低合并量仓库在最新提交上运行同样的校验 |
+| 凭据 | 绝不暴露给不可信的 fork 构建；存储策略归安全流程 | 可信分支只获得其任务所需的凭据 |
 
-Exception path:
+例外路径：
 
-- Open the exception before using it and name the check being skipped, the reason, and the expiry.
-- Record it in the request thread so the post-merge review can find it.
-- Review the exception within one business day and decide whether the check or the policy needs to change.
-- Repeat exceptions on the same check are a signal to fix the check, not to widen the policy.
+- 使用例外前先开启它，写明被跳过的校验、原因和到期时间。
+- 把它记录在请求线程中，方便合并后审查找到它。
+- 在一个工作日内审查该例外，并决定需要改校验还是改策略。
+- 同一校验反复出现例外，说明应当修校验，而不是放宽策略。
 
-Monthly audit:
+每月审查：
 
-1. Export the protected branch settings and required checks, and compare them with the documented policy.
-2. List administrative merges, bypasses, and force-pushes since the last audit, and confirm each has a record and a
-   post-merge review.
-3. Confirm that tags created since the last audit point at release commits and that no tag was moved or deleted.
-4. Report the counts and the fixes in the repository's operations notes; an unexamined bypass becomes the norm.
+1. 导出受保护分支设置和必需校验，与已写入文档的策略对照。
+2. 列出上次审查以来的管理性合并、绕过和强制推送，确认每一项都有记录和合并后审查。
+3. 确认上次审查以来创建的标签指向发布提交，且没有标签被移动或删除。
+4. 在仓库的运维记录中报告数量和修复项；未经审查的绕过会变成常态。
 
-## CODEOWNERS Setup and Audit
+## CODEOWNERS 设置与审查
 
-Setup:
+设置：
 
-1. Confirm which locations the platform reads (`CODEOWNERS`, `.github/`, or `docs/`) and which one this repository
-   uses; a file in the wrong location is silently ignored.
-2. Start from the directory tree, not the team chart: list services, shared libraries, tooling, generated code,
-   vendored code, and docs, then assign one team to each.
-3. Place the broad fallback first and specific patterns after it, because the last matching pattern wins; a wildcard
-   written last overrides every specific owner above it.
-4. Prefer team handles, require owner review only on risky paths, and record the risk policy beside the pattern or in
-   the repository's collaboration document.
-5. Add a CI check that every changed path resolves to an owner and that every referenced team exists.
+1. 确认平台读取哪些位置（`CODEOWNERS`、`.github/` 或 `docs/`），以及本仓库使用哪一个；放错位置的文件会被静默
+   忽略。
+2. 从目录树出发，而不是从团队架构图出发：列出服务、共享库、工具、生成代码、第三方引入代码和文档，然后为每一项
+   指定一个团队。
+3. 把宽泛回退放在前面，具体模式放在后面，因为最后匹配的模式生效；写在最后的通配符会覆盖它上面的所有具体所有者。
+4. 优先使用团队句柄，只在风险路径上要求所有者审查，并把风险策略记录在模式旁边或仓库的协作文档中。
+5. 加一项 CI 校验，确认每条变更路径都能解析到所有者，且每个被引用的团队都存在。
 
-A minimal file, ordered so the specific patterns win:
+一份最小文件，按让具体模式生效的顺序排列：
 
 ```text
 # Broad fallback first; the last matching pattern wins.
@@ -155,71 +141,66 @@ A minimal file, ordered so the specific patterns win:
 /vendor/** @example-org/platform-team
 ```
 
-Audit checklist:
+审查清单：
 
-- [ ] Every source directory resolves to a team, not only to the fallback.
-- [ ] Every referenced team exists and has at least two members.
-- [ ] Every required-review pattern matches at least one existing path.
-- [ ] Generated and vendored trees point to the tooling owner, not to a service team.
-- [ ] No path is owned only by a person who has left the organization.
-- [ ] Ownership changes from the audit land in a maintainer-reviewed request.
-- [ ] The audit result, interim owners, and next audit date are recorded.
+- [ ] 每个源码目录都解析到一个团队，而不只是回退团队。
+- [ ] 每个被引用的团队都存在，且至少有两名成员。
+- [ ] 每个必需审查模式至少匹配一条现存路径。
+- [ ] 生成目录和第三方引入目录指向工具所有者，而不是服务团队。
+- [ ] 没有路径仅由已离开组织的人拥有。
+- [ ] 审查产生的所有权变更在维护者审查的请求中合入。
+- [ ] 审查结果、临时所有者和下次审查日期均已记录。
 
-Repair ownership drift:
+修复所有权漂移：
 
-- A reorganized team moves its patterns to the new handle in the same change that archives the old team.
-- A removed service removes its patterns with the service, and the owner confirms the archive first.
-- A team with fewer than two members gets a co-owner or points its paths at the parent team.
-- A generated tree that acquired named owners resets to the tooling owner and deletes the accidental entries.
+- 重组的团队在归档旧团队的同一变更中把其模式移到新句柄。
+- 被移除的服务随服务一起移除其模式，所有者先确认归档。
+- 成员少于两人的团队要增加共同所有者，或把其路径指向父团队。
+- 被加上具名所有者的生成目录改回工具所有者，并删掉这些误加的条目。
 
-## History-Repair Decision Table
+## 历史修复决策表
 
-| Situation | Action | Approval | Risk |
+| 情形 | 操作 | 批准 | 风险 |
 |---|---|---|---|
-| Unpushed commit has a wrong message or a missed file | Amend with `git commit --amend` | None; the commit never left the machine | Low; the commit is local and recoverable from the reflog |
-| Several unpushed commits should become one or be split | `git reset --soft HEAD~n` and recommit | None; local history | Low; the working tree is preserved |
-| An unpushed commit must be split into reviewable units | Interactive rebase on the local branch | None; local history | Low; verify the tree before pushing |
-| Pushed topic branch needs a rewrite before review starts | Rebase, then push with `--force-with-lease` | The branch is personal and policy allows it | Medium; announce the push because comment anchors move |
-| Pushed topic branch already reviewed and approved | Add follow-up commits; do not rewrite | Standard review of the delta | Medium; history stays append-only |
-| Published main commit is wrong | `git revert` or a new fix commit | Normal review; never force-push main | Medium; the correction is visible forward |
-| A credential was committed | Rotate it first, then follow the security incident process | Security owner; admin for any history rewrite | High; a rewrite does not un-leak a copied secret |
-| Release tag points at the wrong commit | New patch tag from the fixed commit; keep the old tag | Release owner | High; installed artifacts must match their tag |
-| Protected history must be rewritten | Freeze merges, take a backup, record the incident | Repository maintainer and a written record | High; every clone must reconcile |
-| A reviewed stack must change its base commit | Rewrite the stack and announce the new head | Branch owner and every reviewer in the stack | Medium; each approval is renewed |
-| A branch carries commits from several authors | Each author fixes their own commit | Each author | Medium; rewriting another person's commit needs their agreement |
+| 未推送提交的消息错误或漏了文件 | 用 `git commit --amend` 修改 | 无；该提交从未离开本机 | 低；提交在本地，可从 reflog 恢复 |
+| 多个未推送提交应合并成一个或拆分 | `git reset --soft HEAD~n` 后重新提交 | 无；本地历史 | 低；工作区保留 |
+| 未推送提交必须拆成可审查单位 | 在本地分支上交互式变基 | 无；本地历史 | 低；推送前先核对工作树 |
+| 已推送主题分支在审查开始前需要重写 | 变基，然后用 `--force-with-lease` 推送 | 分支是私人的且策略允许 | 中；评论锚点会移动，须提前通知 |
+| 已推送主题分支已经审查并批准 | 追加后续提交；不要重写 | 对增量做标准审查 | 中；历史保持只追加 |
+| 已发布的 main 提交有误 | `git revert` 或新的修复提交 | 常规审查；永不对 main 强制推送 | 中；修正过程向前可见 |
+| 提交了凭据 | 先轮换，再走安全事件流程 | 安全所有者；任何历史重写需 admin | 高；重写无法让已复制的机密重新保密 |
+| 发布标签指向错误的提交 | 从修复提交打新补丁标签；保留旧标签 | 发布所有者 | 高；已安装制品必须与其标签匹配 |
+| 必须重写受保护历史 | 冻结合并、做备份、记录事故 | 仓库维护者和书面记录 | 高；每个克隆都必须对齐 |
+| 已审查的堆叠必须更换基线提交 | 重写堆叠并通知新的头部 | 分支所有者和堆叠中的每位审查者 | 中；每个批准都需重新获取 |
+| 分支包含多位作者的提交 | 每位作者修改自己的提交 | 每位作者 | 中；重写他人的提交需经其同意 |
 
-Rules:
+规则：
 
-- Undo the smallest unit that fixes the problem, and prefer a forward fix over a rewrite.
-- A lease is mandatory for every force-push; a bare `--force` is never approved.
-- A rewritten branch that others based work on is an incident even when the content is correct.
-- Announce a rewrite in the request thread and state which commits changed.
+- 只撤销能解决问题的最小单位，优先前向修复而不是重写。
+- 每次强制推送都必须带租约；裸 `--force` 永远不被批准。
+- 重写他人已在其上开展工作的分支属于事故，即便内容正确。
+- 在请求线程中通知重写，并说明哪些提交变了。
 
-## Merge Queue and Auto-Merge Rules
+## 合并队列与自动合并规则
 
-Queue rules:
+队列规则：
 
-- Enqueue only after approval and when the head is green against the current base; the queue rebases and reruns the
-  required checks, so a branch behind the base waits instead of merging stale.
-- Never merge around the queue; a direct administrative merge while the queue is active follows the bypass path.
-- On a queue failure, fix the request and push; re-request review when the fix is substantive, then re-enqueue
-  rather than retrying the same entry and hoping for a different result.
-- A request that waits in the queue for more than a day signals a slow or flaky check; fix the check or split the
-  request instead of adding retries.
+- 只在批准后且最新提交针对当前基线全绿时才入队；队列会变基并重跑必需校验，所以落后于基线的分支会等待，而不是
+  带着陈旧状态合并。
+- 永远不绕过队列合并；队列启用期间直接做管理性合并要绕过路径。
+- 队列失败时，修复请求并推送；修复属实质性时重新请求审查，然后重新入队，而不是重试同一条目并指望结果不同。
+- 请求在队列中等待超过一天，说明校验慢或不稳定；修校验或拆分请求，而不是增加重试。
 
-Auto-merge rules:
+自动合并规则：
 
-- Allow auto-merge to be enabled only after the required approving reviews exist; it is a scheduling convenience,
-  never an early approval.
-- Auto-merge inherits the branch's required checks, queue, and linear-history setting; it may not bypass a check or
-  a stale approval.
-- A risky path may use auto-merge only with the risky review count and a named rollback owner.
-- Disable auto-merge when the base branch is red or a release freeze is active; the release owner controls freezes.
-- Turn auto-merge off when the author cannot respond within the review turnaround, so the change does not land on a
-  stale description.
+- 只在必需的批准审查都存在后才允许启用自动合并；它是排期便利，绝不是提前批准。
+- 自动合并继承分支的必需校验、队列和线性历史设置；它不能绕过校验或过期批准。
+- 高风险路径只有在满足高风险审查人数且有具名回滚负责人时才能使用自动合并。
+- 基线分支变红或发布冻结生效时禁用自动合并；冻结由发布所有者控制。
+- 作者无法在审查周转期内响应时关闭自动合并，以免变更带着过期描述合入。
 
-Freeze rules:
+冻结规则：
 
-- A release freeze pauses the queue for every request except the fixes the release owner names.
-- A security incident bypasses the freeze only with the security owner's approval and a recorded exception.
-- Reopen the queue after the freeze and re-enqueue each request after rebasing it onto the frozen tip.
+- 发布冻结会暂停队列中的每个请求，发布所有者指定的修复除外。
+- 安全事件只有在安全所有者批准并记录例外后才能绕过冻结。
+- 冻结结束后重开队列，并把每个请求变基到冻结时的顶端后重新入队。

@@ -1,231 +1,205 @@
 ---
 name: vcs-collaboration-conventions
-description: Defines, reviews, and repairs version control and collaboration practice for any repository: Git workflow and branching, pull and merge requests, code review, branch protection and permissions, and code ownership. Use when choosing a branch model, preparing or reviewing a pull request, setting review depth, configuring protected branches, or auditing CODEOWNERS coverage. Provides repository-agnostic defaults with team-size tradeoffs.
-argument-hint: '[path or scope]'
+description: 定义、审查并修复任意仓库的版本控制与协作实践，涵盖 Git 工作流与分支、PR 与 MR、代码审查、分支保护与权限、代码所有权。用于选择分支模型、准备或审查 PR、确定审查深度、配置受保护分支，或审查 CODEOWNERS 覆盖情况。提供与仓库无关的默认值，并说明不同团队规模的取舍。
+argument-hint: '[路径或范围]'
 ---
 
-# Version Control and Collaboration Conventions
+# 版本控制与协作规范
 
-Most teams do not lose code to bad algorithms; they lose it to collaboration failures. A pull request grows until
-no reviewer can hold it, the history records merges nobody can explain, a directory loses its owner when its author
-leaves, and a protected branch is bypassed once and then routinely. Each failure is cheap to prevent at the rules
-stage and expensive to repair after a release depends on it. This skill gives one decision procedure and a complete
-rule set for how a change travels from a working copy to the main branch and beyond: branch models and merge
-methods, pull and merge request conventions, review depth, branch protection, and code ownership. It assumes Git and
-a review-based hosting platform, and it stays neutral about the project's language and the platform's interface.
+多数团队丢代码不是因为算法差，而是因为协作失败。PR 一路膨胀到没有审查者能一次看完，历史里留下没人解释得清的
+合并，某个目录在作者离职后失去归属，受保护分支被绕过一次之后就成了常态。每种失败在规则阶段都容易预防，等某个发布
+依赖它之后再修就很昂贵。本 skill 给出一个决策流程和一套完整规则，说明变更如何从工作副本走到主分支乃至更远：分支
+模型与合并方式、PR 与 MR 规范、审查深度、分支保护与代码所有权。它假定使用 Git 和基于审查的托管平台，并对项目语言
+与平台界面保持中立。
 
-## Scope and Precedence
+## 适用范围与优先级
 
-Apply the first rule that fits, and do not mix models inside one branch class:
+应用第一条适用的规则，不要在同一分支类别内混用模型：
 
-1. Mandatory hosting-platform or organizational policy. Required checks, audit requirements, signed-commit rules,
-   and a regulator's change-control rules are not optional.
-2. Existing project convention. Read the branch model, merge settings, CODEOWNERS file, and contributor guide before
-   proposing a rule; a documented local rule outranks this default.
-3. This standard's defaults, when the two levels above are silent.
-4. Personal preference, which never overrides the three levels above.
+1. 托管平台或组织的强制策略。必需校验、审查要求、签名提交规则以及监管机构的变更控制规则都不是可选项。
+2. 项目既有约定。在提出规则前先读分支模型、合并设置、CODEOWNERS 文件和贡献者指南；已写入文档的本地规则优先于
+   本默认值。
+3. 本标准的默认值，在前两级都没有规定时适用。
+4. 个人偏好，它永远不能覆盖以上三级。
 
-- The naming-conventions skill owns branch names, commit-message types and scopes, and tag names; this skill owns the
-  workflow, the merge strategy, and the review process that consume them.
-- This skill owns the requirement for pull request and issue templates and the decisions they must capture; the
-  template is a document, and its prose follows the repository's documentation style.
-- The release-operations-conventions skill owns release versioning, release timing, and CI/CD; this skill owns how a
-  change reaches the main branch and which merge path it takes.
-- The security-compliance-conventions skill owns access-control policy details; this skill owns branch protection and
-  code-ownership mechanics, including required checks and bypass records. Signed-commit requirements come from
-  hosting-platform or organizational policy at precedence level 1.
-- The testing-and-quality-conventions skill owns the gates themselves; this skill owns which gates are required on
-  protected branches and when a merge may proceed.
-- Generated, vendored, and machine-produced paths are exempt from line-by-line review but not from the merge rules.
-  Review the generator input, the regeneration command, and the generated marker; a hand edit to generated output
-  never counts as a reviewed change.
-- History is a public record: rewrite only under policy. Amend unpublished commits, force-push only a personal topic
-  branch with a lease, and treat a rewritten protected branch as an incident even when the content is identical.
-- A rule that lives only in a reviewer's memory is not a rule. Record the branch model, merge method, review depth,
-  and ownership in the contributor guide or a linked policy file, and update it in the change that alters practice.
-- When two rules conflict, state the conflict and the chosen rule, record the decision next to the branch model, and
-  make the next change follow it.
+- naming-conventions skill 负责分支名、提交消息的类型与范围以及标签名；本 skill 负责消费这些名称的工作流、合并
+  策略与审查流程。
+- 本 skill 负责 PR 与 issue 模板的要求以及模板必须记录的决定；模板是一份文档，其行文遵循仓库的文档风格。
+- release-operations-conventions skill 负责发布版本号、发布时机与 CI/CD；本 skill 负责变更如何到达主分支，以及走
+  哪条合并路径。
+- security-compliance-conventions skill 负责访问控制策略的细节；本 skill 负责分支保护与代码所有权机制，包括必需
+  校验和绕过记录。签名提交要求来自优先级第 1 级的托管平台或组织策略。
+- testing-and-quality-conventions skill 负责门禁本身；本 skill 负责受保护分支上哪些门禁是必需的，以及何时可以
+  合并。
+- 生成、第三方引入和机器产出的路径免于逐行审查，但不豁免合并规则。要审查生成器输入、重新生成命令和生成标记；
+  手工修改生成产物永远不算经过审查的变更。
+- 历史是公开记录：只有在策略允许时才重写。可以 amend 未发布的提交，只对个人主题分支带租约强制推送，并且即便
+  内容完全相同，重写受保护分支也要按事故处理。
+- 只存在于审查者记忆里的规则不算规则。把分支模型、合并方式、审查深度和所有权记录在贡献者指南或所链接的策略
+  文件里，并在改变做法的同一次变更中更新它。
+- 当两条规则冲突时，说明冲突与所选规则，把决定记录在分支模型旁边，并让下一次变更遵循它。
 
-## Process
+## 流程
 
-1. Establish the current state: read the platform's branch settings, merge method, CODEOWNERS file, CI configuration,
-   contributor guide, and the last twenty merge commits. Team size and release cadence decide the model before any
-   rule is written.
-2. Choose or confirm one branch model from the matrix below and write it down: branch classes, lifetime limits, merge
-   method per class, release path, hotfix path, and tag policy.
-3. Size the change before opening a branch. Keep one logical change per branch; when it exceeds the size budget,
-   split it into a stack or hide it behind a feature flag, and link the parts in landing order.
-4. Prepare the pull or merge request with its title, description, linked issue, risk class, verification evidence,
-   and self-review. Mark it ready only when the required checks and the template are complete.
-5. Route the review by ownership and risk: request the owning team plus the domain reviewer the risk class requires,
-   and state the review depth in the request.
-6. Land through the required path: use the merge queue or auto-merge when the repository configures them, otherwise
-   merge with the branch class's method after every required check passes on the merge result, then delete the
-   topic branch.
-7. Audit on a schedule: confirm the landing, verify the deploy or release path, review bypass records, and repair
-   CODEOWNERS coverage, stale approvals, and protection drift before the next change.
+1. 确认当前状态：阅读平台的分支设置、合并方式、CODEOWNERS 文件、CI 配置、贡献者指南，以及最近二十次合并提交。
+   在任何规则写出来之前，团队规模与发布节奏已经决定了模型。
+2. 从下表中选择或确认一个分支模型并写下来：分支类别、生命周期上限、每个类别的合并方式、发布路径、热修复路径
+   和标签策略。
+3. 在开分支之前先估算变更体量。每个分支只保留一个逻辑变更；当它超出体量预算时，拆成堆叠分支或用功能开关隐藏，
+   并按合入顺序链接各部分。
+4. 准备 PR 或 MR，写清标题、描述、关联 issue、风险级别、验证证据和自审结果。只有在必需校验和模板都完成时才标记
+   为就绪。
+5. 按所有权与风险分派审查：请求归属团队以及风险级别要求的领域审查者，并在请求中写明审查深度。
+6. 通过规定路径合入：仓库配置了合并队列或自动合并时就用它们，否则在合并结果上所有必需校验通过后，用该分支类别
+   的方式合并，然后删除主题分支。
+7. 定期审查：确认已合入、核实部署或发布路径、审查绕过记录，并在下一次变更之前修复 CODEOWNERS 覆盖、过期批准和
+   保护漂移。
 
-## Core Rules
+## 核心规则
 
-- **One model per branch class.** State the branch model in the contributor guide and enforce it in the platform; a
-  repository that mixes trunk merges, release-branch merges, and hotfix cherry-picks without documented boundaries
-  produces history that no reviewer can reconstruct.
-- **Keep branches short-lived and small.** Integrate within three working days and keep a reviewable diff under
-  about 400 changed lines; a longer branch rebases daily, and a change that cannot be split behind a flag is a
-  design signal rather than an excuse.
-- **The main branch is always releasable.** Every commit on main builds, passes the required gates, and can be
-  deployed; a red main branch blocks all merges and takes priority over new feature work.
-- **One merge method per branch class.** Squash feature branches into trunk, use a merge commit for release
-  promotion, and rebase only an unshared branch; mixing methods in one class makes blame, bisect, and revert
-  unreliable.
-- **History is append-only in public.** Never rewrite commits that others have based work on; repair a published
-  mistake with a revert or a follow-up commit, and reserve force-push with a lease for a personal topic branch.
-- **Review depth follows risk, not availability.** Classify each change as light, standard, or risky by its blast
-  radius; auth, payments, permissions, data migrations, and public interfaces take the risky path with a second
-  reviewer.
-- **Every change lands through review and required checks.** A protected branch requires an approving review and
-  green required checks on the merge result; an approval that predates a substantive push is stale and must be
-  renewed.
-- **Protection is the default; bypass is an incident.** Require reviews, checks, linear history where the merge
-  method requires it, and no force-push on protected branches; record every administrative bypass with its actor,
-  reason, and a post-merge review.
-- **CODEOWNERS names a real owner for every mergeable path.** A path with no owner is a defect with a deadline; the
-  fallback owner is the platform or repository maintainer team, never whoever edits the path next.
-- **Gates run on the merged result, not only the author's copy.** The merge queue or pre-merge job tests the change
-  against its base; a locally green run does not substitute for the required check.
-- **A review comment carries a severity and an ask.** Mark each comment blocking, non-blocking, nit, or a question
-  that needs an answer, and require the author to resolve every blocking thread with a reply or a linked fix;
-  silence is not agreement.
-- **Draft means not ready.** Open a draft for early feedback, then mark it ready only when the description,
-  evidence, and self-review are complete; a draft is never reviewed for merge and is never merged.
-- **Delete merged branches and freeze release tags.** Remove a topic branch after merge so the branch list reflects
-  open work; never move, delete, or rebuild a published release tag, because published artifacts refer to it.
-- **Ownership changes are reviewed like code.** A CODEOWNERS edit that grants or removes ownership needs a
-  maintainer's review and lands in its own request, with two approvers per the repository-governance rule; an owner
-  never approves a change that expands that owner's authority.
+- **每个分支类别只用一个模型。** 在贡献者指南中写明分支模型并在平台上强制执行；若仓库在没有书面边界的情况下
+  混用主干合并、发布分支合并和热修复 cherry-pick，产出的历史没有审查者能还原。
+- **分支生命周期要短、体量要小。** 在三个工作日内集成，可审查的 diff 保持在约 400 行改动以内；更长的分支每天变基，而无法
+  拆到开关后面的变更是一种设计信号，不是借口。
+- **主分支始终可发布。** main 上的每个提交都能构建、通过必需门禁并可部署；main 变红会阻塞所有合并，其优先级
+  高于新功能工作。
+- **每个分支类别只用一种合并方式。** 功能分支压缩合并进主干，发布晋级使用合并提交，只对未共享的分支变基；在同一
+  类别中混用方式会让 blame、bisect 和 revert 不可靠。
+- **公开历史只追加。** 永远不要重写他人已在其上开展工作的提交；已发布的错误用 revert 或后续提交修复，带租约的
+  强制推送只留给个人主题分支。
+- **审查深度取决于风险，而不是谁有空。** 按影响范围把每项变更分为轻量、标准或高风险；认证、支付、权限、数据迁移
+  和公共接口走高风险路径，并配第二名审查者。
+- **每项变更都要经过审查和必需校验才能合入。** 受保护分支要求有批准审查，且合并结果上的必需校验全绿；实质性推送
+  之前的批准已过期，必须重新获取。
+- **默认保护，绕过即事故。** 要求审查、校验、合并方式需要的线性历史，并禁止对受保护分支强制推送；每次管理性绕过
+  都要记录操作者、原因和合并后审查。
+- **CODEOWNERS 为每条可合并路径指定真实所有者。** 没有所有者的路径是一个带期限的缺陷；回退所有者是平台或仓库
+  维护者团队，绝不是下一个编辑该路径的人。
+- **门禁在合并结果上运行，而不只是在作者的副本上。** 合并队列或预合并任务针对基线测试变更；本地跑绿不能替代
+  必需校验。
+- **每条审查评论都带严重级别和明确要求。** 把每条评论标记为阻塞、非阻塞、Nit 或需要回答的疑问，并要求作者用
+  回复或关联修复解决每个阻塞线程；沉默不等于同意。
+- **草稿意味着未就绪。** 为尽早获得反馈而开草稿，只有在描述、证据和自审都完成后才标记就绪；草稿从不进入合并
+  审查，也从不被合并。
+- **删除已合并分支，冻结发布标签。** 合并后删除主题分支，让分支列表反映未完成工作；永远不要移动、删除或重建
+  已发布的发布标签，因为已发布的制品指向它。
+- **所有权变更像代码一样接受审查。** 授予或移除所有权的 CODEOWNERS 修改需要维护者审查，并在独立请求中合入，
+  按仓库治理规则需要两名批准者；所有者永远不批准扩大自身权限的变更。
 
-## Branch Model Matrix
+## 分支模型矩阵
 
-Choose the lightest model that satisfies the release process; the model decides the merge method and the hotfix path.
+选择满足发布流程的最轻模型；模型决定合并方式与热修复路径。
 
-| Model | Team and repo size | Merge method | Release path | When to choose |
+| 模型 | 团队与仓库规模 | 合并方式 | 发布路径 | 适用场景 |
 |---|---|---|---|---|
-| Trunk-based, no release branches | 2 to 15 engineers, one deployable service | Squash merge to trunk; rebase the topic branch | Trunk deploys continuously; a release is a tag on trunk | Continuous delivery, feature flags, strong CI |
-| Trunk-based with release branches | 15 to 100 engineers, several deploy targets | Squash to trunk; merge commit to the release branch; cherry-pick hotfixes to both | Cut at freeze, tag the release commit, hotfix on the branch and forward-port | Versioned releases or customers pinned to a version |
-| GitHub flow | 2 to 30 engineers, one production environment | Squash or merge commit, one per repository | Merge to main, deploy from main | Small teams starting review practice; no release train to run |
-| Release-train branches | 30 to 200 engineers, scheduled releases | Merge commit for promotion; squash for small fixes | Release candidate branches, qualification, then tag; fixes cherry-picked | Regulated cadence, long QA, several supported versions |
-| GitFlow | 10 to 100 engineers, shipped or installed software | Merge commit with `--no-ff`; hotfix branches | `develop` integrates, `release/*` stabilizes, `main` holds tagged releases, `hotfix/*` starts from the tag | Desktop or on-prem software with support windows |
-| Fork-and-pull | Public repository, any contributor count | Maintainer fast-forwards or squash-merges the reviewed branch | Main carries releases; tags and notes announce them | Open source or untrusted contributors without write access |
-| Per-version maintenance branches | 5 to 50 engineers supporting several releases | Squash to the maintenance branch; merge commit for promotion | One branch per supported version; cherry-pick fixes and forward-port to trunk | Long support windows run by a small team |
+| 主干开发，无发布分支 | 2 至 15 名工程师，一个可部署服务 | 压缩合并到主干；变基主题分支 | 主干持续部署；发布就是主干上的一个标签 | 持续交付、功能开关、强 CI |
+| 主干开发，带发布分支 | 15 至 100 名工程师，多个部署目标 | 压缩合并到主干；到发布分支用合并提交；热修复 cherry-pick 到两边 | 冻结时切出，给发布提交打标签，在分支上热修复并向前移植 | 版本化发布，或客户固定使用某一版本 |
+| GitHub flow | 2 至 30 名工程师，一个生产环境 | 压缩合并或合并提交，全仓统一一种 | 合并到 main，从 main 部署 | 刚开始审查实践的小团队；没有发布列车要跑 |
+| 发布列车分支 | 30 至 200 名工程师，按计划发布 | 晋级用合并提交；小修复用压缩合并 | 候选发布分支、资格验证，然后打标签；修复用 cherry-pick | 受监管的节奏、长时间 QA、多个受支持版本 |
+| GitFlow | 10 至 100 名工程师，交付或安装型软件 | 带 `--no-ff` 的合并提交；热修复分支 | `develop` 集成，`release/*` 稳定化，`main` 保存带标签的发布，`hotfix/*` 从标签切出 | 有支持窗口的桌面或本地部署软件 |
+| Fork-and-pull | 公开仓库，贡献者数量不限 | 维护者快进或压缩合并已审查分支 | main 承载发布；标签与说明予以公告 | 开源，或没有写权限的不可信贡献者 |
+| 按版本维护分支 | 5 至 50 名工程师，支持多个发布 | 压缩合并到维护分支；晋级用合并提交 | 每个受支持版本一个分支；修复用 cherry-pick 并向前移植到主干 | 小团队运营的长期支持窗口 |
 
-When two models fit, choose the lighter one and revisit after a release cycle; the heavier model adds branches to
-maintain and hotfix paths to remember. Record the choice, the date, and the next review trigger in the contributor
-guide.
+两种模型都适用时，选更轻的那个，并在一个发布周期后重新评估；更重的模型会增加要维护的分支和要记住的热修复路径。
+把选择、日期和下次审查的触发条件记录在贡献者指南里。
 
-## Dimension Index
+## 维度索引
 
-Each dimension has rules, decision tables, and edge cases in `references/dimensions.md`; `references/playbooks.md`
-holds the worksheets and the step-by-step procedures for applying them.
+每个维度在 `references/dimensions.md` 中有规则、决策表和边界情况；`references/playbooks.md` 保存应用这些规则的
+工作表和分步流程。
 
-| Dimension | First rule |
+| 维度 | 首要规则 |
 |---|---|
-| 1. Git Workflow and Branching | Choose the lightest branch model the release process allows. |
-| 2. Pull and Merge Request Conventions | A request is one reviewable change with one description and one decision. |
-| 3. Code Review | Review depth follows risk, and every blocking comment names an action. |
-| 4. Branch Protection and Permissions | Protect the branch, require the checks, and record every bypass. |
-| 5. Code Ownership | Every mergeable path needs a named owner and a fallback owner. |
+| 1. Git 工作流与分支 | 选择发布流程允许的最轻分支模型。 |
+| 2. PR 与 MR 规范 | 一个请求就是一个可审查变更，配一份描述和一个决定。 |
+| 3. 代码审查 | 审查深度取决于风险，每条阻塞评论都指明要采取的行动。 |
+| 4. 分支保护与权限 | 保护分支、要求校验，并记录每次绕过。 |
+| 5. 代码所有权 | 每条可合并路径都需要具名所有者和回退所有者。 |
 
-## Anti-Patterns
+## 反模式
 
-| Anti-pattern | Why it fails | Fix |
+| 反模式 | 为什么失败 | 修复 |
 |---|---|---|
-| Long-lived feature branch | Drifts from trunk, conflicts grow, integration risk hides until the end | Split into stacked requests or a flag; integrate daily |
-| Mixed merge methods in one branch class | Blame, bisect, and revert stop matching the review history | Pick one method per class and enforce it in settings |
-| Force-push to a shared branch | Erases teammates' commits and review comment anchors | Lease-protected force-push on a personal branch only; revert published mistakes |
-| Rubber-stamp approval without reading the diff | Turns the merge gate into a ritual and hides defects | Request risk-specific evidence and review the self-review checklist |
-| Request that mixes rename, formatting, and behavior | Not reviewable as one unit and not revertable alone | Isolate the mechanical change and land the behavior separately |
-| Required check left advisory | A red check still merges, so the signal is decorative | Mark the check required and fail closed |
-| "Just this once" direct push to main | Bypasses review and gates, then becomes the precedent | Deny by default; grant logged, time-boxed, post-reviewed exceptions |
-| Draft marked ready without checks or description | Reviewers spend time on a request that cannot merge | Ready means green checks, complete description, and self-review |
-| CODEOWNERS with a wildcard fallback only | The fallback team is notified, but path owners never are and orphan paths stay hidden | Assign real teams per path; audit coverage and orphan paths |
-| Review comments with no severity or ask | The author cannot tell blocking from optional | Prefix `must:`, `should:`, `nit:`, or `q:` and name the requested action |
-| Merging around the merge queue | The tested merge combination is not what lands | Let the queue order merges; re-enqueue after a fix |
-| Moving a release tag to include one more fix | Published artifacts no longer match the tag | Cut a new patch version from the fixed commit |
-| Approval left valid after a substantive push | The reviewer approved code that is no longer in the request | Dismiss stale approvals on push and re-review the delta |
-| Ownership file edited by its new owner | Self-granted authority without a maintainer's review | Review ownership changes in a separate maintainer-reviewed request |
-| Ownerless service after a reorganization | Nobody receives review requests and defects wait | Assign the fallback team on reorganization day and audit quarterly |
-| CI credentials exposed to pull requests from forks | An outside contributor can read production credentials | Keep credentials out of untrusted fork builds; never print them in the pipeline |
+| 长期功能分支 | 与主干漂移、冲突增长，集成风险藏到最后才暴露 | 拆成堆叠请求或放到开关后；每天集成 |
+| 同一分支类别混用合并方式 | blame、bisect 和 revert 不再与审查历史对应 | 每类选一种方式并在设置中强制执行 |
+| 对共享分支强制推送 | 抹掉同事的提交和审查评论锚点 | 只在个人分支上带租约强制推送；已发布的错误用 revert |
+| 不读 diff 就盖章批准 | 把合并门禁变成仪式，掩盖缺陷 | 要求与风险相称的证据，并审查自审清单 |
+| 把重命名、格式化和行为混在一个请求里 | 无法作为一个单位审查，也无法单独回退 | 隔离机械性改动，行为变更单独合入 |
+| 必需校验只作建议 | 校验变红仍能合并，信号只是装饰 | 把校验标为必需，并采用失败即拒绝 |
+| 「就这一次」直接推送 main | 绕过审查和门禁，之后成为先例 | 默认拒绝；只授予有记录、有时限且事后审查的例外 |
+| 没有校验或描述就把草稿标为就绪 | 审查者把时间花在无法合并的请求上 | 就绪意味着校验全绿、描述完整和自审完成 |
+| CODEOWNERS 只有通配回退 | 只通知回退团队，路径所有者从不被通知，孤儿路径一直隐藏 | 为每条路径指定真实团队；审查覆盖情况和孤儿路径 |
+| 审查评论没有严重级别或要求 | 作者分不清阻塞项和可选项 | 加 `must:`、`should:`、`nit:` 或 `q:` 前缀，并写明要求采取的行动 |
+| 绕过合并队列合并 | 最终合入的不是测试过的合并组合 | 让队列决定合并顺序；修复后重新入队 |
+| 移动发布标签以纳入又一个修复 | 已发布制品与标签不再匹配 | 从修复提交切出新的补丁版本 |
+| 实质性推送后批准仍然有效 | 审查者批准的代码已不在请求中 | 推送时使过期批准失效，并重新审查增量 |
+| 所有权文件由新所有者自己编辑 | 未经维护者审查就自我授权 | 在独立的、由维护者审查的请求中审查所有权变更 |
+| 重组后无人负责的服务 | 没人收到审查请求，缺陷一直等待 | 重组当天指定回退团队，并每季度审查 |
+| 把 CI 凭据暴露给来自 fork 的 PR | 外部贡献者能读到生产凭据 | 不让凭据进入不可信 fork 构建；永远不要在流水线中打印它们 |
 
-## Review Checklist
+## 审查清单
 
-- [ ] The branch model, merge method per class, and hotfix path are documented and match platform settings.
-- [ ] The change is one logical unit within the size budget, or its stack order is documented.
-- [ ] The title states the outcome, and the description states the problem, approach, and risk.
-- [ ] The request links the issue it closes and lists the follow-up work it defers.
-- [ ] Verification evidence is pasted and matches the described behavior.
-- [ ] The request stayed a draft until checks passed and self-review was complete.
-- [ ] Required checks pass on the merge result, not only on the author's last push.
-- [ ] Reviewer selection matches the owned paths and the risk class, with the owning team's approval.
-- [ ] Every blocking comment is resolved with a reply or a linked fix.
-- [ ] Approvals are current; a substantive push after approval triggered re-review.
-- [ ] The merge method matches the branch class, and the landed history stays legible.
-- [ ] No protected branch was force-pushed, and any force-push used a lease on a personal branch.
-- [ ] Protection settings require reviews, checks, and linear history as the policy states.
-- [ ] Any bypass or administrative merge has an actor, a reason, and a scheduled post-merge review.
-- [ ] CODEOWNERS covers every changed path, and fallback owners resolve.
-- [ ] Generated and vendored files were regenerated, with markers and generator inputs reviewed.
-- [ ] Hotfixes used the hotfix path and were forward-ported to the main line.
-- [ ] Merged branches are deleted and published release tags are unchanged.
-- [ ] No secret, token, or personal datum appears in the diff, description, comments, or CI logs.
-- [ ] Post-merge verification (deploy, health check, release note) is planned or complete.
+- [ ] 分支模型、每个类别的合并方式和热修复路径已写入文档，并与平台设置一致。
+- [ ] 变更是体量预算内的一个逻辑单元，或其堆叠顺序已有文档。
+- [ ] 标题说明结果，描述说明问题、做法和风险。
+- [ ] 请求链接了它要关闭的 issue，并列出推迟的后续工作。
+- [ ] 验证证据已粘贴，且与所描述的行为一致。
+- [ ] 在校验通过、自审完成之前，请求一直保持草稿状态。
+- [ ] 必需校验在合并结果上通过，而不只是在作者最后一次推送的提交上通过。
+- [ ] 审查者的选择与归属路径和风险级别匹配，并包含归属团队的批准。
+- [ ] 每条阻塞评论都通过回复或关联修复得到解决。
+- [ ] 批准仍然有效；批准后的实质性推送已触发重新审查。
+- [ ] 合并方式与分支类别匹配，合入后的历史保持清晰可读。
+- [ ] 没有对受保护分支强制推送；任何强制推送都是个人分支上的带租约推送。
+- [ ] 保护设置按策略要求审查、校验和线性历史。
+- [ ] 任何绕过或管理性合并都有操作者、原因和已安排的合并后审查。
+- [ ] CODEOWNERS 覆盖每条变更路径，且回退所有者能够解析。
+- [ ] 生成文件和第三方引入文件已重新生成，标记与生成器输入均已审查。
+- [ ] 热修复走了热修复路径，并已向前移植到主线。
+- [ ] 已合并分支已删除，已发布的发布标签未变。
+- [ ] diff、描述、评论或 CI 日志中没有出现机密、令牌或个人信息。
+- [ ] 合并后验证（部署、健康检查、发布说明）已计划或已完成。
 
-## Examples
+## 示例
 
 <example>
-Trunk-based merge:
-A three-day branch changes 180 lines, the required checks are green on the merge result, the owning team approved,
-and the description links the issue and pastes the test output. Squash-merge it, delete the branch, and confirm the
-deploy from main. A 900-line branch in the same repository is split into a stack before review starts, not after
-review stalls, and each request in the stack names its parent and the branch it depends on.
+主干合并：
+一个存活三天的分支改了 180 行，必需校验在合并结果上全绿，归属团队已批准，描述链接了 issue 并粘贴了测试输出。
+压缩合并它，删除分支，并确认从 main 部署成功。同一仓库中一个 900 行的分支在审查开始前就拆成堆叠，而不是等
+审查卡住后再拆，堆叠中的每个请求都写明其父请求和所依赖的分支。
 </example>
 
 <example>
-Risky review:
-A token-refresh change is classified as risky: two reviewers, one from the auth-owning team and one security
-reviewer, plus the negative test that proves an expired refresh token is rejected. The author pastes the threat
-scenario and the rollback switch into the description, and an unmarked comment is rewritten as `must:` before the
-request leaves draft; a substantive push then dismisses both approvals.
+高风险审查：
+一项令牌刷新变更被归为高风险：两名审查者，一名来自负责认证的团队，一名安全审查者，另加一个证明过期刷新令牌
+会被拒绝的负向测试。作者把威胁场景和回滚开关粘贴到描述中，在请求离开草稿前把一条未标记评论改写为 `must:`；
+随后一次实质性推送使两个批准都失效。
 </example>
 
 <example>
-History repair:
-An unpushed commit has the wrong message, so amend it. A commit already pushed to the author's topic branch gets a
-revert or a follow-up commit, or a lease-protected force-push only when policy allows rewriting that branch. Main
-never receives a force-push: revert it, then land the corrected change through review. The revert keeps the original
-message, and the repair commit names the commit it restores so a reader of history sees both halves.
+历史修复：
+未推送提交的消息不对，就 amend 它。已经推送到作者主题分支的提交则用 revert 或后续提交处理，只有在策略允许重写
+该分支时才用带租约的强制推送。main 永远不接受强制推送：先 revert，再让修正后的变更经过审查合入。revert 保留
+原始消息，修复提交写明它恢复的是哪个提交，使读历史的人能看到前后两半。
 </example>
 
 <example>
-CODEOWNERS audit:
-The audit finds `services/billing/**` owned by a team that no longer exists and `vendor/**` owned by nobody. Assign
-the fallback maintainer team to billing with a deadline, make the platform team the owner of vendored code, and add
-a CI check that every changed path resolves to an owner. The audit result names the fixes, the interim owners, and
-the next audit date, and generated paths stay owned by the generator's owner.
+CODEOWNERS 审查：
+审查发现 `services/billing/**` 归属一个已不存在的团队，`vendor/**` 无人负责。为 billing 指定回退维护者团队并
+设定期限，让平台团队成为第三方引入代码的所有者，并加一项 CI 校验，确认每条变更路径都能解析到所有者。审查结果
+写明修复项、临时所有者和下次审查日期，生成路径仍归生成器的所有者。
 </example>
 
 <example>
-Hotfix path:
-A supported release has a defect, so cut `hotfix/2.3.1` from tag `v2.3.0`, land the minimal fix through review with
-the release owner's approval, tag `v2.3.1`, and cherry-pick the fix to main. The hotfix branch is not reused, and
-the old tag is not moved. The release note names the fixed defect, and the new patch tag is protected like every
-other release tag.
+热修复路径：
+某个受支持版本有缺陷，于是从标签 `v2.3.0` 切出 `hotfix/2.3.1`，让最小修复带发布所有者批准经过审查合入，打上
+`v2.3.1` 标签，并把修复 cherry-pick 到 main。热修复分支不再复用，旧标签不移动。发布说明写明修复的缺陷，新补丁
+标签像其他所有发布标签一样受保护。
 </example>
 
-## References
+## 参考资料
 
-Read [references/dimensions.md](references/dimensions.md) for the rules, decision tables, and failure modes behind
-each of the five dimensions. Read [references/playbooks.md](references/playbooks.md) for the worksheets and tables
-that apply them: branch model selection, pull request description and size, review levels and comment severity,
-branch protection, CODEOWNERS setup and audit, history repair, and merge queue and auto-merge rules. Read both before
-defining a repository's collaboration policy; during routine work, read the dimension that applies and the playbook
-step that matches the task.
+阅读 [references/dimensions.md](references/dimensions.md) 了解五个维度各自的规则、决策表和失效模式。阅读
+[references/playbooks.md](references/playbooks.md) 了解应用这些规则的工作表和表格：分支模型选择、PR 描述与体量、
+审查级别与评论严重级别、分支保护、CODEOWNERS 设置与审查、历史修复，以及合并队列与自动合并规则。在定义仓库的
+协作策略之前先读完这两份文件；日常工作中，阅读适用的维度以及与任务匹配的操作手册步骤。
