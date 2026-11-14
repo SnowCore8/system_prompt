@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# 全量校验：Markdown 格式、两份测试、shellcheck、JSON、DSH 适配。
+# 全量校验：Markdown 格式、两份测试、shellcheck、JSON、软链、DSH 适配。
 set -uo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -56,6 +56,49 @@ echo "== JSON =="
 while IFS= read -r -d '' file; do
   python3 -m json.tool "$file" >/dev/null 2>&1 || fail "JSON 无效: $file"
 done < <(git ls-files --cached --others --exclude-standard -z '*.json')
+
+echo "== 软链 =="
+link_fs=0
+while IFS= read -r link; do
+  link="${link#./}"
+  link_fs=$((link_fs + 1))
+  git ls-files --error-unmatch "$link" >/dev/null 2>&1 || fail "软链未纳入版本库: $link"
+  target="$(readlink "$link")"
+  case "$target" in
+    /*)
+      fail "软链使用绝对路径: $link -> $target"
+      continue
+      ;;
+  esac
+  target_path="$(dirname "$link")/$target"
+  [ -L "$target_path" ] && fail "软链指向另一软链: $link -> $target"
+  if ! resolved="$(readlink -f "$link")"; then
+    fail "软链无法解析: $link -> $target"
+    continue
+  fi
+  case "$resolved" in
+    "$REPO_ROOT"/*) ;;
+    *)
+      fail "软链目标在仓库外: $link -> $resolved"
+      continue
+      ;;
+  esac
+  case "$resolved" in
+    "$REPO_ROOT/.git"/*)
+      fail "软链指向 .git: $link -> $resolved"
+      continue
+      ;;
+  esac
+  [ -e "$resolved" ] || fail "软链目标不存在: $link -> $target"
+  rel_resolved="${resolved#"$REPO_ROOT"/}"
+  if [ -d "$resolved" ]; then
+    [ -n "$(git ls-files -- "$rel_resolved" | head -n 1)" ] || fail "软链指向未跟踪目录: $link"
+  else
+    git ls-files --error-unmatch "$rel_resolved" >/dev/null 2>&1 || fail "软链指向未跟踪文件: $link"
+  fi
+done < <(find . -type l -not -path './.git/*' -print)
+link_git="$(git ls-files -s | awk '$1=="120000"' | wc -l)"
+[ "$link_fs" -eq "$link_git" ] || fail "软链数量不一致：工作区 $link_fs，版本库 $link_git"
 
 echo "== DSH 适配 =="
 dsh_root=".dsh/skills"
