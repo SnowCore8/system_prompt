@@ -115,7 +115,7 @@ find "$STAGE" -exec touch -t 198001010000 {} +
 )
 
 python3 - "$ZIPTMP" <<'PY'
-import sys, zipfile
+import json, sys, zipfile
 
 path = sys.argv[1]
 with zipfile.ZipFile(path) as zf:
@@ -124,6 +124,8 @@ with zipfile.ZipFile(path) as zf:
 problems = []
 for required in (
     ".qoder-plugin/plugin.json",
+    "qwen-extension.json",
+    "hooks/qwen-hooks.json",
     "rules/global-user-constraints.md",
     "LICENSE",
     "LICENSE-CC-BY-4.0.txt",
@@ -131,6 +133,11 @@ for required in (
 ):
     if required not in names:
         problems.append(f"缺少 {required}")
+if not problems:
+    qoder = json.loads(zf.read(".qoder-plugin/plugin.json"))
+    qwen = json.loads(zf.read("qwen-extension.json"))
+    if qoder.get("version") != qwen.get("version"):
+        problems.append("双端 manifest 版本不一致")
 for name in names:
     if name.startswith("/") or ".." in name.split("/"):
         problems.append(f"非法路径: {name}")

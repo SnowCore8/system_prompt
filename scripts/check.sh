@@ -200,6 +200,31 @@ if head -n 10 rules/global-user-constraints.md | grep -q '^paths:'; then
   fail "Qwen: 约束正文 front matter 含 paths，会变成条件规则"
 fi
 
+echo "== 插件清单 =="
+if ! python3 - "$PLUGIN_DIR" <<'PY'
+import json, re, sys
+from pathlib import Path
+
+plugin = Path(sys.argv[1])
+qoder = json.loads((plugin / ".qoder-plugin/plugin.json").read_text(encoding="utf-8"))
+qwen = json.loads((plugin / "qwen-extension.json").read_text(encoding="utf-8"))
+problems = []
+if not re.fullmatch(r"\d+\.\d+\.\d+", str(qoder.get("version", ""))):
+    problems.append("Qoder manifest 版本不是 SemVer")
+if qwen.get("version") != qoder.get("version"):
+    problems.append("双端 manifest 版本不一致")
+if not (plugin / str(qwen.get("hooks", ""))).is_file():
+    problems.append("Qwen extension 的 hooks 路径不存在")
+for key in ("skills", "commands"):
+    if not (plugin / str(qwen.get(key, ""))).is_dir():
+        problems.append(f"Qwen extension 的 {key} 路径不存在")
+if problems:
+    sys.exit("; ".join(problems))
+PY
+then
+  fail "插件清单"
+fi
+
 echo "== 插件校验 =="
 if command -v qoderclicn >/dev/null 2>&1; then
   qoderclicn plugins validate "$PLUGIN_DIR" || fail "插件校验"
