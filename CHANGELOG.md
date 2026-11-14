@@ -9,11 +9,19 @@
 - `naming-conventions` skill：通用命名规范，覆盖文件、包、类型、函数、变量、常量、布尔、集合、数量与单位、异步、错误、测试、API、数据库、配置、CLI、日志、资产、提交、基础设施、权限与发布包等维度，并提供语言矩阵、审查清单与改名迁移规则。
 - `comment-conventions` skill：代码注释规范，覆盖 doc 注释与 API 契约、文件与模块头、行内说明、单位与所有权、并发与性能警告、废弃标记、TODO、注释掉的代码、生成代码与许可证头、工具指令，并提供 24 个维度与 18 种语言的注释语法与文档工具对照。
 - `documentation-conventions` skill：项目文档规范，覆盖 README、贡献指南、架构与设计文档、ADR、教程与指南、参考与 API 文档、变更日志、运行手册、安全与支持文档、迁移与废弃、文档测试与站点工具，并提供 26 个维度与 20 类文档模板。
+- `code-style-conventions` skill：代码风格规范，覆盖格式化与 lint、目录与模块边界、依赖与配置管理、错误与日志策略、生成与第三方代码。
+- `api-and-data-conventions` skill：接口与数据规范，覆盖 API 契约、错误模型、幂等分页与版本、数据库迁移与数据保留。
+- `testing-and-quality-conventions` skill：测试与质量规范，覆盖测试分层、质量门禁与覆盖率、静态检查、本地开发环境。
+- `vcs-collaboration-conventions` skill：版本控制与协作规范，覆盖 Git 工作流、PR、代码审查、分支保护与代码所有权。
+- `release-operations-conventions` skill：发布与运维规范，覆盖版本与发布、变更管理、CI/CD、可观测性、事故响应与备份恢复。
+- `security-compliance-conventions` skill：安全与合规规范，覆盖安全开发、凭据与密钥、许可证与 SBOM、隐私与漏洞披露。
+- `repository-governance-conventions` skill：仓库治理规范，覆盖必需文件与元数据、仓库卫生、治理流程与打包分发。
 - 根 `AGENTS.md` 软链指向 `rules/global-user-constraints.md`，供 DSH 作为工作区指令加载；Qoder 仍按插件规则激活。
 
 **变更**
 
 - 根入口改为 `.qoder` 实际目录；`.qwen`、`.qoder-cn` 软链指向 `.qoder`，`.gitignore` 的本地配置路径同步。
+- `documentation-conventions` 的 `SECURITY.md` 条目只保留页面结构与行文，必需内容与响应承诺归 `security-compliance-conventions`。
 
 ## 2026-11-12
 
