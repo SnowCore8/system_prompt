@@ -349,19 +349,19 @@ DSH 里「插件」是 TypeScript 模块，导出 `apply(ctx)`；可分发的安
 | 插件能否带 rules | 规范可放，当前不加载 | 可放 `rules/`，仅条件规则生效 | 插件即代码，可注册任何能力 |
 | 校验命令 | `qoderclicn plugins validate` | 无 `skills` 校验；靠 `/skills` 与日志 | `dsh --dump-config`、web 加载日志 |
 
-## 与本仓库现状的差异
+## 与本仓库的映射
 
-对照上文，本仓库现有的 Qwen 入口需要修正：
+本仓库按上文的规则整改后，各工具的项目级入口如下：
 
-- `.qwen/AGENTS.md` 软链指向约束正文，但当前 Qwen Code 不扫描 `<project>/.qwen/AGENTS.md`。
-  源码 `memoryDiscovery.ts` 只在每级目录查 `QWEN.md`/`AGENTS.md` 文件名，不会进入 `.qwen/`
-  子目录；因此项目级应改用 `.qwen/rules/global-user-constraints.md`（无 `paths:` 即 baseline，
-  首请求进入 system prompt）。
-- 用户级 `~/.qwen/AGENTS.md` 已存在并指向本仓库约束正文，这条是有效的，无需改动。
-- `.qoder/` 与 `.qoder/rules` 软链符合 Qoder 项目级路径；`.qoder-cn -> .qoder` 这个软链对
-  Qoder CN 没有官方作用（CN 的用户级才是 `~/.qoder-cn/`），无害但不必依赖。
-- `.dsh/skills` 软链符合 DSH 的 rank 100 扫描根；根 `AGENTS.md` 会被 Qwen Code 与 DSH
-  同时当作项目级指令读取，指向 `CONTRIBUTING.md` 是合适的。
+- Qwen Code：`.qwen/rules/global-user-constraints.md`。该规则没有 `paths:`，属 baseline，
+  首个请求进入 system prompt；`.qwen/AGENTS.md` 会被 Qwen 忽略，因此不再提供。
+- Qoder：项目级 `.qoder/rules`，软链指向根级 `rules/`；用户级另按插件 README 复制到
+  `~/.qoder-cn/rules`（国际版 `~/.qoder/rules`）。`.qoder-cn` 与 `.qoder/plugins` 在项目级
+  没有加载语义，已移除。
+- DeepSeek Harness：`.dsh/skills` 是 rank 100 的 skill 扫描根；根 `AGENTS.md` 是项目指令入口。
+- 根 `AGENTS.md` 也会被 Qwen Code 当作项目级 `AGENTS.md` 读取，所以它只承载本仓库维护约定，
+  不承载用户全局约束。
+- 插件包内的 `rules/` 仍随包分发，供安装后复制到用户级；宿主当前不加载它（见 Qoder 一节）。
 
 ## 未验证与文档矛盾
 

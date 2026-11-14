@@ -3,7 +3,7 @@
 本仓库维护用户全局约束与十一个 skill（`system-prompt-authoring`，以及命名、注释、文档、代码风格、接口与数据、测试与质量、版本控制与协作、发布与运维、安全与合规、仓库治理十项通用规范），以及打包它们的用户级 Qoder 插件。约束正文与插件源是唯一真源，不另建副本；规范正文只有中文一份。
 改约束、skill 或插件前先读本文件。维护者：仓库所有者。
 插件的使用者文档（规则激活、hook、边界）见插件 [README](plugins/global-user-constraints/README.md)。
-DSH 从仓库根 `AGENTS.md` 加载本仓库维护约定；Qwen Code 从 `.qwen/AGENTS.md` 加载约束正文；Qoder 按插件 README 的「规则激活」加载。DSH 另从 `.dsh/skills/` 发现 skill。
+DSH 从仓库根 `AGENTS.md` 加载本仓库维护约定；Qwen Code 从 `.qwen/rules/global-user-constraints.md` 加载约束正文；Qoder 项目级从 `.qoder/rules/` 读取规则，用户级按插件 README 的「规则激活」安装。DSH 另从 `.dsh/skills/` 发现 skill。
 
 ## 目录
 
@@ -14,10 +14,9 @@ DSH 从仓库根 `AGENTS.md` 加载本仓库维护约定；Qwen Code 从 `.qwen/
 | `rules/global-user-constraints.md` | 用户全局约束正文（唯一规范源） |
 | `AGENTS.md` | 项目维护约定入口，软链指向 `CONTRIBUTING.md` |
 | `CONTRIBUTING.md` | 本仓库项目维护约定 |
-| `.qwen/AGENTS.md` | Qwen Code 约束正文入口，软链指向 `rules/global-user-constraints.md` |
+| `.qwen/rules/global-user-constraints.md` | Qwen Code 项目级规则入口，软链指向约束正文；无 `paths:`，首请求生效 |
 | `.dsh/skills/` | DSH 项目级 skill 入口，软链到插件内十一个 skill |
-| `.qoder/` | 统一入口；`rules`、`plugins` 软链指向根级同名目录 |
-| `.qoder-cn` | 指向 `.qoder` 的软链 |
+| `.qoder/` | Qoder 项目级配置目录；`rules` 软链指向根级 `rules/` |
 | `scripts/` | `dist.sh` 打包；`check.sh` 全量校验 |
 | `GLOSSARY.md` | 术语与写法约定 |
 
@@ -26,7 +25,7 @@ DSH 从仓库根 `AGENTS.md` 加载本仓库维护约定；Qwen Code 从 `.qwen/
 1. 改约束：编辑 `rules/global-user-constraints.md`（唯一规范源）。
 2. 改 skill：编辑 `plugins/global-user-constraints/skills/` 下对应的 skill。
 3. 只改软链目标，不另建副本。
-4. 根 `AGENTS.md` 是项目维护约定入口（软链 `CONTRIBUTING.md`）；Qwen 的约束入口是 `.qwen/AGENTS.md`。
+4. 根 `AGENTS.md` 是项目维护约定入口（软链 `CONTRIBUTING.md`）；Qwen 的约束入口是 `.qwen/rules/global-user-constraints.md`。
 
 ## 软链约定
 
@@ -43,9 +42,22 @@ DSH 从仓库根 `AGENTS.md` 加载本仓库维护约定；Qwen Code 从 `.qwen/
 
 ## Qwen Code 适配
 
-- 入口：Qwen Code 只读 `.qwen/AGENTS.md`；该文件用相对软链指向 `rules/global-user-constraints.md`。
-- 不提供 `.qwen/rules`：Qwen 不支持规则目录；`.qwen` 是普通目录，只放该软链。
-- 校验：`scripts/check.sh` 的「Qwen 适配」段检查 `.qwen` 为普通目录、`.qwen/AGENTS.md` 指向约束正文。
+- 入口：Qwen Code 的项目级规则目录是 `.qwen/rules/`；`.qwen/rules/global-user-constraints.md` 用相对软链指向
+  `rules/global-user-constraints.md`。该规则没有 `paths:`，属 baseline，首个请求即进入 system prompt。
+- 不提供 `.qwen/AGENTS.md`：Qwen 只在每级目录查找 `QWEN.md`/`AGENTS.md` 文件名，不进入 `.qwen/` 子目录再找，
+  项目级 `.qwen/AGENTS.md` 不会被读取。
+- 校验：`scripts/check.sh` 的「Qwen 适配」段检查 `.qwen` 与 `.qwen/rules` 为普通目录、规则软链指向约束正文、
+  `.qwen/AGENTS.md` 不存在，且约束正文 front matter 不含 `paths:`。
+
+## Qoder 适配
+
+- 项目级：`.qoder/rules` 软链指向根级 `rules/`；Qoder 从当前目录向上查到 `.git`，逐层读取 `.qoder/rules/**/*.md`。
+- 用户级：CN 把规则复制到 `~/.qoder-cn/rules/`；插件包内的 `rules/` 当前不被宿主加载，安装后按插件 README 的
+  「规则激活」复制一次。
+- 不提供两个入口：`.qoder-cn`（CN 的这个名字只用于用户级配置根）与 `.qoder/plugins`（插件包体安装在用户配置根），
+  项目级都没有加载语义。
+- 校验：`scripts/check.sh` 的「Qoder 适配」段检查 `.qoder` 为普通目录、`.qoder/rules` 指向 `rules/`，
+  且 `.qoder-cn` 与 `.qoder/plugins` 不存在。
 
 ## 验证
 
@@ -54,7 +66,7 @@ python3 -m pip install -r requirements-dev.txt
 scripts/check.sh
 ```
 
-`scripts/check.sh` 校验全部未忽略的 Markdown，并运行 skill 与 hook 测试、shellcheck、JSON 解析与 DSH 适配检查；`qoderclicn` 存在时再跑插件校验。
+`scripts/check.sh` 校验全部未忽略的 Markdown，并运行 skill 与 hook 测试、shellcheck、JSON 解析与 DSH/Qwen/Qoder 适配检查；`qoderclicn` 存在时再跑插件校验。
 
 Markdown 校验只覆盖格式；各 skill 的内容规则按各自 `SKILL.md` 的人工核对清单检查，`MD-*` 规则只覆盖 `check.py` 的格式项。
 插件校验用 `qoderclicn` 而非入口脚本 `qodercn`：后者把首参当路径判断，仓库根有 `plugins/` 目录，会被当成 IDE 目标。

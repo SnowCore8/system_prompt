@@ -2,7 +2,8 @@
 
 本文件是本仓库的项目维护约定，根 `AGENTS.md` 软链指向本文件，供 DSH 等工作区指令消费者加载。
 用户全局约束在 `rules/global-user-constraints.md`，那是仓库的分发内容：Qwen Code 通过
-`.qwen/AGENTS.md` 软链读取，Qoder 通过插件规则激活，均不作为本仓库的贡献规则。
+`.qwen/rules/global-user-constraints.md` 读取项目级规则，Qoder 项目级通过 `.qoder/rules` 读取、
+用户级按插件 README 激活，均不作为本仓库的贡献规则。
 
 ## 范围与优先级
 
@@ -20,7 +21,7 @@
 ## 校验与打包
 
 - 依赖：`python3 -m pip install -r requirements-dev.txt`。
-- 全量校验：`scripts/check.sh`，覆盖 Markdown、skill 与 hook 测试、shellcheck、JSON、软链与 DSH 适配。
+- 全量校验：`scripts/check.sh`，覆盖 Markdown、skill 与 hook 测试、shellcheck、JSON、软链与 DSH/Qwen/Qoder 适配。
 - 打包：`scripts/dist.sh`，zip 产物不入库；插件版本由插件路径提交数推导。
 
 ## 输出

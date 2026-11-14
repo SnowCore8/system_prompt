@@ -22,6 +22,7 @@
 - 根 `AGENTS.md` 由约束正文软链改为本仓库项目维护约定；用户全局约束保留在 `rules/`，不再作为 DSH 项目指令自动加载，需要时由用户级指令或 Qoder 插件规则激活提供。
 - 入口修正：删除 `.qwen` 软链（Qwen 不读 `rules/`）；根 `AGENTS.md` 恢复为约束正文入口，项目维护约定移至 `CONTRIBUTING.md`。
 - Qwen 入口修正：Qwen Code 只读 `.qwen/AGENTS.md`，该文件软链指向约束正文；根 `AGENTS.md` 改为项目维护约定入口（软链 `CONTRIBUTING.md`）。
+- 新增 `docs/agent-tooling-loading.md`：分别整理 Qoder、Qwen Code 与 DeepSeek Harness 的 rules/skills/plugins 加载规则，附对照表与本仓库映射。
 
 **变更**
 
@@ -35,6 +36,10 @@
 
 - 旧 skill 治理：`naming-conventions`、`comment-conventions`、`documentation-conventions`、`system-prompt-authoring` 补齐与七个通用规范的归属边界，移除重复的教学与流程内容；命名索引与 34 个维度章节一一对应。
 - `system-prompt-authoring` 补 Scope 与 Review Checklist，核验来源并修正过期引文，`--strict` 说明与 checker 行为对齐；仓库 README 与术语表不再把内容规则限定为 S1–S13。
+- 入口按三工具实际加载规则整改：Qwen 项目级约束入口改为 `.qwen/rules/global-user-constraints.md`
+  （baseline 规则），删除不被读取的 `.qwen/AGENTS.md`；删除项目级无加载语义的 `.qoder-cn` 与
+  `.qoder/plugins`，保留 `.qoder/rules`；`scripts/check.sh` 新增「Qoder 适配」并改写「Qwen 适配」；
+  README、CONTRIBUTING 与插件 README 同步，插件 README 的 `.qoder*/rules` 说法改为实际路径。
 
 ## 2026-11-12
 
