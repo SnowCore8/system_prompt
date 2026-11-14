@@ -38,7 +38,7 @@ Qoder 与 Qwen Code 都不向模型注入当前时间。模型只能靠对话里
 
 ## 验证
 
-- `scripts/test_inject_clock.py` 覆盖两个事件注入、其它事件静默、非法 payload 静默、双端 hooks 配置与清单版本。
+- `tests/hooks/test_inject_clock.py` 覆盖两个事件注入、其它事件静默、非法 payload 静默、双端 hooks 配置与清单版本。
 - 已实测 Qoder 的 `SessionStart` `additionalContext` 能让模型读取并使用注入内容（用标记串验证）。
 - 未验证：宿主精确的 token 计费；Windows 上 Qwen 扩展的 `python` 可用性。
 

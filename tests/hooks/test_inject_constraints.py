@@ -9,7 +9,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-HOOK = Path(__file__).with_name("inject-constraints.py")
+HOOK = Path(__file__).parents[2] / "shared" / "scripts" / "inject-constraints.py"
 HOOKS_JSON = Path(__file__).parents[2] / "plugins" / "qoder" / "hooks" / "hooks.json"
 RULES = "global-user-constraints.md"
 MARKER = "# 测试约束\n\nMARKER-7f3a9c\n"

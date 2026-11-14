@@ -9,7 +9,7 @@ import sys
 import unittest
 from pathlib import Path
 
-HOOK = Path(__file__).with_name("inject-clock.py")
+HOOK = Path(__file__).parents[2] / "shared" / "scripts" / "inject-clock.py"
 ROOT = Path(__file__).parents[2]
 QODER_HOOKS = ROOT / "plugins/qoder/hooks/hooks.json"
 QWEN_HOOKS = ROOT / "plugins/qwen/hooks/qwen-hooks.json"

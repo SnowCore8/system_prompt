@@ -6,9 +6,6 @@ REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$REPO_ROOT" || exit 2
 
 SKILL_DIR="skills/system-prompt-authoring"
-SHARED_DIR="shared"
-
-DSH_DIR="plugins/dsh"
 failures=0
 skips=0
 
@@ -48,14 +45,14 @@ while IFS= read -r -d '' file; do
 done < <(git ls-files --cached --others --exclude-standard -z '*.md')
 
 echo "== skill 测试 =="
-python3 -B -m unittest discover -s "$SKILL_DIR/scripts" -p 'test_*.py' || fail "skill 测试"
+python3 -B -m unittest discover -s tests/skill -p 'test_*.py' || fail "skill 测试"
 
 echo "== hook 测试 =="
-python3 -B -m unittest discover -s "$SHARED_DIR/scripts" -p 'test_*.py' || fail "hook 测试"
+python3 -B -m unittest discover -s tests/hooks -p 'test_*.py' || fail "hook 测试"
 
 echo "== DSH 包测试 =="
 if command -v node >/dev/null 2>&1; then
-  node --test "$DSH_DIR/test/provider.test.mjs" || fail "DSH 包测试"
+  node --test tests/dsh/provider.test.mjs || fail "DSH 包测试"
 else
   skip "未安装 node"
 fi
@@ -247,7 +244,7 @@ if (dsh.get("publishConfig") or {}).get("access") != "public":
     problems.append("DSH bundle 缺少 npm 公开包 publishConfig")
 expected_links = {
     "qoder": {"skills": "skills", "rules": "rules", "commands": "shared/commands", "scripts": "shared/scripts"},
-    "qwen": {"skills": "skills", "commands": "shared/commands", "scripts": "shared/scripts"},
+    "qwen": {"skills": "skills", "rules": "rules", "commands": "shared/commands", "scripts": "shared/scripts"},
 }
 for name, links in expected_links.items():
     for link, target in links.items():

@@ -14,7 +14,8 @@ DeepSeek Harness（DSH）的三个插件包。`rules/`、`skills/` 与 `shared/`
 | `rules/global-user-constraints.md` | 用户全局约束正文（唯一权威来源） |
 | `skills/` | 十一个 skill 的真源 |
 | `shared/commands/` | 手动审查命令 |
-| `shared/scripts/` | 约束注入、时间注入脚本及其测试 |
+| `shared/scripts/` | 约束注入、时间注入脚本 |
+| `tests/` | 开发测试：skill、hook 与 DSH provider |
 | `plugins/qoder/` | Qoder 插件包（`.qoder-plugin/plugin.json`） |
 | `plugins/qwen/` | Qwen Code 扩展包（`qwen-extension.json`） |
 | `package.json`（仓库根） | DSH bundle 清单（npm 包与 git 源安装入口） |

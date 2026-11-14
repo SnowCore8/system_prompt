@@ -28,9 +28,9 @@
 - 全量校验：`scripts/check.sh`，覆盖 Markdown、skill 与 hook 测试、shellcheck、JSON、敏感文件、
   软链与 DSH/Qwen/Qoder 适配。缺 `shellcheck` 或 `qoderclicn` 时对应段会打印「跳过」，交付时要说明缺口。
 - 单独跑测试：skill 测试
-  `python3 -B -m unittest discover -s skills/system-prompt-authoring/scripts -p 'test_*.py'`；
-  hook 测试 `python3 -B -m unittest discover -s shared/scripts -p 'test_*.py'`；
-  DSH 包测试 `node --test plugins/dsh/test/provider.test.mjs`。
+  `python3 -B -m unittest discover -s tests/skill -p 'test_*.py'`；
+  hook 测试 `python3 -B -m unittest discover -s tests/hooks -p 'test_*.py'`；
+  DSH 包测试 `node --test tests/dsh/provider.test.mjs`。
 - 发布：版本为 SemVer，三个清单的 `version` 必须一致；改版本与 CHANGELOG 后打 `v<version>` tag，流程见
   `docs/release.md`。本地出包用 `scripts/dist.sh` 一次构建三个 zip（默认要求干净工作区，
   `--require-tag` 要求 tag 匹配），zip 与 `.sha256` 不入库。
