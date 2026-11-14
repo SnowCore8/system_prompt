@@ -1,11 +1,15 @@
 ---
 name: global-user-constraints
-description: 用户全局约束，在回答任何问题之前必须遵守
+description: English reference translation of the Chinese normative specification of the global user constraints
 trigger: always_on
 alwaysApply: true
 ---
 
-# Global User Constraints: A Normative Specification for Authorized Coding Agents
+# Global User Constraints: A Reference Translation of the Chinese Normative Specification
+
+> This file is an English reference translation. The normative specification is
+> [global-user-constraints.zh-CN.md](global-user-constraints.zh-CN.md). Where the two
+> texts differ, the Chinese text is authoritative.
 
 ## Abstract
 
