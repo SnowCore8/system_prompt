@@ -15,8 +15,10 @@ DSH 从仓库根 `AGENTS.md` 加载本仓库维护约定；Qwen Code 从 `.qwen/
 | `AGENTS.md` | 项目维护约定入口，软链指向 `CONTRIBUTING.md` |
 | `CONTRIBUTING.md` | 本仓库项目维护约定 |
 | `.qwen/rules` | Qwen Code 项目级规则目录，软链指向根级 `rules/`；规则无 `paths:`，首请求生效 |
-| `.dsh/skills/` | DSH 项目级 skill 入口，软链到插件内十一个 skill |
+| `.qwen/skills/` | Qwen Code 项目级 skill 入口，软链到插件内十一个 skill |
 | `.qoder/` | Qoder 项目级配置目录；`rules` 软链指向根级 `rules/` |
+| `.qoder/skills/` | Qoder 项目级 skill 入口，软链到插件内十一个 skill |
+| `.dsh/skills/` | DSH 项目级 skill 入口，软链到插件内十一个 skill |
 | `scripts/` | `dist.sh` 打包；`check.sh` 全量校验 |
 | `GLOSSARY.md` | 术语与写法约定 |
 
@@ -44,20 +46,23 @@ DSH 从仓库根 `AGENTS.md` 加载本仓库维护约定；Qwen Code 从 `.qwen/
 
 - 入口：Qwen Code 的项目级规则目录是 `.qwen/rules/`，用相对软链指向根级 `rules/`；其中的
   `global-user-constraints.md` 没有 `paths:`，属 baseline，首个请求即进入 system prompt。
+- skill：Qwen Code 从 `.qwen/skills/` 发现项目级 skill，只扫一层；该目录用相对软链指向插件内十一个 skill。
 - 不提供 `.qwen/AGENTS.md`：Qwen 只在每级目录查找 `QWEN.md`/`AGENTS.md` 文件名，不进入 `.qwen/` 子目录再找，
   项目级 `.qwen/AGENTS.md` 不会被读取。
-- 校验：`scripts/check.sh` 的「Qwen 适配」段检查 `.qwen` 为普通目录、`.qwen/rules` 软链指向 `rules/` 且含
-  约束正文、`.qwen/AGENTS.md` 不存在，且约束正文 front matter 不含 `paths:`。
+- 校验：`scripts/check.sh` 的「Qwen 适配」段检查 `.qwen`、`.qwen/rules`、`.qwen/skills` 的形态与软链目标，
+  `.qwen/AGENTS.md` 不存在，且约束正文 front matter 不含 `paths:`。
 
 ## Qoder 适配
 
 - 项目级：`.qoder/rules` 软链指向根级 `rules/`；Qoder 从当前目录向上查到 `.git`，逐层读取 `.qoder/rules/**/*.md`。
+- skill：Qoder 从 `.qoder/skills/` 发现项目级 skill；该目录用相对软链指向插件内十一个 skill，
+  安装插件时另提供带插件前缀的同一批 skill。
 - 用户级：CN 把规则复制到 `~/.qoder-cn/rules/`；插件包内的 `rules/` 当前不被宿主加载，安装后按插件 README 的
   「规则激活」复制一次。
 - 不提供两个入口：`.qoder-cn`（CN 的这个名字只用于用户级配置根）与 `.qoder/plugins`（插件包体安装在用户配置根），
   项目级都没有加载语义。
-- 校验：`scripts/check.sh` 的「Qoder 适配」段检查 `.qoder` 为普通目录、`.qoder/rules` 指向 `rules/`，
-  且 `.qoder-cn` 与 `.qoder/plugins` 不存在。
+- 校验：`scripts/check.sh` 的「Qoder 适配」段检查 `.qoder` 为普通目录、`.qoder/rules` 指向 `rules/`、
+  `.qoder/skills` 的十一条软链，且 `.qoder-cn` 与 `.qoder/plugins` 不存在。
 
 ## 验证
 

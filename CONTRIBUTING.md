@@ -14,7 +14,7 @@
 
 1. 改约束、skill 或插件前先读 `README.md` 与对应目录说明。
 2. 真源位置：约束正文 `rules/global-user-constraints.md`；插件 `plugins/global-user-constraints/`；
-   skill 真源在插件内，`.dsh/skills/` 只是软链入口。
+   skill 真源在插件内，`.qwen/skills/`、`.qoder/skills/`、`.dsh/skills/` 只是软链入口。
 3. 新增或调整入口时保持软链约定：相对路径、目标在仓库内、不复制第二份、不指向另一软链。
 4. 提交前运行 `scripts/check.sh`，失败先修；交付时贴真实输出与退出码。
 

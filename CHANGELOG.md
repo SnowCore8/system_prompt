@@ -23,6 +23,8 @@
 - 入口修正：删除 `.qwen` 软链（Qwen 不读 `rules/`）；根 `AGENTS.md` 恢复为约束正文入口，项目维护约定移至 `CONTRIBUTING.md`。
 - Qwen 入口修正：Qwen Code 只读 `.qwen/AGENTS.md`，该文件软链指向约束正文；根 `AGENTS.md` 改为项目维护约定入口（软链 `CONTRIBUTING.md`）。
 - 新增 `docs/agent-tooling-loading.md`：分别整理 Qoder、Qwen Code 与 DeepSeek Harness 的 rules/skills/plugins 加载规则，附对照表与本仓库映射。
+- 三工具 skill 入口适配：新增 `.qwen/skills/` 与 `.qoder/skills/`，各以相对软链指向插件内十一个 skill；
+  `scripts/check.sh` 抽出统一的 skill 入口校验，README、CONTRIBUTING 与加载规则调研文档同步。
 
 **变更**
 
