@@ -28,7 +28,7 @@ jobs:
           versions = {
               "qoder": json.load(open("plugins/qoder/.qoder-plugin/plugin.json", encoding="utf-8"))["version"],
               "qwen": json.load(open("plugins/qwen/qwen-extension.json", encoding="utf-8"))["version"],
-              "dsh": json.load(open("plugins/dsh/package.json", encoding="utf-8"))["version"],
+              "dsh": json.load(open("package.json", encoding="utf-8"))["version"],
           }
           tag = os.environ["GITHUB_REF_NAME"]
           if len(set(versions.values())) != 1:

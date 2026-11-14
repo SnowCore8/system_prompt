@@ -2,6 +2,21 @@
 
 按版本从新到旧记录可观察变更。自 0.2.0 起版本采用 SemVer、发布点为 tag `v<version>`，每节记录一个发布版本；0.2.0 之前按日期记录。条目按主题合并，记录最终可观察状态；被后续提交推翻的中间状态只在修复项里说明。
 
+## 0.6.0（2026-11-14）
+
+**新增**
+
+- 支持 DSH Git 源安装：仓库根新增 `package.json`，把仓库本身声明为
+  `@snowcore8/dsh-global-user-constraints` bundle；`pnpm dsh plugin --profile web add
+  "github:SnowCore8/system_prompt#v0.6.0"` 即可安装，私有仓库需 `gh auth setup-git`。
+- `plugins/dsh/src/index.js` 改为从最近含 `package.json` 的父目录定位包根，同时兼容仓库根布局、
+  git 安装布局与 zip 布局；`materialize.sh dsh` 按根布局物化；`dist.sh` 的 dsh 结构校验同步。
+
+**变更**
+
+- 三包版本统一升到 `0.6.0`；`check.sh`、`dist.sh` 与 release 工作流的 DSH 清单位置改为仓库根
+  `package.json`；DSH bundle 不再在 `plugins/dsh` 内保留 `package.json`、`skills/` 和 `rules/` 软链。
+
 ## 0.5.0（2026-11-14）
 
 **变更**

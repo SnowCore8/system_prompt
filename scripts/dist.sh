@@ -62,7 +62,7 @@ root = Path(sys.argv[1])
 paths = {
     "qoder": root / "plugins/qoder/.qoder-plugin/plugin.json",
     "qwen": root / "plugins/qwen/qwen-extension.json",
-    "dsh": root / "plugins/dsh/package.json",
+    "dsh": root / "package.json",
 }
 versions = {name: json.loads(path.read_text(encoding="utf-8")).get("version") for name, path in paths.items()}
 for name, version in versions.items():
@@ -102,7 +102,8 @@ name, path, version = sys.argv[1], sys.argv[2], sys.argv[3]
 required = {
     "qoder": [".qoder-plugin/plugin.json", "hooks/hooks.json", "rules/global-user-constraints.md"],
     "qwen": ["qwen-extension.json", "hooks/qwen-hooks.json"],
-    "dsh": ["package.json", "cordis.patch.yml", "src/index.js", "rules/global-user-constraints.md"],
+    "dsh": ["package.json", "plugins/dsh/cordis.patch.yml", "plugins/dsh/src/index.js",
+            "rules/global-user-constraints.md"],
 }[name] + ["LICENSE", "LICENSE-CC-BY-4.0.txt", "LICENSE-MIT.txt"]
 
 with zipfile.ZipFile(path) as zf:

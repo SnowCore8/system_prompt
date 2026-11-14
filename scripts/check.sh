@@ -222,7 +222,7 @@ packages = {
 }
 qoder = json.loads((packages["qoder"] / ".qoder-plugin/plugin.json").read_text(encoding="utf-8"))
 qwen = json.loads((packages["qwen"] / "qwen-extension.json").read_text(encoding="utf-8"))
-dsh = json.loads((packages["dsh"] / "package.json").read_text(encoding="utf-8"))
+dsh = json.loads((root / "package.json").read_text(encoding="utf-8"))
 problems = []
 versions = {"qoder": qoder.get("version"), "qwen": qwen.get("version"), "dsh": dsh.get("version")}
 for name, version in versions.items():
@@ -237,16 +237,15 @@ for key in ("skills", "commands"):
         problems.append(f"Qwen extension 的 {key} 路径不存在")
 bundle = (dsh.get("dsh") or {}).get("bundle") or {}
 patch_path = bundle.get("patch")
-if not patch_path or not (packages["dsh"] / patch_path).is_file():
+if not patch_path or not (root / patch_path).is_file():
     problems.append("DSH bundle 的 patch 路径不存在")
-if not (packages["dsh"] / str(dsh.get("main", ""))).is_file():
+if not (root / str(dsh.get("main", ""))).is_file():
     problems.append("DSH bundle 的 main 入口不存在")
 if not dsh.get("engines", {}).get("dsh"):
     problems.append("DSH bundle 缺少 engines.dsh")
 expected_links = {
     "qoder": {"skills": "skills", "rules": "rules", "commands": "shared/commands", "scripts": "shared/scripts"},
     "qwen": {"skills": "skills", "commands": "shared/commands", "scripts": "shared/scripts"},
-    "dsh": {"skills": "skills", "rules": "rules"},
 }
 for name, links in expected_links.items():
     for link, target in links.items():

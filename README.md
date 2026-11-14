@@ -17,7 +17,8 @@ DeepSeek Harness（DSH）的三个插件包。`rules/`、`skills/` 与 `shared/`
 | `shared/scripts/` | 约束注入、时间注入脚本及其测试 |
 | `plugins/qoder/` | Qoder 插件包（`.qoder-plugin/plugin.json`） |
 | `plugins/qwen/` | Qwen Code 扩展包（`qwen-extension.json`） |
-| `plugins/dsh/` | DSH bundle（`package.json` + `dsh.bundle.patch`） |
+| `package.json`（仓库根） | DSH bundle 清单与 git 源安装入口 |
+| `plugins/dsh/` | DSH bundle 的插件源码、patch 与说明 |
 | `plugins/marketplace.json` | Qoder 本地市场描述，指向 `plugins/qoder` |
 | `.qwen/rules`、`.qwen/skills/` | Qwen Code 项目级入口，软链到顶层真源 |
 | `.qoder/rules`、`.qoder/skills/` | Qoder 项目级入口，软链到顶层真源 |
@@ -60,7 +61,7 @@ DeepSeek Harness（DSH）的三个插件包。`rules/`、`skills/` 与 `shared/`
 |---|---|---|---|
 | `plugins/qoder` | `.qoder-plugin/plugin.json` | `command` + `args`，`${QODER_PLUGIN_ROOT}` | `qoderclicn plugins install <zip> --scope user` |
 | `plugins/qwen` | `qwen-extension.json` | 单条 `command` 字符串，`${CLAUDE_PLUGIN_ROOT}` | `qwen extensions install <zip>` |
-| `plugins/dsh` | `package.json` 的 `dsh.bundle.patch` | 无 hook；注册 skill 提供者 | `dsh plugin --profile <名> add <目录>` |
+| `plugins/dsh` | 仓库根 `package.json` 的 `dsh.bundle.patch` | 无 hook；注册 skill 提供者 | `dsh plugin --profile <名> add "github:SnowCore8/system_prompt#<tag>"` |
 
 三包共用版本号，发布时一起出包；清单版本不一致会被 `scripts/check.sh`、`scripts/dist.sh`
 与 release 工作流拒绝。
@@ -69,8 +70,15 @@ DeepSeek Harness（DSH）的三个插件包。`rules/`、`skills/` 与 `shared/`
 
 - 项目级：`.dsh/skills/` 是 rank 100 的 skill 扫描根，软链到顶层 `skills/`；根 `AGENTS.md`
   由 `dsh-agent-instructions` 作为指令链加载。
-- bundle：`plugins/dsh` 注册 `ctx.skills.registerProvider`，把包内十一个 skill 提供给任意 profile；
-  安装方法与版本准入见 [plugins/dsh/README.md](plugins/dsh/README.md)。
+- bundle：仓库根 `package.json` 声明 `dsh.bundle.patch`，`plugins/dsh/src/index.js` 注册
+  `ctx.skills.registerProvider`，把十一个 skill 提供给任意 profile。GitHub 仓库可直接源安装：
+
+  ```bash
+  pnpm dsh plugin --profile web add "github:SnowCore8/system_prompt#v0.6.0"
+  ```
+
+  私有仓库需 `gh auth setup-git`；本地目录或 Release zip 的安装方式见
+  [plugins/dsh/README.md](plugins/dsh/README.md)。
 - 约束：DSH 的用户级指令链读取 `~/.dsh/AGENTS.md`，把 `rules/global-user-constraints.md`
   复制到该位置即可；时间由 DSH 自身注入，不需要额外 hook。
 

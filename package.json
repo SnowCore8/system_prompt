@@ -1,0 +1,27 @@
+{
+  "name": "@snowcore8/dsh-global-user-constraints",
+  "version": "0.6.0",
+  "description": "DSH bundle（Git 源安装入口）：以 skill 提供者形式暴露用户全局约束的十一个通用规范 skill。",
+  "type": "module",
+  "main": "plugins/dsh/src/index.js",
+  "files": [
+    "plugins/dsh/src",
+    "plugins/dsh/cordis.patch.yml",
+    "plugins/dsh/README.md",
+    "skills",
+    "rules",
+    "README.md",
+    "LICENSE",
+    "LICENSE-CC-BY-4.0.txt",
+    "LICENSE-MIT.txt"
+  ],
+  "engines": {
+    "dsh": ">=0.2.2-rc.1 <0.3.0"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./plugins/dsh/cordis.patch.yml"
+    }
+  },
+  "license": "MIT AND CC-BY-4.0"
+}

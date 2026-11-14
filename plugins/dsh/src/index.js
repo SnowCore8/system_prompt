@@ -4,6 +4,7 @@
  * 使用方在 profile 里安装本 bundle 后，十一个通用规范 skill 会出现在会话目录中；
  * 约束正文与时间注入由 DSH 自身的用户级 AGENTS.md 与系统时间提示承担，本模块只负责 skill。
  */
+import { existsSync } from 'node:fs'
 import { readFile, readdir } from 'node:fs/promises'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -14,7 +15,17 @@ export const inject = ['skills']
 const PROVIDER = 'global-user-constraints'
 const RANK = 700
 const SOURCE = 'bundled'
-const SKILLS_ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', 'skills')
+function findPackageRoot() {
+  let current = path.dirname(fileURLToPath(import.meta.url))
+  for (;;) {
+    if (existsSync(path.join(current, 'package.json'))) return current
+    const parent = path.dirname(current)
+    if (parent === current) return path.dirname(fileURLToPath(import.meta.url))
+    current = parent
+  }
+}
+
+const SKILLS_ROOT = path.join(findPackageRoot(), 'skills')
 
 const NAME_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/
 

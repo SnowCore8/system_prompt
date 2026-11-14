@@ -6,7 +6,7 @@ import { fileURLToPath } from 'node:url'
 
 import { apply } from '../src/index.js'
 
-const PACKAGE_ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..')
+const PACKAGE_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../..')
 
 function createContext() {
   const factories = []

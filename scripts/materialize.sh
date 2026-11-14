@@ -27,6 +27,17 @@ TARGET="$2"
 [ ! -e "$TARGET" ] || { echo "目标已存在: $TARGET" >&2; exit 1; }
 
 mkdir -p "$TARGET"
-cp -aL "$PACKAGE/." "$TARGET/"
+if [ "$1" = "dsh" ]; then
+  # DSH bundle 的清单在仓库根，源码与 patch 在 plugins/dsh，skill/规则在根级目录
+  mkdir -p "$TARGET/plugins/dsh"
+  cp "$REPO_ROOT/package.json" "$TARGET/package.json"
+  cp -a "$REPO_ROOT/plugins/dsh/src" "$TARGET/plugins/dsh/src"
+  cp "$REPO_ROOT/plugins/dsh/cordis.patch.yml" "$REPO_ROOT/plugins/dsh/README.md" "$TARGET/plugins/dsh/"
+  cp -a "$REPO_ROOT/skills" "$TARGET/skills"
+  cp -a "$REPO_ROOT/rules" "$TARGET/rules"
+  cp "$REPO_ROOT/README.md" "$TARGET/README.md"
+else
+  cp -aL "$PACKAGE/." "$TARGET/"
+fi
 cp "$REPO_ROOT/LICENSE" "$REPO_ROOT/LICENSE-CC-BY-4.0.txt" "$REPO_ROOT/LICENSE-MIT.txt" "$TARGET/"
 echo "已物化: $1 -> $TARGET"
