@@ -1,7 +1,8 @@
 # 用户全局约束插件
 
-用户级 Qoder 插件。安装后由 `SessionStart` hook 在会话启动时把约束全文注入上下文，
-不再需要手动复制规则；用户级或项目级已经加载同一份约束时自动跳过，避免重复。
+Qoder 插件与 Qwen Code 扩展双端包。安装后由 `SessionStart` hook 注入约束全文，
+并在 `SessionStart` 与 `UserPromptSubmit` 注入当前时间；不再需要手动复制规则，
+用户级或项目级已经加载同一份约束时自动跳过，避免重复。
 
 ## 结构
 
@@ -21,33 +22,48 @@
 | `skills/security-compliance-conventions/` | 安全与合规规范，覆盖安全开发、凭据与密钥、许可证与 SBOM、隐私与漏洞披露 |
 | `skills/repository-governance-conventions/` | 仓库治理规范，覆盖必需文件与元数据、仓库卫生、治理流程与打包分发 |
 | `commands/constraints-check.md` | 手动触发约束审查 |
-| `hooks/hooks.json` | `SessionStart` hook 配置 |
+| `qwen-extension.json` | Qwen Code 原生扩展清单 |
+| `hooks/hooks.json` | Qoder 的 hook 配置（`command` + `args`） |
+| `hooks/qwen-hooks.json` | Qwen 的 hook 配置（单条 `command` 字符串） |
 | `scripts/inject-constraints.py` | 读取包内约束并输出 `additionalContext`，带去重与降级 |
-| `scripts/test_inject_constraints.py` | hook 的表驱动测试 |
+| `scripts/inject-clock.py` | 注入当前本地时间、UTC 偏移、时区与星期 |
+| `scripts/test_inject_constraints.py` | 约束注入的表驱动测试 |
+| `scripts/test_inject_clock.py` | 时间注入与双端清单的表驱动测试 |
 
 ## 生效方式
 
-1. 安装插件（用户级）：`qoderclicn plugins install <插件目录或 zip> --scope user`。
-2. 新会话启动时，hook 读取 `${QODER_PLUGIN_ROOT}/rules/global-user-constraints.md`，
-   把全文作为 `additionalContext` 注入；约束正文约 32 KB，已实测可完整进入上下文。
-3. 注入前会比对以下位置的同内容文件，命中则跳过：
+Qoder 安装：`qoderclicn plugins install <插件目录或 zip> --scope user`；新会话启动时读取
+`${QODER_PLUGIN_ROOT}/rules/global-user-constraints.md` 并注入全文（约 32 KB，实测可完整进入上下文）。
 
-   - 用户级 `~/.qoder-cn/rules/global-user-constraints.md`（国际版 `~/.qoder/rules/`）与 `AGENTS.md`
-   - 项目级 `.qoder/rules/global-user-constraints.md`、`AGENTS.md`、`AGENTS.local.md`
-     （从 cwd 向上查到 `.git`）
+Qwen Code 安装：`qwen extensions install <插件目录或 zip>`；扩展清单是 `qwen-extension.json`，
+其中的 `hooks` 指向 `hooks/qwen-hooks.json`，同样注入约束与时间。
 
-所以已经用「规则激活」配置过约束的用户不会拿到两份；新用户安装即生效。
+注入约束前会比对以下位置的同内容文件，命中则跳过：
 
-仍然支持手动规则激活：把 `rules/global-user-constraints.md` 复制到
-`~/.qoder-cn/rules/`（CN）或项目的 `.qoder/rules/`。这条路径与 hook 二选一即可，
-两者同时存在时 hook 自动跳过。
+- Qoder：`~/.qoder-cn/rules/`（国际版 `~/.qoder/rules/`）、`AGENTS.md`、
+  `.qoder/rules/`、`AGENTS.local.md`
+- Qwen Code：`~/.qwen/rules/`、`~/.qwen/AGENTS.md`、`.qwen/rules/`、`AGENTS.md`、`QWEN.md`
+- 以上都从当前目录向上查到 `.git`
+
+所以已经用规则机制配置过约束的用户不会拿到两份；新用户安装即生效。仍支持手动复制规则，
+与 hook 二选一，两者同时存在时 hook 自动跳过。
+
+## 时间感知
+
+- 两个时机注入：`SessionStart` 与会话中的每次 `UserPromptSubmit`，保证首轮和长会话都有时间。
+- 文本固定为一行：`当前时间：YYYY-MM-DD HH:MM:SS +HH:MM（Asia/Shanghai，星期六）。` 后接
+  「需要日期或时间时以此为准；长会话以最近一次注入为准。」
+- 时区依次取 `TZ`、`/etc/timezone`、`/etc/localtime` 的 zoneinfo 路径，最后用 `tzname()` 兜底。
+- 设计说明见仓库的 [docs/time-awareness.md](../../docs/time-awareness.md)。
 
 ## Hook 行为
 
-- 只注册 `SessionStart`，matcher 留空匹配全部来源；其他事件不注册，避免频繁注入。
+- Qoder：`SessionStart` 注册约束与时间两个 hook，`UserPromptSubmit` 注册时间 hook；matcher 留空匹配全部来源。
+- Qwen：同一组事件写在 `hooks/qwen-hooks.json`，命令是单条字符串并用 `${CLAUDE_PLUGIN_ROOT}` 替换扩展根。
 - 读取 stdin 事件 JSON，只使用 `hook_event_name` 与 `cwd`；输出
   `hookSpecificOutput.hookEventName` 与 `hookSpecificOutput.additionalContext`。
-- 包内规则缺失、`QODER_PLUGIN_ROOT` 未设置、事件不是 `SessionStart`、payload 非法时静默退出 0。
+- 约束脚本只认 `SessionStart`，时间脚本认 `SessionStart` 与 `UserPromptSubmit`；其它事件静默退出 0。
+- 包内规则缺失、payload 非法时静默退出 0；脚本按自身位置推导包根，宿主环境变量缺失也能工作。
 - 正文超过 512 KB 时降级为一行提示，要求模型自行读取规则文件（正常正文约 32 KB，不会触发）。
 - 解释器用 `python`（PATH 上需有 3.7+），以 `-X utf8` 启动：Windows 只有 `python.exe`，
   该参数固定 stdin/stdout 编码，避免 ANSI 代码页下中文注入失败；`timeout` 为 10 秒。
@@ -67,11 +83,12 @@
 python3 -B -m unittest discover -s scripts -p 'test_*.py'
 ```
 
-测试覆盖：hook 配置指向脚本、全文注入、用户级/项目级规则与 `AGENTS.md` 去重、
-非 `SessionStart` 事件与非法 payload 静默、缺少 `QODER_PLUGIN_ROOT` 或规则文件时静默。
+测试覆盖：hook 配置指向脚本、全文注入、Qoder/Qwen 两侧规则与 `AGENTS.md` 去重、
+非目标事件与非法 payload 静默、缺少规则文件时静默、时间格式与时区、双端清单版本一致。
 
 ## 边界
 
-- 约束生效目录：用户级 `~/.qoder-cn/rules`（国际版 `~/.qoder/rules`）；项目级 `.qoder/rules`。
+- 约束生效目录：Qoder 用户级 `~/.qoder-cn/rules`（国际版 `~/.qoder/rules`）、项目级 `.qoder/rules`；
+  Qwen Code 用户级 `~/.qwen/rules`、项目级 `.qwen/rules`。
 - 不要把插件、约束文件或 zip 上传到公网平台；只走企业内网或已批准的分发通道。
 - Hook 不拦截工具调用；约束本身仍要求人工审查与真实输出验证。

@@ -1,0 +1,10 @@
+{
+  "name": "global-user-constraints",
+  "version": "0.3.0",
+  "displayName": "用户全局约束",
+  "description": "安装即生效：SessionStart 注入用户全局约束，UserPromptSubmit 注入当前时间；附带十一个通用规范 skill 与一个手动审查命令。",
+  "contextFileName": [],
+  "skills": "./skills/",
+  "commands": "./commands/",
+  "hooks": "./hooks/qwen-hooks.json"
+}

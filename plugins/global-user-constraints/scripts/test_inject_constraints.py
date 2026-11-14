@@ -58,11 +58,12 @@ class InjectConstraintsTest(unittest.TestCase):
             cwd=self.project,
         )
 
-    def test_hooks_config_points_to_script(self):
+    def test_hooks_config_points_to_scripts(self):
         hooks = load_hooks()
-        self.assertEqual(set(hooks), {"SessionStart"})
+        self.assertEqual(set(hooks), {"SessionStart", "UserPromptSubmit"})
+        names = [hook["name"] for hook in hooks["SessionStart"][0]["hooks"]]
+        self.assertEqual(names, ["inject-constraints", "inject-clock"])
         entry = hooks["SessionStart"][0]["hooks"][0]
-        self.assertEqual(entry["type"], "command")
         self.assertEqual(entry["command"], "python")
         self.assertEqual(entry["args"][:2], ["-X", "utf8"])
         self.assertTrue(entry["args"][2].endswith("/scripts/inject-constraints.py"))
@@ -96,6 +97,28 @@ class InjectConstraintsTest(unittest.TestCase):
         proc = self.run_hook({"hook_event_name": "SessionStart", "cwd": str(self.project)})
         self.assertEqual((proc.returncode, proc.stdout), (0, ""))
 
+    def test_skips_when_qwen_agents_matches(self):
+        target = self.home / ".qwen"
+        target.mkdir()
+        (target / "AGENTS.md").write_text(MARKER, encoding="utf-8")
+        proc = self.run_hook({"hook_event_name": "SessionStart", "cwd": str(self.project)})
+        self.assertEqual((proc.returncode, proc.stdout), (0, ""))
+
+    def test_skips_when_qwen_project_rule_matches(self):
+        (self.project / ".git").mkdir()
+        target = self.project / ".qwen" / "rules"
+        target.mkdir(parents=True)
+        (target / RULES).write_text(MARKER, encoding="utf-8")
+        proc = self.run_hook({"hook_event_name": "SessionStart", "cwd": str(self.project)})
+        self.assertEqual((proc.returncode, proc.stdout), (0, ""))
+
+    def test_claude_plugin_root_env_is_supported(self):
+        env = self.env()
+        env.pop("QODER_PLUGIN_ROOT")
+        env["CLAUDE_PLUGIN_ROOT"] = str(self.plugin)
+        proc = self.run_hook({"hook_event_name": "SessionStart", "cwd": str(self.project)}, env=env)
+        self.assertIn("MARKER-7f3a9c", proc.stdout)
+
     def test_ignores_other_events(self):
         for event in ("UserPromptSubmit", "PreToolUse", "SessionEnd"):
             proc = self.run_hook({"hook_event_name": event, "cwd": str(self.project)})
@@ -105,12 +128,6 @@ class InjectConstraintsTest(unittest.TestCase):
         for payload in ("", "not json", "[]", '"text"', "{}"):
             proc = self.run_hook(payload)
             self.assertEqual((proc.returncode, proc.stdout), (0, ""))
-
-    def test_missing_plugin_root_is_silent(self):
-        env = self.env()
-        env.pop("QODER_PLUGIN_ROOT")
-        proc = self.run_hook({"hook_event_name": "SessionStart"}, env=env)
-        self.assertEqual((proc.returncode, proc.stdout), (0, ""))
 
     def test_missing_rules_file_is_silent(self):
         (self.plugin / "rules" / RULES).unlink()

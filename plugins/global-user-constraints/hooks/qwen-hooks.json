@@ -1,0 +1,35 @@
+{
+  "SessionStart": [
+    {
+      "hooks": [
+        {
+          "type": "command",
+          "command": "python -X utf8 \"${CLAUDE_PLUGIN_ROOT}/scripts/inject-constraints.py\"",
+          "name": "inject-constraints",
+          "description": "注入用户全局约束全文，已有同内容规则时跳过",
+          "timeout": 10
+        },
+        {
+          "type": "command",
+          "command": "python -X utf8 \"${CLAUDE_PLUGIN_ROOT}/scripts/inject-clock.py\"",
+          "name": "inject-clock",
+          "description": "注入当前本地时间",
+          "timeout": 10
+        }
+      ]
+    }
+  ],
+  "UserPromptSubmit": [
+    {
+      "hooks": [
+        {
+          "type": "command",
+          "command": "python -X utf8 \"${CLAUDE_PLUGIN_ROOT}/scripts/inject-clock.py\"",
+          "name": "inject-clock",
+          "description": "每次提示提交前刷新当前时间",
+          "timeout": 10
+        }
+      ]
+    }
+  ]
+}

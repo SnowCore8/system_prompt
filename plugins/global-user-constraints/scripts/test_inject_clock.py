@@ -1,0 +1,93 @@
+#!/usr/bin/env python3
+"""inject-clock.py 与双端 hook 配置的表驱动测试。"""
+
+import json
+import os
+import re
+import subprocess
+import sys
+import unittest
+from pathlib import Path
+
+HOOK = Path(__file__).with_name("inject-clock.py")
+PLUGIN = Path(__file__).parents[1]
+QODER_HOOKS = PLUGIN / "hooks" / "hooks.json"
+QWEN_HOOKS = PLUGIN / "hooks" / "qwen-hooks.json"
+QODER_MANIFEST = PLUGIN / ".qoder-plugin" / "plugin.json"
+QWEN_MANIFEST = PLUGIN / "qwen-extension.json"
+CLOCK_PATTERN = re.compile(
+    r"^当前时间：\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} [+-]\d{2}:\d{2}"
+    r"（[^）]*星期[一二三四五六日]）。"
+)
+
+
+def load_json(path):
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
+def run_hook(payload):
+    raw = payload if isinstance(payload, str) else json.dumps(payload, ensure_ascii=False)
+    return subprocess.run(
+        [sys.executable, "-B", str(HOOK)],
+        input=raw, capture_output=True, text=True, check=False,
+        env={**os.environ, "TZ": "Asia/Shanghai"},
+    )
+
+
+class InjectClockTest(unittest.TestCase):
+    def test_injects_clock_on_session_start(self):
+        proc = run_hook({"hook_event_name": "SessionStart"})
+        self.assertEqual(proc.returncode, 0, proc.stderr)
+        output = json.loads(proc.stdout)["hookSpecificOutput"]
+        self.assertEqual(output["hookEventName"], "SessionStart")
+        self.assertRegex(output["additionalContext"], CLOCK_PATTERN)
+        self.assertIn("Asia/Shanghai", output["additionalContext"])
+
+    def test_injects_clock_on_user_prompt_submit(self):
+        proc = run_hook({"hook_event_name": "UserPromptSubmit"})
+        output = json.loads(proc.stdout)["hookSpecificOutput"]
+        self.assertEqual(output["hookEventName"], "UserPromptSubmit")
+        self.assertRegex(output["additionalContext"], CLOCK_PATTERN)
+
+    def test_ignores_other_events(self):
+        for event in ("PreToolUse", "PostToolUse", "SessionEnd"):
+            proc = run_hook({"hook_event_name": event})
+            self.assertEqual((proc.returncode, proc.stdout), (0, ""))
+
+    def test_invalid_payload_is_silent(self):
+        for payload in ("", "not json", "[]", '"text"', "{}"):
+            proc = run_hook(payload)
+            self.assertEqual((proc.returncode, proc.stdout), (0, ""))
+
+
+class HookConfigTest(unittest.TestCase):
+    def test_qoder_hooks_register_clock(self):
+        hooks = load_json(QODER_HOOKS)["hooks"]
+        self.assertEqual(set(hooks), {"SessionStart", "UserPromptSubmit"})
+        names = [h["name"] for h in hooks["SessionStart"][0]["hooks"]]
+        self.assertEqual(names, ["inject-constraints", "inject-clock"])
+        clock = hooks["UserPromptSubmit"][0]["hooks"][0]
+        self.assertEqual(clock["name"], "inject-clock")
+        self.assertTrue(clock["args"][2].endswith("/scripts/inject-clock.py"))
+
+    def test_qwen_hooks_register_clock(self):
+        hooks = load_json(QWEN_HOOKS)
+        self.assertEqual(set(hooks), {"SessionStart", "UserPromptSubmit"})
+        names = [h["name"] for h in hooks["SessionStart"][0]["hooks"]]
+        self.assertEqual(names, ["inject-constraints", "inject-clock"])
+        for hook in hooks["SessionStart"][0]["hooks"] + hooks["UserPromptSubmit"][0]["hooks"]:
+            self.assertIn('"${CLAUDE_PLUGIN_ROOT}/scripts/', hook["command"])
+            self.assertNotIn("args", hook)
+
+    def test_manifests_agree_on_version_and_hooks_path(self):
+        qoder = load_json(QODER_MANIFEST)
+        qwen = load_json(QWEN_MANIFEST)
+        self.assertEqual(qoder["version"], qwen["version"])
+        hooks_path = QWEN_MANIFEST.parent / qwen["hooks"]
+        self.assertTrue(hooks_path.is_file())
+        self.assertEqual((QWEN_MANIFEST.parent / qwen["skills"]).resolve(), (PLUGIN / "skills").resolve())
+        self.assertEqual((QWEN_MANIFEST.parent / qwen["commands"]).resolve(), (PLUGIN / "commands").resolve())
+
+
+if __name__ == "__main__":
+    unittest.main()

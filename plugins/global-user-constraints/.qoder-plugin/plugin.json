@@ -2,7 +2,7 @@
   "name": "global-user-constraints",
   "displayName": "用户全局约束",
   "version": "0.3.0",
-  "description": "安装即生效的用户级约束：SessionStart hook 自动注入约束全文，十一个 skill 覆盖指令文件、命名、注释、文档、代码风格、接口与数据、测试与质量、版本控制与协作、发布与运维、安全与合规、仓库治理，另有一个手动审查命令。",
+  "description": "安装即生效的用户级约束：SessionStart hook 注入约束全文、会话启动与每次提示提交注入当前时间；十一个 skill 覆盖指令文件、命名、注释、文档、代码风格、接口与数据、测试与质量、版本控制与协作、发布与运维、安全与合规、仓库治理，另有一个手动审查命令。",
   "author": {
     "name": "SnowCore8"
   },
