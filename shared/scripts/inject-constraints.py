@@ -18,12 +18,18 @@ RULES_FILENAME = "global-user-constraints.md"
 MAX_BYTES = 512 * 1024
 
 
-def plugin_root() -> Path:
+def plugin_root(argv: list[str]) -> Path:
+    if len(argv) > 1 and argv[1]:
+        return Path(argv[1])
     for name in ("QODER_PLUGIN_ROOT", "CLAUDE_PLUGIN_ROOT"):
         value = os.environ.get(name)
         if value:
             return Path(value)
-    return Path(__file__).resolve().parents[1]
+    here = Path(__file__).resolve()
+    for parent in here.parents:
+        if (parent / "rules" / RULES_FILENAME).is_file():
+            return parent
+    return here.parents[1]
 
 
 def config_roots() -> list[Path]:
@@ -99,7 +105,7 @@ def main() -> int:
     if event not in HOOK_EVENTS:
         return 0
 
-    rules_path = plugin_root() / "rules" / RULES_FILENAME
+    rules_path = plugin_root(sys.argv) / "rules" / RULES_FILENAME
     try:
         data = rules_path.read_bytes()
     except OSError:

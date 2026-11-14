@@ -10,7 +10,7 @@ import unittest
 from pathlib import Path
 
 HOOK = Path(__file__).with_name("inject-constraints.py")
-HOOKS_JSON = Path(__file__).parents[1] / "hooks" / "hooks.json"
+HOOKS_JSON = Path(__file__).parents[2] / "plugins" / "qoder" / "hooks" / "hooks.json"
 RULES = "global-user-constraints.md"
 MARKER = "# 测试约束\n\nMARKER-7f3a9c\n"
 
@@ -117,6 +117,17 @@ class InjectConstraintsTest(unittest.TestCase):
         env.pop("QODER_PLUGIN_ROOT")
         env["CLAUDE_PLUGIN_ROOT"] = str(self.plugin)
         proc = self.run_hook({"hook_event_name": "SessionStart", "cwd": str(self.project)}, env=env)
+        self.assertIn("MARKER-7f3a9c", proc.stdout)
+
+    def test_root_argument_wins_over_env(self):
+        env = self.env()
+        env.pop("QODER_PLUGIN_ROOT")
+        raw = json.dumps({"hook_event_name": "SessionStart", "cwd": str(self.project)})
+        proc = subprocess.run(
+            [sys.executable, "-B", str(HOOK), str(self.plugin)],
+            input=raw, capture_output=True, text=True, check=False,
+            env={**os.environ, **env}, cwd=self.project,
+        )
         self.assertIn("MARKER-7f3a9c", proc.stdout)
 
     def test_ignores_other_events(self):

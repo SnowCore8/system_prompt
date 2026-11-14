@@ -10,11 +10,11 @@ import unittest
 from pathlib import Path
 
 HOOK = Path(__file__).with_name("inject-clock.py")
-PLUGIN = Path(__file__).parents[1]
-QODER_HOOKS = PLUGIN / "hooks" / "hooks.json"
-QWEN_HOOKS = PLUGIN / "hooks" / "qwen-hooks.json"
-QODER_MANIFEST = PLUGIN / ".qoder-plugin" / "plugin.json"
-QWEN_MANIFEST = PLUGIN / "qwen-extension.json"
+ROOT = Path(__file__).parents[2]
+QODER_HOOKS = ROOT / "plugins/qoder/hooks/hooks.json"
+QWEN_HOOKS = ROOT / "plugins/qwen/hooks/qwen-hooks.json"
+QODER_MANIFEST = ROOT / "plugins/qoder/.qoder-plugin/plugin.json"
+QWEN_MANIFEST = ROOT / "plugins/qwen/qwen-extension.json"
 CLOCK_PATTERN = re.compile(
     r"^当前时间：\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} [+-]\d{2}:\d{2}"
     r"（[^）]*星期[一二三四五六日]）。"
@@ -78,6 +78,9 @@ class HookConfigTest(unittest.TestCase):
         for hook in hooks["SessionStart"][0]["hooks"] + hooks["UserPromptSubmit"][0]["hooks"]:
             self.assertIn('"${CLAUDE_PLUGIN_ROOT}/scripts/', hook["command"])
             self.assertNotIn("args", hook)
+        constraints = hooks["SessionStart"][0]["hooks"][0]["command"]
+        self.assertTrue(constraints.endswith('"${CLAUDE_PLUGIN_ROOT}"'))
+        self.assertIn("inject-constraints.py", constraints)
 
     def test_manifests_agree_on_version_and_hooks_path(self):
         qoder = load_json(QODER_MANIFEST)
@@ -85,8 +88,8 @@ class HookConfigTest(unittest.TestCase):
         self.assertEqual(qoder["version"], qwen["version"])
         hooks_path = QWEN_MANIFEST.parent / qwen["hooks"]
         self.assertTrue(hooks_path.is_file())
-        self.assertEqual((QWEN_MANIFEST.parent / qwen["skills"]).resolve(), (PLUGIN / "skills").resolve())
-        self.assertEqual((QWEN_MANIFEST.parent / qwen["commands"]).resolve(), (PLUGIN / "commands").resolve())
+        self.assertEqual((QWEN_MANIFEST.parent / qwen["skills"]).resolve(), (ROOT / "skills").resolve())
+        self.assertEqual((QWEN_MANIFEST.parent / qwen["commands"]).resolve(), (ROOT / "shared/commands").resolve())
 
 
 if __name__ == "__main__":

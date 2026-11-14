@@ -4,7 +4,7 @@
     "name": "SnowCore8"
   },
   "metadata": {
-    "description": "本仓库自带的插件市场描述文件，用于以市场方式安装 plugins/ 下的插件。",
+    "description": "本仓库自带的 Qoder 本地市场描述文件，用于安装 plugins/qoder。",
     "pluginRoot": "."
   },
   "plugins": [
@@ -16,7 +16,7 @@
         "skill",
         "security"
       ],
-      "source": "./global-user-constraints"
+      "source": "./qoder"
     }
   ]
 }

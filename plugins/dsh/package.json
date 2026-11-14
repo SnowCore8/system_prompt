@@ -1,0 +1,26 @@
+{
+  "name": "@snowcore8/dsh-global-user-constraints",
+  "version": "0.5.0",
+  "description": "DeepSeek Harness bundle：以 skill 提供者形式暴露用户全局约束的十一个通用规范 skill。",
+  "type": "module",
+  "main": "src/index.js",
+  "files": [
+    "src",
+    "skills",
+    "rules",
+    "cordis.patch.yml",
+    "README.md",
+    "LICENSE",
+    "LICENSE-CC-BY-4.0.txt",
+    "LICENSE-MIT.txt"
+  ],
+  "engines": {
+    "dsh": ">=0.2.2-rc.1 <0.3.0"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  },
+  "license": "MIT AND CC-BY-4.0"
+}
