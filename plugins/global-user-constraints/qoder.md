@@ -1,8 +1,6 @@
-# Global User Constraints
+# 用户全局约束
 
-Follow the always-on rules in the `rules/global-user-constraints.md` file next to this file.
+遵循本文件同目录 `rules/global-user-constraints.zh-CN.md` 中的常驻规则；该文件是规范源。
 
-Core: act only within explicit authorization; never commit or expose secrets or private keys;
-public and publishable keys are allowed only when genuinely public; do not send personal information
-or project content out; do not perform irreversible actions without consent and a rollback path;
-report honestly with real output.
+核心：只在明确授权范围内行动；禁止提交或泄露 secret 与 private key；公开或可发布密钥仅在确实公开时可用；
+不把个人信息或项目内容外发；不可逆操作在没有确认与回滚路径时不得执行；以真实输出如实报告。

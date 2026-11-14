@@ -1,4 +1,4 @@
-# Global User Constraints Plugin
+# 用户全局约束插件
 
 用户级 Qoder 插件，组件见「结构」。约束正文随包分发，但安装后必须按「规则激活」复制一次才能生效。
 
@@ -6,19 +6,19 @@
 
 | 路径 | 作用 |
 |---|---|
-| `rules/` | 用户全局约束正文与中文译本 |
+| `rules/` | 用户全局约束中文正文（规范源）与英文参考译本 |
 | `.qoder-plugin/plugin.json` | 插件 manifest |
 | `skills/system-prompt-authoring/` | 起草与审查指令文件的 skill |
-| `skills/naming-conventions/` | 通用命名规范 skill，覆盖代码、API、数据库、配置与提交等维度 |
-| `skills/comment-conventions/` | 代码注释规范 skill，覆盖 doc 注释、行内注释、TODO 标记与注释审查 |
-| `skills/documentation-conventions/` | 项目文档规范 skill，覆盖 README、ADR、指南、参考文档、变更日志与文档维护 |
-| `skills/code-style-conventions/` | 代码风格规范 skill，覆盖格式化与 lint、目录与模块边界、依赖与配置、错误与日志、生成与第三方代码 |
-| `skills/api-and-data-conventions/` | 接口与数据规范 skill，覆盖 API 契约、错误模型、幂等与分页、数据库迁移与数据保留 |
-| `skills/testing-and-quality-conventions/` | 测试与质量规范 skill，覆盖测试分层、质量门禁与覆盖率、静态检查、本地开发环境 |
-| `skills/vcs-collaboration-conventions/` | 版本控制与协作规范 skill，覆盖 Git 工作流、PR、代码审查、分支保护与代码所有权 |
-| `skills/release-operations-conventions/` | 发布与运维规范 skill，覆盖版本与发布、变更管理、CI/CD、可观测性、事故响应与备份恢复 |
-| `skills/security-compliance-conventions/` | 安全与合规规范 skill，覆盖安全开发、凭据与密钥、许可证与 SBOM、隐私与漏洞披露 |
-| `skills/repository-governance-conventions/` | 仓库治理规范 skill，覆盖必需文件与元数据、仓库卫生、治理流程与打包分发 |
+| `skills/naming-conventions/` | 通用命名规范，覆盖代码、API、数据库、配置与提交等维度 |
+| `skills/comment-conventions/` | 代码注释规范，覆盖 doc 注释、行内注释、TODO 标记与注释审查 |
+| `skills/documentation-conventions/` | 项目文档规范，覆盖 README、ADR、指南、参考文档、变更日志与文档维护 |
+| `skills/code-style-conventions/` | 代码风格规范，覆盖格式化与 lint、目录与模块边界、依赖与配置、错误与日志、生成与第三方代码 |
+| `skills/api-and-data-conventions/` | 接口与数据规范，覆盖 API 契约、错误模型、幂等与分页、数据库迁移与数据保留 |
+| `skills/testing-and-quality-conventions/` | 测试与质量规范，覆盖测试分层、质量门禁与覆盖率、静态检查、本地开发环境 |
+| `skills/vcs-collaboration-conventions/` | 版本控制与协作规范，覆盖 Git 工作流、PR、代码审查、分支保护与代码所有权 |
+| `skills/release-operations-conventions/` | 发布与运维规范，覆盖版本与发布、变更管理、CI/CD、可观测性、事故响应与备份恢复 |
+| `skills/security-compliance-conventions/` | 安全与合规规范，覆盖安全开发、凭据与密钥、许可证与 SBOM、隐私与漏洞披露 |
+| `skills/repository-governance-conventions/` | 仓库治理规范，覆盖必需文件与元数据、仓库卫生、治理流程与打包分发 |
 | `commands/constraints-check.md` | 手动触发约束审查 |
 | `hooks/hooks.json` | 时间注入 hook 配置 |
 | `scripts/inject-time.py` | 向支持 `additionalContext` 的事件注入当前本地时间 |
@@ -31,10 +31,10 @@
 
 ```bash
 mkdir -p ~/.qoder-cn/rules
-cp <插件目录>/rules/global-user-constraints.md ~/.qoder-cn/rules/
+cp <插件目录>/rules/global-user-constraints.zh-CN.md ~/.qoder-cn/rules/
 ```
 
-中文译本 `rules/global-user-constraints.zh-CN.md` 可单独激活；不要与英文原文同时复制，避免同一规则被加载两次。
+中文正文 `rules/global-user-constraints.zh-CN.md` 是规范源，必须激活。英文版 `rules/global-user-constraints.md` 是参考译本，不要与中文正文同时复制，避免同一规则被加载两次。
 
 宿主不从包内加载约束：`plugins validate` 只校验 skills/agents/commands/hooks，不处理 `rules/`。
 
