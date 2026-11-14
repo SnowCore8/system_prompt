@@ -40,11 +40,14 @@ jobs:
       # runner 没有 qoderclicn，插件校验在本地发布前完成；此处用 --no-validate 换取可重复构建
       - name: 构建制品
         run: ./scripts/dist.sh --no-validate --require-tag
+      - name: 物化 DSH 包
+        run: scripts/materialize.sh dsh /tmp/dsh-package
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
           registry-url: 'https://registry.npmjs.org'
       - name: 发布 DSH bundle 到 npm
+        working-directory: /tmp/dsh-package
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: npm publish --access public

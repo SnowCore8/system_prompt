@@ -35,7 +35,7 @@ if [ "$1" = "dsh" ]; then
   cp "$REPO_ROOT/plugins/dsh/cordis.patch.yml" "$REPO_ROOT/plugins/dsh/README.md" "$TARGET/plugins/dsh/"
   cp -a "$REPO_ROOT/skills" "$TARGET/skills"
   cp -a "$REPO_ROOT/rules" "$TARGET/rules"
-  cp "$REPO_ROOT/README.md" "$TARGET/README.md"
+  cp "$REPO_ROOT/plugins/dsh/README.md" "$TARGET/README.md"
 else
   cp -aL "$PACKAGE/." "$TARGET/"
 fi
