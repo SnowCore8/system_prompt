@@ -101,7 +101,7 @@ import json, sys, zipfile
 name, path, version = sys.argv[1], sys.argv[2], sys.argv[3]
 required = {
     "qoder": [".qoder-plugin/plugin.json", "hooks/hooks.json", "rules/global-user-constraints.md"],
-    "qwen": ["qwen-extension.json", "hooks/qwen-hooks.json", "rules/global-user-constraints.md"],
+    "qwen": ["qwen-extension.json", "hooks/qwen-hooks.json", "constraints/global-user-constraints.md"],
     "dsh": ["package.json", "plugins/dsh/cordis.patch.yml", "plugins/dsh/src/index.js",
             "rules/global-user-constraints.md"],
 }[name] + ["LICENSE", "LICENSE-CC-BY-4.0.txt", "LICENSE-MIT.txt"]
@@ -131,6 +131,20 @@ for info in infos:
         problems.append(f"包含未解引用的软链: {info.filename}")
     if info.filename.endswith(".pyc") or "__pycache__" in info.filename:
         problems.append(f"包含 Python 缓存: {info.filename}")
+
+allowed = {
+    "qoder": (".qoder-plugin/", "hooks/", "rules/", "skills/", "commands/", "scripts/", "README.md", "LICENSE"),
+    "qwen": ("qwen-extension.json", "hooks/", "constraints/", "skills/", "commands/", "scripts/", "README.md", "LICENSE"),
+    "dsh": ("package.json", "plugins/dsh/", "skills/", "rules/", "README.md", "LICENSE"),
+}[name]
+for entry in names:
+    permitted = any(entry == prefix or entry.startswith(prefix) for prefix in allowed)
+    if not permitted and entry.endswith("/"):
+        permitted = any(prefix.startswith(entry) for prefix in allowed)
+    if not permitted:
+        problems.append(f"不属于该包的内容: {entry}")
+    if "/test_" in entry or entry.endswith(".test.mjs") or "__pycache__" in entry:
+        problems.append(f"包含开发测试: {entry}")
 if problems:
     sys.exit("zip 结构校验失败:\n- " + "\n- ".join(problems))
 print(f"{name}: zip 结构校验通过（{len(names)} 个条目）")

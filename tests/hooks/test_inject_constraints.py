@@ -124,6 +124,13 @@ class InjectConstraintsTest(unittest.TestCase):
         proc = self.run_hook({"hook_event_name": "SessionStart", "cwd": str(self.project)})
         self.assertEqual((proc.returncode, proc.stdout), (0, ""))
 
+    def test_constraints_directory_is_supported(self):
+        (self.plugin / "rules" / RULES).unlink()
+        (self.plugin / "constraints").mkdir()
+        (self.plugin / "constraints" / RULES).write_text(MARKER, encoding='utf-8')
+        proc = self.run_hook({"hook_event_name": "SessionStart", "cwd": str(self.project)})
+        self.assertIn("MARKER-7f3a9c", proc.stdout)
+
     def test_claude_plugin_root_env_is_supported(self):
         env = self.env()
         env.pop("QODER_PLUGIN_ROOT")

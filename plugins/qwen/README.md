@@ -9,7 +9,7 @@
 |---|---|
 | `qwen-extension.json` | Qwen 扩展清单 |
 | `hooks/qwen-hooks.json` | hook 配置，根目录用 `${CLAUDE_PLUGIN_ROOT}` |
-| `rules/global-user-constraints.md` | 用户全局约束正文 |
+| `constraints/global-user-constraints.md` | 用户全局约束正文；不用 `rules/`，避免被 Qwen 当作条件规则扫描 |
 | `skills/` | 十一个通用规范 skill |
 | `commands/` | 手动审查命令 |
 | `scripts/` | 约束与时间注入脚本 |
@@ -25,7 +25,7 @@ qwen extensions install global-user-constraints-qwen-<版本>.zip
 
 ## 行为
 
-- `SessionStart`：约束全文 + 当前时间；去重路径包含 `~/.qwen/rules/`、`~/.qwen/AGENTS.md`、
+- `SessionStart`：读取 `constraints/global-user-constraints.md` 注入全文，并注入当前时间；去重路径包含 `~/.qwen/rules/`、`~/.qwen/AGENTS.md`、
   项目 `.qwen/rules/`、`AGENTS.md`、`QWEN.md`（从 cwd 向上查到 `.git`）。`source` 为 `resume`
   时跳过约束，`startup`/`clear`/`compact` 才注入。
 - `UserPromptSubmit`：当前时间；Qwen 会把这段上下文包进 `<qwen:user-prompt-submit-context>` 标签。

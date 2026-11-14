@@ -16,6 +16,9 @@ from pathlib import Path
 HOOK_EVENTS = {"SessionStart"}
 RULES_FILENAME = "global-user-constraints.md"
 MAX_BYTES = 512 * 1024
+# Qwen 会把扩展的 rules/ 当作条件规则扫描，无 paths 的常驻规则会被丢弃并告警；
+# 所以 Qwen 包把正文放在 constraints/，Qoder 包继续用 rules/。
+RULES_DIRS = ("constraints", "rules")
 # 恢复会话时历史里已经有注入的正文，再注入一份只会膨胀上下文。
 # clear/compact 会重建上下文，仍需要重新注入；startup 与 new 同理。
 SKIP_SOURCES = {"resume"}
@@ -111,7 +114,14 @@ def main() -> int:
     if isinstance(source, str) and source in SKIP_SOURCES:
         return 0
 
-    rules_path = plugin_root(sys.argv) / "rules" / RULES_FILENAME
+    root = plugin_root(sys.argv)
+    rules_path = next(
+        (root / directory / RULES_FILENAME for directory in RULES_DIRS
+         if (root / directory / RULES_FILENAME).is_file()),
+        None,
+    )
+    if rules_path is None:
+        return 0
     try:
         data = rules_path.read_bytes()
     except OSError:

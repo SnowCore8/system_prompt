@@ -244,7 +244,7 @@ if (dsh.get("publishConfig") or {}).get("access") != "public":
     problems.append("DSH bundle 缺少 npm 公开包 publishConfig")
 expected_links = {
     "qoder": {"skills": "skills", "rules": "rules", "commands": "shared/commands", "scripts": "shared/scripts"},
-    "qwen": {"skills": "skills", "rules": "rules", "commands": "shared/commands", "scripts": "shared/scripts"},
+    "qwen": {"skills": "skills", "constraints": "rules", "commands": "shared/commands", "scripts": "shared/scripts"},
 }
 for name, links in expected_links.items():
     for link, target in links.items():
