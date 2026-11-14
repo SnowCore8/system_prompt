@@ -1,253 +1,233 @@
 ---
 name: documentation-conventions
-description: Defines, reviews, and restructures project documentation for any programming project, including READMEs, contribution guides, architecture and design docs, decision records, tutorials, how-to and reference pages, runbooks, changelogs, release and migration notes, security and support docs, and documentation sites. Use when starting a project or a documentation set, reviewing documentation for staleness and duplication, deciding where a fact belongs, or setting documentation rules for contributors.
-argument-hint: '[path or doc type]'
+description: 定义、审查并重构任意编程项目的项目文档，覆盖 README、贡献指南、架构与设计文档、决策记录、教程、操作指南与参考页、运行手册、变更日志、发布与迁移说明、安全与支持文档，以及文档站。适用于启动项目或文档集、审查文档的过时与重复、判断一项事实应放在哪里，或为贡献者制定文档规则。
+argument-hint: '[路径或文档类型]'
 ---
 
-# Documentation Conventions
+# 文档规范
 
-Documentation fails less often from bad prose than from absence and drift: the page was never written, the fact went
-stale when the code changed, the same answer lives in three files, the reader cannot find the page, or no one owns it.
-Each failure is cheap to prevent at authoring time and expensive to repair after readers trust the wrong page. This
-skill gives one decision procedure and a complete rule set for every document a project publishes: README and
-contribution guides, architecture and design docs, decisions, tutorials and guides, reference and API pages, runbooks,
-postmortems, changelogs and release notes, migration and deprecation guides, security and legal pages,
-troubleshooting, glossaries, diagrams, and the documentation site that connects them. It applies to any language,
-framework, and docs toolchain, and it treats documentation as part of the product rather than a side artifact.
+文档出问题，更多来自缺失与脱节，而不是文笔不佳：页面从未写过，代码一变事实就过时，同一个答案散落在
+三个文件里，读者找不到页面，或者无人负责。每种失败在写作时预防都很便宜，在读者已经信任错误页面之后
+修复却很昂贵。本 skill 给出一套决策程序与完整规则集，覆盖项目发布的每一种文档：README 与贡献指南、
+架构与设计文档、决策、教程与指南、参考与 API 页面、运行手册、事故复盘、变更日志与发布说明、迁移与
+弃用指南、安全与法律页面、故障排查、术语表、图表，以及把它们连接起来的文档站。它适用于任何语言、
+框架与文档工具链，并把文档当作产品的一部分，而不是附属产物。
 
-## Scope and Precedence
+## 适用范围与优先级
 
-Apply the first rule that fits, and do not mix standards inside one scope:
+适用第一条匹配的规则，不要在同一范围内混用标准：
 
-1. Mandatory publishing system or organizational standard. Docs site generator constraints, API reference tooling,
-   legal disclosure templates, and mandatory company policies are not optional.
-2. Existing project structure and convention. Read the docs tree, templates, heading style, and voice before writing;
-   follow a stricter local rule over this one.
-3. This standard's defaults, when the two levels above are silent.
-4. Personal preference, which never overrides the three levels above.
+1. 强制性的发布系统或组织标准。文档站生成器约束、API 参考工具、法律披露模板与公司强制政策都不是可选项。
+2. 既有项目结构与约定。写作前先读文档树、模板、标题风格与语气；本地规则更严格时，优先于本标准。
+3. 上述两级未规定时，采用本标准的默认值。
+4. 个人偏好，永远不能覆盖上述三级。
 
-- Hand-written document structure, templates, and prose are owned here. Cadence and triggers that decide when
-  changelogs, release notes, runbooks, and postmortems are written or updated belong to
-  `release-operations-conventions`.
-- API contract content (fields, request and response shapes, versioning) and data migrations belong to
-  `api-and-data-conventions`; this skill owns the structure and prose of the API reference page.
-- Which files must exist and their required metadata belong to `repository-governance-conventions`; this skill owns
-  the content and structure of those pages.
-- Docs checks and gates in CI belong to `testing-and-quality-conventions`, and pipeline configuration to
-  `release-operations-conventions`; this skill owns which links, samples, and pages to validate.
-- Source-code comments, docstrings, and doc comments are owned by `comment-conventions`; generated reference pages
-  built from doc comments get their structure from this skill and their prose from that skill.
-- Generated documentation, vendored documentation, and copied third-party guides are exempt. Never hand-edit generated
-  output, keep the generation marker, and record the upstream source in the page or the index.
-- Keep one canonical home per fact. Link to that home from every other page; a second copy is a defect even while it is
-  still accurate, because the first edit makes the two pages disagree.
-- Update documentation in the same change as the behavior it describes. If the docs and the code land in separate
-  commits, land them in one delivery and never leave the default branch describing the old behavior.
-- Treat the docs tree as part of the product surface. A change that alters user-visible behavior includes its page,
-  and a review that ignores documentation is an incomplete review.
-- When two rules conflict, state the conflict and the chosen rule, and record the decision in the project's docs guide
-  or an ADR so the next change follows it.
+- 手写文档的结构、模板与文笔归本 skill 管。变更日志、发布说明、运行手册与事故复盘何时编写或更新的
+  节奏与触发条件，归 `release-operations-conventions` 管。
+- API 契约内容（字段、请求与响应形态、版本管理）与数据迁移归 `api-and-data-conventions`；本 skill 负责
+  API 参考页的结构与文笔。
+- 哪些文件必须存在、需要哪些元数据，归 `repository-governance-conventions`；本 skill 负责这些页面的内容与
+  结构。
+- CI 中的文档校验与门禁归 `testing-and-quality-conventions`，流水线配置归
+  `release-operations-conventions`；本 skill 负责要校验哪些链接、示例与页面。
+- 源代码注释、docstring 与文档注释归 `comment-conventions`；由文档注释生成的参考页，结构取自本 skill，
+  文笔取自该 skill。
+- 生成的文档、第三方引入文档与复制的第三方指南不适用本 skill。绝不要手工编辑生成产物，保留生成标记，
+  并在页面或索引中记录上游来源。
+- 每项事实只保留一个权威归属。其他页面链接到该归属；第二份副本即使仍然准确也是缺陷，因为第一次编辑
+  就会让两个页面不一致。
+- 文档与它所描述的行为在同一次变更中更新。如果文档与代码落在不同提交，也要在同一次交付中落地，绝不能
+  让默认分支描述旧行为。
+- 把文档树当作产品界面的一部分。改变用户可见行为的变更要包含对应页面，忽略文档的审查是不完整的审查。
+- 两条规则冲突时，说明冲突与所选择的规则，并把决定记录在项目的文档指南或 ADR 中，让下一次变更遵循它。
 
-## Process
+## 流程
 
-1. Identify the reader and the question. Name one primary reader and what they must do after reading; a page written
-   for everyone answers no one.
-2. Classify the document with the Doc Type Matrix. A tutorial, a how-to, a reference, and an explanation answer
-   different questions; do not merge two types into one page.
-3. Locate the canonical home. Search the repository and the docs site for the fact; if it exists, update that page and
-   link to it instead of writing a second copy.
-4. Read the project's existing structure and templates. Match the directory, filename, heading style, voice, and front
-   matter convention of neighboring pages before drafting.
-5. Draft the required sections for the type from `references/templates.md`. Put scope, prerequisites, and the outcome
-   in the first screen, and cut every paragraph that does not serve the named reader.
-6. Wire the page into navigation and ownership, delete or redirect what it replaces, and update the doc index.
-7. Validate links, samples, and the docs build. Run every command, execute every code sample, open every link and
-   anchor, check versions and paths, regenerate stale screenshots, and run the link checker and spell check. Review
-   the rendered page, not only the source.
+1. 确定读者与问题。写明一位主要读者，以及读完后必须能做什么；写给所有人的页面谁也服务不了。
+2. 用文档类型矩阵对文档分类。教程、操作指南、参考与解释回答不同的问题；不要把两种类型合并成一个页面。
+3. 定位权威归属。在仓库与文档站中搜索这项事实；如果已存在，更新该页面并链接过去，而不是再写一份副本。
+4. 阅读项目既有结构与模板。起草前，先匹配相邻页面的目录、文件名、标题风格、语气与 front matter 约定。
+5. 从 `references/templates.md` 取该类型的必需章节。把范围、前提与结果放在首屏，删掉不为指定读者服务的
+   段落。
+6. 把页面接入导航与归属，删除或重定向它替代的内容，并更新文档索引。
+7. 校验链接、示例与文档构建。运行每条命令，执行每个代码示例，打开每个链接与锚点，核对版本与路径，
+   重新生成过时截图，并运行链接校验与拼写校验。审查渲染后的页面，而不只是源文件。
 
-## Core Rules
+## 核心规则
 
-- **Write for one reader and one question.** State who the page serves and what it answers; a page without a named
-  reader drifts toward a feature list that serves nobody.
-- **State the outcome first.** Put the result, the decision, or the next action in the first lines, then the context;
-  readers scan for whether the page applies to them before they read details.
-- **Keep one fact in one home.** Each fact belongs to exactly one page; link to it from everywhere else. Duplicated
-  facts diverge on the first change and leave readers with two answers.
-- **Update docs with the change.** Treat documentation as part of the change: same pull request, same review, same
-  release. Stale docs are worse than missing docs because readers trust them.
-- **Make examples runnable.** Show complete commands with the working directory, required variables, and expected
-  result; an example that cannot be copied and run teaches nothing and costs an issue.
-- **Paste real output and versions.** Copy output from an actual run and state the version that produced it; invented
-  output hides incompatibilities and misleads readers on every other version.
-- **Check every link and anchor.** Resolve links in the build and fix them in the same change; a dead link is a dead
-  end that the author never noticed.
-- **State applicability.** Name the product version, platform, deployment model, or audience the page serves;
-  unversioned instructions rot silently when the next release changes behavior.
-- **Name an owner and a review trigger.** Give each page an owning team and the event that forces a review, with the
-  trigger definition taken from the owning process skill: `release-operations-conventions` for release and incident
-  triggers, `api-and-data-conventions` for schema-change triggers; an unowned page is fixed by nobody.
-- **Delete or archive stale pages.** Remove what no longer applies and leave a redirect or tombstone naming the
-  replacement; a stale page keeps ranking in search and keeps misleading readers.
-- **Keep the public line visible.** Separate customer-facing pages from internal notes and mark the audience; an
-  internal tradeoff written into public docs leaks information and confuses the reader.
-- **Use the type template before inventing a page.** Start from the required sections for the doc type and trim; a
-  page designed from scratch usually lacks prerequisites, scope, or the next step.
-- **Document the supported path first.** Lead with the recommended path that works, then alternatives; a menu of every
-  option forces the reader to make a decision the documentation should have made.
-- **State the current truth, not the history.** Keep current behavior in guides and reference; dates, migrations, and
-  reasons belong in the changelog or ADR that owns them.
+- **为一位读者、一个问题而写。** 写明页面服务谁、回答什么；没有指定读者的页面会漂移成谁也不服务的
+  功能清单。
+- **先写结果。** 把结果、决定或下一步放在开头几行，再写背景；读者会先扫一眼页面是否适用于自己，再读
+  细节。
+- **一项事实只放一个归属。** 每项事实只属于一个页面；其他所有地方都链接到它。重复的事实会在第一次变更
+  时分叉，让读者得到两个答案。
+- **文档与变更同步更新。** 把文档当作变更的一部分：同一个 PR、同一次审查、同一次发布。过时文档比缺失文档
+  更糟，因为读者会信任它。
+- **让示例可运行。** 给出完整命令，包含工作目录、所需变量与预期结果；无法复制运行的示例什么也教不会，
+  还会招来 issue。
+- **粘贴真实输出与版本。** 从实际运行中复制输出，并说明产生它的版本；编造的输出会掩盖不兼容，并在其他
+  所有版本上误导读者。
+- **校验每个链接与锚点。** 在构建中解析链接，并在同一次变更中修复；死链是作者从未注意到的死胡同。
+- **说明适用范围。** 写明页面所属的产品版本、平台、部署模式或受众；无版本说明的指令会在下一次发布改变
+  行为时悄悄腐烂。
+- **指定负责人与审查触发条件。** 为每个页面指定负责团队与强制审查的事件，触发条件定义取自对应的流程
+  skill：发布与事故触发条件取自 `release-operations-conventions`，schema 变更触发条件取自
+  `api-and-data-conventions`；无人负责的页面没人修复。
+- **删除或归档过时页面。** 移除不再适用的内容，并留下重定向或墓碑页说明替代位置；过时页面会继续在
+  搜索中排名，并继续误导读者。
+- **保持公开边界可见。** 把面向客户的页面与内部笔记分开，并标注受众；写进公开文档的内部权衡会泄露信息
+  并让读者困惑。
+- **先使用类型模板，再发明页面。** 从该文档类型的必需章节开始，再做删减；从零设计的页面通常缺少前提、
+  范围或下一步。
+- **先写受支持的路径。** 先给出推荐且可行的路径，再给替代方案；把每个选项都列成菜单，会迫使读者做文档
+  本应替他们做的决定。
+- **陈述当前事实，而不是历史。** 指南与参考中保留当前行为；日期、迁移与原因放在拥有它们的变更日志或
+  ADR 中。
 
-## Where a Fact Belongs
+## 事实的归属
 
-When two pages could hold a fact, choose the home by the question the reader is asking, not by where the fact was
-learned. The table below is the default split; a project convention overrides it.
+当两个页面都可能承载同一项事实时，按读者正在问的问题来选归属，而不是按事实是在哪里得知的来选。下表
+是默认划分；项目约定优先于它。
 
-| Fact | Canonical home | Also linked from |
+| 事实 | 权威归属 | 同时链接自 |
 |---|---|---|
-| What the project does, install, first run | `README.md` | Docs home, package registry page |
-| Development setup and test commands | `CONTRIBUTING.md` | README, issue and PR templates |
-| Current flags, defaults, and limits | Reference page | Guides, README examples |
-| Why a design or technology was chosen | ADR | Architecture page, code comments |
-| How an endpoint accepts and returns data | API reference | Guides, client libraries |
-| How to recover a failing service | Runbook | Alert rule, incident template |
-| What changed between releases | Changelog or release notes | Migration guide, support replies |
-| How a task is done step by step | How-to guide | README, reference pages |
-| What a domain term means | Glossary | Every page that uses the term |
-| Why an incident happened | Postmortem | Changelog, troubleshooting page |
+| 项目做什么、安装、首次运行 | `README.md` | 文档首页、包仓库页面 |
+| 开发环境搭建与测试命令 | `CONTRIBUTING.md` | README、issue 与 PR 模板 |
+| 当前标志、默认值与限制 | 参考页 | 指南、README 示例 |
+| 为什么选择某种设计或技术 | ADR | 架构页、代码注释 |
+| 端点如何接收与返回数据 | API 参考 | 指南、客户端库 |
+| 如何恢复故障服务 | 运行手册 | 告警规则、事故模板 |
+| 各发布之间发生了什么变化 | 变更日志或发布说明 | 迁移指南、支持回复 |
+| 任务如何分步完成 | 操作指南 | README、参考页 |
+| 领域术语是什么意思 | 术语表 | 使用该术语的每个页面 |
+| 事故为什么发生 | 事故复盘 | 变更日志、故障排查页 |
 
-## Doc Type Matrix
+## 文档类型矩阵
 
-| Document | Reader and question | Required content | Typical location |
+| 文档 | 读者与问题 | 必需内容 | 典型位置 |
 |---|---|---|---|
-| README | New user: what is it, how do I start? | Name and scope, install, quick start, configuration, documentation links, license | `README.md` |
-| CONTRIBUTING | Contributor: how do I set up and submit? | Toolchain, setup, run and test, conventions, review expectations | `CONTRIBUTING.md` |
-| Architecture overview | Maintainer: how is it built? | Context, components, boundaries, data flow, decisions, known limits | `docs/architecture/` |
-| ADR | Maintainer: why was this decided? | Status, date, context, decision, consequences, alternatives | `docs/adr/` |
-| Design doc or RFC | Reviewer: how will it work? | Problem, goals and non-goals, proposal, alternatives, risks, rollout, open questions | `docs/rfcs/` |
-| Tutorial | Learner: how do I build one example? | Outcome, prerequisites, numbered steps, result, next step | `docs/tutorials/` |
-| How-to guide | Practitioner: how do I do this task? | Goal, prerequisites, steps, verification, common failures | `docs/guides/` |
-| Reference page | Practitioner: what are the options? | Synopsis, options and defaults, constraints, version notes, example | `docs/reference/` |
-| API reference | Integrator: what can this endpoint do? | Method and path, authentication, parameters, response, errors, example | `docs/api/` |
-| Concept or explanation | Learner: why does it work this way? | Idea, model, vocabulary, tradeoffs, examples, links | `docs/concepts/` |
-| Runbook | On-call: what do I do now? | Trigger, impact, first action, procedure, verification, rollback, escalation | `docs/runbooks/` |
-| Changelog and release notes | User: what changed? | Version and date, grouped entries, upgrade action, issue links, highlights, categories | `CHANGELOG.md` |
-| Migration guide | Upgrader: how do I migrate? | Affected audience, timeline, field mapping, steps, verification, rollback | `docs/migrations/` |
-| Troubleshooting and FAQ | Stuck user: what does it mean? | Symptom, cause, fix, prevention, related links | `docs/troubleshooting/` |
-| Security, legal, support | Reporter: how do I report? | Page structure: policy sections and where each links; disclosures set by `security-compliance-conventions` | `SECURITY.md` |
-| Postmortem | Maintainer: why did this happen? | Summary, impact, timeline, root cause, detection, actions, owners | `docs/postmortems/` |
+| README | 新用户：它是什么，我怎么开始？ | 名称与范围、安装、快速开始、配置、文档链接、许可证 | `README.md` |
+| CONTRIBUTING | 贡献者：我如何搭建环境并提交？ | 工具链、环境搭建、运行与测试、约定、审查预期 | `CONTRIBUTING.md` |
+| 架构概览 | 维护者：它是如何构建的？ | 背景、组件、边界、数据流、决策、已知限制 | `docs/architecture/` |
+| ADR | 维护者：为什么这样决定？ | 状态、日期、背景、决定、后果、备选方案 | `docs/adr/` |
+| 设计文档或 RFC | 审查者：它将如何运作？ | 问题、目标与非目标、提案、备选方案、风险、上线、未决问题 | `docs/rfcs/` |
+| 教程 | 学习者：我如何构建一个示例？ | 结果、前提、编号步骤、结果、下一步 | `docs/tutorials/` |
+| 操作指南 | 实践者：我如何完成这项任务？ | 目标、前提、步骤、验证、常见失败 | `docs/guides/` |
+| 参考页 | 实践者：有哪些选项？ | 概要、选项与默认值、约束、版本说明、示例 | `docs/reference/` |
+| API 参考 | 集成者：这个端点能做什么？ | 方法与路径、认证、参数、响应、错误、示例 | `docs/api/` |
+| 概念或解释 | 学习者：为什么它这样运作？ | 概念、模型、词汇、权衡、示例、链接 | `docs/concepts/` |
+| 运行手册 | 值班人员：我现在该做什么？ | 触发条件、影响、首个动作、步骤、验证、回滚、升级 | `docs/runbooks/` |
+| 变更日志与发布说明 | 用户：发生了什么变化？ | 版本与日期、分组条目、升级动作、issue 链接、亮点、分类 | `CHANGELOG.md` |
+| 迁移指南 | 升级者：我如何迁移？ | 受影响受众、时间线、字段映射、步骤、验证、回滚 | `docs/migrations/` |
+| 故障排查与常见问题 | 卡住的用户：这是什么意思？ | 症状、原因、修复、预防、相关链接 | `docs/troubleshooting/` |
+| 安全、法律与支持 | 报告者：我如何报告？ | 页面结构：策略章节及各章节链接去向；披露内容由 `security-compliance-conventions` 规定 | `SECURITY.md` |
+| 事故复盘 | 维护者：为什么会发生？ | 摘要、影响、时间线、根因、发现、行动项、负责人 | `docs/postmortems/` |
 
-The matrix lists primary page types; the Deprecation Notice, Glossary, and Documentation Index templates cover pages
-owned by dimensions 12, 16, and 15.
+矩阵列出主要页面类型；弃用通知、术语表与文档索引模板覆盖由维度 12、16 与 15 负责的页面。
 
-## Dimension Index
+## 维度索引
 
-Each dimension has detailed rules, examples, and edge cases in `references/dimensions.md`.
+每个维度在 `references/dimensions.md` 中都有详细规则、示例与边缘情况。
 
-| Dimension | First rule |
+| 维度 | 第一条规则 |
 |---|---|
-| 1. README | State what the project is and the first working command. |
-| 2. Onboarding and CONTRIBUTING | One setup path from a fresh clone to a passing test. |
-| 3. Architecture and design docs | Components, boundaries, data flow, and links to decisions. |
-| 4. ADRs and decision records | One immutable decision with status and consequences. |
-| 5. Tutorials and how-to guides | A tested path to one result, not a feature tour. |
-| 6. Reference and API Reference Pages | Exhaustive, exact, versioned, generated where possible. |
-| 7. Explanation and Concept Docs | The model and vocabulary behind the behavior. |
-| 8. Changelogs and release notes | User-visible changes by version and impact. |
-| 9. Runbooks, operations, and postmortems | Trigger, commands, verification, rollback, and incident lessons. |
-| 10. Security, legal, and support docs | Current policy, reporting channel, supported scope. |
-| 11. Troubleshooting and FAQ | Organize by the symptom the reader can search. |
-| 12. Migration and deprecation guides | Replacement, timeline, mapping, and rollback. |
-| 13. Diagrams and screenshots | Diffable source, labeled scope, regenerated with the UI. |
-| 14. Links and cross-references | One canonical page per link, checked in the build. |
-| 15. Navigation and doc index | Reach every core page in three clicks by reader task. |
-| 16. Terminology and glossary | One term per concept, defined once and reused. |
-| 17. Localization and translation | Short source sentences, versioned translations. |
-| 18. Versioning and applicability | State the version and keep old docs reachable. |
-| 19. Ownership, maintenance, and freshness | Every page has an owner and a review trigger. |
-| 20. Templates and scaffolding | Start from the doc type template and trim. |
-| 21. Documentation tests and sample validation | Run samples, links, and the build in CI. |
-| 22. Docs site and tooling | One pinned generator, content as portable Markdown. |
-| 23. Public and internal boundary | Separate audiences, never publish internal notes. |
-| 24. Generated docs | Edit the source, regenerate, never hand-edit output. |
-| 25. Documentation review | Review the reader's task, facts, and build before style. |
-| 26. Archival and deletion | Redirect or tombstone, then remove stale copies. |
+| 1. README | 说明项目是什么，并给出第一条可工作的命令。 |
+| 2. 上手与 CONTRIBUTING | 从全新克隆到测试通过，只有一条环境搭建路径。 |
+| 3. 架构与设计文档 | 组件、边界、数据流，以及决策的链接。 |
+| 4. ADR 与决策记录 | 一条不可变的决策，带状态与后果。 |
+| 5. 教程与操作指南 | 通往一个结果的已测试路径，而不是功能巡览。 |
+| 6. 参考与 API 参考页 | 穷尽、精确、带版本，尽可能生成。 |
+| 7. 解释与概念文档 | 行为背后的模型与词汇。 |
+| 8. 变更日志与发布说明 | 按版本与影响列出的用户可见变更。 |
+| 9. 运行手册、运维与事故复盘 | 触发条件、命令、验证、回滚与事故教训。 |
+| 10. 安全、法律与支持文档 | 当前策略、报告渠道、支持范围。 |
+| 11. 故障排查与常见问题 | 按读者能搜索到的症状组织。 |
+| 12. 迁移与弃用指南 | 替代方案、时间线、映射与回滚。 |
+| 13. 图表与截图 | 可 diff 的源文件、标注范围、随 UI 重新生成。 |
+| 14. 链接与交叉引用 | 每个链接只指向一个权威页面，并在构建中校验。 |
+| 15. 导航与文档索引 | 按读者任务，三次点击内到达每个核心页面。 |
+| 16. 术语与术语表 | 一个概念一个术语，定义一次并复用。 |
+| 17. 本地化与翻译 | 源文档句子要短，译文带版本。 |
+| 18. 版本管理与适用性 | 说明版本，并让旧文档仍可访问。 |
+| 19. 归属、维护与新鲜度 | 每个页面都有负责人与审查触发条件。 |
+| 20. 模板与脚手架 | 从文档类型模板开始，再做删减。 |
+| 21. 文档测试与示例校验 | 在 CI 中运行示例、链接与构建。 |
+| 22. 文档站与工具 | 一个锁定版本的生成器，内容为可移植的 Markdown。 |
+| 23. 公开与内部边界 | 分开受众，绝不发布内部笔记。 |
+| 24. 生成文档 | 编辑源文件、重新生成，绝不手工编辑产物。 |
+| 25. 文档审查 | 审查读者的任务、事实与构建，然后才是文笔。 |
+| 26. 归档与删除 | 重定向或留墓碑页，再移除过时副本。 |
 
-## Anti-Patterns
+## 反模式
 
-| Anti-pattern | Why it fails | Fix |
+| 反模式 | 为什么失败 | 修复 |
 |---|---|---|
-| README that lists features | Reader cannot tell what to install first. | Lead with scope, install, quick start. |
-| Plan described as shipped behavior | Readers build on behavior that does not exist. | Move plans to a design doc. |
-| Same answer in README, wiki, and site | Copies diverge; none is current. | Keep one canonical page; link the rest. |
-| Commands without a working directory | Commands fail or hit the wrong project. | Show directory, variables, output. |
-| Terminal screenshots instead of text | Cannot be copied or searched. | Paste commands and output as text. |
-| Dead links to moved pages | Readers stop at a 404 and distrust the set. | Check links in the build; redirect moves. |
-| Changelog that repeats git log | Readers cannot find changes needing action. | Group by impact; state the action. |
-| Runbook without rollback | Operator can start but not undo it. | Add verification and rollback. |
-| Reference generated only from comments | Structure, auth, and examples go missing. | Hand-write the page shell. |
-| Docs updated weeks after the code | The branch describes behavior that is gone. | Update the page in the change. |
-| No owner and no review trigger | No one edits the page until a complaint. | Assign an owner and review trigger. |
-| Wiki page of unrelated topics | A page without a reader serves no one. | Split by doc type; archive the rest. |
-| Every option given equal weight | Reader must choose a path the docs should pick. | Lead with the supported path. |
-| Deprecation without date or path | Users cannot plan, so they postpone. | State timeline, replacement, steps. |
+| README 罗列功能 | 读者无法判断先安装什么。 | 先写范围、安装、快速开始。 |
+| 把计划描述成已发布行为 | 读者会基于不存在的行为开发。 | 把计划移到设计文档。 |
+| README、wiki 与站点重复同一答案 | 副本会分叉；没有一份是最新的。 | 只保留一个权威页面；其余链接过去。 |
+| 命令缺少工作目录 | 命令会失败或作用到错误项目。 | 写出目录、变量与输出。 |
+| 用终端截图代替文本 | 无法复制或搜索。 | 以文本粘贴命令与输出。 |
+| 指向已移动页面的死链 | 读者停在 404，不再信任整套文档。 | 在构建中校验链接；移动时做重定向。 |
+| 重复 git log 的变更日志 | 读者找不到需要行动的变化。 | 按影响分组；说明所需动作。 |
+| 没有回滚的运行手册 | 操作者能开始却无法撤销。 | 补上验证与回滚。 |
+| 仅由注释生成的参考 | 结构、认证与示例会缺失。 | 手写页面骨架。 |
+| 代码变更数周后才更新文档 | 分支描述的是已经消失的行为。 | 在同一次变更中更新页面。 |
+| 没有负责人与审查触发条件 | 有人抱怨之前没人编辑页面。 | 指定负责人与审查触发条件。 |
+| 主题互不相关的 wiki 页面 | 没有读者的页面服务不了任何人。 | 按文档类型拆分；其余归档。 |
+| 每个选项都同等对待 | 读者必须选择文档本应替他们选择的路径。 | 先写受支持的路径。 |
+| 弃用没有日期或路径 | 用户无法规划，于是拖延。 | 说明时间线、替代方案与步骤。 |
 
-## Review Checklist
+## 审查清单
 
-- [ ] The page has one named reader and one question.
-- [ ] The page uses the matching template (Doc Type Matrix type or the template-only types named in the Doc Type
-      Matrix note).
-- [ ] The fact has one canonical page and is linked, not copied.
-- [ ] Scope, prerequisites, and outcome appear in the first screen.
-- [ ] Commands include the working directory and required variables.
-- [ ] Every code sample runs against the current version.
-- [ ] Shown output is real and labeled with its version or environment.
-- [ ] Every link and anchor resolves in the docs build.
-- [ ] Applicable version, platform, and audience are stated.
-- [ ] The page is reachable from the doc index or sidebar.
-- [ ] The owning team and the review trigger are recorded.
-- [ ] No stale page duplicates the content; replaced pages redirect.
-- [ ] Public pages contain no internal addresses, secrets, or staff data.
-- [ ] Terminology matches the glossary and the code names.
-- [ ] Headings follow the project hierarchy and anchor conventions.
-- [ ] Screenshots and diagrams match the current UI and are legible.
-- [ ] The changelog states user-visible changes and required actions.
-- [ ] The docs build, link check, and spell check pass.
+- [ ] 页面有一位指定读者与一个问题。
+- [ ] 页面使用了匹配的模板（文档类型矩阵中的类型，或文档类型矩阵注释中列出的仅模板类型）。
+- [ ] 事实只有一个权威页面，并且被链接而不是被复制。
+- [ ] 范围、前提与结果出现在首屏。
+- [ ] 命令包含工作目录与必需变量。
+- [ ] 每个代码示例都能针对当前版本运行。
+- [ ] 展示的输出是真实的，并标明了版本或环境。
+- [ ] 每个链接与锚点都能在文档构建中解析。
+- [ ] 写明了适用的版本、平台与受众。
+- [ ] 页面可从文档索引或侧边栏到达。
+- [ ] 记录了负责团队与审查触发条件。
+- [ ] 没有过时页面重复该内容；被替代的页面做了重定向。
+- [ ] 公开页面不包含内部地址、机密或员工数据。
+- [ ] 术语与术语表及代码中的名称一致。
+- [ ] 标题遵循项目的层级与锚点约定。
+- [ ] 截图与图表与当前 UI 一致且清晰可读。
+- [ ] 变更日志说明了用户可见的变更与必需动作。
+- [ ] 文档构建、链接校验与拼写校验通过。
 
-## Examples
+## 示例
 
 <example>
-README: open with the one-sentence purpose, then install, a quick start that produces a visible result, configuration,
-links to the docs site, and the license. Do not put a feature tour before the first runnable command, and test the
-quick start on a clean environment before every release.
+README：用一句话目的开头，然后是安装、能产生可见结果的快速开始、配置、文档站链接与许可证。不要在
+第一条可运行命令之前放功能巡览，并在每次发布前于干净环境中测试快速开始。
 </example>
 
 <example>
-ADR-0007: record status `Accepted`, context (retries after a timeout duplicate charges), decision (require an
-`Idempotency-Key` header on `POST /v1/charges`), and consequences (clients must send the header; retries within 24
-hours return the original response). Link the rejected alternatives and the migration note for existing clients.
+ADR-0007：记录状态 `Accepted`、背景（超时后的重试会重复扣款）、决定（要求 `POST /v1/charges` 带
+`Idempotency-Key` 请求头）与后果（客户端必须发送该请求头；24 小时内的重试返回原始响应）。链接被否决的
+备选方案，以及面向现有客户端的迁移说明。
 </example>
 
 <example>
-Runbook `payments-queue-backlog`: trigger is queue depth above 10,000 for 10 minutes; list impact, pre-checks, the
-scale command, the drain verification, and the rollback. Name the escalation channel and its owner, and review the
-runbook when the trigger set by the incident process fires.
+运行手册 `payments-queue-backlog`：触发条件是队列深度连续 10 分钟超过 10,000；列出影响、预检查、扩缩容
+命令、排空验证与回滚。写明升级渠道及其负责人，并在事故流程设定的触发条件被触发时审查该运行手册。
 </example>
 
 <example>
-Deprecation notice: mark `GET /v1/orders` deprecated in 2.3, name `GET /v2/orders` as the replacement, state the
-removal release 3.0 and date, and show the request and response mapping. Announce it where users see the old
-endpoint, not only in the changelog.
+弃用通知：在 2.3 中把 `GET /v1/orders` 标为弃用，指定 `GET /v2/orders` 为替代，说明移除版本 3.0 与
+日期，并给出请求与响应的映射。要在用户看到旧端点的地方宣布，而不只是在变更日志中。
 </example>
 
 <example>
-Three pages describe the retry policy with different numbers. Keep the reference page as the canonical source, move
-the rationale to the ADR, turn the guide into one sentence plus a link, then delete the copies and fix inbound links.
-Record the canonical page in the docs index so the next author finds it before writing a fourth copy.
+三个页面用不同数字描述重试策略。保留参考页作为权威来源，把理由移到 ADR，把指南改成一句话加一个链接，
+然后删除副本并修复入站链接。在文档索引中记录权威页面，让下一位作者在写第四份副本之前找到它。
 </example>
 
-## References
+## 参考资料
 
-Read [references/dimensions.md](references/dimensions.md) for the full rule set by document dimension, and
-[references/templates.md](references/templates.md) for copyable skeletons of every doc type in the Doc Type
-Matrix. Read the matching dimension before writing or reviewing a page; read the template before creating a new
-page of that type. Read both when establishing a project's documentation standards from scratch.
+阅读 [references/dimensions.md](references/dimensions.md) 获取按文档维度划分的完整规则集，阅读
+[references/templates.md](references/templates.md) 获取文档类型矩阵中每种文档类型的可复制骨架。编写或
+审查页面之前，先阅读匹配的维度；创建该类型的新页面之前，先阅读模板。从零建立项目文档标准时，两者都要读。

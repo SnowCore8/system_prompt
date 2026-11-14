@@ -1,430 +1,381 @@
-# Documentation Dimensions
+# 文档维度
 
-Use this file with `SKILL.md`. Each section gives the rules, examples, and edge cases for one documentation
-dimension. When a project already has a convention, read it first and apply the higher-precedence rule; this file
-supplies the default and the reason. Read the section that matches the document you are writing or reviewing.
+将本文件与 `SKILL.md` 配合使用。每一节给出一个文档维度的规则、示例与边缘情况。项目已有约定时，先读
+该约定并采用优先级更高的规则；本文件提供默认值与理由。阅读与你要编写或审查的文档相匹配的那一节。
 
 ## 1. README
 
-- Open with one sentence that states what the project is, who it is for, and what it does; the project name alone is
-  not a description.
-- Include install, a quick start that produces a visible result, configuration with defaults, and links to deeper
-  docs; omit the full feature tour, which ages fastest.
-- State requirements (runtime version, OS, database) next to the install command; an unstated prerequisite is the most
-  common first-run failure.
-- Keep the README short and stable; detailed workflows belong in `docs/guides/`, and the README links to them.
-- Include a license and a support path (issue tracker, discussion forum); a project with neither looks abandoned.
-- Use badges only when they are live and meaningful; a broken build badge undermines the page that shows it.
-- Test the quick start in a clean environment before each release; the README is the most-read page and the first to
-  rot.
+- 用一句话开头，说明项目是什么、面向谁、做什么；只有项目名称不算描述。
+- 包含安装、能产生可见结果的快速开始、带默认值的配置，以及指向更深入文档的链接；省略完整的功能巡览，
+  它最快过时。
+- 在安装命令旁说明要求（运行时版本、操作系统、数据库）；未说明的前提是最常见的首次运行失败原因。
+- 保持 README 简短且稳定；详细工作流放在 `docs/guides/`，README 链接过去。
+- 包含许可证与支持路径（issue 跟踪器、讨论论坛）；两者都没有的项目看起来像已废弃。
+- 只有在徽章有效且有实际意义时才使用；失效的构建徽章会损害展示它的页面。
+- 每次发布前在干净环境中测试快速开始；README 是阅读量最大的页面，也是最先腐烂的页面。
 
-| Good | Bad | Why |
+| 好 | 坏 | 为什么 |
 |---|---|---|
-| "Issues invoices and reconciles payments." | "A powerful billing platform." | Names the job; a slogan is not. |
-| Install names the runtime version and command. | Install omits the Python version. | Breaks the first run. |
-| Quick start ends with a visible result. | Ends with "configuration is easy". | A result confirms the setup. |
-| Links to the guide for real workflows. | Full workflow copied into the README. | Copies drift; one page stays right. |
+| “开具发票并对账付款。” | “一个强大的计费平台。” | 指明了工作；口号不是。 |
+| 安装写明运行时版本与命令。 | 安装省略 Python 版本。 | 会破坏首次运行。 |
+| 快速开始以可见结果结束。 | 以“配置很简单”结束。 | 结果能确认环境搭建成功。 |
+| 链接到指南了解真实工作流。 | 把完整工作流复制进 README。 | 副本会漂移；单一页面才保持正确。 |
 
-## 2. Onboarding and CONTRIBUTING
+## 2. 上手与 CONTRIBUTING
 
-- Put setup, run, test, lint, and build commands in one list that works from a fresh clone; link the tool docs only
-  when a command needs an option.
-- State the branch, commit, and review conventions and the expected review time; a contributor who does not know the
-  rules pays for the gap in review.
-- Include a first-change path: a small task, the files it touches, and the command that proves it works.
-- Name code owners, the support channel, and the decision path for changes that span teams or repositories.
-- Document the setup failure modes (missing system package, wrong runtime, busy port) with the exact fix for each.
-- Keep contributor onboarding separate from user onboarding; the audiences, toolchains, and success criteria differ.
-- Verify the setup on a clean machine or container whenever the toolchain changes; onboarding rots faster than any
-  other page.
-- Ask a new contributor to run the guide before the first release; the author cannot see the steps that were skipped.
+- 把环境搭建、运行、测试、lint 与构建命令放在一个列表中，从全新克隆即可工作；只有命令需要某个选项时
+  才链接工具文档。
+- 说明分支、提交与审查约定，以及预期的审查时间；不知道规则的贡献者会在审查中为这个缺口付出代价。
+- 包含首次变更路径：一个小任务、它涉及的文件，以及证明可行的命令。
+- 写明代码所有者、支持渠道，以及跨团队或跨仓库变更的决策路径。
+- 记录环境搭建的失败模式（缺少系统包、运行时错误、端口被占用）及各自的精确修复方法。
+- 将贡献者上手与用户上手分开；两者的受众、工具链与成功标准不同。
+- 工具链变化时，在干净机器或容器上验证环境搭建；上手文档比其他任何页面腐烂得都快。
+- 在第一次发布前请新贡献者按指南走一遍；作者看不见被跳过的步骤。
 
-## 3. Architecture and Design Docs
+## 3. 架构与设计文档
 
-- Describe components, boundaries, data flow, and deployment shape at the level a new maintainer needs; link to code
-  for interfaces instead of restating them.
-- Record the constraints that shaped the design (scale, latency, compliance, team size) and link the ADRs that own
-  each decision.
-- Name the external systems and contracts the architecture depends on, with the owner of each contract.
-- Keep one current architecture page; superseded diagrams are deleted or moved to a history file, never left beside
-  the current one.
-- Keep diagrams current; the format, source, and labeling rules are in section 13, Diagrams and Screenshots.
-- Include a short known-limits section: what the design cannot do and what would have to change.
-- Review the page when a component boundary moves or a new external dependency is added.
+- 以新维护者需要的粒度描述组件、边界、数据流与部署形态；接口链接到代码，而不是复述。
+- 记录塑造设计的约束（规模、延迟、合规、团队规模），并链接拥有各项决策的 ADR。
+- 写明架构依赖的外部系统与契约，以及每份契约的负责人。
+- 只保留一份当前架构页；被取代的图表删除或移到历史文件，绝不留在当前页旁边。
+- 保持图表最新；格式、源文件与标注规则见第 13 节「图表与截图」。
+- 包含简短的已知限制一节：设计做不到什么，以及需要改变什么。
+- 组件边界移动或新增外部依赖时审查该页面。
 
-## 4. ADRs and Decision Records
+## 4. ADR 与决策记录
 
-- One decision per record, numbered and immutable; a changed decision is a new ADR that supersedes the old one.
-- State the decision in one sentence at the top, then status, context, and consequences; a scanning reader can stop
-  after the first line.
-- Alternatives are required because they show what was rejected and why; a record without them invites a repeat
-  debate.
-- Record consequences honestly, including cost and accepted risk; an ADR that lists only benefits is advocacy.
-- Date every record and link it from the architecture page and the change that implements it.
-- Keep ADRs in the repository so they version with the code; a decision that lives only in chat is lost.
-- Never rewrite an accepted ADR; append a superseding link and keep the original text intact.
-- Reserve ADRs for decisions that constrain later work; a cheap, reversible choice is a code comment or a note.
+- 每条记录一个决策，编号且不可变；决策改变时写一条新的 ADR 取代旧记录。
+- 在顶部用一句话陈述决策，然后是状态、背景与后果；扫读的读者读完第一行就能停下。
+- 备选方案是必需的，因为它们显示被否决了什么以及为什么；没有备选方案的记录会招来重复争论。
+- 如实记录后果，包括成本与已接受的风险；只列好处的 ADR 是辩护词。
+- 为每条记录标注日期，并从架构页与实现该决策的变更链接过去。
+- 把 ADR 放在仓库里，让它们随代码一起版本化；只存在于聊天中的决策会丢失。
+- 绝不重写已接受的 ADR；追加一条取代链接，并保持原文完整。
+- ADR 只留给会约束后续工作的决策；便宜且可逆的选择写成代码注释或笔记即可。
 
-| Good | Bad | Why |
+| 好 | 坏 | 为什么 |
 |---|---|---|
-| "Status: Superseded by ADR-0012" with a link. | Silently editing the accepted text. | Readers need the history too. |
-| Consequences section lists cost and risk. | A benefits-only record. | Hidden costs are judged later. |
-| Dated record linked from the implementation. | An undated file in a folder. | Date and link order decisions. |
-| Rejected alternatives kept in the record. | A record without alternatives. | Rejections prevent re-litigation. |
+| “状态：由 ADR-0012 取代”，并带链接。 | 悄悄编辑已接受的文本。 | 读者也需要历史。 |
+| 后果一节列出成本与风险。 | 只有好处的记录。 | 隐藏成本日后会被评判。 |
+| 带日期、从实现链接过去的记录。 | 文件夹里没有日期的文件。 | 日期与链接决定顺序。 |
+| 记录中保留被否决的备选方案。 | 没有备选方案的记录。 | 否决记录能防止重新争论。 |
 
-## 5. Tutorials and How-To Guides
+## 5. 教程与操作指南
 
-- A tutorial teaches by doing: fixed prerequisites, numbered steps, one working result, and no choices; a how-to
-  answers one task for a reader who already knows the basics.
-- Open both with the outcome and an estimate of time or difficulty so the reader can decide whether to continue.
-- Use the reader's vocabulary and the product's real UI labels; a tutorial that invents its own names confuses.
-- Cut every step that is not required to reach the result; each extra step is another place to fail.
-- Test the tutorial from a clean environment at every release; a broken tutorial is a broken first impression.
-- Make each step atomic and show the expected result; a reader who cannot tell success from failure stops and asks.
-- For how-to guides, add a verification step and the common failures; the task is not done until the reader can
-  confirm it.
-- Do not mix teaching with reference completeness; link to the reference when an option is outside the path.
+- 教程通过动手来教：固定前提、编号步骤、一个可工作的结果，没有选择；操作指南为已懂基础的读者回答
+  一项任务。
+- 两者都以结果与时间或难度估计开头，让读者决定是否继续。
+- 使用读者的词汇与产品真实的 UI 标签；自行发明名称的教程会让人困惑。
+- 删掉所有到达结果不需要的步骤；每个多余步骤都是另一个失败点。
+- 每次发布都从干净环境测试教程；坏掉的教程就是坏掉的第一印象。
+- 让每个步骤原子化并展示预期结果；无法判断成功还是失败的读者会停下来提问。
+- 对于操作指南，增加验证步骤与常见失败；读者无法确认之前，任务不算完成。
+- 不要把教学与参考的完整性混在一起；当某个选项在路径之外时，链接到参考。
 
-## 6. Reference and API Reference Pages
+## 6. 参考与 API 参考页
 
-- Reference is exhaustive and neutral: exact names, types, defaults, constraints, allowed values, and version notes,
-  in a stable order.
-- One entry per unit (function, flag, endpoint, field); do not merge unrelated units into one table row.
-- For every endpoint, state authentication, parameters, response schema, error codes, rate limits, and version.
-- Generated reference pages get their structure from this skill and their prose from the comment skill; do not
-  duplicate generated details by hand.
-- Keep examples minimal and runnable; a reference example shows the smallest correct call, not the whole feature set.
-- Link each unit to the guide or tutorial that uses it; reference without a task is hard to apply.
-- Version the reference with the API; an unversioned reference page is wrong for every release but one.
+- 参考要穷尽且中立：精确名称、类型、默认值、约束、允许值与版本说明，按稳定顺序排列。
+- 每个单元（函数、标志、端点、字段）一条记录；不要把不相关的单元合并到同一表格行。
+- 对每个端点说明认证、参数、响应 schema、错误码、速率限制与版本。
+- 生成的参考页结构取自本 skill，文笔取自注释 skill；不要手工复制生成的细节。
+- 让示例最小且可运行；参考示例展示最小的正确调用，而不是整套功能。
+- 把每个单元链接到使用它的指南或教程；没有任务的参考很难应用。
+- 参考随 API 版本化；无版本说明的参考页只对一个发布正确。
 
-| Good | Bad | Why |
+| 好 | 坏 | 为什么 |
 |---|---|---|
-| `timeout_ms`, integer, default `30000`, range `1..600000`. | `timeout`: wait time. | States type, default, range. |
-| One row per parameter with type and default. | One prose paragraph for all. | Tables scan; prose must be read. |
-| Minimal request and expected response. | A full app hiding the endpoint call. | Isolates the documented unit. |
-| Version note on every changed entry. | One reference for all versions. | Readers apply the wrong version. |
+| `timeout_ms`，整数，默认 `30000`，范围 `1..600000`。 | `timeout`：等待时间。 | 说明了类型、默认值、范围。 |
+| 每参数一行，带类型与默认值。 | 一整段文字描述所有参数。 | 表格便于扫读；段落必须通读。 |
+| 最小请求与预期响应。 | 用完整应用遮住端点调用。 | 隔离被记录的单元。 |
+| 每个变更条目都有版本说明。 | 一份参考覆盖所有版本。 | 读者会套用错误版本。 |
 
-## 7. Explanation and Concept Docs
+## 7. 解释与概念文档
 
-- Open with the one idea the page exists to convey; if the reader remembers one sentence, it should be that sentence.
-- Explain the model and its vocabulary before any procedure; concept pages answer why and link out for how.
-- Use one running example and keep it consistent across the page; a second example resets the reader's context.
-- State the tradeoffs explicitly, including when the model is the wrong choice; a concept page that sells is
-  marketing.
-- Define each term on first use and link to the glossary; do not assume the reader shares the team's background.
-- Separate the model from the current implementation; link the implementation page instead of describing internals.
-- Keep the page stable; it changes when the model changes, not when an option is added.
-- End with links to the tutorial that applies the model and the reference that lists the options.
+- 用页面要传达的那一个想法开头；如果读者只记住一句话，那应该就是这句话。
+- 在任何步骤之前解释模型及其词汇；概念页回答为什么，并把如何做链接出去。
+- 使用一个贯穿示例，并在整页保持一致；第二个示例会重置读者的上下文。
+- 明确陈述权衡，包括该模型是错误选择的情况；推销式的概念页是营销。
+- 每个术语首次使用时定义，并链接到术语表；不要假设读者具备团队背景。
+- 把模型与当前实现分开；链接实现页面，而不是描述内部细节。
+- 保持页面稳定；模型变化时才改，而不是每加一个选项就改。
+- 以链接结束：应用该模型的教程，以及列出选项的参考。
 
-## 8. Changelogs and Release Notes
+## 8. 变更日志与发布说明
 
-- Group by version and date; inside a version, group by impact (added, changed, fixed, removed, security) and state
-  upgrade actions near the top.
-- Write for the user: what behavior changed and what the reader must do, not which files moved.
-- Link each entry to the issue or pull request that explains it; the entry is a summary, not the only record.
-- Mark deprecations and breaking changes explicitly with the removal version; never bury them under "changed".
-- Keep one line per user-visible change; a paragraph per entry hides the list the reader came for.
-- Keep an unreleased section for entries without a version; when entries move into a released section follows the
-  trigger set by `release-operations-conventions`.
-- Never rewrite a released section to hide a regression; add a corrected entry that references the original.
-- If the release process generates release notes from the changelog, verify the two agree.
+- 按版本与日期分组；版本内按影响（新增、变更、修复、移除、安全）分组，并把升级动作放在靠前位置。
+- 为用户而写：行为发生了什么变化、读者必须做什么，而不是哪些文件移动了。
+- 把每个条目链接到解释它的 issue 或 PR；条目是摘要，不是唯一记录。
+- 明确标出弃用与破坏性变更及其移除版本；绝不要把它们埋在“变更”下面。
+- 每个用户可见变化一行；每个条目一段会掩盖读者来找的清单。
+- 为没有版本的条目保留未发布一节；条目何时移入已发布一节，遵循
+  `release-operations-conventions` 设定的触发条件。
+- 绝不重写已发布的章节来隐藏回归；添加一条引用原始条目的更正条目。
+- 如果发布流程从变更日志生成发布说明，验证两者一致。
 
-| Good | Bad | Why |
+| 好 | 坏 | 为什么 |
 |---|---|---|
-| "`GET /v1/orders` removed in 3.0; use `/v2/orders`." | "Orders API cleaned up." | Reader needs action and release. |
-| Entries grouped by version with a date. | One undated list since launch. | Version and date decide relevance. |
-| Fixed entries link the issue and release. | "Various bug fixes." | A vague entry cannot be acted on. |
-| Breaking changes listed first. | Breaking change under "changed". | Readers miss the required upgrade. |
+| “`GET /v1/orders` 在 3.0 中移除；改用 `/v2/orders`。” | “订单 API 清理完毕。” | 读者需要动作与发布版本。 |
+| 按版本分组并带日期的条目。 | 自发布以来一条无日期的清单。 | 版本与日期决定相关性。 |
+| 修复条目链接 issue 与发布。 | “各种缺陷修复。” | 含糊条目无法据以行动。 |
+| 破坏性变更列在最前。 | 破坏性变更放在“变更”下面。 | 读者会错过必需的升级。 |
 
-## 9. Runbooks, Operations, and Postmortems
+## 9. 运行手册、运维与事故复盘
 
-- One alert or operation per runbook, starting with trigger, impact, and the first action; the reader is under
-  pressure and has minutes, not an afternoon.
-- Show exact commands with environment, permissions, and expected output; never write "check the logs" without the
-  command that checks them.
-- Include verification that the operation worked and a rollback that restores the previous state.
-- Name the escalation path and the decision authority for when the rollback is worse than the outage.
-- Link dashboards, alerts, and pipelines by stable name or ID; a link only the author can find is useless at 03:00.
-- Keep the runbook procedure consistent with the postmortem of the last incident it handled; the review trigger and
-  cadence are set by `release-operations-conventions`.
-- Link the postmortem from the runbook: the runbook carries the procedure and the postmortem the narrative; when a
-  postmortem is written is set by `release-operations-conventions`.
+- 每本运行手册对应一个告警或操作，以触发条件、影响与首个动作开头；读者正承受压力，只有几分钟，
+  不是一个下午。
+- 给出精确命令，附环境、权限与预期输出；绝不要只写“检查日志”而不给检查日志的命令。
+- 包含验证操作已生效的步骤，以及恢复先前状态的回滚。
+- 写明升级路径，以及回滚比故障更糟时的决策权归属。
+- 用稳定名称或 ID 链接仪表盘、告警与流水线；只有作者能找到的链接在凌晨三点毫无用处。
+- 保持运行手册步骤与它最近处理的事故复盘一致；审查触发条件与节奏由
+  `release-operations-conventions` 设定。
+- 从运行手册链接事故复盘：运行手册承载步骤，事故复盘承载叙述；事故复盘何时编写由
+  `release-operations-conventions` 设定。
 
-| Good | Bad | Why |
+| 好 | 坏 | 为什么 |
 |---|---|---|
-| Exact scale command with namespace and count. | "Scale the workers." | On-call should not design commands. |
-| Rollback step with its own verification. | "Revert if needed." | Undoing needs a known path. |
-| Named escalation channel and owner. | "Escalate to the team." | A reachable target and authority. |
-| Expected output after each command. | "Check the logs." | The reader must know success. |
+| 带命名空间与数量的精确扩缩容命令。 | “扩缩容 worker。” | 值班人员不应自己设计命令。 |
+| 带回滚自身验证的回滚步骤。 | “需要时回滚。” | 撤销需要已知路径。 |
+| 写明升级渠道与负责人。 | “向团队升级。” | 可达目标与权限。 |
+| 每条命令后的预期输出。 | “检查日志。” | 读者必须知道成功的样子。 |
 
-## 10. Security, Legal, and Support Docs
+## 10. 安全、法律与支持文档
 
-- Keep the security policy content in `SECURITY.md` and present it in scannable sections with links to its owner;
-  the required content and response commitments are set by `security-compliance-conventions`.
-- Never publish internal addresses, secrets, employee data, or customer data; use example values such as
-  `example@test.invalid`.
-- Legal pages (license, terms, privacy) are owned by legal, not engineering; link to them and never paraphrase them
-  into a second document.
-- Support pages state what is supported, the response target, and what is out of scope; a vague promise becomes an
-  obligation.
-- Keep the security policy, the support path, and the license reachable from the README and the docs home.
-- Record the owner and the last review date on every risk-bearing page; security and legal text decays silently.
-- Review the security page against the actual incident process after every exercise; a policy nobody has walked
-  through is a hypothesis.
+- 把安全策略内容放在 `SECURITY.md`，以可扫读的章节呈现，并链接到其负责人；必需内容与响应承诺由
+  `security-compliance-conventions` 规定。
+- 绝不发布内部地址、机密、员工数据或客户数据；使用示例值，例如 `example@test.invalid`。
+- 法律页面（许可证、条款、隐私）归法务所有，不归工程；链接到它们，绝不转述成第二份文档。
+- 支持页面说明支持什么、响应目标与范围外内容；含糊的承诺会变成义务。
+- 保持安全策略、支持路径与许可证可从 README 与文档首页到达。
+- 在每个承担风险的页面上记录负责人与最后审查日期；安全与法律文本会悄悄失效。
+- 每次演练后对照实际事故流程审查安全页面；没人完整走查过的策略只是假设。
 
-## 11. Troubleshooting and FAQ
+## 11. 故障排查与常见问题
 
-- Organize by the symptom the reader can observe, not by the cause they do not know yet.
-- For each entry, give symptom, likely cause, fix, and prevention; link the issue tracker for known unfixed bugs.
-- Put the exact error text and version in the heading so search and the browser find it.
-- Delete entries that no longer apply; a page of obsolete fixes teaches readers to distrust the page.
-- Keep FAQ entries to questions users actually ask, ordered by frequency; an FAQ is not a second documentation set.
-- Date error messages and versions that appear only in old releases, or remove them.
-- End each entry with the page to read next when the fix does not work.
-- Link each entry from the error message or the CLI output where the code can do so; readers search the symptom, not
-  the docs tree.
+- 按读者能观察到的症状组织，而不是按他们尚不知道的原因。
+- 对每个条目给出症状、可能原因、修复与预防；对已知未修复的缺陷链接 issue 跟踪器。
+- 把精确错误文本与版本放进标题，方便搜索与浏览器找到。
+- 删除不再适用的条目；过时修复的页面会教读者不信任该页面。
+- 让常见问题条目只保留用户真正会问的问题，按频率排序；常见问题页不是第二套文档。
+- 给只出现在旧版本中的错误消息与版本标注日期，或者删除它们。
+- 当修复无效时，为每个条目结尾给出接下来该读的页面。
+- 在代码能做到的地方，从错误消息或 CLI 输出链接到每个条目；读者搜索的是症状，不是文档树。
 
-## 12. Migration and Deprecation Guides
+## 12. 迁移与弃用指南
 
-- State the old and new behavior, the timeline, the removal version, and the support window for the old path.
-- Provide a mapping table from removed names, fields, or endpoints to their replacements.
-- Give a step-by-step migration with a backup before data is touched and a rollback for each irreversible step.
-- Include a validation step that proves the migration worked, with the command or check the reader runs.
-- Confirm the migration owner tested it on production-shaped data before publishing the guide.
-- Deprecation notices name the replacement and the removal release and appear where users see the old path.
-- Warn at runtime or in generated clients where possible; a docs-only deprecation is found too late.
-- Do not remove the old path before the announced release; a silent removal violates the published contract.
+- 说明旧行为与新行为、时间线、移除版本，以及旧路径的支持窗口。
+- 提供一张从被移除名称、字段或端点到其替代方案的映射表。
+- 给出分步迁移，在触碰数据前备份，并为每个不可逆步骤提供回滚。
+- 包含一个验证步骤，用读者运行的命令或校验证明迁移成功。
+- 确认迁移负责人在发布指南前已在生产形态的数据上测试过。
+- 弃用通知写明替代方案与移除发布，并出现在用户看到旧路径的地方。
+- 尽可能在运行时或生成的客户端中警告；仅文档中的弃用会被发现得太晚。
+- 不要在宣布的发布之前移除旧路径；静默移除违反已发布的契约。
 
-| Good | Bad | Why |
+| 好 | 坏 | 为什么 |
 |---|---|---|
-| Mapping table from `amount` to `amount_cents`. | "Update your integration." | The mapping is the work. |
-| Removal in 3.0 with a date and guide link. | "Will be removed soon." | "Soon" cannot be planned against. |
-| Backup and rollback before the data rewrite. | A one-way migration script. | A failed migration loses data. |
-| Validation command after the migration. | "Verify it worked." | The reader needs a pass condition. |
+| 从 `amount` 到 `amount_cents` 的映射表。 | “更新你的集成。” | 映射才是工作。 |
+| 在 3.0 移除，附日期与指南链接。 | “很快会移除。” | 无法针对“很快”做计划。 |
+| 重写数据前先备份并准备回滚。 | 单向迁移脚本。 | 迁移失败会丢失数据。 |
+| 迁移后运行验证命令。 | “验证它能工作。” | 读者需要通过条件。 |
 
-## 13. Diagrams and Screenshots
+## 13. 图表与截图
 
-- Keep diagrams in a diffable text format (Mermaid, PlantUML, Graphviz) and store the source next to the rendered
-  image.
-- Label each diagram with scope, version, and date; an unlabeled diagram is read as current and misleads after a
-  change.
-- Choose the altitude the reader needs (context, container, component, sequence) and stop; one diagram for every
-  audience becomes unreadable.
-- Regenerate screenshots when the UI changes and crop to the relevant region; a stale screenshot contradicts the text
-  and teaches the old interface.
-- Keep the instruction in text, not only in an image; images cannot be searched, translated, or read by a screen
-  reader.
-- Give every image alt text that states its content; decorative images use an empty alt attribute.
-- Store large binary sources outside the main repository and link them from the page.
+- 用可 diff 的文本格式（Mermaid、PlantUML、Graphviz）保存图表，并把源文件放在渲染图旁边。
+- 为每张图标注范围、版本与日期；未标注的图会被当作当前版本，变更后会误导。
+- 选择读者需要的层次（上下文、容器、组件、时序）然后停止；给每个受众一张图会变得无法阅读。
+- UI 变化时重新生成截图并裁剪到相关区域；过时截图会与正文矛盾，并教读者旧界面。
+- 把说明保留为文本，而不只是放在图片里；图片无法被搜索、翻译，也无法被屏幕阅读器读取。
+- 为每张图片提供说明其内容的替代文本；装饰性图片使用空 alt 属性。
+- 把大型二进制源文件放在主仓库之外，并从页面链接过去。
 
-| Good | Bad | Why |
+| 好 | 坏 | 为什么 |
 |---|---|---|
-| Mermaid block with a version label. | Whiteboard photo with no date. | Text diagrams diff and can be fixed. |
-| Screenshot of the current dialog, cropped. | A screenshot of an older UI. | A screenshot is read as current. |
-| Alt text describing the image content. | Alt text: "screenshot.png". | Serves search and screen readers. |
-| Diagram source kept next to the image. | Only the exported PNG is stored. | The diagram cannot be edited later. |
+| 带版本标签的 Mermaid 代码块。 | 没有日期的白板照片。 | 文本图表可 diff、可修复。 |
+| 当前对话框的截图，已裁剪。 | 旧 UI 的截图。 | 截图会被当作当前版本。 |
+| 描述图片内容的替代文本。 | 替代文本：“screenshot.png”。 | 服务于搜索与屏幕阅读器。 |
+| 图表源文件保存在图片旁边。 | 只存导出的 PNG。 | 图表日后无法编辑。 |
 
-## 14. Links and Cross-References
+## 14. 链接与交叉引用
 
-- Link to the canonical page, not to a copy, and use the page title or action as the link text; "click here" tells
-  the reader nothing.
-- Use relative links inside the repository so they work in every branch and in local preview; absolute site URLs
-  break in forks and previews.
-- Check links in the docs build and treat a broken link as a failure, not a warning.
-- Link to stable anchors; when a heading must change, update every inbound link in the same change and add a redirect
-  where the site supports one.
-- Use the same link text for the same target across pages so search and scanning recognize it.
-- Prefer one strong cross-reference over a "see also" list; ten links push the decision back to the reader.
-- Date external references and recheck them when the source changes; an external page may move or change meaning.
-- Do not link a page from itself, and do not repeat the same link twice on one screen.
+- 链接到权威页面，而不是副本，并使用页面标题或动作描述作为链接文字；“点击这里”什么也没告诉读者。
+- 在仓库内使用相对链接，让它们在每个分支与本地预览中都能工作；绝对站点 URL 会在 fork 与预览中失效。
+- 在文档构建中校验链接，把坏链当作失败，而不是警告。
+- 链接到稳定的锚点；标题必须变化时，在同一次变更中更新每个入站链接，并在站点支持时添加重定向。
+- 同一目标在各页面使用相同的链接文字，让搜索与扫读能识别它。
+- 宁可用一条有力的交叉引用，也不要“另见”列表；十个链接会把决定推回给读者。
+- 为外部引用标注日期，并在来源变化时重新核对；外部页面可能移动或改变含义。
+- 不要从页面链接到自身，也不要在同一屏重复同一链接。
 
-## 15. Navigation and Doc Index
+## 15. 导航与文档索引
 
-- Keep the path shallow: a reader reaches any core page in two or three clicks from the documentation home.
-- Group by reader task or doc type (tutorials, guides, reference, explanation), not by team or repository layout.
-- Keep one index page that lists every published section; a page absent from the index is effectively unpublished.
-- Name navigation entries by what the reader gets, not by an internal project or ticket name.
-- Keep sidebar order stable across releases; moving entries breaks bookmarks and muscle memory.
-- Remove draft and empty pages from navigation; a link to an unfinished page is a promise not kept.
-- Keep the documentation home short and routing: what the product is, who the docs serve, and the three next steps.
-- Review the index after adding, moving, or deleting a page; stale navigation is the first symptom of a stale docs
-  set.
+- 保持路径浅：读者从文档首页两到三次点击就能到达任何核心页面。
+- 按读者任务或文档类型（教程、指南、参考、解释）分组，而不是按团队或仓库布局。
+- 保留一个索引页列出每个已发布章节；不在索引中的页面实际上等于未发布。
+- 用读者能得到什么来命名导航条目，而不是内部项目名或工单名。
+- 保持侧边栏顺序跨发布稳定；移动条目会破坏书签与肌肉记忆。
+- 从导航中移除草稿与空页面；指向未完成页面的链接是未兑现的承诺。
+- 保持文档首页简短且承担分流：产品是什么、文档服务谁，以及接下来三步。
+- 添加、移动或删除页面后审查索引；过时导航是文档集过时的第一个症状。
 
-## 16. Terminology and Glossary
+## 16. 术语与术语表
 
-- Keep one glossary per project and use its terms in docs, code, and UI; it is the prose counterpart of the naming
-  table.
-- Own the glossary in one file; per-team glossaries drift and contradict each other.
-- Define each term once and link to the definition; do not redefine it on every page.
-- Include the canonical spelling, casing, and abbreviation form, not only the definition.
-- Include terms that are ambiguous, translated, or specific to the domain; skip words with one obvious meaning.
-- Record banned synonyms and use the canonical term everywhere; mixed terms make readers think the concepts differ.
-- Update the glossary in the same change that renames a concept; a stale glossary spreads the old name.
-- Keep entries to one sentence and in alphabetical order; a glossary that needs paragraphs is an explanation page.
+- 每个项目只保留一份术语表，并在文档、代码与 UI 中使用其术语；它是命名表的散文对应物。
+- 把术语表放在一个文件里；每个团队各有一份会漂移并互相矛盾。
+- 每个术语定义一次并链接到定义；不要在每个页面上重新定义。
+- 包含规范拼写、大小写与缩写形式，而不只是定义。
+- 包含有歧义、被翻译或领域特有的术语；跳过只有一个明显含义的词。
+- 记录被禁用的同义词，并在所有地方使用标准术语；混用术语会让读者以为概念不同。
+- 在重命名概念的同一变更中更新术语表；过时的术语表会传播旧名称。
+- 条目保持一句话并按字母顺序排列；需要段落的术语表是解释页。
 
-| Good | Bad | Why |
+| 好 | 坏 | 为什么 |
 |---|---|---|
-| "Charge: one attempt to collect payment." | Same term defined on three pages. | One definition stops comparison. |
-| Alphabetical list of one-line entries. | A glossary that reads like a chapter. | Looked up, not read through. |
-| UI label matches the glossary term. | UI says "transaction", docs "charge". | Divergence suggests two concepts. |
-| Banned synonyms recorded beside the term. | Three synonyms used at random. | Readers assume different concepts. |
+| “Charge：一次收款尝试。” | 同一术语在三个页面上定义。 | 一个定义能终止比较。 |
+| 按字母顺序排列的单行条目。 | 读起来像一章的术语表。 | 供查阅，不是通读。 |
+| UI 标签与术语表术语一致。 | UI 说“transaction”，文档说“charge”。 | 分歧暗示两个概念。 |
+| 术语旁记录被禁用的同义词。 | 随意使用三个同义词。 | 读者会以为是不同概念。 |
 
-## 17. Localization and Translation
+## 17. 本地化与翻译
 
-- Write source docs in short sentences, one idea per sentence, and keep code, commands, identifiers, and product
-  names out of translatable prose.
-- Keep translation files next to the source or in the localization system, with one side defined as the source of
-  truth; never hand-edit both.
-- Version translations with the source; a translation of an old page is a wrong page in another language.
-- Avoid culture-specific examples, dates, currency, and idioms; use ISO dates, explicit units, and plain language.
-- Keep screenshots language-neutral where possible, and flag images with embedded text for re-translation.
-- Mark untranslated pages explicitly instead of serving stale translated content; a wrong translation is trusted more
-  than a missing one.
-- Leave room for text expansion; German and Japanese labels are often longer than English ones.
-- Review translated pages with a native speaker who can run the examples; machine translation that works is rare.
+- 用短句写源文档，一句一个想法，并把代码、命令、标识符与产品名排除在可翻译散文之外。
+- 把翻译文件放在源文件旁边或本地化系统中，并定义一侧为真源；绝不手工同时编辑两侧。
+- 译文随源文版本化；旧页面的译文就是另一种语言里的错误页面。
+- 避免特定文化的示例、日期、货币与习语；使用 ISO 日期、明确单位与平实语言。
+- 尽可能保持截图为语言中立，并标记含嵌入文本的图片以便重新翻译。
+- 明确标记未翻译页面，而不是提供过时的译文；错误译文比缺失译文更容易被信任。
+- 为文本膨胀留出空间；德语与日语标签通常比英语长。
+- 由能运行示例的母语者审查译文；能用的机器翻译很罕见。
 
-## 18. Versioning and Applicability
+## 18. 版本管理与适用性
 
-- State the product version in the page metadata or the first paragraph; a page without a version is assumed current.
-- Publish docs per major version when behavior differs, keep the default route on the current version, and link older
-  versions from a version selector.
-- Mark changed and removed options with the version in which they changed, and keep them in the reference until
-  removal.
-- Use one version scheme across docs, API, and releases; a docs "v2" that means something else confuses readers.
-- Remove unsupported versions from the main navigation but keep them reachable for users who are still on them.
-- Date anything time-sensitive: support windows, certificate expiry, migration deadlines, and end-of-life dates.
-- Remove end-of-life pages from search indexing after the support window ends, but keep the URL alive so old links
-  resolve.
+- 在页面元数据或第一段中说明产品版本；没有版本的页面会被当作当前版本。
+- 行为不同时按主版本发布文档，让默认路由保持当前版本，并从版本选择器链接旧版本。
+- 用发生变化时的版本标记变更与移除的选项，并让它们保留在参考中直到移除。
+- 在文档、API 与发布之间使用同一套版本方案；含义不同的文档“v2”会让读者困惑。
+- 从主导航中移除不受支持的版本，但为仍在使用它们的用户保留可访问路径。
+- 为任何时间敏感内容标注日期：支持窗口、证书到期、迁移截止日期与停止支持日期。
+- 支持窗口结束后，从搜索索引中移除已停止支持的页面，但保持 URL 可访问，让旧链接仍能解析。
 
-| Good | Bad | Why |
+| 好 | 坏 | 为什么 |
 |---|---|---|
-| "Applies to 2.x; 1.x docs for 1.9." | No version on the page. | The reader cannot tell applicability. |
-| "Removed in 3.0" marked in the reference. | A removed option silently deleted. | 2.x readers still need the entry. |
-| One version number across docs and API. | Docs "v2" for API "2024-06". | Two schemes hide the mapping. |
-| Older versions linked from a selector. | Only the current version published. | Users on old versions lose the docs. |
+| “适用于 2.x；1.9 见 1.x 文档。” | 页面上没有版本。 | 读者无法判断适用性。 |
+| 在参考中标记“3.0 移除”。 | 静默删除被移除的选项。 | 2.x 读者仍需要该条目。 |
+| 文档与 API 使用同一个版本号。 | API 为“2024-06”而文档写“v2”。 | 两套方案会掩盖映射。 |
+| 从选择器链接旧版本。 | 只发布当前版本。 | 使用旧版本的用户失去文档。 |
 
-## 19. Ownership, Maintenance, and Freshness
+## 19. 归属、维护与新鲜度
 
-- Give every page an owner (team or role) in front matter or the docs index; a page without an owner is maintained by
-  no one.
-- Record the review trigger per doc type in the page metadata or docs index; the cadence for changelogs, release
-  notes, runbooks, and postmortems is set by `release-operations-conventions`.
-- Track the last review date and flag pages past their review interval; freshness is a maintenance signal, not a
-  promise of correctness.
-- Update the page in the change that alters behavior, and put the docs step in the same issue as the code.
-- Delete or archive pages whose feature is removed; a page without a product is worse than no page.
-- Review the most-read pages first; a dashboard built from search analytics beats reading the whole tree.
-- Record known gaps as issues with an owner and a target release instead of leaving silent holes.
-- Rotate the docs review among team members so the ownership does not become one person's private memory.
+- 在 front matter 或文档索引中为每个页面指定负责人（团队或角色）；没有负责人的页面无人维护。
+- 在页面元数据或文档索引中记录每种文档类型的审查触发条件；变更日志、发布说明、运行手册与事故复盘的
+  节奏由 `release-operations-conventions` 设定。
+- 跟踪最后审查日期，并标记超过审查间隔的页面；新鲜度是维护信号，不是正确性承诺。
+- 在改变行为的变更中更新页面，并把文档步骤放进与代码相同的 issue。
+- 功能被移除的页面要删除或归档；没有产品的页面比没有页面更糟。
+- 先审查阅读量最大的页面；用搜索分析构建的仪表盘胜过通读整棵文档树。
+- 把已知缺口记录为 issue，带负责人与目标发布，而不是留下无声的空洞。
+- 在团队成员之间轮换文档审查，避免归属变成某个人的私人记忆。
 
-## 20. Templates and Scaffolding
+## 20. 模板与脚手架
 
-- Keep one template per doc type in the repository and start every new page from it; a template removes decisions
-  that should be common.
-- Include the required sections and no optional ones; the author adds what the page needs and deletes nothing
-  silently.
-- Keep each template short enough to fill in ten minutes; a template that needs an editor is a document.
-- Version templates and update existing pages at their next substantive edit, not in a mass rewrite.
-- Generate the file from the template with a script or docs generator where the project supports it.
-- Revise the template when a review round reveals the same missing section twice.
-- Keep templates and the dimension rules in sync; when the rules change, the skeleton changes in the same review.
+- 在仓库中为每种文档类型保留一个模板，每个新页面都从它开始；模板消除了本应统一的决定。
+- 包含必需章节，不包含可选章节；作者添加页面所需内容，不静默删除任何内容。
+- 让每个模板短到十分钟能填完；需要编辑器的模板是一份文档。
+- 模板要版本化，并在现有页面下次实质性编辑时更新它们，而不是大规模重写。
+- 在项目支持时，用脚本或文档生成器从模板生成文件。
+- 当一轮审查两次发现同一缺失章节时，修订模板。
+- 保持模板与维度规则同步；规则变化时，骨架在同一次审查中变化。
 
-| Good | Bad | Why |
+| 好 | 坏 | 为什么 |
 |---|---|---|
-| Five-section ADR template the team fills in. | "Write it in whatever format fits." | Freedom blocks comparison. |
-| Required sections marked in the template. | Twenty optional headings. | Optional headings get skipped. |
-| Templates updated when review rules change. | A template nobody has read in years. | Teaches a stale structure. |
-| Template generated by a script. | Every author retypes the heading. | Retyped structure drifts. |
+| 团队填写的五节 ADR 模板。 | “按合适的格式写。” | 自由会阻碍比较。 |
+| 模板中标记必需章节。 | 二十个可选标题。 | 可选标题会被跳过。 |
+| 审查规则变化时更新模板。 | 多年没人读过的模板。 | 会教过时的结构。 |
+| 由脚本生成模板。 | 每位作者重新输入标题。 | 重输的结构会漂移。 |
 
-## 21. Documentation Tests and Sample Validation
+## 21. 文档测试与示例校验
 
-- Run code samples in CI: keep them in test files or extract them from the page, and fail when a sample stops working.
-- Validate links, anchors, and image paths in the build; a dead-link check is cheap and catches the most common docs
-  failure.
-- Run commands against the minimum supported version in a clean container; an example that needs the newest release
-  teaches the wrong setup.
-- Spell-check and style-check with a project dictionary; a checker that flags every product term is turned off.
-- Build the docs site on every change, not only at release; a build that runs late hides errors until the worst time.
-- Review the rendered output for tables, code blocks, and navigation; source-only review misses rendering failures.
-- Report a failing docs check as a defect in the change; the gate owner, `testing-and-quality-conventions`, decides
-  whether it blocks.
-- Keep the check configuration in the repository so a local run matches CI exactly.
+- 在 CI 中运行代码示例：把它们放在测试文件里，或从页面提取，示例失效时让构建失败。
+- 在构建中校验链接、锚点与图片路径；死链校验便宜，并能抓住最常见的文档失败。
+- 在干净容器中针对最低支持版本运行命令；需要最新版本的示例会教错误的搭建方式。
+- 用项目词典做拼写与风格校验；把每个产品术语都标红的校验器会被关掉。
+- 每次变更都构建文档站，而不只在发布时构建；运行太晚的构建会把错误隐藏到最糟的时刻。
+- 审查表格、代码块与导航的渲染输出；只审查源文件会漏掉渲染失败。
+- 把失败的文档校验报告为变更中的缺陷；门禁负责人 `testing-and-quality-conventions` 决定它是否阻塞。
+- 把校验配置放在仓库里，让本地运行与 CI 完全一致。
 
-## 22. Docs Site and Tooling
+## 22. 文档站与工具
 
-- Choose one generator and pin its version; MkDocs, Docusaurus, Sphinx, VitePress, and plain Markdown are all
-  acceptable when the project can build and publish them reliably.
-- Keep content as portable Markdown with relative links, so the site can move without rewriting pages.
-- MkDocs fits small and medium docs sets with a simple navigation file and Markdown-first authors.
-- Docusaurus fits versioned product docs that need a React site, blog, and translation in one build.
-- Sphinx fits API and Python project docs that need generated reference pages and cross-references.
-- VitePress fits a fast Markdown site with Vue components; plain Markdown fits projects with no site at all.
-- Build in CI and publish from the artifact; never publish from a developer machine.
-- Keep configuration, theme, and navigation in version control beside the content.
+- 选择一个生成器并锁定其版本；MkDocs、Docusaurus、Sphinx、VitePress 与纯 Markdown 都可以，前提是
+  项目能可靠地构建并发布它们。
+- 把内容保留为可移植的 Markdown，使用相对链接，让站点迁移时无需重写页面。
+- MkDocs 适合中小型文档集，导航文件简单，作者以 Markdown 为主。
+- Docusaurus 适合需要在一个构建中包含 React 站点、博客与翻译的版本化产品文档。
+- Sphinx 适合需要生成参考页与交叉引用的 API 与 Python 项目文档。
+- VitePress 适合带 Vue 组件的快速 Markdown 站点；纯 Markdown 适合根本没有站点的项目。
+- 在 CI 中构建并从产物发布；绝不从开发者机器发布。
+- 把配置、主题与导航放在内容旁边的版本控制中。
 
-| Good | Bad | Why |
+| 好 | 坏 | 为什么 |
 |---|---|---|
-| Pinned generator version and a CI build. | A build that works on one laptop. | Publishing must not need one machine. |
-| Plain Markdown content with relative links. | Pages full of shortcodes. | Portable content survives a move. |
-| Navigation stored in one reviewed file. | Navigation edited only in a web admin. | A file can be reverted. |
-| Build in CI and publish the artifact. | Publish from a developer machine. | Reproducible builds need one path. |
+| 锁定生成器版本并有 CI 构建。 | 只在某台笔记本上可用的构建。 | 发布不得依赖单台机器。 |
+| 使用相对链接的纯 Markdown 内容。 | 满是短代码的页面。 | 可移植内容能在迁移后存活。 |
+| 导航保存在一个经过审查的文件中。 | 只在 Web 管理后台编辑导航。 | 文件可以回滚。 |
+| 在 CI 中构建并发布产物。 | 从开发者机器发布。 | 可复现构建需要单一通道。 |
 
-## 23. Public and Internal Boundary
+## 23. 公开与内部边界
 
-- Classify every page as public (customers, integrators) or internal (staff, operations) and record the audience in
-  the repository or site configuration.
-- Write public pages for an external reader: no internal hostnames, ticket IDs, staff names, or unshipped plans.
-- Keep internal docs in a permissioned space; relying on an unlinked URL is not access control.
-- Promote internal content to public only after review for secrets, accuracy, and support commitments.
-- Name the reviewer for a boundary change; a page that changes audience needs an owner's approval.
-- Keep shared vocabulary across the boundary so a public page and its internal counterpart use the same terms.
-- Recheck the boundary when a repository or site changes visibility; a mirror can publish internal pages by accident.
+- 把每个页面分类为公开（客户、集成者）或内部（员工、运维），并在仓库或站点配置中记录受众。
+- 为外部读者写公开页面：不出现内部主机名、工单 ID、员工姓名或未发布计划。
+- 把内部文档放在有权限控制的空间；依赖未列出的 URL 不是访问控制。
+- 只有在审查机密、准确性与支持承诺之后，才把内部内容提升为公开。
+- 为边界变更指定审查者；改变受众的页面需要负责人批准。
+- 在边界两侧保持共享词汇，让公开页面与其内部对应页使用相同术语。
+- 仓库或站点改变可见性时重新检查边界；镜像可能意外发布内部页面。
 
-| Good | Bad | Why |
+| 好 | 坏 | 为什么 |
 |---|---|---|
-| Public page links a public channel. | Public page names the on-call rotation. | Internal routing and names leak. |
-| Internal runbook in a permissioned repo. | Runbook hidden by an unlisted URL. | An unlisted URL is found eventually. |
-| Shared glossary across both spaces. | Different terms on each side. | Readers cannot map the two. |
-| Audience recorded in site configuration. | Only the authors know. | New authors publish to the wrong side. |
+| 公开页面链接公开渠道。 | 公开页面写出值班轮值。 | 内部路由与姓名会泄露。 |
+| 内部运行手册放在有权限控制的仓库。 | 用未列出的 URL 隐藏运行手册。 | 未列出的 URL 最终会被发现。 |
+| 两个空间共享同一术语表。 | 两侧使用不同术语。 | 读者无法把两者对应起来。 |
+| 受众记录在站点配置中。 | 只有作者知道。 | 新作者会发布到错误的一侧。 |
 
-## 24. Generated Docs
+## 24. 生成文档
 
-- Never edit generated output; change the generator configuration, or have the comment owner update the source, then
-  regenerate.
-- Keep a visible generation marker with the command so the next reader knows the file is not hand-edited.
-- Commit generated pages only when the review or hosting process requires it; otherwise build them at publish time.
-- Document how to regenerate locally so contributors can rebuild before review.
-- Pin the generator version and read generated diffs for noise; reformatting churn hides real changes in review.
-- Review the human parts the generator cannot supply: overview, authentication, errors, examples, and version notes.
-- Fix a wrong generated page at its source; patching the output reverts on the next build.
-- Exclude generated output from formatting and lint rules that would fight the generator.
+- 绝不编辑生成产物；修改生成器配置，或让注释负责人更新源文件，然后重新生成。
+- 保留可见的生成标记与命令，让下一位读者知道该文件不是手工编辑的。
+- 只有在审查或托管流程要求时才提交生成页面；否则在发布时构建它们。
+- 记录如何在本地重新生成，让贡献者能在审查前重建。
+- 锁定生成器版本，并阅读生成差异中的噪声；重新格式化的改动会掩盖审查中的真实变化。
+- 审查生成器无法提供的人工部分：概览、认证、错误、示例与版本说明。
+- 在源头修复错误的生成页面；修补输出会在下次构建时被还原。
+- 把生成产物排除在会与生成器冲突的格式化与 lint 规则之外。
 
-## 25. Documentation Review
+## 25. 文档审查
 
-- Review against the reader's task: can the named reader complete the task from this page?
-- Check structure first (type, required sections, scope), then facts (commands, versions, links), then language.
-- Run the build, link checks, and samples before review; the reviewer should not be the first to find a broken link.
-- Ask for evidence in the review: command output, the rendered page, the link-check result.
-- Keep the diff scoped to the reviewed page; a docs change that rewrites unrelated sections costs review time and
-  hides the real change.
-- Check that every changed behavior in the code diff has a matching docs change; a missing docs diff is a finding.
-- Re-review pages after an incident or a breaking release and record the review date.
-- Reject a page that documents an unshipped plan as current behavior; that is a fact error, not a style issue.
+- 对照读者的任务审查：指定读者能否从该页面完成任务？
+- 先检查结构（类型、必需章节、范围），再检查事实（命令、版本、链接），最后检查语言。
+- 审查前运行构建、链接校验与示例；审查者不应该是第一个发现坏链的人。
+- 在审查中要求证据：命令输出、渲染后的页面、链接校验结果。
+- 让 diff 局限于被审查的页面；重写不相关章节的文档变更会消耗审查时间并掩盖真实变化。
+- 检查代码 diff 中每个行为变化都有对应的文档变更；缺少文档 diff 是一项发现。
+- 事故或破坏性发布之后重新审查页面，并记录审查日期。
+- 拒绝把未发布计划文档化为当前行为的页面；那是事实错误，不是风格问题。
 
-## 26. Archival and Deletion
+## 26. 归档与删除
 
-- Delete a page when its feature or decision is gone; archive it when the history has lasting audit or archaeology
-  value.
-- Archive with a tombstone that states the date, the reason, and the replacement, and keep it out of main navigation.
-- Redirect removed URLs to the replacement or the index; a 404 on an old docs URL loses readers and search ranking.
-- Search for inbound links before deleting, inside the repository and in analytics.
-- Keep archived docs read-only and mark them unmaintained; an archived page that still receives edits is not archived.
-- Delete duplicate copies only after the canonical page is verified; a backup copy elsewhere recreates the problem.
-- Record the deletion in the changelog when external readers could have bookmarked the page.
+- 功能或决策不存在时删除页面；历史具有长期审查或考古价值时归档。
+- 归档时留下墓碑页，写明日期、原因与替代位置，并让它离开主导航。
+- 把被移除的 URL 重定向到替代页面或索引；旧文档 URL 上的 404 会失去读者与搜索排名。
+- 删除前在仓库内与分析数据中搜索入站链接。
+- 归档文档保持只读并标记为不再维护；仍在接收编辑的归档页面不算归档。
+- 只有验证权威页面后才删除重复副本；在别处留备份副本会重新制造问题。
+- 当外部读者可能收藏过页面时，在变更日志中记录删除。
 
-| Good | Bad | Why |
+| 好 | 坏 | 为什么 |
 |---|---|---|
-| Redirect from the old URL. | A 404 with no replacement. | The reader keeps the answer. |
-| "Archived: replaced by the billing guide." | Page silently kept in navigation. | Reader cannot tell it is obsolete. |
-| Inbound links updated before deletion. | Delete first, fix links later. | Later never comes; links stay dead. |
-| Tombstone states date and replacement. | Archived folder with no explanation. | Readers reopen pages that are gone. |
+| 从旧 URL 重定向。 | 没有替代的 404。 | 读者仍能得到答案。 |
+| “已归档：由计费指南取代。” | 页面被悄悄留在导航中。 | 读者无法判断它已过时。 |
+| 删除前更新入站链接。 | 先删除，稍后修链接。 | “稍后”永远不会来；链接一直是死的。 |
+| 墓碑页写明日期与替代位置。 | 没有解释的归档文件夹。 | 读者会重新打开已消失的页面。 |
