@@ -1,20 +1,28 @@
 /**
- * DSH bundle：把包内 skills/ 注册为 skill 提供者。
+ * DSH bundle：把包内 skills/ 注册为 skill 提供者，并把用户全局约束注入系统提示。
  *
- * 使用方在 profile 里安装本 bundle 后，十八个通用规范 skill 会出现在会话目录中；
- * 约束正文与时间注入由 DSH 自身的用户级 AGENTS.md 与系统时间提示承担，本模块只负责 skill。
+ * 安装本 bundle 后，十八个通用规范 skill 会出现在会话目录中；约束全文经
+ * ctx.systemPrompt.section() 自动注入，无需手动复制 ~/.dsh/AGENTS.md。
+ * 若用户级 AGENTS.md 已加载同内容约束（按 sha256 去重），则跳过注入避免重复。
+ * 时间由 DSH 自身注入，本模块不重复。
  */
-import { existsSync } from 'node:fs'
+import { createHash } from 'node:crypto'
+import { existsSync, readFileSync } from 'node:fs'
 import { readFile, readdir } from 'node:fs/promises'
+import os from 'node:os'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 export const name = 'global-user-constraints-skills'
-export const inject = ['skills']
+export const inject = ['skills', 'systemPrompt']
 
 const PROVIDER = 'global-user-constraints'
 const RANK = 700
 const SOURCE = 'bundled'
+const CONSTRAINTS_FILENAME = 'global-user-constraints.md'
+const SECTION_NAME = 'global-user-constraints'
+// 用户全局约束排在部署人格（0）之后、计划策略（500）之前。
+const SECTION_ORDER = 400
 function findPackageRoot() {
   let current = path.dirname(fileURLToPath(import.meta.url))
   for (;;) {
@@ -83,7 +91,51 @@ async function readSkill(file) {
   }
 }
 
+function sha256(data) {
+  return createHash('sha256').update(data).digest('hex')
+}
+
+/** DSH 指令链默认读取的用户级 AGENTS.md 候选。 */
+function userInstructionFiles() {
+  const home = os.homedir()
+  const dshHome = process.env.DSH_HOME || path.join(home, '.dsh')
+  const agentsHome = process.env.DSH_AGENTS_HOME || path.join(home, '.agents')
+  return [path.join(dshHome, 'AGENTS.md'), path.join(agentsHome, 'AGENTS.md')]
+}
+
+/**
+ * 计算要注入的约束 section；约束文件缺失或用户级 AGENTS.md 已含同内容时返回 undefined。
+ * @param {string} pkgRoot 包根目录（含 rules/ 与 package.json）
+ * @returns {{name:string, order:number, text:string, interpolate:boolean}|undefined}
+ */
+export function constraintsSection(pkgRoot) {
+  const constraintsPath = path.join(pkgRoot, 'rules', CONSTRAINTS_FILENAME)
+  let data
+  try {
+    data = readFileSync(constraintsPath)
+  } catch {
+    return undefined
+  }
+  const digest = sha256(data)
+  for (const file of userInstructionFiles()) {
+    try {
+      if (existsSync(file) && sha256(readFileSync(file)) === digest) return undefined
+    } catch {
+      // 候选文件不可读时继续检查下一个，不阻断注入。
+    }
+  }
+  return {
+    name: SECTION_NAME,
+    order: SECTION_ORDER,
+    text: data.toString('utf8').trim(),
+    interpolate: false,
+  }
+}
+
 export function apply(ctx) {
+  const section = constraintsSection(findPackageRoot())
+  if (section) ctx.systemPrompt.section(section)
+
   ctx.skills.registerProvider(() => ({
     name: PROVIDER,
     async list() {

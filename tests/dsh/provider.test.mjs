@@ -1,23 +1,28 @@
 import assert from 'node:assert/strict'
-import { readdir } from 'node:fs/promises'
+import { mkdtemp, mkdir, readdir, writeFile } from 'node:fs/promises'
+import os from 'node:os'
 import path from 'node:path'
 import test from 'node:test'
 import { fileURLToPath } from 'node:url'
 
-import { apply } from '../../plugins/dsh/src/index.js'
+import { apply, constraintsSection } from '../../plugins/dsh/src/index.js'
 
 const PACKAGE_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..')
 
 function createContext() {
   const factories = []
-  const ctx = { skills: { registerProvider(factory) { factories.push(factory) } } }
+  const sections = []
+  const ctx = {
+    skills: { registerProvider(factory) { factories.push(factory) } },
+    systemPrompt: { section(entry) { sections.push(entry) } },
+  }
   apply(ctx)
   assert.equal(factories.length, 1)
-  return factories[0]()
+  return { provider: factories[0](), sections }
 }
 
 test('list returns the eighteen bundled skills', async () => {
-  const provider = createContext()
+  const { provider } = createContext()
   const candidates = await provider.list()
   const directories = (await readdir(path.join(PACKAGE_ROOT, 'skills'))).filter((name) => !name.startsWith('.'))
   assert.equal(candidates.length, directories.length)
@@ -30,7 +35,7 @@ test('list returns the eighteen bundled skills', async () => {
 })
 
 test('get loads the markdown body without frontmatter', async () => {
-  const provider = createContext()
+  const { provider } = createContext()
   const [candidate] = await provider.list()
   const definition = await provider.get(candidate)
   assert.ok(definition)
@@ -40,7 +45,52 @@ test('get loads the markdown body without frontmatter', async () => {
 })
 
 test('get returns undefined for a missing file', async () => {
-  const provider = createContext()
+  const { provider } = createContext()
   const definition = await provider.get({ locator: { file: path.join(PACKAGE_ROOT, 'skills', 'missing', 'SKILL.md') } })
   assert.equal(definition, undefined)
+})
+
+test('constraintsSection dedupes against a matching user AGENTS.md', async () => {
+  const tmp = await mkdtemp(path.join(os.tmpdir(), 'dsh-constraints-'))
+  const rulesDir = path.join(tmp, 'rules')
+  await mkdir(rulesDir)
+  const body = '# 测试约束\n\nMARKER-dsh-dedupe-5e2d\n'
+  await writeFile(path.join(rulesDir, 'global-user-constraints.md'), body, 'utf8')
+
+  const previousHome = process.env.DSH_HOME
+  process.env.DSH_HOME = path.join(tmp, 'dsh-home')
+  await mkdir(process.env.DSH_HOME, { recursive: true })
+  await writeFile(path.join(process.env.DSH_HOME, 'AGENTS.md'), body, 'utf8')
+  try {
+    assert.equal(constraintsSection(tmp), undefined)
+  } finally {
+    if (previousHome === undefined) delete process.env.DSH_HOME
+    else process.env.DSH_HOME = previousHome
+  }
+})
+
+test('constraintsSection returns undefined when the rules file is missing', () => {
+  const tmp = path.join(os.tmpdir(), 'dsh-constraints-missing-dir')
+  assert.equal(constraintsSection(tmp), undefined)
+})
+
+test('constraintsSection preserves literal text including frontmatter and placeholders', async () => {
+  const tmp = await mkdtemp(path.join(os.tmpdir(), 'dsh-constraints-'))
+  const rulesDir = path.join(tmp, 'rules')
+  await mkdir(rulesDir)
+  const body = '---\nname: x\n---\n\n正文 {{不存在的变量}}。\n'
+  await writeFile(path.join(rulesDir, 'global-user-constraints.md'), body, 'utf8')
+  const previousHome = process.env.DSH_HOME
+  process.env.DSH_HOME = path.join(tmp, 'dsh-home')
+  try {
+    const section = constraintsSection(tmp)
+    assert.ok(section)
+    assert.equal(section.interpolate, false)
+    // interpolate: false 下原文原样保留，包括 frontmatter 与 {{}} 占位符。
+    assert.match(section.text, /\{\{不存在的变量\}\}/u)
+    assert.match(section.text, /^---/u)
+  } finally {
+    if (previousHome === undefined) delete process.env.DSH_HOME
+    else process.env.DSH_HOME = previousHome
+  }
 })
