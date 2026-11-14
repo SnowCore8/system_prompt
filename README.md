@@ -3,7 +3,7 @@
 本仓库维护用户全局约束与十一个 skill（`system-prompt-authoring`，以及命名、注释、文档、代码风格、接口与数据、测试与质量、版本控制与协作、发布与运维、安全与合规、仓库治理十项通用规范），以及打包它们的用户级 Qoder 插件。约束正文与插件源是唯一真源，不另建副本；规范正文只有中文一份。
 改约束、skill 或插件前先读本文件。维护者：仓库所有者。
 插件的使用者文档（规则激活、hook、边界）见插件 [README](plugins/global-user-constraints/README.md)。
-DSH 从仓库根 `AGENTS.md` 加载本仓库维护约定，并从 `.dsh/skills/` 发现 skill；用户全局约束由 Qoder 插件规则激活或用户级指令加载，不作为项目指令自动加载。
+支持 `AGENTS.md` 的代理（DSH、Qwen 等）从仓库根 `AGENTS.md` 加载约束正文；DSH 另从 `.dsh/skills/` 发现 skill。项目维护约定见 `CONTRIBUTING.md`。Qoder 按插件 README 的「规则激活」加载。
 
 ## 目录
 
@@ -12,10 +12,11 @@ DSH 从仓库根 `AGENTS.md` 加载本仓库维护约定，并从 `.dsh/skills/`
 | `plugins/global-user-constraints/` | 用户级 Qoder 插件包 |
 | `plugins/marketplace.json` | 市场描述文件，承载 `category`/`tags` 等市场字段 |
 | `rules/global-user-constraints.md` | 用户全局约束正文（唯一规范源） |
-| `AGENTS.md` | 本仓库项目维护约定，DSH 工作区指令入口 |
+| `AGENTS.md` | 约束正文入口，软链指向 `rules/global-user-constraints.md` |
+| `CONTRIBUTING.md` | 本仓库项目维护约定 |
 | `.dsh/skills/` | DSH 项目级 skill 入口，软链到插件内十一个 skill |
 | `.qoder/` | 统一入口；`rules`、`plugins` 软链指向根级同名目录 |
-| `.qwen` / `.qoder-cn` | 指向 `.qoder` 的软链 |
+| `.qoder-cn` | 指向 `.qoder` 的软链 |
 | `scripts/` | `dist.sh` 打包；`check.sh` 全量校验 |
 | `GLOSSARY.md` | 术语与写法约定 |
 
@@ -24,7 +25,7 @@ DSH 从仓库根 `AGENTS.md` 加载本仓库维护约定，并从 `.dsh/skills/`
 1. 改约束：编辑 `rules/global-user-constraints.md`（唯一规范源）。
 2. 改 skill：编辑 `plugins/global-user-constraints/skills/` 下对应的 skill。
 3. 只改软链目标，不另建副本。
-4. 根 `AGENTS.md` 是本仓库项目维护约定，不放个人约束正文。
+4. 根 `AGENTS.md` 是约束正文入口，不改指向；项目维护约定写 `CONTRIBUTING.md`。
 
 ## 软链约定
 
@@ -35,8 +36,8 @@ DSH 从仓库根 `AGENTS.md` 加载本仓库维护约定，并从 `.dsh/skills/`
 
 ## DeepSeek Harness 适配
 
-- 指令：DSH 的 `dsh-agent-instructions` 自动加载根 `AGENTS.md`，内容是本仓库维护约定。
-- 个人约束：约束正文保留在 `rules/global-user-constraints.md`，需要自动加载时由用户级 `~/.dsh/AGENTS.md` 或 Qoder 插件规则激活提供；仓库不复制第二份。
+- 指令：DSH 的 `dsh-agent-instructions` 自动加载根 `AGENTS.md`，内容即约束正文；Qwen 等其他读 `AGENTS.md` 的代理走同一入口。
+- 项目约定：`CONTRIBUTING.md` 记录本仓库的维护规则，不由代理自动加载。Qwen 不支持 `.qwen/rules`，因此仓库不保留 `.qwen` 入口。
 - skill：DSH 的 `dsh-skill-filesystem` 扫描项目根 `.dsh/skills`；该目录用相对软链指向插件内十一个 skill，不复制第二份源。文件变更由 watcher 自动生效，无需重启。
 - 校验：`scripts/check.sh` 的「DSH 适配」段检查软链可解析、`SKILL.md` 存在且 frontmatter `name` 与目录名一致。
 

@@ -20,6 +20,7 @@
 - DeepSeek Harness 适配：新增 `.dsh/skills/` 项目级入口，以相对软链暴露插件内十一个 skill；`scripts/check.sh` 增加 DSH 适配校验。
 - 软链治理：`scripts/check.sh` 增加全量软链校验（必须入库、相对路径、目标在仓库内且存在、不指向另一软链或 `.git`、目标已跟踪）；README 补充软链约定。
 - 根 `AGENTS.md` 由约束正文软链改为本仓库项目维护约定；用户全局约束保留在 `rules/`，不再作为 DSH 项目指令自动加载，需要时由用户级指令或 Qoder 插件规则激活提供。
+- 入口修正：删除 `.qwen` 软链（Qwen 不读 `rules/`）；根 `AGENTS.md` 恢复为约束正文入口，项目维护约定移至 `CONTRIBUTING.md`。
 
 **变更**
 
