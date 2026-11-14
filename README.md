@@ -3,7 +3,7 @@
 本仓库维护用户全局约束与十一个 skill（`system-prompt-authoring`，以及命名、注释、文档、代码风格、接口与数据、测试与质量、版本控制与协作、发布与运维、安全与合规、仓库治理十项通用规范），以及打包它们的用户级 Qoder 插件。约束正文与插件源是唯一真源，不另建副本；规范正文只有中文一份。
 改约束、skill 或插件前先读本文件。维护者：仓库所有者。
 插件的使用者文档（规则激活、hook、边界）见插件 [README](plugins/global-user-constraints/README.md)。
-DSH 从仓库根 `AGENTS.md` 加载本约束；Qoder 按插件 README 的「规则激活」加载。
+DSH 从仓库根 `AGENTS.md` 加载本约束，并从 `.dsh/skills/` 发现 skill；Qoder 按插件 README 的「规则激活」加载。
 
 ## 目录
 
@@ -13,6 +13,7 @@ DSH 从仓库根 `AGENTS.md` 加载本约束；Qoder 按插件 README 的「规�
 | `plugins/marketplace.json` | 市场描述文件，承载 `category`/`tags` 等市场字段 |
 | `rules/global-user-constraints.md` | 用户全局约束正文（唯一规范源） |
 | `AGENTS.md` | DSH 工作区指令入口，软链指向 `rules/global-user-constraints.md` |
+| `.dsh/skills/` | DSH 项目级 skill 入口，软链到插件内十一个 skill |
 | `.qoder/` | 统一入口；`rules`、`plugins` 软链指向根级同名目录 |
 | `.qwen` / `.qoder-cn` | 指向 `.qoder` 的软链 |
 | `scripts/` | `dist.sh` 打包；`check.sh` 全量校验 |
@@ -24,6 +25,12 @@ DSH 从仓库根 `AGENTS.md` 加载本约束；Qoder 按插件 README 的「规�
 2. 改 skill：编辑 `plugins/global-user-constraints/skills/` 下对应的 skill。
 3. 只改软链目标，不另建副本。
 
+## DeepSeek Harness 适配
+
+- 指令：DSH 的 `dsh-agent-instructions` 自动加载根 `AGENTS.md`，内容指向 `rules/global-user-constraints.md`。
+- skill：DSH 的 `dsh-skill-filesystem` 扫描项目根 `.dsh/skills`；该目录用相对软链指向插件内十一个 skill，不复制第二份源。文件变更由 watcher 自动生效，无需重启。
+- 校验：`scripts/check.sh` 的「DSH 适配」段检查软链可解析、`SKILL.md` 存在且 frontmatter `name` 与目录名一致。
+
 ## 验证
 
 ```bash
@@ -31,7 +38,7 @@ python3 -m pip install -r requirements-dev.txt
 scripts/check.sh
 ```
 
-`scripts/check.sh` 校验全部未忽略的 Markdown，并运行 skill 与 hook 测试、shellcheck 与 JSON 解析；`qoderclicn` 存在时再跑插件校验。
+`scripts/check.sh` 校验全部未忽略的 Markdown，并运行 skill 与 hook 测试、shellcheck、JSON 解析与 DSH 适配检查；`qoderclicn` 存在时再跑插件校验。
 
 Markdown 校验只覆盖格式；各 skill 的内容规则按各自 `SKILL.md` 的人工核对清单检查，`MD-*` 规则只覆盖 `check.py` 的格式项。
 插件校验用 `qoderclicn` 而非入口脚本 `qodercn`：后者把首参当路径判断，仓库根有 `plugins/` 目录，会被当成 IDE 目标。
