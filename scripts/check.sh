@@ -242,6 +242,18 @@ if not dsh.get("engines", {}).get("dsh"):
     problems.append("DSH bundle 缺少 engines.dsh")
 if (dsh.get("publishConfig") or {}).get("access") != "public":
     problems.append("DSH bundle 缺少 npm 公开包 publishConfig")
+if not (packages["qwen"] / "constraints/global-user-constraints.md").is_file():
+    problems.append("Qwen 包缺少 constraints/global-user-constraints.md")
+if (packages["qwen"] / "rules").exists():
+    problems.append("Qwen 包不应包含 rules/（Qwen 会按条件规则扫描）")
+if not (packages["qoder"] / "rules/global-user-constraints.md").is_file():
+    problems.append("Qoder 包缺少 rules/global-user-constraints.md")
+for package_name in ("qoder", "qwen"):
+    for test_file in (packages[package_name] / "scripts").glob("test_*"):
+        problems.append(f"{package_name} 包含开发测试: {test_file.name}")
+for required_dir in ("skills", "rules"):
+    if not (root / required_dir).is_dir():
+        problems.append(f"缺少 {required_dir}/")
 expected_links = {
     "qoder": {"skills": "skills", "rules": "rules", "commands": "shared/commands", "scripts": "shared/scripts"},
     "qwen": {"skills": "skills", "constraints": "rules", "commands": "shared/commands", "scripts": "shared/scripts"},

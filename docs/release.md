@@ -24,6 +24,7 @@
 6. GitHub Actions 的 `release` 工作流会重跑校验、构建 zip 与 SHA256，把 DSH bundle 发布到
    npm 公共 registry，并把三个 zip 挂到 Release；需要仓库 secret `NPM_TOKEN`，包版本必须新。
 7. 用 `sha256sum -c global-user-constraints-<version>.sha256` 核对下载的制品。
+8. GitHub Packages 不再发布，旧包停在 0.7.1；npm 是唯一发布通道。
 
 本地出包可用 `scripts/dist.sh --require-tag`，要求 HEAD 正好带有 `v<version>` tag。
 

@@ -75,7 +75,7 @@ DeepSeek Harness（DSH）的三个插件包。`rules/`、`skills/` 与 `shared/`
   `ctx.skills.registerProvider`，把十一个 skill 提供给任意 profile。
 - 安装：发布流水线把根包发到 npm 公共 registry，直接
   `pnpm dsh plugin --profile web add @snowcore8/dsh-global-user-constraints@<版本>`，
-  插件页能检测到更新。也可以从 GitHub 源安装（tag 方式不会检测更新）：
+  插件页能检测到更新。GitHub Packages 上的旧包停在 0.7.1，0.8.0 起只发 npm，不要从 GitHub Packages 安装。也可以从 GitHub 源安装（tag 方式不会检测更新）：
   `pnpm dsh plugin --profile web add "github:SnowCore8/system_prompt#v<版本>"`。
   细节见 [plugins/dsh/README.md](plugins/dsh/README.md)。
 - 约束：DSH 的用户级指令链读取 `~/.dsh/AGENTS.md`，把 `rules/global-user-constraints.md`
