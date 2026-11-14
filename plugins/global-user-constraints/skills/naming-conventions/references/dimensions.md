@@ -1,343 +1,325 @@
-# Naming Dimensions
+# 命名维度
 
-Use this file with `SKILL.md`. Each section gives the pattern, examples, and edge cases for one artifact. When a
-project already has a convention, read it first and apply the higher-precedence rule; this file supplies the default
-and the reasoning.
+配合 `SKILL.md` 使用本文件。每一节给出一种产物的模式、示例与边界情况。项目已有约定时，先读它并应用
+优先级更高的规则；本文件提供默认值与理由。
 
-## 1. Files and Directories
+## 1. 文件与目录
 
-- Use lower case; choose one case per language: `snake_case` for Python and Rust modules, `kebab-case` for web
-  modules, assets, and docs, `PascalCase` only where the language expects it (Java, C#, Kotlin, Swift types).
-- Name a file after its primary export or responsibility, not its layer alone: `user_repository.py`, not `db.py`;
-  `billing/invoice_calculator.go`, not `helpers.go`.
-- Directories use plural nouns for collections (`users/`, `orders/`) and singular nouns for one feature
-  (`billing/`, `checkout/`). Avoid `misc/`, `common/`, `utils/` unless the project documents their boundary.
-- No spaces, no version suffixes (`v2` is for API versions, not file copies), no `final`, `new`, or `old`.
-- Test files mirror the unit name and use the language suffix: `user_service_test.py`, `UserServiceTest.java`,
-  `user-service.test.ts`, `user_service_test.go`.
-- Fixtures live in `fixtures/` or `testdata/`; snapshots in `__snapshots__/` or `snapshots/`; golden files in
-  `golden/`.
-- Migrations are timestamped and ordered: `20261114093000_add_order_status.sql`.
-- Static assets are kebab-case, include scale or size when relevant, and never encode a campaign or a person:
-  `hero-image@2x.png`, `icon-close.svg`, `logo-dark.svg`.
+- 用小写；每种语言选定一种大小写：Python 与 Rust 模块用 `snake_case`，Web 模块、资产与文档用
+  `kebab-case`，只有语言要求时才用 `PascalCase`（Java、C#、Kotlin、Swift 的类型）。
+- 按主要导出或职责命名文件，而不是只按层次命名：`user_repository.py`，而不是 `db.py`；
+  `billing/invoice_calculator.go`，而不是 `helpers.go`。
+- 目录中，集合用复数名词（`users/`、`orders/`），单个功能用单数名词（`billing/`、`checkout/`）。
+  除非项目记录了两者的边界，避免 `misc/`、`common/`、`utils/`。
+- 不含空格，不含版本后缀（`v2` 用于 API 版本，不用于文件副本），不用 `final`、`new` 或 `old`。
+- 测试文件与被测单元同名并使用语言后缀：`user_service_test.py`、`UserServiceTest.java`、
+  `user-service.test.ts`、`user_service_test.go`。
+- fixture 放在 `fixtures/` 或 `testdata/`；快照放在 `__snapshots__/` 或 `snapshots/`；基准文件放在
+  `golden/`。
+- 迁移文件带时间戳并有序：`20261114093000_add_order_status.sql`。
+- 静态资产用 kebab-case，相关时带上倍率或尺寸，绝不编码营销活动或人名：
+  `hero-image@2x.png`、`icon-close.svg`、`logo-dark.svg`。
 
-| Good | Bad | Why |
+| 好 | 差 | 原因 |
 |---|---|---|
-| `order_repository.py` | `repo2.py` | States the concept and responsibility. |
-| `billing/invoice_calculator.go` | `helpers.go` | A grab-bag name attracts unrelated code. |
-| `20261114093000_add_order_status.sql` | `migration.sql` | Ordering and intent are visible. |
-| `user-service.test.ts` | `test1.ts` | Mirrors the unit and the runner convention. |
+| `order_repository.py` | `repo2.py` | 说明概念与职责。 |
+| `billing/invoice_calculator.go` | `helpers.go` | 大杂烩名称会吸引不相关的代码。 |
+| `20261114093000_add_order_status.sql` | `migration.sql` | 顺序与意图可见。 |
+| `user-service.test.ts` | `test1.ts` | 与被测单元和测试运行器的约定一致。 |
 
-## 2. Packages and Namespaces
+## 2. 包与命名空间
 
-- Java and Kotlin: reverse domain, all lower case, no underscores: `com.example.billing`.
-- Python: short lower-case packages, no hyphens: `billing`, `billing.invoices`.
-- Go: short lower-case package names, no underscores or mixed caps: `billing`.
-- npm: lower-case, scoped when public: `@example/billing`.
-- Rust: `snake_case` modules and crates; avoid a crate and a module with the same name in one path.
-- Name by domain, not by layer: `billing.payments`, not `services.managers`.
-- Avoid stuttering: `billing.Invoice`, not `billing.BillingInvoice`, unless the qualifier disambiguates.
-- Keep the public surface in a named package; put internals in `internal/`, `_private`, or an unexported module.
+- Java 与 Kotlin：反向域名，全小写，不用下划线：`com.example.billing`。
+- Python：简短、小写的包名，不用连字符：`billing`、`billing.invoices`。
+- Go：简短、小写的包名，不用下划线或混合大小写：`billing`。
+- npm：小写，公开时加 scope：`@example/billing`。
+- Rust：模块与 crate 用 `snake_case`；避免同一路径中 crate 与模块同名。
+- 按领域命名，而不是按层次：`billing.payments`，而不是 `services.managers`。
+- 避免名称重复（stuttering）：`billing.Invoice`，而不是 `billing.BillingInvoice`，除非限定词能消除歧义。
+- 把公开接口放在具名包中；内部实现放进 `internal/`、`_private` 或未导出的模块。
 
-| Good | Bad | Why |
+| 好 | 差 | 原因 |
 |---|---|---|
-| `com.example.billing` | `com.example.Billing_App` | Java packages are lower case, no underscores. |
-| `billing.payments` | `services.managers` | Domain names survive refactors; layer names do not. |
-| `internal/parser` | `misc/parser` | `internal` states the visibility contract. |
+| `com.example.billing` | `com.example.Billing_App` | Java 包小写、不用下划线。 |
+| `billing.payments` | `services.managers` | 领域名能经受重构，层次名不能。 |
+| `internal/parser` | `misc/parser` | `internal` 说明了可见性契约。 |
 
-## 3. Modules and Imports
+## 3. 模块与导入
 
-- Module names are nouns for a capability (`billing`, `auth`, `search`) and verbs only for a command module
-  (`bootstrap`, `migrate`).
-- One primary export per file when the language allows it; re-export deliberately and document the public surface.
-- Import aliases are short and unambiguous: `import numpy as np` is conventional; `import user as u` is not.
-- Avoid circular names: `serialization.json` is better than `json.json`; `billing.invoices` is better than
-  `invoices.invoices`.
-- Internal modules use a marker the language supports: `_internal`, `internal`, `private`, or no export.
+- 模块名对能力用名词（`billing`、`auth`、`search`），只有命令模块才用动词（`bootstrap`、`migrate`）。
+- 语言允许时，每个文件一个主要导出；有意再导出，并记录公开接口。
+- 导入别名简短且无歧义：`import numpy as np` 是惯用写法；`import user as u` 不是。
+- 避免循环名称：`serialization.json` 优于 `json.json`；`billing.invoices` 优于 `invoices.invoices`。
+- 内部模块使用语言支持的标记：`_internal`、`internal`、`private`，或不导出。
 
-## 4. Types and Interfaces
+## 4. 类型与接口
 
-- Classes, structs, records, and type aliases use singular noun phrases: `Invoice`, `OrderItem`, `UserId`.
-- An interface names a capability or a role: `Readable`, `UserStore`, `PaymentGateway`. Use `I` only in C# and
-  languages whose convention requires it; do not import it into Python, Go, or Rust.
-- Abstract base classes use a meaningful role, not `Base` as a default: `Repository` or `Storage`, not
-  `BaseRepository` unless the project already uses that pattern.
-- A DTO is a boundary type: `InvoiceDto`, `CreateOrderRequest`, `OrderResponse`. Do not suffix domain types with
-  `Dto`.
-- Generic parameters are short and conventional: `T`, `TKey`, `TValue`, `TResult`; use a descriptive name when the
-  role is not obvious (`TResponse`).
-- Type aliases state the domain meaning: `type UserId = string` (branded if possible), `type Cents = number`.
-- Avoid `Impl`: use the technology or role (`SqlUserRepository`, `InMemoryUserRepository`).
-- Do not encode nullability or optionality in the type name; the type system carries it (`User | null`).
+- 类、结构体、record 与类型别名用单数名词短语：`Invoice`、`OrderItem`、`UserId`。
+- 接口命名能力或角色：`Readable`、`UserStore`、`PaymentGateway`。只在 C# 及其约定要求的语言中使用
+  `I` 前缀；不要把它带进 Python、Go 或 Rust。
+- 抽象基类使用有意义的角色，而不是默认的 `Base`：`Repository` 或 `Storage`，除非项目已在使用该模式，
+  否则不要用 `BaseRepository`。
+- DTO 是边界类型：`InvoiceDto`、`CreateOrderRequest`、`OrderResponse`。不要给领域类型加 `Dto` 后缀。
+- 泛型参数简短且符合惯例：`T`、`TKey`、`TValue`、`TResult`；角色不明显时用描述性名称（`TResponse`）。
+- 类型别名说明领域含义：`type UserId = string`（尽可能使用品牌类型）、`type Cents = number`。
+- 避免 `Impl`：改用技术或角色（`SqlUserRepository`、`InMemoryUserRepository`）。
+- 不要在类型名中编码可空性或可选性；由类型系统表达（`User | null`）。
 
-| Good | Bad | Why |
+| 好 | 差 | 原因 |
 |---|---|---|
-| `UserStore` | `IUserStore` in Python | Python has no `I` convention. |
-| `SqlUserRepository` | `UserRepositoryImpl` | Names the mechanism instead of a meaningless suffix. |
-| `CreateOrderRequest` | `OrderData` | States the boundary and the operation. |
+| `UserStore` | Python 里的 `IUserStore` | Python 没有 `I` 约定。 |
+| `SqlUserRepository` | `UserRepositoryImpl` | 命名机制，而不是无意义的后缀。 |
+| `CreateOrderRequest` | `OrderData` | 说明边界与操作。 |
 
-## 5. Enums and Unions
+## 5. 枚举与联合类型
 
-- Enum types are singular: `OrderStatus`, `PaymentMethod`, not `OrderStatuses`.
-- Members are stable and descriptive: `PENDING`, `PAID`, `REFUNDED` or `Pending`, `Paid`, `Refunded` per language;
-  never `STATUS_1`, `TYPE_A`, or a numeric literal.
-- Two-state enums are usually booleans; use an enum when a third state is plausible or the values are domain terms.
-- Union types and discriminated unions use a `kind` or `type` discriminant with stable lower-case values:
-  `{ kind: "card" | "bank_transfer" }`.
-- Do not use an enum member as a display label; map it to localized text at the presentation boundary.
+- 枚举类型用单数：`OrderStatus`、`PaymentMethod`，而不是 `OrderStatuses`。
+- 成员稳定且描述性强：按语言使用 `PENDING`、`PAID`、`REFUNDED` 或 `Pending`、`Paid`、`Refunded`；
+  绝不用 `STATUS_1`、`TYPE_A` 或数字字面量。
+- 两态枚举通常就是布尔值；第三种状态可能出现，或取值本身就是领域术语时，才用枚举。
+- 联合类型与可辨识联合使用 `kind` 或 `type` 判别字段，取值稳定且小写：
+  `{ kind: "card" | "bank_transfer" }`。
+- 不要用枚举成员充当显示标签；在表现层边界把它映射为本地化文本。
 
-## 6. Functions and Methods
+## 6. 函数与方法
 
-- Use a verb phrase that states the effect: `sendInvoice`, `parseConfig`, `listActiveUsers`, `calculateTotal`.
-- A pure read is a noun or a `get` accessor per language: `user` / `getUser`; an I/O read is `fetchUser`, `loadUser`,
-  or `findUser`; a write is `saveUser`, `updateUser`, `deleteUser`.
-- Predicates start with `is`, `has`, `can`, `should`, or `needs` and return a boolean; `validate` returns a result or
-  throws, `assert` throws on failure.
-- Factories are `createX` or `XFactory`; builders are `XBuilder`; converters are `toX` and `fromX`; parsers are
-  `parseX`; formatters are `formatX`.
-- Async naming follows the language: C# uses an `Async` suffix, JavaScript does not, Python relies on `async def`.
-- One function, one action. If the name needs `and`, split the function.
-- Avoid `do`, `handle`, `process`, `run`, `manage`, and `execute` without an object: `handlePaymentFailure`, not
-  `handle`.
+- 使用说明效果的动词短语：`sendInvoice`、`parseConfig`、`listActiveUsers`、`calculateTotal`。
+- 纯读取按语言用名词或 `get` 访问器：`user` / `getUser`；I/O 读取用 `fetchUser`、`loadUser` 或
+  `findUser`；写入用 `saveUser`、`updateUser`、`deleteUser`。
+- 谓词以 `is`、`has`、`can`、`should` 或 `needs` 开头并返回布尔值；`validate` 返回结果或抛出异常，
+  `assert` 在失败时抛出异常。
+- 工厂为 `createX` 或 `XFactory`；构建器为 `XBuilder`；转换器为 `toX` 与 `fromX`；解析器为 `parseX`；
+  格式化器为 `formatX`。
+- 异步命名遵循语言：C# 用 `Async` 后缀，JavaScript 不用，Python 依靠 `async def`。
+- 一个函数，一个动作。名称里需要 `and` 时，拆分函数。
+- 避免没有宾语的 `do`、`handle`、`process`、`run`、`manage` 与 `execute`：用 `handlePaymentFailure`，
+  而不是 `handle`。
 
-| Good | Bad | Why |
+| 好 | 差 | 原因 |
 |---|---|---|
-| `listActiveUsers` | `getUsers2` | States the filter and the action. |
-| `fetchInvoice` | `getInvoice` for an HTTP call | `fetch` signals I/O in many codebases. |
-| `parseDuration` | `duration` | The verb distinguishes parsing from formatting. |
+| `listActiveUsers` | `getUsers2` | 说明过滤条件与动作。 |
+| `fetchInvoice` | 对 HTTP 调用使用 `getInvoice` | 在许多代码库中 `fetch` 表示 I/O。 |
+| `parseDuration` | `duration` | 动词区分解析与格式化。 |
 
-## 7. Variables, Parameters, and Fields
+## 7. 变量、参数与字段
 
-- Use nouns; a variable states the value, not its type: `invoice`, `pendingJobs`, `parsedConfig`.
-- Length follows scope: `i` for a loop index is fine; a module-level `i` is not. Public fields and parameters need
-  full words.
-- Parameters use the domain term, not `data`, `value`, `item`, or `input`: `invoice`, `customer`, `timeoutMs`.
-- Avoid temporal names (`temp`, `tmp`, `newUser`, `oldUser`) and numbered names (`user2`); use a qualifier that
-  states the difference (`importedUser`, `cachedUser`).
-- Private fields follow the language: Python `_name`, C# `_camelCase`, Java `camelCase`; do not mix.
-- Optional and nullable values are expressed by the type, not the name; `middleName`, not
-  `optionalMiddleName`.
-- A field that holds a boolean follows the boolean rules below; a field that holds a collection is plural.
+- 使用名词；变量说明值本身，而不是类型：`invoice`、`pendingJobs`、`parsedConfig`。
+- 长度随作用域：循环索引用 `i` 没问题；模块级的 `i` 不行。公开字段与参数需要完整单词。
+- 参数使用领域术语，而不是 `data`、`value`、`item` 或 `input`：`invoice`、`customer`、`timeoutMs`。
+- 避免时间性名称（`temp`、`tmp`、`newUser`、`oldUser`）与编号名称（`user2`）；用说明差异的限定词
+  （`importedUser`、`cachedUser`）。
+- 私有字段遵循语言：Python `_name`、C# `_camelCase`、Java `camelCase`；不要混用。
+- 可选与可空值由类型表达，而不是名称；写 `middleName`，不写 `optionalMiddleName`。
+- 保存布尔值的字段遵循下面的布尔规则；保存集合的字段用复数。
 
-## 8. Constants
+## 8. 常量
 
-- Constants use UPPER_SNAKE_CASE: `MAX_RETRY_COUNT`, `DEFAULT_TIMEOUT_MS`, `HTTP_PORT`.
-- Include the unit when the value has one: `DEFAULT_TIMEOUT_MS`, not `DEFAULT_TIMEOUT`.
-- Name the policy, not the literal: `MAX_RETRY_COUNT` rather than `THREE`; keep magic numbers out of logic.
-- Group constants by domain (`billing/constants.py`) rather than one global `constants` module.
-- A value that changes per environment is configuration, not a constant; name it as a config key.
-- Enum members are not constants; use the enum type for a closed set.
+- 常量用 UPPER_SNAKE_CASE：`MAX_RETRY_COUNT`、`DEFAULT_TIMEOUT_MS`、`HTTP_PORT`。
+- 值带单位时在名称中包含单位：`DEFAULT_TIMEOUT_MS`，而不是 `DEFAULT_TIMEOUT`。
+- 命名策略，而不是字面量：用 `MAX_RETRY_COUNT` 而不是 `THREE`；别让魔法数字进入逻辑。
+- 按领域分组常量（`billing/constants.py`），而不是一个全局的 `constants` 模块。
+- 随环境变化的值是配置，不是常量；按配置键为它命名。
+- 枚举成员不是常量；封闭集合使用枚举类型。
 
-## 9. Booleans and Predicates
+## 9. 布尔值与谓词
 
-- Use a positive prefix: `isEnabled`, `hasChildren`, `canRetry`, `shouldNotify`, `needsReview`.
-- Never use `not`, `no`, or a negative verb unless the negative is the domain term: `isVisible` beats `isNotHidden`.
-- Do not use `flag`, `status`, `check`, or `state` for a boolean; they hide the question being answered.
-- A function named `isX` must return a boolean, not a count, string, or nullable. For three states, use an enum.
-- Name the question, not the implementation: `hasAccess(user, resource)`, not `checkAccessFlag(user, resource)`.
-- Avoid double negatives in conditions; if the negative is required, name the positive and negate at the use site.
+- 使用肯定的前缀：`isEnabled`、`hasChildren`、`canRetry`、`shouldNotify`、`needsReview`。
+- 除非否定词本身就是领域术语，绝不用 `not`、`no` 或否定动词：`isVisible` 胜于 `isNotHidden`。
+- 不要把 `flag`、`status`、`check` 或 `state` 用作布尔值；它们掩盖了正在回答的问题。
+- 名为 `isX` 的函数必须返回布尔值，而不是计数、字符串或可空值。三种状态时，用枚举。
+- 命名问题，而不是实现：`hasAccess(user, resource)`，而不是 `checkAccessFlag(user, resource)`。
+- 条件中避免双重否定；必须使用否定时，给肯定式命名，并在使用处取反。
 
-| Good | Bad | Why |
+| 好 | 差 | 原因 |
 |---|---|---|
-| `isPaid` | `notUnpaid` | One positive read. |
-| `hasExported` | `exportFlag` | States the condition. |
-| `canRetry` | `retryStatus` | A boolean predicate, not a status bag. |
+| `isPaid` | `notUnpaid` | 一次肯定式阅读。 |
+| `hasExported` | `exportFlag` | 说明条件本身。 |
+| `canRetry` | `retryStatus` | 是布尔谓词，不是状态袋。 |
 
-## 10. Collections, Maps, Sets, and Tuples
+## 10. 集合、映射、Set 与元组
 
-- Collections are plural nouns: `users`, `orderItems`, `pendingJobs`; the singular is one element.
-- A map names its key and value: `usersById`, `priceBySku`, `ordersByCustomerId`; avoid `userMap`.
-- A set names its contents: `activeUserIds`, `blockedDomains`; add `Set` only when the distinction from a list
-  matters and is not clear from the type.
-- Tuples and pairs name both sides: `(key, value)`, `(min, max)`, `(start, end)`; avoid `(a, b)` outside a
-  one-line lambda.
-- Loop indices are `i`, `j`, `k`; a named index (`userIndex`) is better when the body is long or nested.
-- Empty and missing are different: `users` may be empty; `user` may be absent. Do not encode that in the name.
-- Do not encode the implementation (`userLinkedList`, `itemArray`); the type states it.
+- 集合用复数名词：`users`、`orderItems`、`pendingJobs`；单数形式表示一个元素。
+- 映射同时命名键与值：`usersById`、`priceBySku`、`ordersByCustomerId`；避免 `userMap`。
+- Set 按其内容命名：`activeUserIds`、`blockedDomains`；只有与列表的区别重要且类型本身看不出来时，
+  才加 `Set`。
+- 元组与配对命名两端：`(key, value)`、`(min, max)`、`(start, end)`；单行 lambda 之外避免 `(a, b)`。
+- 循环索引为 `i`、`j`、`k`；函数体较长或嵌套时，具名索引（`userIndex`）更好。
+- 空与缺失不同：`users` 可以为空；`user` 可以不存在。不要在名称中编码这一区别。
+- 不要编码实现（`userLinkedList`、`itemArray`）；类型已经说明。
 
-## 11. Quantities, Units, Time, Money, Ratios, Ranges
+## 11. 数量、单位、时间、金额、比率与范围
 
-- Every quantity carries its unit when the type does not: `timeout_ms`, `size_bytes`, `weight_kg`, `distance_m`,
-  `temperature_c`.
-- Instants use `<event>_at` in UTC (`created_at`, `paid_at`); dates use `_date`; durations use `_ms` or `_s`.
-  Do not use `timestamp` without a unit or timezone rule.
-- Money uses integer minor units plus an ISO 4217 currency: `amount_cents` and `currency`; never a float.
-- Ratios are 0-1 (`success_ratio`); percentages are 0-100 (`discount_pct`); state the range in the naming table.
-- Ranges name both ends and the inclusion rule: `min_`/`max_`, `start_`/`end_`, `from_`/`to_`; document whether the
-  end is inclusive.
-- Counts use `_count`; totals use `_total`; limits use `_limit`; avoid `num`, `qty`, `amt`.
-- A value that combines quantity and unit in one string is a display value, not a domain value; name it
-  `formatted_duration` and keep the numeric value separate.
+- 类型无法表达时，每个数量都带上单位：`timeout_ms`、`size_bytes`、`weight_kg`、`distance_m`、
+  `temperature_c`。
+- 时刻用 UTC 下的 `<event>_at`（`created_at`、`paid_at`）；日期用 `_date`；时长用 `_ms` 或 `_s`。
+  不要使用没有单位或时区规则的 `timestamp`。
+- 金额使用整数最小单位加 ISO 4217 货币：`amount_cents` 与 `currency`；绝不用浮点数。
+- 比率是 0-1（`success_ratio`）；百分比是 0-100（`discount_pct`）；在命名表中说明范围。
+- 范围同时命名两端与包含规则：`min_`/`max_`、`start_`/`end_`、`from_`/`to_`；记录末端是否包含。
+- 计数用 `_count`；合计用 `_total`；上限用 `_limit`；避免 `num`、`qty`、`amt`。
+- 把数量与单位合并在一个字符串里的值是展示值，不是领域值；命名为 `formatted_duration`，并把数值
+  单独保留。
 
-| Good | Bad | Why |
+| 好 | 差 | 原因 |
 |---|---|---|
-| `timeout_ms` | `timeout` | The unit is part of the contract. |
-| `amount_cents` + `currency` | `amount` | Money without a unit or currency is ambiguous. |
-| `discount_ratio` | `discount` | States the range convention. |
+| `timeout_ms` | `timeout` | 单位是契约的一部分。 |
+| `amount_cents` + `currency` | `amount` | 没有单位或货币的金额含义不明。 |
+| `discount_ratio` | `discount` | 说明了范围约定。 |
 
-## 12. Async, Concurrency, Streams, Callbacks
+## 12. 异步、并发、流与回调
 
-- Follow the language: C# `LoadAsync`, JavaScript `load` (the promise is in the type), Python `async def load`,
-  Rust `load` with a future return type.
-- A callback is `onX` (`onSave`, `onError`); a handler is `handleX`; a listener is `onX` or `XListener`.
-- A lock is `lock` or `mutex`; a guard is `guard`; avoid `lockFlag` and `isLocked` for the lock object.
-- Workers and pools are `worker`, `workerPool`, `queue`, `scheduler`; avoid `thread2` and `jobManager`.
-- Streams are `stream`, `reader`, `writer`, `source`, `sink`; events are `onData`, `onEnd`, `onError`.
-- Do not encode timing or implementation in a name (`delayedTask`, `asyncHelper`); state the role.
-- A future or promise value is `pendingResult` until resolved; do not call an unresolved value `result`.
+- 遵循语言：C# 用 `LoadAsync`，JavaScript 用 `load`（Promise 体现在类型上），Python 用
+  `async def load`，Rust 用 `load` 并返回 future 类型。
+- 回调为 `onX`（`onSave`、`onError`）；处理器为 `handleX`；监听器为 `onX` 或 `XListener`。
+- 锁为 `lock` 或 `mutex`；守卫为 `guard`；锁对象不要用 `lockFlag` 与 `isLocked`。
+- Worker 与池为 `worker`、`workerPool`、`queue`、`scheduler`；避免 `thread2` 与 `jobManager`。
+- 流为 `stream`、`reader`、`writer`、`source`、`sink`；事件为 `onData`、`onEnd`、`onError`。
+- 不要在名称中编码时机或实现（`delayedTask`、`asyncHelper`）；说明角色。
+- future 或 Promise 的值在完成前叫 `pendingResult`；不要把未完成的值叫作 `result`。
 
-## 13. Errors and Results
+## 13. 错误与结果
 
-- Exception classes are specific and end in `Error` or `Exception` per language: `InvoiceNotFoundError`,
-  `PaymentDeclinedError`; avoid a catch-all `AppError` for every failure.
-- Error codes are stable and structured: `ERR_BILLING_INVOICE_NOT_FOUND`; do not reuse a code for two causes.
-- Result types state success and failure: `Result<T, E>`, `Outcome<T>`, `PaymentResult`; fields are `ok`, `value`,
-  `error`.
-- Local error variables are `err` or `error`; `e` is acceptable in a short catch block; never a module-level `e`.
-- Error messages are separate from identifiers; do not put secrets, tokens, or personal data in a message.
-- Wrap an external error with context: `InvoiceSyncError` with a `cause`, not a bare rethrow.
+- 异常类要具体，并按语言以 `Error` 或 `Exception` 结尾：`InvoiceNotFoundError`、
+  `PaymentDeclinedError`；避免用兜底的 `AppError` 表示所有失败。
+- 错误码稳定且有结构：`ERR_BILLING_INVOICE_NOT_FOUND`；不要用一个错误码表示两种原因。
+- 结果类型说明成功与失败：`Result<T, E>`、`Outcome<T>`、`PaymentResult`；字段为 `ok`、`value`、
+  `error`。
+- 局部错误变量为 `err` 或 `error`；短 catch 块里 `e` 可以接受；绝不用模块级的 `e`。
+- 错误消息与标识符分开；消息中不要放机密、令牌或个人数据。
+- 包装外部错误时带上上下文：带 `cause` 的 `InvoiceSyncError`，而不是裸抛出。
 
-## 14. Tests and Test Doubles
+## 14. 测试与测试替身
 
-- Test names state behavior and condition: `test_list_orders_returns_empty_for_new_user`,
-  `should_reject_expired_card`; use the project's runner convention.
-- Test files mirror the unit: `user_service_test.py`, `UserServiceTest.java`, `user-service.test.ts`.
-- Fixtures and factories are explicit: `user_fixture`, `make_user`, `UserFactory`; avoid `data1`, `sample2`.
-- Doubles have precise meanings: `Fake` is a working lightweight implementation, `Stub` returns canned values,
-  `Mock` records or verifies interactions, `Spy` wraps a real object. Do not call a stub `Mock`.
-- Benchmarks use `bench_` or the language convention; property tests follow the framework's discovery convention
-  (pytest and Hypothesis use `test_*`); snapshot files end in `.snap`.
-- Test names must not encode a ticket number as the only description; put the ticket in the body or metadata.
+- 测试名称说明行为与条件：`test_list_orders_returns_empty_for_new_user`、
+  `should_reject_expired_card`；使用项目的测试运行器约定。
+- 测试文件与被测单元同名：`user_service_test.py`、`UserServiceTest.java`、`user-service.test.ts`。
+- fixture 与工厂要显式：`user_fixture`、`make_user`、`UserFactory`；避免 `data1`、`sample2`。
+- 测试替身有精确含义：`Fake` 是可用的轻量实现，`Stub` 返回预设值，`Mock` 记录或验证交互，
+  `Spy` 包装真实对象。不要把 stub 叫作 `Mock`。
+- 基准测试用 `bench_` 或语言约定；属性测试遵循框架的发现约定（pytest 与 Hypothesis 使用
+  `test_*`）；快照文件以 `.snap` 结尾。
+- 测试名称不得只用一个工单号作为描述；把工单号放在函数体或元数据中。
 
-## 15. HTTP, RPC, and GraphQL
+## 15. HTTP、RPC 与 GraphQL
 
-- HTTP paths use plural kebab-case resources: `/v1/order-items`; a subresource nests it:
-  `/v1/orders/{orderId}/items`.
-- Query parameters use one case per API: `created_after`, `page_size`, `sort`, `order`; do not mix `createdAfter`
-  and `created_after` in one API.
-- JSON fields follow the schema case; booleans `is_`/`has_`, timestamps `_at`, identifiers `<entity>_id`.
-- RPC methods are `VerbNoun`: `GetOrder`, `ListOrders`, `CreateOrder`; request and response types are
-  `GetOrderRequest` and `GetOrderResponse`.
-- GraphQL types are PascalCase, fields camelCase, enums UPPER_SNAKE; mutations are verb phrases
-  (`createOrder`) and inputs end in `Input`.
-- API versioning, pagination style, CRUD semantics, and error payload fields are policy owned by
-  api-and-data-conventions; this section defines only the naming grammar.
+- HTTP 路径使用复数 kebab-case 资源：`/v1/order-items`；子资源嵌套其中：
+  `/v1/orders/{orderId}/items`。
+- 查询参数每个 API 使用一种大小写：`created_after`、`page_size`、`sort`、`order`；不要在一个 API
+  中混用 `createdAfter` 与 `created_after`。
+- JSON 字段遵循 schema 的大小写；布尔值 `is_`/`has_`，时间戳 `_at`，标识符 `<entity>_id`。
+- RPC 方法为 `VerbNoun`：`GetOrder`、`ListOrders`、`CreateOrder`；请求与响应类型为
+  `GetOrderRequest` 与 `GetOrderResponse`。
+- GraphQL 类型用 PascalCase，字段用 camelCase，枚举用 UPPER_SNAKE；mutation 用动词短语
+  （`createOrder`），input 以 `Input` 结尾。
+- API 版本化、分页风格、CRUD 语义与错误 payload 字段属于 api-and-data-conventions 的策略；
+  本节只定义命名语法。
 
-## 16. JSON and Serialization
+## 16. JSON 与序列化
 
-- Choose one key case per schema and keep it across producers and consumers; map to the language case only at the
-  boundary.
-- Keys contain no spaces; avoid dots unless they express a namespace; avoid reserved words and leading digits.
-- Booleans use `is_`/`has_`; timestamps use `_at` with RFC 3339; IDs use `<entity>_id`; enums use stable values.
-- Arrays are plural; objects used as maps state the key in the field name (`users_by_id`).
-- Null and absent are different states; document which one means "missing" and never use the string `"null"`.
-- Do not encode types in keys (`str_name`, `int_count`); do not wrap everything in `data` unless the protocol
-  requires it.
-- A discriminator is `type` or `kind` with stable lower-case values; do not put a display label in the payload.
+- 每个 schema 选定一种键大小写，并在生产者与消费者之间保持一致；只在边界处映射为语言的大小写。
+- 键中不含空格；除非表达命名空间，避免点号；避免保留字与前导数字。
+- 布尔值用 `is_`/`has_`；时间戳用 `_at` 并遵循 RFC 3339；ID 用 `<entity>_id`；枚举使用稳定取值。
+- 数组用复数；用作映射的对象在字段名中写出键（`users_by_id`）。
+- null 与缺失是不同状态；记录哪一种表示「缺失」，并且绝不使用字符串 `"null"`。
+- 不要在键中编码类型（`str_name`、`int_count`）；除非协议要求，不要把一切包进 `data`。
+- 判别字段为 `type` 或 `kind`，取值稳定且小写；不要把显示标签放进 payload。
 
-## 17. Databases and Migrations
+## 17. 数据库与迁移
 
-- Tables are plural snake_case: `orders`, `order_items`; columns are singular: `created_at`, `customer_id`.
-- A primary key is `id` unless the table uses a natural key; a foreign key is `<referenced_table>_id`.
-- A join table is `<a>_<b>` in alphabetical order: `order_product`, not `product_order_link`.
-- Indexes are `idx_<table>_<columns>`; unique constraints `uq_<table>_<columns>`; foreign keys
-  `fk_<table>_<referenced_table>`; checks `ck_<table>_<rule>`.
-- Views are `v_<name>`; materialized views `mv_<name>`; schemas are lower case.
-- Audit columns are `created_at`, `updated_at`, `created_by`, `updated_by`; soft delete is `deleted_at`.
-- Boolean columns are `is_`/`has_`; timestamps are `_at`; money is `<amount>_cents` plus `currency`.
-- Migration files are timestamped and state one logical change: `20261114093000_add_order_status.sql`;
-  schema-change procedure and migration safety belong to api-and-data-conventions.
+- 表用复数 snake_case：`orders`、`order_items`；列用单数：`created_at`、`customer_id`。
+- 主键为 `id`，除非表使用自然键；外键为 `<referenced_table>_id`。
+- 连接表按字母顺序写成 `<a>_<b>`：`order_product`，而不是 `product_order_link`。
+- 索引为 `idx_<table>_<columns>`；唯一约束为 `uq_<table>_<columns>`；外键为
+  `fk_<table>_<referenced_table>`；检查约束为 `ck_<table>_<rule>`。
+- 视图为 `v_<name>`；物化视图为 `mv_<name>`；schema 名小写。
+- 审计列为 `created_at`、`updated_at`、`created_by`、`updated_by`；软删除为 `deleted_at`。
+- 布尔列为 `is_`/`has_`；时间戳为 `_at`；金额为 `<amount>_cents` 加 `currency`。
+- 迁移文件带时间戳并只陈述一次逻辑变更：`20261114093000_add_order_status.sql`；
+  schema 变更流程与迁移安全性属于 api-and-data-conventions。
 
-## 18. Configuration and Environment
+## 18. 配置与环境
 
-- Environment variables are UPPER_SNAKE_CASE with an application prefix: `APP_DATABASE_URL`, `APP_LOG_LEVEL`,
-  `APP_HTTP_TIMEOUT_MS`.
-- The name states the purpose, not the value or the provider: `APP_DATABASE_URL`, not `APP_POSTGRES_1`.
-- No secret value in a name; the name may say `PASSWORD` or `TOKEN`, but the value comes from a secret store.
-- Config keys use one separator per system: `http.timeout_ms` or `http_timeout_ms`; do not mix.
-- Feature flags are `ff_<domain>_<name>` or `<domain>.<flag>`; an environment suffix belongs in the value, not the
-  name.
-- Units and allowed values appear in the name or its documentation; defaults, value ranges, and restart semantics
-  belong to code-style-conventions.
+- 环境变量用带应用前缀的 UPPER_SNAKE_CASE：`APP_DATABASE_URL`、`APP_LOG_LEVEL`、
+  `APP_HTTP_TIMEOUT_MS`。
+- 名称说明用途，而不是取值或提供方：用 `APP_DATABASE_URL`，而不是 `APP_POSTGRES_1`。
+- 名称中不含机密值；名称可以出现 `PASSWORD` 或 `TOKEN`，但取值来自机密存储。
+- 配置键每个系统只用一种分隔符：`http.timeout_ms` 或 `http_timeout_ms`；不要混用。
+- 功能开关为 `ff_<domain>_<name>` 或 `<domain>.<flag>`；环境后缀属于取值，不属于名称。
+- 单位与允许值出现在名称或其文档中；默认值、取值范围与重启语义属于 code-style-conventions。
 
 ## 19. CLI
 
-- Commands are lower-case verbs (`create`, `list`, `delete`) and subcommands are lower-case nouns
-  (`app user create`); pick one ordering and keep it.
-- Flags are kebab-case: `--dry-run`, `--output-format`, `--no-color`; a short flag is one letter and never
-  ambiguous (`-v` must not mean both verbose and version).
-- Boolean flags default to false and use `--no-` to negate when the positive is the default.
-- Positional arguments are documented as `<required>` and `[optional]`; their names match the help text.
-- Exit codes are documented; `0` success, non-zero failure; do not encode a cause only in the number without a
-  message.
-- Environment variables for a CLI use the same `APP_` prefix and the same names as the service.
+- 命令用小写动词（`create`、`list`、`delete`），子命令用小写名词（`app user create`）；选定一种
+  顺序并保持一致。
+- 标志用 kebab-case：`--dry-run`、`--output-format`、`--no-color`；短标志只有一个字母且绝不产生
+  歧义（`-v` 不能同时表示 verbose 与 version）。
+- 布尔标志默认为 false，肯定式为默认值时用 `--no-` 取反。
+- 位置参数按 `<required>` 与 `[optional]` 记录；其名称与帮助文本一致。
+- 退出码要记录：`0` 成功，非零失败；不要只在数字中编码原因而不给消息。
+- CLI 的环境变量使用与服务相同的 `APP_` 前缀与相同名称。
 
-## 20. Logs, Events, Metrics, and Traces
+## 20. 日志、事件、指标与追踪
 
-- Log fields are stable snake_case: `timestamp`, `level`, `event`, `service`, `trace_id`, `span_id`, `user_id`;
-  `message` is free text.
-- Events are `object.action` in the past tense: `order.created`, `invoice.paid`; payload fields match the API
-  schema.
-- Metrics are `domain_operation_unit`: `http_request_duration_ms`, `queue_depth`, `cache_hits_total`; counters end
-  in `_total`, histograms carry the unit, gauges state the current value.
-- Trace identifiers are `trace_id` and `span_id`; telemetry design, including metric labels and cardinality, belongs
-  to release-operations-conventions.
-- Logs carry a stable `error_code`; log content policy, including secrets and personal data, belongs to
-  code-style-conventions.
-- Event field names stay stable within one schema version; event-schema versioning belongs to
-  api-and-data-conventions.
+- 日志字段是稳定的 snake_case：`timestamp`、`level`、`event`、`service`、`trace_id`、`span_id`、
+  `user_id`；`message` 是自由文本。
+- 事件为过去时的 `object.action`：`order.created`、`invoice.paid`；payload 字段与 API schema 一致。
+- 指标为 `domain_operation_unit`：`http_request_duration_ms`、`queue_depth`、`cache_hits_total`；
+  计数器以 `_total` 结尾，直方图带单位，gauge 说明当前值。
+- 追踪标识符为 `trace_id` 与 `span_id`；遥测设计（包括指标标签与基数）属于
+  release-operations-conventions。
+- 日志带稳定的 `error_code`；日志内容策略（包括机密与个人数据）属于 code-style-conventions。
+- 事件字段名在同一 schema 版本内保持稳定；事件 schema 版本化属于 api-and-data-conventions。
 
-## 21. Assets, CSS, HTML, and i18n
+## 21. 资产、CSS、HTML 与 i18n
 
-- Asset files are kebab-case and include scale or dimensions when relevant: `hero-image@2x.png`,
-  `icon-close.svg`, `logo-dark.svg`.
-- CSS classes are kebab-case; BEM is `block__element--modifier` (`order-item__price--discounted`); utility classes
-  follow the framework's prefix.
-- IDs are reserved for anchors and JavaScript hooks; a JS hook uses `js-` (`js-order-form`) and is not styled.
-- Custom properties are `--color-bg`, `--space-md`, `--font-body`; no unexplained abbreviations.
-- HTML data attributes are `data-` plus kebab-case (`data-order-id`); form field names follow the backend schema.
-- i18n keys are dot-separated lower case: `orders.list.empty`, `checkout.payment.declined`; plural keys use the
-  platform suffixes (`_one`, `_other`); never use an English sentence as a key.
-- Accessible names match the visible label; alt text describes the image, not its filename.
+- 资产文件用 kebab-case，相关时包含倍率或尺寸：`hero-image@2x.png`、`icon-close.svg`、
+  `logo-dark.svg`。
+- CSS 类用 kebab-case；BEM 为 `block__element--modifier`（`order-item__price--discounted`）；
+  工具类遵循框架前缀。
+- ID 保留给锚点与 JavaScript 钩子；JS 钩子使用 `js-`（`js-order-form`）且不参与样式。
+- 自定义属性为 `--color-bg`、`--space-md`、`--font-body`；不要无法解释的缩写。
+- HTML data 属性为 `data-` 加 kebab-case（`data-order-id`）；表单字段名遵循后端 schema。
+- i18n 键为点分隔的小写：`orders.list.empty`、`checkout.payment.declined`；复数键使用平台后缀
+  （`_one`、`_other`）；绝不用英文句子作键。
+- 可访问名称与可见标签一致；alt 文本描述图片内容，而不是文件名。
 
-## 22. Commits, Branches, and Tags
+## 22. 提交、分支与标签
 
-- A commit is `type(scope): imperative summary`; types are `feat`, `fix`, `refactor`, `docs`, `test`, `chore`,
-  `perf`, `build`, and `ci`.
-- The summary is imperative and lower case after the colon: `fix(invoice): reject expired cards`, not
-  `Fixed the bug`.
-- A branch is `type/short-description`: `feat/order-export`, `fix/expired-card`; lower case, hyphens, no spaces.
-- A tag is SemVer with a `v` prefix: `v1.4.0`, `v1.4.0-rc.1`; never a date or a build number as the release tag.
-- Commit body and footer composition, pull request titles, merge gating, and history policy belong to
-  vcs-collaboration-conventions; this section defines only the names.
+- 提交为 `type(scope): imperative summary`；类型有 `feat`、`fix`、`refactor`、`docs`、`test`、
+  `chore`、`perf`、`build` 与 `ci`。
+- 摘要用祈使句，冒号后小写：`fix(invoice): reject expired cards`，而不是 `Fixed the bug`。
+- 分支为 `type/short-description`：`feat/order-export`、`fix/expired-card`；小写、连字符、无空格。
+- 标签为带 `v` 前缀的 SemVer：`v1.4.0`、`v1.4.0-rc.1`；绝不用日期或构建号作为发布标签。
+- 提交正文与脚注的构成、pull request 标题、合并门禁与历史策略属于 vcs-collaboration-conventions；
+  本节只定义名称。
 
-## 23. Feature Flags and Deprecation
+## 23. 功能开关与弃用
 
-- A flag name states its scope and purpose: `ff_checkout_new_tax` or `checkout.new_tax`. Lifecycle rules, including
-  the default state, owner, and removal date, belong to release-operations-conventions.
-- Do not put an environment or a customer name in the flag name; that belongs in the targeting rules.
-- A deprecated name gets a removal plan: prefer an annotation or a deprecation metadata field; if a prefix is
-  required, use `deprecated_` or `legacy_` and record the replacement.
-- Keep an alias for one release at most; document the mapping; remove the alias when the deprecation window ends.
-- Never keep two live names for the same concept indefinitely; that is a collision, not compatibility.
+- 开关名称说明其范围与用途：`ff_checkout_new_tax` 或 `checkout.new_tax`。生命周期规则（包括默认
+  状态、负责人与移除日期）属于 release-operations-conventions。
+- 不要把环境或客户名放进开关名称；那属于定向规则。
+- 被弃用的名称要有移除计划：优先用注解或弃用元数据字段；必须用前缀时，使用 `deprecated_` 或
+  `legacy_` 并记录替代项。
+- 别名最多保留一个发布周期；记录映射关系；弃用窗口结束时移除别名。
+- 绝不无限期保留同一概念的两个在用名称；那是冲突，不是兼容性。
 
-## 24. Abbreviations, Acronyms, and Plurals
+## 24. 缩写、首字母缩略词与复数
 
-- Keep a short allowlist per project: `id`, `url`, `http`, `api`, `cpu`, `db`, `ui`, `cli`, `json`, `xml`, `sql`,
-  `html`, `css`; expand everything else (`usr` to `user`, `cfg` to `config`, `mgr` to `manager`).
-- Treat acronyms as words: `userId`, `httpClient`, `parseUrl`; Go uses initialisms (`UserID`, `HTTPServer`), C#
-  keeps `Id` (`UserId`).
-- Use regular plurals; uncountable nouns (`data`, `info`, `metadata`) take a qualifier (`dataSet`, `infoList`) when
-  a collection is meant; never `datas` or `informations`.
-- Avoid apostrophes and possessives in identifiers; `userIds`, not `user'sIds`.
-- Identifiers are ASCII; avoid homoglyphs and non-ASCII lookalikes; a non-English domain term is transliterated or
-  documented in the naming table.
+- 每个项目维护一份简短的允许清单：`id`、`url`、`http`、`api`、`cpu`、`db`、`ui`、`cli`、`json`、
+  `xml`、`sql`、`html`、`css`；其余一律展开（`usr` 展开为 `user`，`cfg` 展开为 `config`，`mgr`
+  展开为 `manager`）。
+- 首字母缩略词按单词处理：`userId`、`httpClient`、`parseUrl`；Go 使用首字母大写缩写
+  （`UserID`、`HTTPServer`），C# 保留 `Id`（`UserId`）。
+- 使用规则复数；不可数名词（`data`、`info`、`metadata`）表示集合时加限定词（`dataSet`、
+  `infoList`）；绝不用 `datas` 或 `informations`。
+- 标识符中避免撇号与所有格；用 `userIds`，不写 `user'sIds`。
+- 标识符使用 ASCII；避免同形字符与非 ASCII 形近字符；非英语领域术语要音译，或记录到命名表中。
 
-## 25. Symmetry and Pairs
+## 25. 对称与配对
 
-Use one pair consistently across a codebase; mixing `remove` and `delete` for the same operation is a defect.
+在整个代码库中一致地使用同一组配对；同一操作混用 `remove` 与 `delete` 是缺陷。
 
-| Pair | Pair | Pair |
+| 配对 | 配对 | 配对 |
 |---|---|---|
 | `open` / `close` | `add` / `remove` | `create` / `delete` |
 | `start` / `stop` | `begin` / `end` | `lock` / `unlock` |
@@ -349,125 +331,112 @@ Use one pair consistently across a codebase; mixing `remove` and `delete` for th
 | `mount` / `unmount` | `allocate` / `free` | `acquire` / `release` |
 | `increment` / `decrement` | `before` / `after` | `parent` / `child` |
 
-## 26. Length, Scope, and Searchability
+## 26. 长度、作用域与可搜索性
 
-- One or two words for a local, two to three for a private member, two to four for a public API; a constant may be
-  longer when each word carries meaning.
-- One-letter names are limited to `i`, `j`, `k` for indices, `x`, `y` for coordinates, `e` for a caught error, and
-  `_` for an unused value.
-- A name must be unique enough to search: `userId` is searchable; `id` at module scope is not.
-- A name must be pronounceable in a review; avoid `usrRprt` and consonant clusters.
-- No numeric suffixes (`user2`, `handler3`); use a qualifier that states the difference.
-- Longer is not better: remove words that repeat the type or the context (`UserUserRepository`, `IUserInterface`).
+- 局部变量用一到两个词，私有成员用两到三个词，公开 API 用两到四个词；每个词都承载含义时，常量可以
+  更长。
+- 单字母名称仅限：索引用 `i`、`j`、`k`，坐标用 `x`、`y`，捕获的错误用 `e`，未使用的值用 `_`。
+- 名称必须足够独特，便于搜索：`userId` 可搜索；模块作用域的 `id` 不行。
+- 名称必须能在审查中读出声；避免 `usrRprt` 与辅音连缀。
+- 不用数字后缀（`user2`、`handler3`）；用说明差异的限定词。
+- 更长并不更好：删掉重复类型或上下文的词（`UserUserRepository`、`IUserInterface`）。
 
-## 27. Renaming and Migration
+## 27. 重命名与迁移
 
-1. State the evidence: ambiguity, collision, a renamed domain concept, or a rule violation. A rename without evidence
-   is churn.
-2. List every reference: code, tests, docs, fixtures, configs, database objects, API clients, dashboards, and alerts.
-3. Choose the new name and the migration path: internal rename in one scoped change, or public alias plus
-   deprecation, or a database expand-and-contract migration.
-4. Update tests and docs in the same change; do not leave a stale name in an example.
-5. Keep the diff reviewable: a rename commit should not carry behavior changes; a behavior change should not hide a
-   rename.
-6. Update the naming table and remove the alias after the deprecation window; changelog updates belong to
-   documentation-conventions.
-7. History policy, including whether to rewrite published history, belongs to vcs-collaboration-conventions.
+1. 陈述证据：歧义、冲突、领域概念改名或规则违规。没有证据的重命名只是折腾。
+2. 列出所有引用：代码、测试、文档、fixture、配置、数据库对象、API 客户端、看板与告警。
+3. 选定新名称与迁移路径：在一次受限变更内完成内部重命名，或使用公开别名加弃用，或对数据库做
+   扩展—收缩式迁移（expand-and-contract）。
+4. 在同一次变更中更新测试与文档；不要在示例中留下过时的名称。
+5. 保持 diff 可审查：重命名提交不应携带行为变更；行为变更也不应掩盖重命名。
+6. 更新命名表，并在弃用窗口结束后移除别名；变更日志更新属于 documentation-conventions。
+7. 历史策略（包括是否重写已发布历史）属于 vcs-collaboration-conventions。
 
-## 28. Exemptions
+## 28. 豁免
 
-- Generated code, vendored code, protocol buffers, OpenAPI-generated clients, and third-party schemas keep their
-  names. Isolate them at a boundary and record the mapping.
-- Mandatory language or framework conventions override this file, even when they conflict with a default here.
-- An existing project convention wins over this standard; if it is harmful, propose a scoped migration, do not
-  rename unrequested code.
-- A public API name is a contract; rename it only with a versioned or deprecated path.
-- If an anti-pattern is widespread, report it with a migration estimate; do not start a mass rename without
-  authorization.
+- 生成代码、第三方引入代码、protobuf、OpenAPI 生成的客户端与第三方 schema 保留其名称。在边界处
+  隔离它们，并记录映射。
+- 语言或框架的强制约定覆盖本文件，即使与本文件的默认值冲突。
+- 现有项目约定优先于本标准；如果它有害，提出一次受限迁移，不要重命名未被请求的代码。
+- 公开 API 名称是契约；只有提供版本化或弃用路径时才能重命名。
+- 反模式如果普遍存在，报告它并给出迁移估算；未经授权不要发起批量重命名。
 
-## 29. Infrastructure and Deployment
+## 29. 基础设施与部署
 
-- DNS labels use lower-case letters, digits, and hyphens; start and end with an alphanumeric character; stay within
-  63 characters; no underscores.
-- Docker images are `<registry>/<org>/<service>:<tag>`; the tag is a SemVer or a commit SHA, and container names are
-  `<service>-<role>`. Version and distribution policy belong to release-operations-conventions and
-  repository-governance-conventions.
-- Kubernetes names are DNS-1123 lower kebab: `invoice-api`, `invoice-worker`; labels use the standard keys
-  `app.kubernetes.io/name`, `app.kubernetes.io/component`, and `app.kubernetes.io/part-of`.
-- ConfigMaps are `<service>-config`; Secrets are `<service>-secrets`; namespaces are lower case (`billing-prod`).
-- Cloud resources include the application and environment in the name; tags carry `app`, `env`, `owner`, and
-  `cost-center`; never put a secret in a resource name.
-- Terraform resources are `snake_case`, modules are `kebab-case`, and state keys are `<env>/<service>/<component>`.
-- CI jobs are lower kebab with a stage prefix (`test-unit`, `deploy-prod`); CI secrets use a `CI_` prefix. CI/CD and
-  secret-handling policy belong to release-operations-conventions and security-compliance-conventions.
-- Environment names are `dev`, `staging`, and `prod`; do not create `production2` or `new-prod` as a second name for
-  one environment.
+- DNS 标签使用小写字母、数字与连字符；以字母或数字开头和结尾；不超过 63 个字符；不用下划线。
+- Docker 镜像为 `<registry>/<org>/<service>:<tag>`；tag 是 SemVer 或提交 SHA，容器名为
+  `<service>-<role>`。版本与分发策略属于 release-operations-conventions 与
+  repository-governance-conventions。
+- Kubernetes 名称是 DNS-1123 小写 kebab：`invoice-api`、`invoice-worker`；标签使用标准键
+  `app.kubernetes.io/name`、`app.kubernetes.io/component` 与 `app.kubernetes.io/part-of`。
+- ConfigMap 为 `<service>-config`；Secret 为 `<service>-secrets`；命名空间小写（`billing-prod`）。
+- 云资源名称包含应用与环境；标签携带 `app`、`env`、`owner` 与 `cost-center`；绝不在资源名称中
+  放机密。
+- Terraform 资源用 `snake_case`，模块用 `kebab-case`，state 键为 `<env>/<service>/<component>`。
+- CI 任务用带阶段前缀的小写 kebab（`test-unit`、`deploy-prod`）；CI 机密使用 `CI_` 前缀。
+  CI/CD 与机密处理策略属于 release-operations-conventions 与 security-compliance-conventions。
+- 环境名为 `dev`、`staging` 与 `prod`；不要用 `production2` 或 `new-prod` 作为同一环境的第二个名称。
 
-## 30. Permissions, Roles, Scopes, and Audit Actions
+## 30. 权限、角色、作用域与审计动作
 
-- Permission and role identifiers use `domain.action`: `billing.invoice.read`, `billing.invoice.void`.
-- Pick one separator per system (`.` or `:`) and keep it; `billing:invoice.read` mixes two grammars.
-- Scopes use the same grammar as permissions (`orders:read` or `read:orders`); choose one order and document it.
-- Role names describe a capability, not a job title: `billing_admin`, `support_readonly`. Access-control policy,
-  including how many admin roles exist, belongs to security-compliance-conventions.
-- Permission constants use UPPER_SNAKE (`BILLING_INVOICE_READ`) only when the language requires constants; otherwise
-  use the string identifier.
-- Audit actions are `object.action` in the past tense (`invoice.voided`); the record includes actor, resource ID, and
-  outcome.
-- Do not encode a tenant, customer, or user ID in a permission name; those belong in policy data, not identifiers.
+- 权限与角色标识符使用 `domain.action`：`billing.invoice.read`、`billing.invoice.void`。
+- 每个系统选定一种分隔符（`.` 或 `:`）并保持一致；`billing:invoice.read` 混用了两种语法。
+- 作用域使用与权限相同的语法（`orders:read` 或 `read:orders`）；选定一种顺序并记录。
+- 角色名描述能力，而不是职位：`billing_admin`、`support_readonly`。访问控制策略（包括存在多少个
+  admin 角色）属于 security-compliance-conventions。
+- 只有语言要求常量时，权限常量才用 UPPER_SNAKE（`BILLING_INVOICE_READ`）；否则使用字符串标识符。
+- 审计动作为过去时的 `object.action`（`invoice.voided`）；记录包含操作者、资源 ID 与结果。
+- 不要在权限名称中编码租户、客户或用户 ID；那些属于策略数据，而不是标识符。
 
-## 31. Published Packages and Modules
+## 31. 已发布包与模块
 
-- npm: lower case and hyphens, scoped when public (`@example/invoice-core`); no upper case or spaces.
-- PyPI: lower case and hyphens or underscores; the distribution name and the import name may differ, so document both.
-- crates.io: lower case with underscores preferred; the crate name and the library name are usually identical.
-- Maven: `groupId` is a reverse domain; `artifactId` is kebab-case (`invoice-core`).
-- NuGet: package IDs are PascalCase (`Example.Billing`); the assembly name matches the package unless versioned.
-- Go modules: the module path is lower case; package names are short and lower case with no underscores; a hyphen
-  is allowed in the path, not in the package.
-- Version tags are SemVer; a registry suffix (`-beta.1`) does not replace the version number.
+- npm：小写与连字符，公开时加 scope（`@example/invoice-core`）；不用大写或空格。
+- PyPI：小写，用连字符或下划线；分发名与导入名可能不同，两者都要记录。
+- crates.io：小写，优先用下划线；crate 名与库名通常相同。
+- Maven：`groupId` 是反向域名；`artifactId` 用 kebab-case（`invoice-core`）。
+- NuGet：包 ID 用 PascalCase（`Example.Billing`）；程序集名与包名一致，除非做了版本化。
+- Go modules：模块路径小写；包名简短、小写且不含下划线；连字符可以出现在路径中，不能出现在包名中。
+- 版本标签是 SemVer；包仓库后缀（`-beta.1`）不能替代版本号。
 
-## 32. Components, Hooks, and UI State
+## 32. 组件、Hooks 与 UI 状态
 
-- Components are PascalCase and one per file: `OrderCard.tsx`, `InvoiceList.vue`; use `Page`, `Layout`, `Provider`,
-  and `Dialog` suffixes for real roles, not `Wrapper` or `Container` by default.
-- Custom hooks start with `use` (`useOrders`, `useDebouncedValue`); a hook name is a contract that it follows the
-  rules of hooks. Return named state and actions (`data`, `isLoading`, `error`, `refetch`).
-- Props use `onX` for callbacks, `isX`/`hasX` for booleans, `children` for composition, and `renderX` for render
-  props; internal handlers are `handleX`.
-- UI state names the question: `isLoading`, `hasError`, `selectedId`, `activeTab`; avoid bare `data`, `loading`, or
-  `state`. Separate server state from local UI state in the name when both exist.
-- Events are `onSubmit`, `onChange`, `onClose`; emitted domain events use past tense (`orderCreated`).
-- Framework conventions win: Vue components are multi-word (`OrderCard`); Angular selectors are kebab-case
-  (`app-order-card`) and services end in `Service`; React context is `OrderContext` and its hook `useOrderContext`.
-- Avoid `Wrapper`, `Container`, and `Manager` for components; name what the user sees or what the component does.
+- 组件用 PascalCase，每个文件一个：`OrderCard.tsx`、`InvoiceList.vue`；`Page`、`Layout`、`Provider`
+  与 `Dialog` 后缀只用于真实角色，默认不要用 `Wrapper` 或 `Container`。
+- 自定义 hook 以 `use` 开头（`useOrders`、`useDebouncedValue`）；hook 名称意味着它遵循 hooks 规则。
+  返回具名状态与动作（`data`、`isLoading`、`error`、`refetch`）。
+- Props 中用 `onX` 表示回调，`isX`/`hasX` 表示布尔值，`children` 表示组合，`renderX` 表示渲染
+  属性；内部处理器为 `handleX`。
+- UI 状态命名问题本身：`isLoading`、`hasError`、`selectedId`、`activeTab`；避免裸的 `data`、
+  `loading` 或 `state`。服务端状态与本地 UI 状态同时存在时，在名称中区分。
+- 事件为 `onSubmit`、`onChange`、`onClose`；对外发出的领域事件用过去时（`orderCreated`）。
+- 框架约定优先：Vue 组件用多词（`OrderCard`）；Angular 选择器用 kebab-case（`app-order-card`），
+  服务以 `Service` 结尾；React context 为 `OrderContext`，其 hook 为 `useOrderContext`。
+- 组件的名称避免 `Wrapper`、`Container` 与 `Manager`；命名用户看到的东西，或组件所做的事。
 
-## 33. Domain Models and Domain Events
+## 33. 领域模型与领域事件
 
-- Entities are singular nouns (`Order`, `Customer`); value objects name the concept and its unit (`Money`,
-  `DateRange`, `EmailAddress`, `Percentage`).
-- Identifiers are `<Entity>Id` in code and `<entity>_id` in storage; do not expose a raw string named `id` across a
-  domain API.
-- An aggregate names the consistency boundary (`Order`), not `OrderAggregate`; repositories are `OrderRepository`.
-- Domain events are past-tense (`OrderPlaced`, `InvoicePaid`); wire event types are `order.placed`; payload fields
-  use domain terms, not database column names.
-- Commands are imperative (`PlaceOrder`, `VoidInvoice`); queries are `GetOrder` or `ListOrders`; neither is a noun
-  plus `Manager`.
-- Policies and specifications name the rule (`RefundPolicy`, `EligibleForDiscount`); a policy returns a decision, not
-  a boolean named `check`.
-- Keep technical names (`Manager`, `Helper`, `Util`) out of the domain model; put orchestration in the application
-  layer with a role name (`CheckoutService`, `InvoiceSync`).
+- 实体用单数名词（`Order`、`Customer`）；值对象命名概念及其单位（`Money`、`DateRange`、
+  `EmailAddress`、`Percentage`）。
+- 标识符在代码中为 `<Entity>Id`，在存储中为 `<entity>_id`；不要在领域 API 中暴露名为 `id` 的裸字符串。
+- 聚合命名一致性边界（`Order`），而不是 `OrderAggregate`；仓库为 `OrderRepository`。
+- 领域事件用过去时（`OrderPlaced`、`InvoicePaid`）；线上事件类型为 `order.placed`；payload 字段
+  使用领域术语，而不是数据库列名。
+- 命令用祈使式（`PlaceOrder`、`VoidInvoice`）；查询为 `GetOrder` 或 `ListOrders`；两者都不是
+  名词加 `Manager`。
+- 策略与规约命名规则（`RefundPolicy`、`EligibleForDiscount`）；策略返回决策，而不是名为 `check`
+  的布尔值。
+- 把技术性名称（`Manager`、`Helper`、`Util`）挡在领域模型之外；编排放在应用层，并用角色名
+  （`CheckoutService`、`InvoiceSync`）。
 
-## 34. Documentation, Diagrams, and Decisions
+## 34. 文档、图表与决策
 
-- Documentation files are kebab-case; ADRs are numbered and stable (`0001-use-postgres.md` or
-  `ADR-0001-use-postgres.md`); never renumber an accepted ADR.
-- Headings are stable anchors; do not rename a linked heading without a redirect or an updated link. Follow the
-  project's heading case (sentence case or title case), not both.
-- Diagram IDs are `fig-<name>` or `diagram-<name>`; node IDs use the domain or service name (`order-service`,
-  `billing-db`), not `node1`.
-- API operation IDs are camelCase (`listOrders`, `createInvoice`); code samples are `example_<action>` and live next
-  to the operation they illustrate.
-- Ticket and issue IDs belong in links, metadata, or commit footers, not in identifiers, filenames, or test names as
-  the only description.
-- Cross-references use the naming table's term; a document term that differs from the code term is a defect.
+- 文档文件用 kebab-case；ADR 编号且稳定（`0001-use-postgres.md` 或
+  `ADR-0001-use-postgres.md`）；绝不为已接受的 ADR 重新编号。
+- 标题是稳定的锚点；不要重命名被链接的标题，除非同时提供重定向或更新链接。遵循项目的标题大小写
+  （句首大写或词首大写），不要两者混用。
+- 图表 ID 为 `fig-<name>` 或 `diagram-<name>`；节点 ID 使用领域或服务名（`order-service`、
+  `billing-db`），而不是 `node1`。
+- API 操作 ID 用 camelCase（`listOrders`、`createInvoice`）；代码示例为 `example_<action>`，并与它们
+  说明的操作放在一起。
+- 工单与 issue ID 属于链接、元数据或提交脚注，不应只作为标识符、文件名或测试名中的描述。
+- 交叉引用使用命名表中的术语；文档术语与代码术语不一致就是缺陷。

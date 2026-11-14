@@ -1,259 +1,251 @@
 ---
 name: naming-conventions
-description: Define, review, or refactor names for any programming project across files, directories, packages, types, functions, variables, APIs, databases, configuration, tests, commits, and assets. Use when starting a project or module, naming a new identifier, reviewing a diff for naming problems, or reconciling inconsistent names. Provides language-agnostic defaults with per-language overrides.
-argument-hint: '[path or symbol]'
+description: 在任何编程项目中定义、审查或重构名称，覆盖文件、目录、包、类型、函数、变量、API、数据库、配置、测试、提交与资产。适用于启动项目或模块、命名新标识符、审查 diff 中的命名问题，或统一不一致的名称。提供与语言无关的默认值，并按语言给出覆盖规则。
+argument-hint: '[路径或符号]'
 ---
 
-# Naming Conventions
+# 命名规范
 
-Names are the most-read interface in a codebase. A good name states what a thing is or does, fits the language, and
-stays stable across layers; a bad name forces every reader to reconstruct intent from the implementation. This skill
-gives one decision procedure and a complete rule set for every artifact a project names.
+名称是代码库中阅读次数最多的接口。好的名称说明一个事物是什么或做什么，贴合语言，并在各层之间保持稳定；
+糟糕的名称则迫使每个读者从实现反推意图。本 skill 给出一套决策流程，以及项目命名的每个产物所需的完整规则集。
 
-## Scope and Precedence
+## 范围与优先级
 
-Apply the first rule that fits, and do not mix conventions inside one scope:
+应用第一条匹配的规则，不要在同一范围内混用约定：
 
-1. Mandatory language or framework convention. Go exported identifiers, C# `I` interfaces, and PEP 8 are not optional.
-2. Existing project convention and lint configuration. Read the code and config before inventing a rule.
-3. This standard's defaults, when the two levels above are silent.
-4. Personal preference, which never overrides the three levels above.
+1. 语言或框架的强制约定。Go 导出标识符、C# 的 `I` 接口与 PEP 8 都不是可选项。
+2. 现有项目约定与 lint 配置。发明规则之前先读代码与配置。
+3. 上面两级都没有规定时，采用本标准的默认值。
+4. 个人偏好，它永远不能覆盖上面三级。
 
-- Generated code, vendored code, external protocol fields, and third-party schemas are exempt. Keep their names,
-  isolate them at a boundary, and record the mapping in the project naming table.
-- A rename is a change, not a cleanup. Read every reference first, stay inside the authorized scope, update tests,
-  docs, and fixtures, and treat any public name as an API.
-- When two rules conflict, state the conflict and the chosen rule; record the decision so the next change follows it.
+- 生成代码、第三方引入代码、外部协议字段与第三方 schema 不受约束。保留它们的名称，在边界处隔离，
+  并把映射记录到项目命名表中。
+- 重命名是一次变更，而不是清理。先读完所有引用，待在授权范围内，更新测试、文档与 fixture，
+  并把任何公开名称当作 API。
+- 两条规则冲突时，说明冲突与选定的规则；记录该决定，让后续变更遵循它。
 
-This skill owns name choice, the naming table, and rename mechanics; policy and workflow for the other artifact
-classes are routed by role:
+本 skill 负责名称选择、命名表与重命名机制；其他产物类别的策略与流程按职责归属：
 
-- vcs-collaboration-conventions owns commit and pull request workflow, merge and review policy, history, and review
-  depth.
-- api-and-data-conventions owns API versioning, pagination style, CRUD semantics, the error model, and database
-  schema-change procedure and migration safety.
-- code-style-conventions owns formatter and linter configuration, line width, configuration precedence and semantics,
-  and error and log content policy.
-- testing-and-quality-conventions owns test strategy, gates, test disposition, and skip, quarantine, and waiver
-  policy.
-- release-operations-conventions owns telemetry design, feature-flag lifecycle, CI/CD, release timing, and
-  deprecation announcement timing and placement.
-- security-compliance-conventions owns access-control and permission policy, and secret scanning, rotation, and
-  disclosure.
-- repository-governance-conventions owns package and distribution metadata and publishing policy.
-- documentation-conventions owns changelog and document updates, release-note documents, and documentation sites.
-- system-prompt-authoring owns instruction files.
+- vcs-collaboration-conventions 负责提交与 pull request 流程、合并与审查策略、历史记录与审查深度。
+- api-and-data-conventions 负责 API 版本化、分页风格、CRUD 语义、错误模型，以及数据库 schema 变更流程
+  与迁移安全性。
+- code-style-conventions 负责格式化工具与 linter 配置、行宽、配置的优先级与语义，以及错误与日志内容策略。
+- testing-and-quality-conventions 负责测试策略、门禁、测试处置，以及跳过、隔离与豁免策略。
+- release-operations-conventions 负责遥测设计、功能开关生命周期、CI/CD、发布时机，以及弃用声明的时间
+  与位置。
+- security-compliance-conventions 负责访问控制与权限策略，以及机密扫描、轮换与披露。
+- repository-governance-conventions 负责包与分发元数据以及发布策略。
+- documentation-conventions 负责变更日志与文档更新、发布说明文档以及文档站点。
+- system-prompt-authoring 负责指令文件。
 
-## Process
+## 流程
 
-1. Classify the artifact: file, directory, package, type, function, variable, constant, API field, database object,
-   config key, test, commit, or asset.
-2. Name the concept in the project's domain language. Check the naming table and glossary for an existing term.
-3. Choose the grammatical form (noun, verb, adjective, plural) from the form table below.
-4. Choose the case for the artifact and language; use `references/languages.md` for overrides.
-5. Check collisions, symmetry, length, pronunciation, searchability, and misleading encodings.
-6. Record a new domain term in the project naming table before using it in more than one place.
-7. For a rename, list references, choose an alias or deprecation path, and verify the full diff.
+1. 对产物分类：文件、目录、包、类型、函数、变量、常量、API 字段、数据库对象、配置键、测试、提交或资产。
+2. 用项目领域语言为该概念命名。先查命名表与术语表是否已有现成术语。
+3. 从下面的形式表中选择语法形式（名词、动词、形容词、复数）。
+4. 为产物与语言选择大小写风格；覆盖规则见 `references/languages.md`。
+5. 检查冲突、对称性、长度、可读性（能否读出声）、可搜索性，以及有误导性的编码。
+6. 在超过一处使用新领域术语之前，先把它记录到项目命名表。
+7. 重命名时，列出全部引用，选择别名或弃用路径，并核对完整 diff。
 
-## Core Rules
+## 核心规则
 
-- **One concept, one name.** One name, one concept. Different names for one thing are a defect; one name for two
-  things is a collision.
-- **Name intent, not implementation.** `activeUsers` beats `filteredList2`; `retryCount` beats `loopCounter`.
-- **Use the domain language.** Prefer the words the users and the product use; record synonyms that are banned.
-- **Follow the language.** Do not import casing or prefixes from another language; a Python `IUserStore` or a Go
-  `user_repository` is wrong even when the concept is right.
-- **Be searchable and pronounceable.** Avoid one- and two-letter names outside loop indices, dropped vowels, and
-  consonant clusters; someone must be able to say the name in a review.
-- **Do not encode types.** No Hungarian notation and no `obj`, `str`, `arr`, `list` suffixes; encode units, ranges, or
-  meaning only when the type cannot (`timeout_ms`, `amount_cents`).
-- **Prefer positives.** `isEnabled` beats `isNotDisabled`; do not build double negatives.
-- **Pluralize collections.** `users` contains users; `user` is one user. A map is `usersById`, not `userMap`.
-- **Keep names short by scope.** One or two words for a local, two to four for a public API; a long name is better
-  than a vague one, but only when the words carry meaning.
-- **Do not rename outside the request.** Consistency is valuable, but mass renames are a separate, reviewed change.
+- **一个概念，一个名称。** 一个名称对应一个概念。同一事物有多种叫法是缺陷；同一名称指两件事是冲突。
+- **命名意图，而不是实现。** `activeUsers` 优于 `filteredList2`；`retryCount` 优于 `loopCounter`。
+- **使用领域语言。** 优先采用用户与产品使用的词；记录被禁用的同义词。
+- **遵循语言。** 不要从别的语言引入大小写或前缀；Python 里的 `IUserStore` 或 Go 里的
+  `user_repository` 即使概念正确也是错的。
+- **可搜索、可读出声。** 除循环索引外，避免单字母与双字母名称、吞掉元音的写法以及辅音连缀；
+  审查时总得有人能把名称念出来。
+- **不要编码类型。** 不用匈牙利命名法，也不加 `obj`、`str`、`arr`、`list` 后缀；只有当类型无法表达时
+  才编码单位、范围或含义（`timeout_ms`、`amount_cents`）。
+- **优先肯定式。** `isEnabled` 优于 `isNotDisabled`；不要构造双重否定。
+- **集合用复数。** `users` 包含多个用户；`user` 是一个用户。映射写成 `usersById`，不要写 `userMap`。
+- **按作用域控制名称长度。** 局部变量用一到两个词，公开 API 用两到四个词；长名称胜于含糊名称，
+  但前提是每个词都承载含义。
+- **不要在请求之外重命名。** 一致性有价值，但批量重命名是另一次需要审查的变更。
 
-## Casing Matrix
+## 大小写矩阵
 
-These are language-agnostic defaults. `references/languages.md` overrides them per language and framework.
+以下是语言无关的默认值。`references/languages.md` 会按语言与框架覆盖它们。
 
-| Artifact | Default case | Example |
+| 产物 | 默认大小写 | 示例 |
 |---|---|---|
-| Package, namespace | lower case, dot-separated | `com.example.billing`, `app.users` |
-| Module | snake_case or lowercase | `user_repository.py`, `billing` |
-| Directory | kebab-case or lowercase | `order-items/`, `users/` |
-| Source file | match the language and primary export | `user_repository.py`, `UserRepository.java` |
-| Type, class, struct, record | PascalCase | `UserRepository`, `OrderItem` |
-| Interface, protocol | PascalCase, capability or role | `UserStore`, `PaymentGateway`, `IUserStore` in C# |
-| Enum type | PascalCase, singular | `OrderStatus` |
-| Enum member | UPPER_SNAKE or PascalCase | `PENDING`, `Pending` |
-| Function, method | camelCase or snake_case | `listActiveUsers`, `list_active_users` |
-| Variable, parameter, field | camelCase or snake_case | `activeUsers`, `active_users` |
-| Constant | UPPER_SNAKE_CASE | `MAX_RETRY_COUNT` |
-| Boolean | `is`/`has`/`can`/`should`/`needs` + adjective | `isEnabled`, `hasChildren`, `canRetry` |
-| Test function | behavior plus condition | `test_list_orders_returns_empty_for_new_user` |
-| Test file | `<unit>_test` or `<unit>.test` | `user_service_test.py`, `UserServiceTest.java` |
-| Database table | plural snake_case | `order_items` |
-| Database column | singular snake_case | `created_at`, `customer_id` |
-| Index, constraint | prefixed snake_case | `idx_orders_customer_id`, `uq_users_email` |
-| API path | plural kebab-case | `/v1/order-items` |
-| JSON field | one case per schema, usually camel or snake | `createdAt`, `created_at` |
-| Environment variable | UPPER_SNAKE_CASE with app prefix | `APP_DATABASE_URL` |
-| CLI flag | kebab-case | `--dry-run`, `--output-format` |
-| CSS class | kebab-case or BEM | `order-item__price--discounted` |
-| i18n key | dot-separated lower case | `orders.list.empty` |
-| Commit type | lower case | `feat`, `fix`, `refactor`, `docs` |
-| Branch | `type/short-description` | `feat/order-export` |
-| Tag | SemVer with `v` prefix | `v1.4.0` |
+| 包、命名空间 | 小写，点分隔 | `com.example.billing`, `app.users` |
+| 模块 | snake_case 或全小写 | `user_repository.py`, `billing` |
+| 目录 | kebab-case 或全小写 | `order-items/`, `users/` |
+| 源文件 | 与语言及主要导出匹配 | `user_repository.py`, `UserRepository.java` |
+| 类型、类、结构体、record | PascalCase | `UserRepository`, `OrderItem` |
+| 接口、协议 | PascalCase，体现能力或角色 | `UserStore`, `PaymentGateway`, C# 中的 `IUserStore` |
+| 枚举类型 | PascalCase，单数 | `OrderStatus` |
+| 枚举成员 | UPPER_SNAKE 或 PascalCase | `PENDING`, `Pending` |
+| 函数、方法 | camelCase 或 snake_case | `listActiveUsers`, `list_active_users` |
+| 变量、参数、字段 | camelCase 或 snake_case | `activeUsers`, `active_users` |
+| 常量 | UPPER_SNAKE_CASE | `MAX_RETRY_COUNT` |
+| 布尔值 | `is`/`has`/`can`/`should`/`needs` + 形容词 | `isEnabled`, `hasChildren`, `canRetry` |
+| 测试函数 | 行为加条件 | `test_list_orders_returns_empty_for_new_user` |
+| 测试文件 | `<unit>_test` 或 `<unit>.test` | `user_service_test.py`, `UserServiceTest.java` |
+| 数据库表 | 复数 snake_case | `order_items` |
+| 数据库列 | 单数 snake_case | `created_at`, `customer_id` |
+| 索引、约束 | 带前缀的 snake_case | `idx_orders_customer_id`, `uq_users_email` |
+| API 路径 | 复数 kebab-case | `/v1/order-items` |
+| JSON 字段 | 每个 schema 一种大小写，通常 camel 或 snake | `createdAt`, `created_at` |
+| 环境变量 | 带应用前缀的 UPPER_SNAKE_CASE | `APP_DATABASE_URL` |
+| CLI 标志 | kebab-case | `--dry-run`, `--output-format` |
+| CSS 类 | kebab-case 或 BEM | `order-item__price--discounted` |
+| i18n 键 | 点分隔小写 | `orders.list.empty` |
+| 提交类型 | 小写 | `feat`, `fix`, `refactor`, `docs` |
+| 分支 | `type/short-description` | `feat/order-export` |
+| 标签 | 带 `v` 前缀的 SemVer | `v1.4.0` |
 
-## Grammatical Form
+## 语法形式
 
-| Concept | Form | Example |
+| 概念 | 形式 | 示例 |
 |---|---|---|
-| Action | verb phrase | `sendInvoice`, `parseConfig` |
-| Predicate | boolean adjective | `isExpired`, `hasAccess` |
-| Resource or entity | singular noun | `Invoice`, `Customer` |
-| Collection | plural noun | `invoices`, `activeUsers` |
-| Map | noun plus `by` key | `invoicesById`, `priceBySku` |
-| Factory | `XFactory` or `createX` | `InvoiceFactory`, `createInvoice` |
-| Builder | `XBuilder` | `InvoiceBuilder` |
-| Repository | `XRepository` | `InvoiceRepository` |
-| Service | `XService` only for a real domain service | `BillingService` |
-| Adapter or gateway | `XAdapter`, `XGateway` | `StripeAdapter`, `PaymentGateway` |
-| DTO or wire model | `XDto`, `XRequest`, `XResponse` | `InvoiceDto`, `CreateOrderRequest` |
-| Error | `XError` or `XException` | `InvoiceNotFoundError` |
-| Options or config | `XOptions`, `XConfig` | `RetryOptions` |
-| Result | `XResult`, `XOutcome` | `PaymentResult` |
-| Identifier | `id` or `<entity>_id` | `id`, `customer_id` |
-| Timestamp | `<event>_at` | `created_at`, `paid_at` |
-| Duration | `<quantity>_ms`, `_s` | `timeout_ms` |
-| Count | `<thing>_count` | `retry_count` |
-| Money | `<amount>_cents` plus currency | `total_cents`, `currency` |
-| Ratio or percentage | `_ratio` (0-1) or `_pct` (0-100) | `success_ratio`, `discount_pct` |
+| 动作 | 动词短语 | `sendInvoice`, `parseConfig` |
+| 谓词 | 布尔形容词 | `isExpired`, `hasAccess` |
+| 资源或实体 | 单数名词 | `Invoice`, `Customer` |
+| 集合 | 复数名词 | `invoices`, `activeUsers` |
+| 映射 | 名词加 `by` 键 | `invoicesById`, `priceBySku` |
+| 工厂 | `XFactory` 或 `createX` | `InvoiceFactory`, `createInvoice` |
+| 构建器 | `XBuilder` | `InvoiceBuilder` |
+| 仓库 | `XRepository` | `InvoiceRepository` |
+| 服务 | 仅真正的领域服务用 `XService` | `BillingService` |
+| 适配器或网关 | `XAdapter`、`XGateway` | `StripeAdapter`, `PaymentGateway` |
+| DTO 或线上模型 | `XDto`、`XRequest`、`XResponse` | `InvoiceDto`, `CreateOrderRequest` |
+| 错误 | `XError` 或 `XException` | `InvoiceNotFoundError` |
+| 选项或配置 | `XOptions`、`XConfig` | `RetryOptions` |
+| 结果 | `XResult`、`XOutcome` | `PaymentResult` |
+| 标识符 | `id` 或 `<entity>_id` | `id`, `customer_id` |
+| 时间戳 | `<event>_at` | `created_at`, `paid_at` |
+| 时长 | `<quantity>_ms`、`_s` | `timeout_ms` |
+| 计数 | `<thing>_count` | `retry_count` |
+| 金额 | `<amount>_cents` 加货币 | `total_cents`, `currency` |
+| 比率或百分比 | `_ratio`（0-1）或 `_pct`（0-100） | `success_ratio`, `discount_pct` |
 
-## Dimension Index
+## 维度索引
 
-Each dimension has detailed patterns, examples, and edge cases in `references/dimensions.md`.
+每个维度的详细模式、示例与边界情况见 `references/dimensions.md`。
 
-The number in the dimension column is the section number in that file.
+维度列中的数字是该文件中的节号。
 
-| Dimension | First rule |
+| 维度 | 第一条规则 |
 |---|---|
-| 1. Files and Directories | Lowercase, no spaces, match the primary export or responsibility. |
-| 2. Packages and Namespaces | Reverse domain or short lowercase, stable public surface. |
-| 3. Modules and Imports | Capability nouns, short unambiguous aliases, no circular names. |
-| 4. Types and Interfaces | Singular noun; capability or role, not `I` prefix outside C#. |
-| 5. Enums and Unions | Singular type, stable members, no numeric names. |
-| 6. Functions and Methods | Verb phrase; one action; predicate names for predicates. |
-| 7. Variables, Parameters, and Fields | Noun, scope-sized, no type prefixes. |
-| 8. Constants | UPPER_SNAKE, unit in the name, no magic values. |
-| 9. Booleans and Predicates | Positive `is`/`has`/`can`/`should`; never a non-boolean `isX`. |
-| 10. Collections, Maps, Sets, and Tuples | Plural nouns, `by` maps, explicit keys and values. |
-| 11. Quantities, Units, Time, Money, Ratios, Ranges | Unit suffix, ISO currency, integer minor units; `_at` for instants, `_ms` for durations. |
-| 12. Async, Concurrency, Streams, Callbacks | Follow language convention; no `Async` suffix where it is not idiomatic. |
-| 13. Errors and Results | Specific error classes and stable codes; never catch-all names. |
-| 14. Tests and Test Doubles | Behavior plus condition; `Fake`, `Stub`, `Mock`, `Spy` mean different things. |
-| 15. HTTP, RPC, and GraphQL | Plural resources, kebab paths, one JSON casing per schema. |
-| 16. JSON and Serialization | One key case per schema; map to the code case at the boundary. |
-| 17. Databases and Migrations | Plural snake tables, singular columns, prefixed indexes and constraints. |
-| 18. Configuration and Environment | UPPER_SNAKE env vars, prefixed keys, no secrets in names. |
-| 19. CLI | Kebab flags, verb commands, consistent short flags. |
-| 20. Logs, Events, Metrics, and Traces | Stable snake fields, `object.action` events, unit-suffixed metrics. |
-| 21. Assets, CSS, HTML, and i18n | Kebab files, BEM or utility classes, dot-separated keys. |
-| 22. Commits, Branches, and Tags | `type(scope): summary`, `type/slug`, SemVer. |
-| 23. Feature Flags and Deprecation | Named removal path, not a permanent `legacy_` prefix. |
-| 24. Abbreviations, Acronyms, and Plurals | Allowlist, treat acronyms as words, no dropped vowels. |
-| 25. Symmetry and Pairs | Use the same pair everywhere: `open/close`, `add/remove`. |
-| 26. Length, Scope, and Searchability | Length follows scope; the name is unique enough to search. |
-| 27. Renaming and Migration | Evidence, references, alias or deprecation, scoped change. |
-| 28. Exemptions | Generated, vendored, and external names stay; map them at the boundary. |
-| 29. Infrastructure and Deployment | DNS-compatible lower case; environment and owner live in tags. |
-| 30. Permissions, Roles, Scopes, and Audit Actions | `domain.action`; one separator; capabilities, not job titles. |
-| 31. Published Packages and Modules | Follow the registry's allowed characters and casing. |
-| 32. Components, Hooks, and UI State | PascalCase components, `useX` hooks, positive state names. |
-| 33. Domain Models and Domain Events | Singular entities, past-tense events, imperative commands. |
-| 34. Documentation, Diagrams, and Decisions | Kebab files, stable anchors, numbered ADRs. |
+| 1. 文件与目录 | 小写、不含空格，与主要导出或职责匹配。 |
+| 2. 包与命名空间 | 反向域名或简短小写，公开接口保持稳定。 |
+| 3. 模块与导入 | 能力名词，简短无歧义的别名，不出现循环名称。 |
+| 4. 类型与接口 | 单数名词；能力或角色，C# 之外不用 `I` 前缀。 |
+| 5. 枚举与联合类型 | 单数类型，成员稳定，不用数字名称。 |
+| 6. 函数与方法 | 动词短语；一个动作；谓词用谓词名。 |
+| 7. 变量、参数与字段 | 名词，长度随作用域，不加类型前缀。 |
+| 8. 常量 | UPPER_SNAKE，名称含单位，不用魔法值。 |
+| 9. 布尔值与谓词 | 肯定的 `is`/`has`/`can`/`should`；绝不出现非布尔的 `isX`。 |
+| 10. 集合、映射、Set 与元组 | 复数名词，`by` 映射，显式写出键与值。 |
+| 11. 数量、单位、时间、金额、比率、范围 | 单位后缀，ISO 货币，整数最小单位；时刻用 `_at`，时长用 `_ms`。 |
+| 12. 异步、并发、流、回调 | 遵循语言约定；不惯用时不加 `Async` 后缀。 |
+| 13. 错误与结果 | 具体的错误类与稳定错误码；绝不用兜底名称。 |
+| 14. 测试与测试替身 | 行为加条件；`Fake`、`Stub`、`Mock`、`Spy` 含义不同。 |
+| 15. HTTP、RPC 与 GraphQL | 复数资源，kebab 路径，每个 schema 一种 JSON 大小写。 |
+| 16. JSON 与序列化 | 每个 schema 一种键大小写；在边界映射为代码的大小写。 |
+| 17. 数据库与迁移 | 复数 snake 表名，单数列名，带前缀的索引与约束。 |
+| 18. 配置与环境 | UPPER_SNAKE 环境变量，带前缀的键，名称中不含机密。 |
+| 19. CLI | kebab 标志，动词命令，短标志保持一致。 |
+| 20. 日志、事件、指标与追踪 | 稳定的 snake 字段，`object.action` 事件，带单位后缀的指标。 |
+| 21. 资产、CSS、HTML 与 i18n | kebab 文件名，BEM 或工具类，点分隔键。 |
+| 22. 提交、分支与标签 | `type(scope): summary`，`type/slug`，SemVer。 |
+| 23. 功能开关与弃用 | 命名移除路径，而不是永久的 `legacy_` 前缀。 |
+| 24. 缩写、首字母缩略词与复数 | 允许清单，缩略词按单词处理，不吞元音。 |
+| 25. 对称与配对 | 处处使用同一组配对：`open/close`、`add/remove`。 |
+| 26. 长度、作用域与可搜索性 | 长度随作用域；名称要足够独特，便于搜索。 |
+| 27. 重命名与迁移 | 证据、引用、别名或弃用，范围受限的变更。 |
+| 28. 豁免 | 生成、引入与外部名称保持不变；在边界处映射。 |
+| 29. 基础设施与部署 | DNS 兼容的小写；环境与所有者写在资源标签中。 |
+| 30. 权限、角色、作用域与审计动作 | `domain.action`；单一分隔符；按能力而非职位命名。 |
+| 31. 已发布包与模块 | 遵循包仓库允许的字符与大小写。 |
+| 32. 组件、Hooks 与 UI 状态 | PascalCase 组件，`useX` hooks，肯定的状态名。 |
+| 33. 领域模型与领域事件 | 单数实体，过去时事件，祈使式命令。 |
+| 34. 文档、图表与决策 | kebab 文件名，稳定锚点，编号 ADR。 |
 
-## Anti-Patterns
+## 反模式
 
-| Anti-pattern | Why it fails | Fix |
+| 反模式 | 为什么失败 | 修复 |
 |---|---|---|
-| `data`, `info`, `item`, `obj`, `temp`, `foo`, `bar` | Says nothing; forces reading the body. | Name the concept: `invoice`, `parseResult`, `pendingJobs`. |
-| `Manager`, `Helper`, `Util`, `Common`, `Base` | Hides responsibility and attracts unrelated code. | Name the role: `BillingService`, `RetryPolicy`, `PathFormatter`. |
-| `userObj`, `strName`, `arrItems` | Encodes the type; goes stale after a refactor. | `user`, `name`, `items`. |
-| `notReady`, `disableCache`, `isNotUnavailable` | Negative names invert every read site. | `isReady`, `cacheEnabled`, `isAvailable`. |
-| `usr`, `cfg`, `mgr`, `btn`, `msg` | Saves three characters, costs a lookup. | `user`, `config`, `manager`, `button`, `message`. |
-| `client` / `customer` / `buyer` for one concept | Readers cannot tell whether they differ. | Pick one domain term and ban the others. |
-| `userId` and `user_id` in one layer | Breaks search and mechanical refactors. | One case per layer; map only at boundaries. |
-| `isActive` returning a count | The name states the wrong type. | `activeCount`. |
-| `getUser` for a pure getter where `getX` implies I/O | Implies a read that does not happen. | `user` property, or `fetchUser` for I/O; a noun or `get` accessor is fine otherwise. |
-| `UserServiceImpl` | Leaks the implementation and adds noise. | `SqlUserRepository`, `StripePaymentGateway`. |
-| `IUserStore` in Python or Go | Imports a C# convention into a language that rejects it. | `UserStore` or `UserDirectory`. |
-| `user2`, `newUser`, `tempUser` | Numbered or temporal names rot immediately. | `importedUser`, `pendingUser`, `user`. |
-| `flag`, `status`, `check` for a boolean | Vague and often wrongly typed. | `hasExported`, `isReady`, `isValid`. |
-| `do`, `handle`, `process`, `run` alone | Hides what is handled or produced. | `handlePaymentFailure`, `processRefund`, `runMigration`. |
+| `data`、`info`、`item`、`obj`、`temp`、`foo`、`bar` | 什么也没说，迫使读者去读函数体。 | 命名概念本身：`invoice`、`parseResult`、`pendingJobs`。 |
+| `Manager`、`Helper`、`Util`、`Common`、`Base` | 隐藏职责，并吸引不相关的代码。 | 命名角色：`BillingService`、`RetryPolicy`、`PathFormatter`。 |
+| `userObj`、`strName`、`arrItems` | 编码了类型，重构后立刻过时。 | `user`、`name`、`items`。 |
+| `notReady`、`disableCache`、`isNotUnavailable` | 否定式名称让每个读取点都要反向理解。 | `isReady`、`cacheEnabled`、`isAvailable`。 |
+| `usr`、`cfg`、`mgr`、`btn`、`msg` | 省了三个字符，多了一次查找。 | `user`、`config`、`manager`、`button`、`message`。 |
+| 同一概念用 `client` / `customer` / `buyer` | 读者分不清它们是否有区别。 | 选定一个领域术语，禁用其余说法。 |
+| 同一层里同时出现 `userId` 与 `user_id` | 破坏搜索与机械化重构。 | 每层一种大小写；只在边界处映射。 |
+| 名为 `isActive` 却返回计数 | 名称表达的类型是错的。 | `activeCount`。 |
+| 在 `getX` 暗示 I/O 的地方，纯读取器却用 `getUser` | 暗示了一次并不发生的读取。 | 用 `user` 属性；I/O 用 `fetchUser`；其余情况名词或 `get` 访问器都可以。 |
+| `UserServiceImpl` | 泄露实现，还增加噪音。 | `SqlUserRepository`、`StripePaymentGateway`。 |
+| Python 或 Go 里的 `IUserStore` | 把 C# 约定带进拒绝它的语言。 | `UserStore` 或 `UserDirectory`。 |
+| `user2`、`newUser`、`tempUser` | 带编号或时间性的名称会立刻腐化。 | `importedUser`、`pendingUser`、`user`。 |
+| 布尔值命名为 `flag`、`status`、`check` | 含糊，而且类型常常就是错的。 | `hasExported`、`isReady`、`isValid`。 |
+| 只有 `do`、`handle`、`process`、`run` | 隐藏了处理了什么或产出了什么。 | `handlePaymentFailure`、`processRefund`、`runMigration`。 |
 
-## Project Naming Table
+## 项目命名表
 
-Create this table at project start, keep it in the repository, and add a row before a term spreads:
+项目启动时创建此表，保存在仓库中，并在术语扩散前先加一行：
 
-| Term | Definition | Canonical name | Avoid | Case | Owner |
+| 术语 | 定义 | 规范名称 | 避免 | 大小写 | 负责人 |
 |---|---|---|---|---|---|
-| invoice | A bill issued to a customer | `Invoice` | bill, statement | PascalCase | billing |
-| customer | A party that pays | `Customer` | client, buyer, account | PascalCase | CRM |
-| amount | Money in minor units | `amount_cents` | amount, total | snake_case | billing |
+| invoice | 开给客户的账单 | `Invoice` | bill、statement | PascalCase | billing |
+| customer | 付款的一方 | `Customer` | client、buyer、account | PascalCase | CRM |
+| amount | 以最小货币单位表示的金额 | `amount_cents` | amount、total | snake_case | billing |
 
-## Review Checklist
+## 审查清单
 
-- [ ] The term matches the project naming table or glossary.
-- [ ] The case matches the language and the artifact.
-- [ ] The grammatical form matches the kind.
-- [ ] No synonym, collision, or confusing near-name.
-- [ ] No generic word left unqualified.
-- [ ] Booleans are positive and actually boolean.
-- [ ] Collections are plural; maps name their key.
-- [ ] Units, time, money, ratios, and ranges are explicit.
-- [ ] Async, error, test, and API conventions match the stack.
-- [ ] File names match the primary export or responsibility.
-- [ ] Database, API, config, and log names agree across layers.
-- [ ] Abbreviations are allowlisted; acronyms follow language rules.
-- [ ] The name is pronounceable and searchable.
-- [ ] Symmetric pairs use the same words.
-- [ ] Deprecation or alias path exists for a public rename.
-- [ ] References, tests, docs, fixtures, and snapshots are updated.
-- [ ] No rename outside the authorized scope.
-- [ ] The naming table is updated.
-- [ ] The project's naming lint rule, if configured, passes.
+- [ ] 术语与项目命名表或术语表一致。
+- [ ] 大小写与语言和产物匹配。
+- [ ] 语法形式与产物种类匹配。
+- [ ] 没有同义词、冲突或容易混淆的近似名称。
+- [ ] 没有未加限定的泛化词。
+- [ ] 布尔值是肯定式的，而且确实是布尔类型。
+- [ ] 集合是复数；映射写明其键。
+- [ ] 单位、时间、金额、比率与范围都是显式的。
+- [ ] 异步、错误、测试与 API 约定与所用技术栈匹配。
+- [ ] 文件名与主要导出或职责匹配。
+- [ ] 数据库、API、配置与日志名称在各层之间一致。
+- [ ] 缩写都在允许清单中；首字母缩略词遵循语言规则。
+- [ ] 名称可读出声、可搜索。
+- [ ] 对称的配对使用相同的词。
+- [ ] 公开重命名有弃用或别名路径。
+- [ ] 引用、测试、文档、fixture 与快照都已更新。
+- [ ] 没有在授权范围之外重命名。
+- [ ] 命名表已更新。
+- [ ] 项目若配置了命名 lint 规则，该规则通过。
 
-## Examples
+## 示例
 
 <example>
-Naming a new HTTP resource across layers:
-Database table `orders`, column `customer_id`, primary key `id`, index `idx_orders_customer_id`;
-API path `/v1/orders`, query `created_after`; JSON `created_at`, `is_paid`; TypeScript type `Order`,
-function `listOrders`, boolean `isPaid`; test `list_orders_test` or `listOrders.test.ts`.
+跨层命名一个新的 HTTP 资源：
+数据库表 `orders`，列 `customer_id`，主键 `id`，索引 `idx_orders_customer_id`；
+API 路径 `/v1/orders`，查询参数 `created_after`；JSON `created_at`、`is_paid`；TypeScript 类型 `Order`，
+函数 `listOrders`，布尔值 `isPaid`；测试 `list_orders_test` 或 `listOrders.test.ts`。
 </example>
 
 <example>
-Renaming a boolean:
-`notDisabled` becomes `isEnabled`; `flag` becomes `hasExported`; a nullable boolean becomes a tri-state enum
-(`Visibility.PUBLIC`, `Visibility.PRIVATE`, `Visibility.UNLISTED`) instead of `isPublic: boolean | null`.
+重命名一个布尔值：
+`notDisabled` 改为 `isEnabled`；`flag` 改为 `hasExported`；可空布尔值改为三态枚举
+（`Visibility.PUBLIC`、`Visibility.PRIVATE`、`Visibility.UNLISTED`），而不是 `isPublic: boolean | null`。
 </example>
 
 <example>
-Renaming a vague service:
-`UserManager` handles lookup and storage. The name hides two responsibilities; split it into `UserDirectory` for
-lookup and `UserRepository` for persistence, and update call sites in one scoped change.
+重命名一个含糊的服务：
+`UserManager` 同时处理查找与存储。这个名称掩盖了两项职责；把它拆成负责查找的 `UserDirectory`
+和负责持久化的 `UserRepository`，并在一次受限的变更中更新所有调用点。
 </example>
 
 <example>
-Naming quantities:
-`timeout` becomes `timeout_ms`; `amount` becomes `amount_cents` plus `currency`; `discount` becomes `discount_pct`
-(0-100) or `discount_ratio` (0-1), and the range is documented in the naming table.
+命名数量值：
+`timeout` 改为 `timeout_ms`；`amount` 改为 `amount_cents` 加 `currency`；`discount` 改为
+`discount_pct`（0-100）或 `discount_ratio`（0-1），并在命名表中记录该范围。
 </example>
 
-## References
+## 参考资料
 
-Read [references/dimensions.md](references/dimensions.md) for the full rule set by artifact and
-[references/languages.md](references/languages.md) for the per-language casing matrix. Read both before establishing
-a new project's naming table; during routine work, read the dimension that applies and the language row that applies.
+按产物分类的完整规则集见 [references/dimensions.md](references/dimensions.md)，按语言的大小写矩阵见
+[references/languages.md](references/languages.md)。建立新项目的命名表之前先读这两份文件；日常工作中，
+读适用的维度与适用的语言行。
