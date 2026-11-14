@@ -10,7 +10,7 @@
             "args": [
               "-X",
               "utf8",
-              "${QODER_PLUGIN_ROOT}/scripts/inject-constraints.py"
+              "${QODER_PLUGIN_ROOT}/scripts/inject_constraints.py"
             ],
             "name": "inject-constraints",
             "timeout": 10
@@ -21,7 +21,7 @@
             "args": [
               "-X",
               "utf8",
-              "${QODER_PLUGIN_ROOT}/scripts/inject-clock.py"
+              "${QODER_PLUGIN_ROOT}/scripts/inject_clock.py"
             ],
             "name": "inject-clock",
             "timeout": 10
@@ -38,7 +38,7 @@
             "args": [
               "-X",
               "utf8",
-              "${QODER_PLUGIN_ROOT}/scripts/inject-clock.py"
+              "${QODER_PLUGIN_ROOT}/scripts/inject_clock.py"
             ],
             "name": "inject-clock",
             "timeout": 10

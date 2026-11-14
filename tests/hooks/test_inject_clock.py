@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""inject-clock.py 与双端 hook 配置的表驱动测试。"""
+"""inject_clock.py 与双端 hook 配置的表驱动测试。"""
 
 import json
 import os
@@ -9,7 +9,7 @@ import sys
 import unittest
 from pathlib import Path
 
-HOOK = Path(__file__).parents[2] / "shared" / "scripts" / "inject-clock.py"
+HOOK = Path(__file__).parents[2] / "shared" / "scripts" / "inject_clock.py"
 ROOT = Path(__file__).parents[2]
 QODER_HOOKS = ROOT / "plugins/qoder/hooks/hooks.json"
 QWEN_HOOKS = ROOT / "plugins/qwen/hooks/qwen-hooks.json"
@@ -68,7 +68,7 @@ class HookConfigTest(unittest.TestCase):
         self.assertEqual(names, ["inject-constraints", "inject-clock"])
         clock = hooks["UserPromptSubmit"][0]["hooks"][0]
         self.assertEqual(clock["name"], "inject-clock")
-        self.assertTrue(clock["args"][2].endswith("/scripts/inject-clock.py"))
+        self.assertTrue(clock["args"][2].endswith("/scripts/inject_clock.py"))
 
     def test_qwen_hooks_register_clock(self):
         hooks = load_json(QWEN_HOOKS)
@@ -80,7 +80,7 @@ class HookConfigTest(unittest.TestCase):
             self.assertNotIn("args", hook)
         constraints = hooks["SessionStart"][0]["hooks"][0]["command"]
         self.assertTrue(constraints.endswith('"${CLAUDE_PLUGIN_ROOT}"'))
-        self.assertIn("inject-constraints.py", constraints)
+        self.assertIn("inject_constraints.py", constraints)
 
     def test_manifests_agree_on_version_and_hooks_path(self):
         qoder = load_json(QODER_MANIFEST)

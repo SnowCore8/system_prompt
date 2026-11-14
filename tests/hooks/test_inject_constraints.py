@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""inject-constraints.py 的表驱动测试。"""
+"""inject_constraints.py 的表驱动测试。"""
 
 import json
 import os
@@ -9,7 +9,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-HOOK = Path(__file__).parents[2] / "shared" / "scripts" / "inject-constraints.py"
+HOOK = Path(__file__).parents[2] / "shared" / "scripts" / "inject_constraints.py"
 HOOKS_JSON = Path(__file__).parents[2] / "plugins" / "qoder" / "hooks" / "hooks.json"
 RULES = "global-user-constraints.md"
 MARKER = "# 测试约束\n\nMARKER-7f3a9c\n"
@@ -66,7 +66,7 @@ class InjectConstraintsTest(unittest.TestCase):
         entry = hooks["SessionStart"][0]["hooks"][0]
         self.assertEqual(entry["command"], "python")
         self.assertEqual(entry["args"][:2], ["-X", "utf8"])
-        self.assertTrue(entry["args"][2].endswith("/scripts/inject-constraints.py"))
+        self.assertTrue(entry["args"][2].endswith("/scripts/inject_constraints.py"))
         self.assertGreater(entry["timeout"], 0)
 
     def test_injects_full_rules(self):
