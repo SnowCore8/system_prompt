@@ -1,35 +1,39 @@
 #!/usr/bin/env bash
-# 把用户级插件打包到仓库根目录：版本随插件提交数递增，文件名带当前 commit id。
+# 把用户级插件打包到仓库根目录：版本取插件 manifest 的 SemVer，文件名带版本号。
 set -euo pipefail
 
 usage() {
   cat <<'EOF'
-用法: scripts/dist.sh [--allow-dirty] [--no-validate]
+用法: scripts/dist.sh [--allow-dirty] [--no-validate] [--require-tag]
 
-版本取自当前 HEAD：0.1.<改动插件的提交数（不含 plugin.json）>，写回
-.qoder-plugin/plugin.json；迁移前的 .qoder/plugins 路径一并计入，同一 commit
-重复运行版本不变。插件目录打成
-<仓库根>/global-user-constraints-<commit>.zip，commit 取 HEAD 短 id。
+插件版本以 plugins/global-user-constraints/.qoder-plugin/plugin.json 的 version
+为准，发布流程要求它是 SemVer（如 0.2.0）。脚本不再推导或改写版本：
+升级版本时手动修改 manifest，单独提交后打 tag，再用本脚本出包。
 
 默认要求工作区干净；仅当显式给出 --allow-dirty 时允许从脏工作区打包，文件名追加
--dirty。浅克隆无法推导稳定版本，直接拒绝。
+-dirty。浅克隆直接拒绝。--require-tag 要求 HEAD 正好带有 v<version> 注释 tag，
+发布流水线用它在 tag 上出包。
+
 包内会下载入仓库根的双许可证文件（LICENSE、LICENSE-CC-BY-4.0.txt、
 LICENSE-MIT.txt）；插件目录内的 rules/ 软链会解引用为真实文件，约束正文随包分发。
 排除 .DS_Store、__pycache__ 与 .pyc；打包前归一文件时间戳并按名称排序，
-用 zip -X 去除额外属性，因此同一 commit 的产物字节可复现。
+用 zip -X 去除额外属性，因此同一版本、同一 tag 的产物字节可复现。
 打包后校验 zip 结构并输出 <zip>.sha256 校验和，默认还用 qoderclicn
-plugins validate 校验插件目录；qoderclicn 缺失时默认失败，可用 --no-validate 跳过。
-所有校验通过后才写回 manifest 并落盘制品；此前失败不会留下半成品。
+plugins validate 校验插件目录；qoderclicn 缺失时默认失败，可用 --no-validate 跳过
+（CI 发布流水线没有 qoderclicn，用跳过换取可重复构建，发布前须在本地校验）。
+所有校验通过后才落盘制品；失败不会留下半成品。
 校验通过后删除较旧制品，只保留最近三个 zip 及其校验和。
 EOF
 }
 
 VALIDATE=1
 ALLOW_DIRTY=0
+REQUIRE_TAG=0
 for arg in "$@"; do
   case "$arg" in
     --no-validate) VALIDATE=0 ;;
     --allow-dirty) ALLOW_DIRTY=1 ;;
+    --require-tag) REQUIRE_TAG=1 ;;
     -h|--help) usage; exit 0 ;;
     *) usage >&2; exit 2 ;;
   esac
@@ -37,7 +41,6 @@ done
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 PLUGIN_REL="plugins/global-user-constraints"
-PLUGIN_LEGACY_REL=".qoder/plugins/global-user-constraints"
 PLUGIN_DIR="$REPO_ROOT/$PLUGIN_REL"
 MANIFEST_REL="$PLUGIN_REL/.qoder-plugin/plugin.json"
 
@@ -53,26 +56,42 @@ if ! COMMIT="$(git -C "$REPO_ROOT" rev-parse --short HEAD 2>/dev/null)"; then
   exit 1
 fi
 if [ "$(git -C "$REPO_ROOT" rev-parse --is-shallow-repository 2>/dev/null || echo false)" = "true" ]; then
-  echo "浅克隆无法稳定推导版本：请先 git fetch --unshallow" >&2
+  echo "浅克隆无法可靠引用 tag：请先 git fetch --unshallow" >&2
   exit 1
 fi
 
-# 插件曾位于 .qoder/plugins/ 下，迁移前的提交一并计入，避免版本回退
-COUNT="$(git -C "$REPO_ROOT" rev-list --count HEAD -- "$PLUGIN_REL" "$PLUGIN_LEGACY_REL" \
-  ":!$PLUGIN_REL/.qoder-plugin/plugin.json" ":!$PLUGIN_LEGACY_REL/.qoder-plugin/plugin.json")"
-VERSION="0.1.$COUNT"
+VERSION="$(python3 - "$REPO_ROOT/$MANIFEST_REL" <<'PY'
+import json, re, sys
 
-DIRTY="$(git -C "$REPO_ROOT" status --porcelain --untracked-files=normal | grep -v " $MANIFEST_REL\$" || true)"
+path = sys.argv[1]
+with open(path, encoding="utf-8") as f:
+    version = json.load(f).get("version", "")
+if not re.fullmatch(r"\d+\.\d+\.\d+", version):
+    sys.exit(f"manifest 的 version 不是 SemVer: {version!r}")
+print(version)
+PY
+)"
+
+if [ "$REQUIRE_TAG" -eq 1 ]; then
+  TAG="$(git -C "$REPO_ROOT" describe --exact-match --tags HEAD 2>/dev/null || true)"
+  if [ "$TAG" != "v$VERSION" ]; then
+    echo "--require-tag: HEAD 的 tag 为 '${TAG:-无}'，期望 v$VERSION" >&2
+    exit 1
+  fi
+fi
+
+DIRTY="$(git -C "$REPO_ROOT" status --porcelain --untracked-files=normal || true)"
+SUFFIX=""
 if [ -n "$DIRTY" ]; then
   if [ "$ALLOW_DIRTY" -ne 1 ]; then
     echo "工作区有未提交改动：先提交，或显式使用 --allow-dirty 打包" >&2
     exit 1
   fi
-  COMMIT="$COMMIT-dirty"
+  SUFFIX="-dirty"
   echo "工作区有未提交改动，文件名标记 -dirty" >&2
 fi
-OUT="$REPO_ROOT/global-user-constraints-$COMMIT.zip"
-SUMS="$REPO_ROOT/global-user-constraints-$COMMIT.sha256"
+OUT="$REPO_ROOT/global-user-constraints-$VERSION$SUFFIX.zip"
+SUMS="$REPO_ROOT/global-user-constraints-$VERSION$SUFFIX.sha256"
 
 STAGE="$(mktemp -d)"
 BUILD="$(mktemp -d)"
@@ -84,21 +103,7 @@ cp -aL "$PLUGIN_DIR/." "$STAGE/"
 # 双许可证随包分发，使用者拿到 zip 即可确认授权范围
 cp "$REPO_ROOT/LICENSE" "$REPO_ROOT/LICENSE-CC-BY-4.0.txt" "$REPO_ROOT/LICENSE-MIT.txt" "$STAGE/"
 
-# 版本先写入暂存区副本，仓库 manifest 等全部校验通过后再更新
-python3 - "$STAGE/.qoder-plugin/plugin.json" "$VERSION" <<'PY'
-import json, sys
-
-path, version = sys.argv[1], sys.argv[2]
-with open(path, encoding="utf-8") as f:
-    data = json.load(f)
-if data.get("version") != version:
-    data["version"] = version
-    with open(path, "w", encoding="utf-8") as f:
-        json.dump(data, f, ensure_ascii=False, indent=2)
-        f.write("\n")
-PY
-
-# 归一 mtime 并按名称排序，配合 zip -X 让同一 commit 的产物字节可复现
+# 归一 mtime 并按名称排序，配合 zip -X 让同一版本、同一 tag 的产物字节可复现
 find "$STAGE" -exec touch -t 198001010000 {} +
 (
   cd "$STAGE"
@@ -143,25 +148,11 @@ if [ "$VALIDATE" -eq 1 ]; then
   qoderclicn plugins validate "$STAGE"
 fi
 
-# 全部校验通过：写回仓库 manifest，原子落盘 zip 与校验和
-python3 - "$REPO_ROOT/$MANIFEST_REL" "$VERSION" <<'PY'
-import json, sys
-
-path, version = sys.argv[1], sys.argv[2]
-with open(path, encoding="utf-8") as f:
-    data = json.load(f)
-if data.get("version") != version:
-    data["version"] = version
-    with open(path, "w", encoding="utf-8") as f:
-        json.dump(data, f, ensure_ascii=False, indent=2)
-        f.write("\n")
-PY
-
 mv "$ZIPTMP" "$OUT"
 if command -v sha256sum >/dev/null 2>&1; then
-  sha256sum "$OUT" > "$SUMS"
+  (cd "$REPO_ROOT" && sha256sum "$(basename "$OUT")") > "$SUMS"
 else
-  shasum -a 256 "$OUT" > "$SUMS"
+  (cd "$REPO_ROOT" && shasum -a 256 "$(basename "$OUT")") > "$SUMS"
 fi
 echo "已生成校验和: $(basename "$SUMS")"
 
@@ -174,4 +165,4 @@ if [ "${#zips[@]}" -gt 3 ]; then
   done
 fi
 
-echo "插件版本 $VERSION；已生成 $OUT"
+echo "插件版本 $VERSION（commit $COMMIT）；已生成 $OUT"

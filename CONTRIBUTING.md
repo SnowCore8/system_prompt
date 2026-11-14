@@ -30,8 +30,9 @@
 - 单独跑测试：skill 测试
   `python3 -B -m unittest discover -s plugins/global-user-constraints/skills/system-prompt-authoring/scripts -p 'test_*.py'`；
   hook 测试在 `plugins/global-user-constraints/` 下运行 `python3 -B -m unittest discover -s scripts -p 'test_*.py'`。
-- 打包：`scripts/dist.sh`，zip 制品不入库；插件版本由插件路径提交数推导，默认要求工作区干净，
-  加 `--allow-dirty` 才允许从脏工作区打包。
+- 发布：版本为 SemVer，改 manifest 的 `version` 与 CHANGELOG 后打 `v<version>` tag，流程见
+  `docs/release.md`。本地出包用 `scripts/dist.sh`（默认要求干净工作区，`--require-tag` 要求 tag 匹配），
+  zip 与 `.sha256` 不入库。
 
 ## 输出
 

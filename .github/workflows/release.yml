@@ -1,0 +1,44 @@
+name: release
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: 安装校验依赖
+        run: python3 -m pip install -r requirements-dev.txt
+      - name: 全量校验
+        run: ./scripts/check.sh
+      - name: 校验 tag 与 manifest 版本一致
+        run: |
+          python3 - <<'PY'
+          import json, os
+          version = json.load(open("plugins/global-user-constraints/.qoder-plugin/plugin.json", encoding="utf-8"))["version"]
+          tag = os.environ["GITHUB_REF_NAME"]
+          if tag != f"v{version}":
+              raise SystemExit(f"tag {tag} 与 manifest 版本 v{version} 不一致")
+          PY
+      # runner 没有 qoderclicn，插件校验在本地发布前完成；此处用 --no-validate 换取可重复构建
+      - name: 构建制品
+        run: ./scripts/dist.sh --no-validate --require-tag
+      - name: 发布 Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" \
+            global-user-constraints-*.zip \
+            global-user-constraints-*.sha256 \
+            --title "$GITHUB_REF_NAME" \
+            --generate-notes

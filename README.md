@@ -20,6 +20,7 @@ DSH 从仓库根 `AGENTS.md` 加载本仓库维护约定；Qwen Code 从 `.qwen/
 | `.qoder/skills/` | Qoder 项目级 skill 入口，软链到插件内十一个 skill |
 | `.dsh/skills/` | DSH 项目级 skill 入口，软链到插件内十一个 skill |
 | `docs/agent-tooling-loading.md` | 三工具 rules/skills/plugins 加载规则调研 |
+| `docs/release.md` | 版本规则、tag 发布流程与回滚 |
 | `scripts/` | `dist.sh` 打包；`check.sh` 全量校验 |
 | `GLOSSARY.md` | 术语与写法约定 |
 | `CHANGELOG.md` | 按日期记录的可观察变更 |
@@ -27,7 +28,7 @@ DSH 从仓库根 `AGENTS.md` 加载本仓库维护约定；Qwen Code 从 `.qwen/
 | `THIRD-PARTY-NOTICES.md` | 开发依赖与第三方许可声明 |
 | `LICENSE`、`LICENSE-CC-BY-4.0.txt`、`LICENSE-MIT.txt` | 双许可证：文档 CC BY 4.0，代码 MIT |
 | `SECURITY.md` | 支持的版本与私下漏洞报告渠道 |
-| `.github/` | CI 质量门禁、CODEOWNERS 与 PR 模板 |
+| `.github/` | CI 与 Release 工作流、Dependabot、CODEOWNERS 与 PR 模板 |
 
 ## 编辑
 
@@ -94,15 +95,24 @@ qoderclicn --cwd "$TMP" plugins list --json
 
 ## 打包
 
-在仓库根目录运行 `scripts/dist.sh`，版本推导、软链解引用、排除项、结构校验与旧包清理见脚本 `--help`；脚本写回的 `.qoder-plugin/plugin.json` 版本随代码提交。默认要求工作区干净，`--allow-dirty` 才允许从脏工作区
-打包；浅克隆直接拒绝。zip 制品与 `*.sha256` 被 `.gitignore` 忽略，打包时把双许可证复制进包内，输出 SHA256
-校验和并保留最近三个制品；全部校验通过后才写回 manifest 并落盘。
+版本采用 SemVer，`plugins/global-user-constraints/.qoder-plugin/plugin.json` 的 `version` 是唯一来源；
+发布流程是「改版本与 CHANGELOG → 提交 → 打 `v<version>` 注释 tag → 推送」，由 release 工作流出包，
+详见 [docs/release.md](docs/release.md)。
+
+本地出包运行 `scripts/dist.sh`：默认要求工作区干净（`--allow-dirty` 放行，文件名加 `-dirty`），
+浅克隆直接拒绝，`--require-tag` 要求 HEAD 正好带有 `v<version>` tag。包内复制双许可证，归一 mtime
+并按名称排序后输出可复现 zip 与 SHA256，保留最近三个制品。zip 制品与 `*.sha256` 被 `.gitignore` 忽略，
+不提交。
 
 ## CI
 
-`.github/workflows/check.yml` 在 push 到 `master` 与 pull request 时运行 `scripts/check.sh`，使用最小
-`contents: read` 权限，并先确认 runner 自带 `shellcheck` 可用。CI 与本地跑的是同一套校验，差异只在
-`qoderclicn` 缺失时跳过插件校验；工作流与 `.github/CODEOWNERS` 在接入 GitHub 远端后才实际生效。
+- `check`：push 到 `master` 与 pull request 时运行 `scripts/check.sh`，使用最小 `contents: read` 权限，
+  并先确认 runner 自带 `shellcheck` 可用。
+- `release`：推送 `v*` tag 时重跑校验、核对 tag 与 manifest 版本，构建 zip 与 SHA256 并挂到 Release；
+  该工作流没有 `qoderclicn`，用 `--no-validate` 换取可重复构建，插件校验在本地发布前完成。
+- 依赖更新由 Dependabot 每周检查 pip 与 GitHub Actions。
+- CI 与本地跑的是同一套校验，差异只在 `qoderclicn` 缺失时跳过插件校验；分支保护与 `.github/CODEOWNERS`
+  在接入 GitHub 远端后启用，保护项见 [GOVERNANCE.md](GOVERNANCE.md)。
 
 ## 安全
 

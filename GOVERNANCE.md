@@ -26,10 +26,14 @@
 
 ## 发布
 
-- 插件版本由 `scripts/dist.sh` 按改动插件的提交数推导，形如 `0.1.<n>`；
-  它表达的是源码快照，不表达语义化兼容性，也不构成发布边界。
-- 当前不打 tag、不保留全部历史制品；每次打包保留最近三个制品与 SHA256 校验和，
-  并在 CHANGELOG 记录本次交付的提交与插件版本。
+- 版本采用 SemVer，`plugins/global-user-constraints/.qoder-plugin/plugin.json` 的 `version`
+  是唯一来源；发布点是注释 tag `v<version>`，tag 与 manifest 版本必须一致。
+- 发布流程见 [docs/release.md](docs/release.md)：改版本与 CHANGELOG → 校验 → 提交 → 打 tag → 推送，
+  由 `release` 工作流构建 zip 与 SHA256 并挂到 Release。
+- `scripts/dist.sh` 只出包，不改写版本；构建归一 mtime、按名称排序并使用 `zip -X`，
+  同一版本同一 tag 的产物可复现，本地保留最近三个制品与校验和。
+- 接入 GitHub 远端后的分支保护：`master` 要求 `check` 状态通过、禁止强推、要求线性历史；
+  `v*` tag 受保护。制品的下载与校验方式写在 Release 说明与发布手册里。
 - 对外分发前必须完成：双许可证随包分发、制品校验和、安全报告渠道可达。
 
 ## 不提供的文件

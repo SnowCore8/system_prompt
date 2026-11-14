@@ -1,6 +1,21 @@
 # 变更日志
 
-按日期记录本仓库的可观察变更，最新在前。版本号由 `scripts/dist.sh` 按改动插件的提交数推导，不构成发布边界，因此不按版本分节。条目按主题合并，记录最终可观察状态；被后续提交推翻的中间状态只在修复项里说明。
+按版本从新到旧记录可观察变更。自 0.2.0 起版本采用 SemVer、发布点为 tag `v<version>`，每节记录一个发布版本；0.2.0 之前按日期记录。条目按主题合并，记录最终可观察状态；被后续提交推翻的中间状态只在修复项里说明。
+
+## 0.2.0（2026-11-14）
+
+**变更**
+
+- 版本切换到 SemVer + tag 发布：manifest 的 `version` 是唯一来源，`scripts/dist.sh` 不再推导或改写版本；
+  新增 `docs/release.md`、`release` 工作流与 Dependabot，制品为可复现 zip 与 SHA256。
+- 引入 ruff 质量门禁：固定开发依赖 `ruff==0.17.5`，新增 `pyproject.toml`，`scripts/check.sh` 与 CI 运行
+  `ruff check`。
+- 仓库托管到 GitHub 私有仓库并推送 `master` 与 `v0.2.0` tag，`check`、`release` 工作流与 CODEOWNERS 生效。
+
+**修复**
+
+- 发布脚本：`--require-tag` 校验 tag 与 manifest 版本，`--no-validate` 供没有 `qoderclicn` 的 CI 使用；
+  构建失败不落制品。
 
 ## 2026-11-14
 

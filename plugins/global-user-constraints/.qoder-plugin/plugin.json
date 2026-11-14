@@ -1,7 +1,7 @@
 {
   "name": "global-user-constraints",
   "displayName": "用户全局约束",
-  "version": "0.1.82",
+  "version": "0.2.0",
   "description": "常驻的用户级约束；十一个 skill 覆盖指令文件起草、命名、注释、文档、代码风格、接口与数据、测试与质量、版本控制与协作、发布与运维、安全与合规、仓库治理；一个手动审查命令；一个注入当前本地时间的 hook。",
   "author": {
     "name": "SnowCore8"
