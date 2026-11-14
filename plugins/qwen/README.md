@@ -28,6 +28,7 @@ Qwen 会用 `${CLAUDE_PLUGIN_ROOT}` 替换扩展根；约束脚本同时接受�
 
 - `SessionStart`：约束全文 + 当前时间；去重路径包含 `~/.qwen/rules/`、`~/.qwen/AGENTS.md`、
   项目 `.qwen/rules/`、`AGENTS.md`、`QWEN.md`（从 cwd 向上查到 `.git`）。
+  `source` 为 `resume` 时跳过约束（历史里已有），`startup`/`clear`/`compact` 才注入。
 - `UserPromptSubmit`：当前时间；Qwen 会把这段上下文包进
   `<qwen:user-prompt-submit-context>` 来源标签。
 - 规则缺失、payload 非法、事件不在范围内时静默退出 0。

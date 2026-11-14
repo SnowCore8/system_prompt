@@ -1,6 +1,6 @@
 {
   "name": "@snowcore8/dsh-global-user-constraints",
-  "version": "0.7.0",
+  "version": "0.7.1",
   "description": "DSH bundle（Git 源安装入口）：以 skill 提供者形式暴露用户全局约束的十一个通用规范 skill。",
   "type": "module",
   "main": "plugins/dsh/src/index.js",

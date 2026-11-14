@@ -76,6 +76,18 @@ class InjectConstraintsTest(unittest.TestCase):
         self.assertEqual(output["hookEventName"], "SessionStart")
         self.assertIn("MARKER-7f3a9c", output["additionalContext"])
 
+    def test_skips_resume_source(self):
+        proc = self.run_hook({"hook_event_name": "SessionStart", "source": "resume",
+                              "cwd": str(self.project)})
+        self.assertEqual((proc.returncode, proc.stdout), (0, ""))
+
+    def test_injects_after_clear_or_compact(self):
+        for source in ("startup", "new", "clear", "compact"):
+            with self.subTest(source=source):
+                proc = self.run_hook({"hook_event_name": "SessionStart", "source": source,
+                                      "cwd": str(self.project)})
+                self.assertIn("MARKER-7f3a9c", proc.stdout)
+
     def test_skips_when_user_rule_matches(self):
         target = self.cn / "rules"
         target.mkdir(parents=True)

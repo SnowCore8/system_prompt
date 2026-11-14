@@ -31,7 +31,8 @@ Qoder 的 `plugins validate` 会拒绝解析到包外的路径，因此不要直
 
 - `SessionStart`：约束脚本读取 `rules/global-user-constraints.md` 注入全文（约 32 KB），
   注入前比对用户级 `~/.qoder-cn/rules/`（国际版 `~/.qoder/rules/`）、`AGENTS.md`、
-  项目 `.qoder/rules/` 与 `AGENTS.local.md`，同内容则跳过；
+  项目 `.qoder/rules/` 与 `AGENTS.local.md`，同内容则跳过；`source` 为 `resume` 时也跳过
+  （历史里已有），`startup`/`new`/`clear`/`compact` 才注入；
   时间脚本注入当前本地时间、UTC 偏移、时区与星期。
 - `UserPromptSubmit`：只注入时间，保证长会话与压缩后仍然准确。
 - 规则缺失、payload 非法、事件不在范围内时静默退出 0。

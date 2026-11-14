@@ -16,6 +16,9 @@ from pathlib import Path
 HOOK_EVENTS = {"SessionStart"}
 RULES_FILENAME = "global-user-constraints.md"
 MAX_BYTES = 512 * 1024
+# 恢复会话时历史里已经有注入的正文，再注入一份只会膨胀上下文。
+# clear/compact 会重建上下文，仍需要重新注入；startup 与 new 同理。
+SKIP_SOURCES = {"resume"}
 
 
 def plugin_root(argv: list[str]) -> Path:
@@ -103,6 +106,9 @@ def main() -> int:
         return 0
     event = payload.get("hook_event_name")
     if event not in HOOK_EVENTS:
+        return 0
+    source = payload.get("source")
+    if isinstance(source, str) and source in SKIP_SOURCES:
         return 0
 
     rules_path = plugin_root(sys.argv) / "rules" / RULES_FILENAME
