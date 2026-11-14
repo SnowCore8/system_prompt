@@ -65,8 +65,8 @@ DSH 从仓库根 `AGENTS.md` 加载本仓库维护约定；Qwen Code 从 `.qwen/
 - 项目级：`.qoder/rules` 软链指向根级 `rules/`；Qoder 从当前目录向上查到 `.git`，逐层读取 `.qoder/rules/**/*.md`。
 - skill：Qoder 从 `.qoder/skills/` 发现项目级 skill；该目录用相对软链指向插件内十一个 skill，
   安装插件时另提供带插件前缀的同一批 skill。
-- 用户级：CN 把规则复制到 `~/.qoder-cn/rules/`；插件包内的 `rules/` 当前不被宿主加载，安装后按插件 README 的
-  「规则激活」复制一次。
+- 用户级：安装插件后由 `SessionStart` hook 自动注入约束全文；用户级或项目级已加载同内容规则或 `AGENTS.md`
+  时跳过。仍支持手动复制到 `~/.qoder-cn/rules/`，两种方式二选一。
 - 不提供两个入口：`.qoder-cn`（CN 的这个名字只用于用户级配置根）与 `.qoder/plugins`（插件包体安装在用户配置根），
   项目级都没有加载语义。
 - 校验：`scripts/check.sh` 的「Qoder 适配」段校验 `.qoder` 为普通目录、`.qoder/rules` 指向 `rules/`、

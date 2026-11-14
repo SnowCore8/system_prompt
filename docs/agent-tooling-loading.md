@@ -115,8 +115,9 @@
 
 插件携带 rules 的现状：CN 支持矩阵把 Rules 标为 Desktop「即将支持」、CLI「不适用」；
 CLI 1.1.88 的 `plugins validate` 把 `"rules"` 报为 unknown field 并忽略，只含 `rules/` 的插件
-会因「没有可安装组件」被拒。所以当前可靠做法仍是把规则放用户级或项目级 `.qoder/rules/`。
-`qoder.md` 同样未被验证会加载。
+会因「没有可安装组件」被拒。宿主原生的做法仍是把规则放用户级或项目级 `.qoder/rules/`；
+插件若要让约束安装即生效，只能用 `SessionStart` hook 把正文作为 `additionalContext` 注入
+（本仓库插件即如此，实测 32 KB 可完整进入上下文）。`qoder.md` 是否加载未验证，本仓库已移除。
 
 来源：[Qoder 插件参考](https://docs.qoder.com/cli/plugins-reference)、[Qoder CN 插件打包规范](https://docs.qoder.cn/qoder-plugins)。
 
@@ -355,9 +356,9 @@ DSH 里「插件」是 TypeScript 模块，导出 `apply(ctx)`；可分发的安
 
 - Qwen Code：`.qwen/rules`（目录软链到 `rules/`）。其中的规则没有 `paths:`，属 baseline，
   首个请求进入 system prompt；`.qwen/AGENTS.md` 会被 Qwen 忽略，因此不再提供。
-- Qoder：项目级 `.qoder/rules`，软链指向根级 `rules/`；用户级另按插件 README 复制到
-  `~/.qoder-cn/rules`（国际版 `~/.qoder/rules`）。`.qoder-cn` 与 `.qoder/plugins` 在项目级
-  没有加载语义，已移除。
+- Qoder：项目级 `.qoder/rules`，软链指向根级 `rules/`；用户级由插件 `SessionStart` hook 自动注入
+  （同内容规则/`AGENTS.md` 已存在时跳过），也可手动复制到 `~/.qoder-cn/rules`（国际版 `~/.qoder/rules`）。
+  `.qoder-cn` 与 `.qoder/plugins` 在项目级没有加载语义，已移除。
 - DeepSeek Harness：`.dsh/skills` 是 rank 100 的 skill 扫描根；根 `AGENTS.md` 是项目指令入口。
 - skills：`.qwen/skills`、`.qoder/skills`、`.dsh/skills` 各自软链到插件内十一个 skill；Qoder 与
   Qwen Code 只扫描一层，DSH 也不递归发现嵌套 `SKILL.md`。

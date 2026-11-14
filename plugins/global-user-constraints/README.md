@@ -1,12 +1,13 @@
 # 用户全局约束插件
 
-用户级 Qoder 插件，组件见「结构」。约束正文随包分发，但安装后必须按「规则激活」复制一次才能生效。
+用户级 Qoder 插件。安装后由 `SessionStart` hook 在会话启动时把约束全文注入上下文，
+不再需要手动复制规则；用户级或项目级已经加载同一份约束时自动跳过，避免重复。
 
 ## 结构
 
 | 路径 | 作用 |
 |---|---|
-| `rules/` | 用户全局约束正文（唯一权威来源） |
+| `rules/` | 用户全局约束正文（唯一权威来源，随包分发） |
 | `.qoder-plugin/plugin.json` | 插件 manifest |
 | `skills/system-prompt-authoring/` | 起草与审查指令文件的 skill |
 | `skills/naming-conventions/` | 通用命名规范，覆盖代码、API、数据库、配置与提交等维度 |
@@ -20,40 +21,42 @@
 | `skills/security-compliance-conventions/` | 安全与合规规范，覆盖安全开发、凭据与密钥、许可证与 SBOM、隐私与漏洞披露 |
 | `skills/repository-governance-conventions/` | 仓库治理规范，覆盖必需文件与元数据、仓库卫生、治理流程与打包分发 |
 | `commands/constraints-check.md` | 手动触发约束审查 |
-| `hooks/hooks.json` | 时间注入 hook 配置 |
-| `scripts/inject-time.py` | 向支持 `additionalContext` 的事件注入当前本地时间 |
-| `scripts/test_inject_time.py` | hook 的表驱动测试 |
-| `qoder.md` | 插件级指令文件（宿主支持时加载；`plugins validate` 不列此组件） |
+| `hooks/hooks.json` | `SessionStart` hook 配置 |
+| `scripts/inject-constraints.py` | 读取包内约束并输出 `additionalContext`，带去重与降级 |
+| `scripts/test_inject_constraints.py` | hook 的表驱动测试 |
 
-## 规则激活
+## 生效方式
 
-复制源取决于安装方式：源码目录安装用源码树根级 `rules/`，zip 或市场安装用插件安装目录下的 `rules/`（含 `.qoder-plugin/plugin.json` 的目录）：
+1. 安装插件（用户级）：`qoderclicn plugins install <插件目录或 zip> --scope user`。
+2. 新会话启动时，hook 读取 `${QODER_PLUGIN_ROOT}/rules/global-user-constraints.md`，
+   把全文作为 `additionalContext` 注入；约束正文约 32 KB，已实测可完整进入上下文。
+3. 注入前会比对以下位置的同内容文件，命中则跳过：
 
-```bash
-mkdir -p ~/.qoder-cn/rules
-cp <插件目录>/rules/global-user-constraints.md ~/.qoder-cn/rules/
-```
+   - 用户级 `~/.qoder-cn/rules/global-user-constraints.md`（国际版 `~/.qoder/rules/`）与 `AGENTS.md`
+   - 项目级 `.qoder/rules/global-user-constraints.md`、`AGENTS.md`、`AGENTS.local.md`
+     （从 cwd 向上查到 `.git`）
 
-`rules/global-user-constraints.md` 是唯一规范正文，必须激活；仓库不再附带英文译本。
+所以已经用「规则激活」配置过约束的用户不会拿到两份；新用户安装即生效。
 
-宿主不从包内加载约束：`plugins validate` 只校验 skills/agents/commands/hooks，不处理 `rules/`。
+仍然支持手动规则激活：把 `rules/global-user-constraints.md` 复制到
+`~/.qoder-cn/rules/`（CN）或项目的 `.qoder/rules/`。这条路径与 hook 二选一即可，
+两者同时存在时 hook 自动跳过。
 
 ## Hook 行为
 
-Hook 注册在支持 `additionalContext` 的 9 个事件上，matcher 留空匹配全部触发源；其余事件（如 `Stop`、`PermissionRequest`、`PostCompact`、`InstructionsLoaded`）未注册：
-
-- `SessionStart`、`UserPromptSubmit`、`PreToolUse`、`PostToolUse`、`PostToolUseFailure`
-- `SubagentStart`、`Notification`、`CwdChanged`、`FileChanged`
-
-- 解释器用 `python`（PATH 上需有，3.7+），以 `-X utf8` 启动：Windows 只有 `python.exe` 没有 `python3`，且该参数固定 stdin/stdout 编码，避免 ANSI 代码页下中文注入失败。
-- 读取 stdin 的事件 JSON，从 `hook_event_name` 取事件名；输出 `hookSpecificOutput.hookEventName` 与 `hookSpecificOutput.additionalContext`，内容为 `当前时间：YYYY-MM-DD HH:MM:SS +HH:MM`。
-- 事件名不在支持列表、stdin 不是 JSON 对象时静默退出 0，不输出内容。
+- 只注册 `SessionStart`，matcher 留空匹配全部来源；其他事件不注册，避免频繁注入。
+- 读取 stdin 事件 JSON，只使用 `hook_event_name` 与 `cwd`；输出
+  `hookSpecificOutput.hookEventName` 与 `hookSpecificOutput.additionalContext`。
+- 包内规则缺失、`QODER_PLUGIN_ROOT` 未设置、事件不是 `SessionStart`、payload 非法时静默退出 0。
+- 正文超过 512 KB 时降级为一行提示，要求模型自行读取规则文件（正常正文约 32 KB，不会触发）。
+- 解释器用 `python`（PATH 上需有 3.7+），以 `-X utf8` 启动：Windows 只有 `python.exe`，
+  该参数固定 stdin/stdout 编码，避免 ANSI 代码页下中文注入失败；`timeout` 为 10 秒。
 
 ## 安全边界
 
-- hook 从 stdin 读取事件 JSON，只取 `hook_event_name`；不写盘、不联网、不持久化任何字段。
-- 输出只有 `hookSpecificOutput.hookEventName` 与 `additionalContext`（当前本地时间），该文本会进入模型上下文。
-- 脚本从 PATH 解析 `python`（3.7+）；解释器缺失时按 hook 失败处理，不注入时间。
+- hook 只读：读包内规则与上述去重候选文件，不写盘、不联网、不持久化任何字段。
+- 注入的约束全文会进入模型上下文；这是本插件的设计目的，敏感内容不要写进规则正文。
+- 解释器缺失或脚本超时时按 hook 失败处理，不阻断会话，但本会话没有注入。
 - 安装即执行：只安装可信来源的插件包，并核对发布包附带的 SHA256 校验和。
 
 ## Hook 测试
@@ -64,10 +67,11 @@ Hook 注册在支持 `additionalContext` 的 9 个事件上，matcher 留空匹�
 python3 -B -m unittest discover -s scripts -p 'test_*.py'
 ```
 
-测试覆盖 9 个受支持事件的注入输出、未支持事件和非法 payload 的静默行为。
+测试覆盖：hook 配置指向脚本、全文注入、用户级/项目级规则与 `AGENTS.md` 去重、
+非 `SessionStart` 事件与非法 payload 静默、缺少 `QODER_PLUGIN_ROOT` 或规则文件时静默。
 
 ## 边界
 
-- 约束生效目录：用户级 `~/.qoder-cn/rules`（国际版 `~/.qoder/rules`）；项目级 `.qoder/rules`（Qoder 从当前目录向上查到 `.git`，逐层读取）。
+- 约束生效目录：用户级 `~/.qoder-cn/rules`（国际版 `~/.qoder/rules`）；项目级 `.qoder/rules`。
 - 不要把插件、约束文件或 zip 上传到公网平台；只走企业内网或已批准的分发通道。
 - Hook 不拦截工具调用；约束本身仍要求人工审查与真实输出验证。
