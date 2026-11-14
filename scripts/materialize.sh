@@ -39,5 +39,5 @@ if [ "$1" = "dsh" ]; then
 else
   cp -aL "$PACKAGE/." "$TARGET/"
 fi
-cp "$REPO_ROOT/LICENSE" "$REPO_ROOT/LICENSE-CC-BY-4.0.txt" "$REPO_ROOT/LICENSE-MIT.txt" "$TARGET/"
+cp "$REPO_ROOT/LICENSE" "$REPO_ROOT/LICENSE-CC-BY-4.0.txt" "$REPO_ROOT/LICENSE-MIT.txt" "$REPO_ROOT/THIRD-PARTY-NOTICES.md" "$TARGET/"
 echo "已物化: $1 -> $TARGET"

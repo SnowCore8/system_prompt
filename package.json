@@ -12,7 +12,8 @@
     "README.md",
     "LICENSE",
     "LICENSE-CC-BY-4.0.txt",
-    "LICENSE-MIT.txt"
+    "LICENSE-MIT.txt",
+    "THIRD-PARTY-NOTICES.md"
   ],
   "engines": {
     "dsh": ">=0.2.2-rc.1 <0.3.0"

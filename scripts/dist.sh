@@ -104,7 +104,7 @@ required = {
     "qwen": ["qwen-extension.json", "hooks/qwen-hooks.json", "constraints/global-user-constraints.md"],
     "dsh": ["package.json", "plugins/dsh/cordis.patch.yml", "plugins/dsh/src/index.js",
             "rules/global-user-constraints.md"],
-}[name] + ["LICENSE", "LICENSE-CC-BY-4.0.txt", "LICENSE-MIT.txt"]
+}[name] + ["LICENSE", "LICENSE-CC-BY-4.0.txt", "LICENSE-MIT.txt", "THIRD-PARTY-NOTICES.md"]
 
 with zipfile.ZipFile(path) as zf:
     infos = zf.infolist()
@@ -133,9 +133,9 @@ for info in infos:
         problems.append(f"包含 Python 缓存: {info.filename}")
 
 allowed = {
-    "qoder": (".qoder-plugin/", "hooks/", "rules/", "skills/", "commands/", "scripts/", "README.md", "LICENSE"),
-    "qwen": ("qwen-extension.json", "hooks/", "constraints/", "skills/", "commands/", "scripts/", "README.md", "LICENSE"),
-    "dsh": ("package.json", "plugins/dsh/", "skills/", "rules/", "README.md", "LICENSE"),
+    "qoder": (".qoder-plugin/", "hooks/", "rules/", "skills/", "commands/", "scripts/", "README.md", "LICENSE", "THIRD-PARTY-NOTICES.md"),
+    "qwen": ("qwen-extension.json", "hooks/", "constraints/", "skills/", "commands/", "scripts/", "README.md", "LICENSE", "THIRD-PARTY-NOTICES.md"),
+    "dsh": ("package.json", "plugins/dsh/", "skills/", "rules/", "README.md", "LICENSE", "THIRD-PARTY-NOTICES.md"),
 }[name]
 for entry in names:
     permitted = any(entry == prefix or entry.startswith(prefix) for prefix in allowed)

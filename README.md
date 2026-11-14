@@ -106,8 +106,9 @@ scripts/check.sh
 ```
 
 `scripts/check.sh` 覆盖 Markdown、skill 与 hook 测试、DSH bundle 的 `node --test`、shellcheck、
-ruff、JSON、敏感文件、软链、三工具项目级适配、三包清单一致性与物化后的 Qoder 插件校验。
-缺 `shellcheck`、`node` 或 `qoderclicn` 时会打印「跳过」并在结尾计数。
+ruff、依赖审计（pip-audit）、覆盖率（`--fail-under=90`）、JSON、敏感文件、软链、三工具项目级适配、
+三包清单一致性与物化后的 Qoder 插件校验。缺 `shellcheck`、`node` 或 `qoderclicn` 时会打印「跳过」并在
+结尾计数。
 
 本地安装 smoke test：
 
@@ -130,8 +131,8 @@ qoderclicn --cwd /tmp plugins list --json
 ## CI
 
 - `check`：push 到 `master` 与 pull request 时运行 `scripts/check.sh`，最小 `contents: read` 权限，
-  并先确认 runner 自带 `shellcheck`。
-- `release`：推送 `v*` tag 时核对三包版本与 tag，构建三个 zip 与 SHA256 并挂到 Release；
+  并先确认 runner 自带 `shellcheck`；另跑 gitleaks 历史机密扫描。
+- `release`：推送 `v*` tag 时核对三包版本与 tag，构建三个 zip 与 SHA256、生成 SBOM 并挂到 Release；
   该工作流没有 `qoderclicn`，用 `--no-validate` 换取可重复构建，插件校验在本地发布前完成。
 - 依赖更新由 Dependabot 每周检查 pip 与 GitHub Actions。
 - 分支保护在私有仓库免费计划下不可用（需 GitHub Pro），升级后按 GOVERNANCE 的保护项启用。
