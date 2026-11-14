@@ -103,7 +103,9 @@ cp -aL "$PLUGIN_DIR/." "$STAGE/"
 # 双许可证随包分发，使用者拿到 zip 即可确认授权范围
 cp "$REPO_ROOT/LICENSE" "$REPO_ROOT/LICENSE-CC-BY-4.0.txt" "$REPO_ROOT/LICENSE-MIT.txt" "$STAGE/"
 
-# 归一 mtime 并按名称排序，配合 zip -X 让同一版本、同一 tag 的产物字节可复现
+# 归一权限与 mtime，并按名称排序，配合 zip -X 让同一版本、同一 tag 的产物字节可复现
+find "$STAGE" -type d -exec chmod 755 {} +
+find "$STAGE" -type f -exec chmod 644 {} +
 find "$STAGE" -exec touch -t 198001010000 {} +
 (
   cd "$STAGE"
