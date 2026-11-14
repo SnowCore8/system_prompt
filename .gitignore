@@ -3,3 +3,14 @@ __pycache__/
 .qoder/tmp/
 .qoder/settings.local.json
 *.zip
+.venv/
+.DS_Store
+*.log
+.qwen/.env
+.qwen/settings.local.json
+.qwen/tmp/
+.env
+!.env.example
+*.pem
+*.key
+global-user-constraints-*.sha256

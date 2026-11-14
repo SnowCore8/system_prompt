@@ -1,0 +1,26 @@
+name: check
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: 安装校验依赖
+        run: python3 -m pip install -r requirements-dev.txt
+      - name: 确认 shellcheck 可用
+        run: shellcheck --version
+      # qoderclicn（Qoder CLI CN）不在 runner 镜像内，插件校验段会跳过；
+      # 发布前必须在装有 qoderclicn 的机器上运行 scripts/dist.sh。
+      - name: 全量校验
+        run: ./scripts/check.sh

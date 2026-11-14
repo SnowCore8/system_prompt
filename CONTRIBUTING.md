@@ -9,6 +9,9 @@
 
 - 本文件只约束本仓库的维护工作；若用户级约束已加载，两者冲突时以用户级约束为准。
 - 只改被请求的内容；仓库是真源，不另建副本。
+- 代码注释与文档注释用中文；引入的第三方代码保留其原文注释。
+- Windows 检出必须先启用 `git config core.symlinks true`（或开发者模式），否则软链会落成普通文本文件，
+  各工具的 skill 与规则入口会静默失效；`scripts/check.sh` 的软链段会报数量不一致。
 
 ## 工作流
 
@@ -17,12 +20,18 @@
    skill 真源在插件内，`.qwen/skills/`、`.qoder/skills/`、`.dsh/skills/` 只是软链入口。
 3. 新增或调整入口时保持软链约定：相对路径、目标在仓库内、不复制第二份、不指向另一软链。
 4. 提交前运行 `scripts/check.sh`，失败先修；交付时贴真实输出与退出码。
+5. 分支模型为 trunk-based：单人维护，直接提交 `master`，不强制 PR；接入远端后启用 `master` 保护与必需 CI。
 
 ## 校验与打包
 
 - 依赖：`python3 -m pip install -r requirements-dev.txt`。
-- 全量校验：`scripts/check.sh`，覆盖 Markdown、skill 与 hook 测试、shellcheck、JSON、软链与 DSH/Qwen/Qoder 适配。
-- 打包：`scripts/dist.sh`，zip 产物不入库；插件版本由插件路径提交数推导。
+- 全量校验：`scripts/check.sh`，覆盖 Markdown、skill 与 hook 测试、shellcheck、JSON、敏感文件、
+  软链与 DSH/Qwen/Qoder 适配。缺 `shellcheck` 或 `qoderclicn` 时对应段会打印「跳过」，交付时要说明缺口。
+- 单独跑测试：skill 测试
+  `python3 -B -m unittest discover -s plugins/global-user-constraints/skills/system-prompt-authoring/scripts -p 'test_*.py'`；
+  hook 测试在 `plugins/global-user-constraints/` 下运行 `python3 -B -m unittest discover -s scripts -p 'test_*.py'`。
+- 打包：`scripts/dist.sh`，zip 制品不入库；插件版本由插件路径提交数推导，默认要求工作区干净，
+  加 `--allow-dirty` 才允许从脏工作区打包。
 
 ## 输出
 

@@ -1,6 +1,6 @@
 # 变更日志
 
-按日期记录本仓库的可观察变更，最新在前。版本号由 `scripts/dist.sh` 按改动插件的提交数推导，不构成发布边界，因此不按版本分节。条目由 git 历史整理，同一主题的重复提交合并为一条。
+按日期记录本仓库的可观察变更，最新在前。版本号由 `scripts/dist.sh` 按改动插件的提交数推导，不构成发布边界，因此不按版本分节。条目按主题合并，记录最终可观察状态；被后续提交推翻的中间状态只在修复项里说明。
 
 ## 2026-11-14
 
@@ -16,32 +16,40 @@
 - `release-operations-conventions` skill：发布与运维规范，覆盖版本与发布、变更管理、CI/CD、可观测性、事故响应与备份恢复。
 - `security-compliance-conventions` skill：安全与合规规范，覆盖安全开发、凭据与密钥、许可证与 SBOM、隐私与漏洞披露。
 - `repository-governance-conventions` skill：仓库治理规范，覆盖必需文件与元数据、仓库卫生、治理流程与打包分发。
-- 根 `AGENTS.md` 软链指向 `rules/global-user-constraints.md`，供 DSH 作为工作区指令加载；Qoder 仍按插件规则激活。
-- DeepSeek Harness 适配：新增 `.dsh/skills/` 项目级入口，以相对软链暴露插件内十一个 skill；`scripts/check.sh` 增加 DSH 适配校验。
-- 软链治理：`scripts/check.sh` 增加全量软链校验（必须入库、相对路径、目标在仓库内且存在、不指向另一软链或 `.git`、目标已跟踪）；README 补充软链约定。
-- 根 `AGENTS.md` 由约束正文软链改为本仓库项目维护约定；用户全局约束保留在 `rules/`，不再作为 DSH 项目指令自动加载，需要时由用户级指令或 Qoder 插件规则激活提供。
-- 入口修正：删除 `.qwen` 软链（Qwen 不读 `rules/`）；根 `AGENTS.md` 恢复为约束正文入口，项目维护约定移至 `CONTRIBUTING.md`。
-- Qwen 入口修正：Qwen Code 只读 `.qwen/AGENTS.md`，该文件软链指向约束正文；根 `AGENTS.md` 改为项目维护约定入口（软链 `CONTRIBUTING.md`）。
+- DeepSeek Harness 适配：`.dsh/skills/` 以相对软链暴露插件内十一个 skill，`scripts/check.sh` 校验入口。
+- Qwen Code 适配：`.qwen/rules` 目录软链到 `rules/`（无 `paths:`，baseline 规则），`.qwen/skills/` 暴露十一个 skill。
+- Qoder 适配：`.qoder/rules` 目录软链到 `rules/`，`.qoder/skills/` 暴露十一个 skill；用户级按插件 README 的「规则激活」安装。
+- 软链治理：`scripts/check.sh` 增加全量软链校验（必须入库、相对路径、目标在仓库内且存在、不指向另一软链或 `.git`、目标已跟踪）；
+  README 补充软链约定。
 - 新增 `docs/agent-tooling-loading.md`：分别整理 Qoder、Qwen Code 与 DeepSeek Harness 的 rules/skills/plugins 加载规则，附对照表与本仓库映射。
-- 三工具 skill 入口适配：新增 `.qwen/skills/` 与 `.qoder/skills/`，各以相对软链指向插件内十一个 skill；
-  `scripts/check.sh` 抽出统一的 skill 入口校验，README、CONTRIBUTING 与加载规则调研文档同步。
+- 仓库治理：新增双许可证（文档 CC BY 4.0、代码 MIT）、`SECURITY.md`、`GOVERNANCE.md`、`THIRD-PARTY-NOTICES.md`、
+  `.gitattributes` 与 `.github/`（CI、CODEOWNERS、PR 模板）；`scripts/dist.sh` 把许可证打进制品，归一 mtime 并排序后输出
+  可复现 zip 与 SHA256 校验和。
 
 **变更**
 
-- 根入口改为 `.qoder` 实际目录；`.qwen`、`.qoder-cn` 软链指向 `.qoder`，`.gitignore` 的本地配置路径同步。
-- `documentation-conventions` 的 `SECURITY.md` 条目只保留页面结构与行文，必需内容与响应承诺归 `security-compliance-conventions`。
-- 规范正文与十一个 skill 改为中文语义正文：`rules/global-user-constraints.zh-CN.md` 成为规范源，英文版降为参考译本；`AGENTS.md`、插件 README、命令、`qoder.md`、manifest 与 hooks 描述同步。
-- `GLOSSARY.md` 增加翻译与写作口径与中英术语对照，统一审查/审计、校验/检查、第三方引入、包仓库、运行手册/操作手册、事故复盘、制品/产物、销毁性/破坏性等写法。
-- 移除英文参考译本：中文正文改名为 `rules/global-user-constraints.md` 并成为唯一规范文件；`AGENTS.md`、插件 README、命令与 `qoder.md` 同步。
+- 根 `AGENTS.md` 指向 `CONTRIBUTING.md`，只承载本仓库维护约定；用户全局约束留在 `rules/`，由用户级入口与插件分发。
+- 入口统一为各工具的主项目路径：`.qwen` 与 `.qoder` 为普通目录，分别含 `rules` 与 `skills` 软链；
+  不再提供 `.qwen/AGENTS.md`、`.qoder-cn`、`.qoder/plugins` 等无加载语义的占位入口。
+- 规范正文与十一个 skill 改为中文语义正文；`rules/global-user-constraints.md` 是唯一规范文件，英文参考译本已移除。
+- `GLOSSARY.md` 增加翻译与写作口径与中英术语对照，统一审查/审计、校验/检查、第三方引入、包仓库、
+  运行手册/操作手册、事故复盘、制品/产物、销毁性/破坏性等写法；行宽统一为 200 字符（约 100 汉字宽）。
 
 **修复**
 
 - 旧 skill 治理：`naming-conventions`、`comment-conventions`、`documentation-conventions`、`system-prompt-authoring` 补齐与七个通用规范的归属边界，移除重复的教学与流程内容；命名索引与 34 个维度章节一一对应。
 - `system-prompt-authoring` 补 Scope 与 Review Checklist，核验来源并修正过期引文，`--strict` 说明与 checker 行为对齐；仓库 README 与术语表不再把内容规则限定为 S1–S13。
-- 入口按三工具实际加载规则整改：Qwen 项目级约束入口改为 `.qwen/rules/`（目录软链到 `rules/`，
-  baseline 规则），删除不被读取的 `.qwen/AGENTS.md`；删除项目级无加载语义的 `.qoder-cn` 与
-  `.qoder/plugins`，保留 `.qoder/rules`；`scripts/check.sh` 新增「Qoder 适配」并改写「Qwen 适配」；
-  README、CONTRIBUTING 与插件 README 同步，插件 README 的 `.qoder*/rules` 说法改为实际路径。
+- Qwen 入口两次修正：先由 `.qwen` 软链改为 `.qwen/AGENTS.md`；核实 Qwen 只扫描 `.qwen/rules/` 与各级
+  `AGENTS.md` 后改为 `.qwen/rules`，因 `readdir` 的 `isFile()` 跳过文件软链，最终固定为目录软链。
+- 术语与口径：README 与插件说明的「检查」改为「校验」，zip「产物」改为「制品」，「规范来源/规范源」
+  改为「权威来源」；`requirements-dev.txt` 固定版本并同步 `check.py` 依赖提示。
+- 插件：hook 测试补充注册命令与 `QODER_PLUGIN_ROOT` 替换执行的断言，并从实现加载事件集合，去掉测试里的副本；
+  README 增加安全边界；manifest 补 `license` 字段；`scripts/check.sh` 增加敏感文件忽略与私钥内容回归。
+- 校验器：`count_row_cells` 按 GFM 只把反斜杠转义管道当字面量，代码跨度内未转义管道不再漏报；测试同步更新。
+- 打包：`dist.sh` 默认要求干净工作区（`--allow-dirty` 放行）、拒绝浅克隆、在暂存区完成校验后原子落盘，
+  并输出 SHA256 校验和、保留最近三个制品。
+- 配置：`.editorconfig` 行宽 200 与 `check.py` 对齐；CI 先确认 `shellcheck` 可用；`scripts/check.sh`
+  结尾报告跳过项数；`CONTRIBUTING.md` 写明 Windows 软链前置、注释语言与 trunk-based 分支模型。
 
 ## 2026-11-12
 

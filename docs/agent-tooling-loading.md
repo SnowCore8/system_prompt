@@ -5,11 +5,11 @@
 
 版本基线：
 
-| 工具 | 基线 |
-| --- | --- |
-| Qoder | 文档站 `docs.qoder.com` / `docs.qoder.cn`；本机 Qoder CLI CN 1.1.88 实测 |
-| Qwen Code | 源码 `QwenLM/qwen-code` main @ `6ba8820`，`package.json` 0.27.2 |
-| DeepSeek Harness | 本地 checkout `/home/snow/deepseek-harness` |
+| 工具 | 基线 | 取证日期 |
+| --- | --- | --- |
+| Qoder | 文档站 `docs.qoder.com` / `docs.qoder.cn`；Qoder CLI CN 1.1.88 实测 | 2026-11-14 |
+| Qwen Code | 源码 `QwenLM/qwen-code` main @ `6ba8820`，`package.json` 0.27.2 | 2026-11-14 |
+| DeepSeek Harness | 本地实现树（运行中的 DSH 安装目录） | 2026-11-14 |
 
 ## 结论摘要
 
