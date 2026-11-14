@@ -20,5 +20,6 @@
       "description": "按用户全局约束审查当前请求或方案"
     }
   },
-  "hooks": "./hooks/hooks.json"
+  "hooks": "./hooks/hooks.json",
+  "license": "MIT AND CC-BY-4.0"
 }

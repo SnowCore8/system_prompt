@@ -6,7 +6,7 @@
 
 | 路径 | 作用 |
 |---|---|
-| `rules/` | 用户全局约束正文（唯一规范源） |
+| `rules/` | 用户全局约束正文（唯一权威来源） |
 | `.qoder-plugin/plugin.json` | 插件 manifest |
 | `skills/system-prompt-authoring/` | 起草与审查指令文件的 skill |
 | `skills/naming-conventions/` | 通用命名规范，覆盖代码、API、数据库、配置与提交等维度 |
@@ -48,6 +48,13 @@ Hook 注册在支持 `additionalContext` 的 9 个事件上，matcher 留空匹�
 - 解释器用 `python`（PATH 上需有，3.7+），以 `-X utf8` 启动：Windows 只有 `python.exe` 没有 `python3`，且该参数固定 stdin/stdout 编码，避免 ANSI 代码页下中文注入失败。
 - 读取 stdin 的事件 JSON，从 `hook_event_name` 取事件名；输出 `hookSpecificOutput.hookEventName` 与 `hookSpecificOutput.additionalContext`，内容为 `当前时间：YYYY-MM-DD HH:MM:SS +HH:MM`。
 - 事件名不在支持列表、stdin 不是 JSON 对象时静默退出 0，不输出内容。
+
+## 安全边界
+
+- hook 从 stdin 读取事件 JSON，只取 `hook_event_name`；不写盘、不联网、不持久化任何字段。
+- 输出只有 `hookSpecificOutput.hookEventName` 与 `additionalContext`（当前本地时间），该文本会进入模型上下文。
+- 脚本从 PATH 解析 `python`（3.7+）；解释器缺失时按 hook 失败处理，不注入时间。
+- 安装即执行：只安装可信来源的插件包，并核对发布包附带的 SHA256 校验和。
 
 ## Hook 测试
 

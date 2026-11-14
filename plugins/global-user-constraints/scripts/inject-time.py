@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Inject the current local time into supported Qoder hook events."""
+"""向受支持的 Qoder hook 事件注入当前本地时间。"""
 
 import json
 import sys
