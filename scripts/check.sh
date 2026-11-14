@@ -1,12 +1,14 @@
 #!/usr/bin/env bash
-# 全量校验：Markdown、skill 与 hook 测试、shellcheck、JSON、敏感文件、软链、DSH/Qoder/Qwen 适配、插件校验。
+# 全量校验：Markdown、skill 与 hook 测试、shellcheck、ruff、JSON、敏感文件、软链、三工具适配、三包清单与校验。
 set -uo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$REPO_ROOT" || exit 2
 
-SKILL_DIR="plugins/global-user-constraints/skills/system-prompt-authoring"
-PLUGIN_DIR="plugins/global-user-constraints"
+SKILL_DIR="skills/system-prompt-authoring"
+SHARED_DIR="shared"
+
+DSH_DIR="plugins/dsh"
 failures=0
 skips=0
 
@@ -49,7 +51,14 @@ echo "== skill 测试 =="
 python3 -B -m unittest discover -s "$SKILL_DIR/scripts" -p 'test_*.py' || fail "skill 测试"
 
 echo "== hook 测试 =="
-(cd "$PLUGIN_DIR" && python3 -B -m unittest discover -s scripts -p 'test_*.py') || fail "hook 测试"
+python3 -B -m unittest discover -s "$SHARED_DIR/scripts" -p 'test_*.py' || fail "hook 测试"
+
+echo "== DSH 包测试 =="
+if command -v node >/dev/null 2>&1; then
+  node --test "$DSH_DIR/test/provider.test.mjs" || fail "DSH 包测试"
+else
+  skip "未安装 node"
+fi
 
 echo "== shellcheck =="
 if command -v shellcheck >/dev/null 2>&1; then
@@ -121,7 +130,7 @@ done < <(find . -type l -not -path './.git/*' -print)
 link_git="$(git ls-files -s | awk '$1=="120000"' | wc -l)"
 [ "$link_fs" -eq "$link_git" ] || fail "软链数量不一致：工作区 $link_fs，版本库 $link_git"
 
-plugin_skill_dirs="$(find "$PLUGIN_DIR/skills" -mindepth 1 -maxdepth 1 -type d | wc -l)"
+plugin_skill_dirs="$(find skills -mindepth 1 -maxdepth 1 -type d | wc -l)"
 
 # 校验一个项目级 skill 入口：每项都是软链、可解析、含 SKILL.md，且 frontmatter name 与目录名一致。
 check_skill_root() {
@@ -144,7 +153,7 @@ check_skill_root() {
     front_name="$(sed -n 's/^name:[[:space:]]*//p' "$target/SKILL.md" | head -n 1 | tr -d '\r')"
     [ "$front_name" = "$name" ] || fail "$label: $name 的 frontmatter name 为 '$front_name'"
   done
-  [ "$link_count" -eq "$plugin_skill_dirs" ] || fail "$label: 软链 $link_count 个，插件 skill $plugin_skill_dirs 个"
+  [ "$link_count" -eq "$plugin_skill_dirs" ] || fail "$label: 软链 $link_count 个，顶层 skill $plugin_skill_dirs 个"
 }
 
 echo "== DSH 适配 =="
@@ -201,23 +210,51 @@ if head -n 10 rules/global-user-constraints.md | grep -q '^paths:'; then
 fi
 
 echo "== 插件清单 =="
-if ! python3 - "$PLUGIN_DIR" <<'PY'
+if ! python3 - "$REPO_ROOT" <<'PY'
 import json, re, sys
 from pathlib import Path
 
-plugin = Path(sys.argv[1])
-qoder = json.loads((plugin / ".qoder-plugin/plugin.json").read_text(encoding="utf-8"))
-qwen = json.loads((plugin / "qwen-extension.json").read_text(encoding="utf-8"))
+root = Path(sys.argv[1])
+packages = {
+    "qoder": root / "plugins/qoder",
+    "qwen": root / "plugins/qwen",
+    "dsh": root / "plugins/dsh",
+}
+qoder = json.loads((packages["qoder"] / ".qoder-plugin/plugin.json").read_text(encoding="utf-8"))
+qwen = json.loads((packages["qwen"] / "qwen-extension.json").read_text(encoding="utf-8"))
+dsh = json.loads((packages["dsh"] / "package.json").read_text(encoding="utf-8"))
 problems = []
-if not re.fullmatch(r"\d+\.\d+\.\d+", str(qoder.get("version", ""))):
-    problems.append("Qoder manifest 版本不是 SemVer")
-if qwen.get("version") != qoder.get("version"):
-    problems.append("双端 manifest 版本不一致")
-if not (plugin / str(qwen.get("hooks", ""))).is_file():
+versions = {"qoder": qoder.get("version"), "qwen": qwen.get("version"), "dsh": dsh.get("version")}
+for name, version in versions.items():
+    if not re.fullmatch(r"\d+\.\d+\.\d+", str(version or "")):
+        problems.append(f"{name} manifest 版本不是 SemVer")
+if len(set(versions.values())) != 1:
+    problems.append(f"三包版本不一致: {versions}")
+if not (packages["qwen"] / str(qwen.get("hooks", ""))).is_file():
     problems.append("Qwen extension 的 hooks 路径不存在")
 for key in ("skills", "commands"):
-    if not (plugin / str(qwen.get(key, ""))).is_dir():
+    if not (packages["qwen"] / str(qwen.get(key, ""))).is_dir():
         problems.append(f"Qwen extension 的 {key} 路径不存在")
+bundle = (dsh.get("dsh") or {}).get("bundle") or {}
+patch_path = bundle.get("patch")
+if not patch_path or not (packages["dsh"] / patch_path).is_file():
+    problems.append("DSH bundle 的 patch 路径不存在")
+if not (packages["dsh"] / str(dsh.get("main", ""))).is_file():
+    problems.append("DSH bundle 的 main 入口不存在")
+if not dsh.get("engines", {}).get("dsh"):
+    problems.append("DSH bundle 缺少 engines.dsh")
+expected_links = {
+    "qoder": {"skills": "skills", "rules": "rules", "commands": "shared/commands", "scripts": "shared/scripts"},
+    "qwen": {"skills": "skills", "commands": "shared/commands", "scripts": "shared/scripts"},
+    "dsh": {"skills": "skills", "rules": "rules"},
+}
+for name, links in expected_links.items():
+    for link, target in links.items():
+        path = packages[name] / link
+        if not path.is_symlink():
+            problems.append(f"{name} 的 {link} 应为软链")
+        elif path.resolve() != (root / target).resolve():
+            problems.append(f"{name} 的 {link} 未指向 {target}")
 if problems:
     sys.exit("; ".join(problems))
 PY
@@ -227,7 +264,10 @@ fi
 
 echo "== 插件校验 =="
 if command -v qoderclicn >/dev/null 2>&1; then
-  qoderclicn plugins validate "$PLUGIN_DIR" || fail "插件校验"
+  staged="$(mktemp -d)"
+  trap 'rm -rf "$staged"' EXIT
+  bash scripts/materialize.sh qoder "$staged/package" >/dev/null || fail "物化 Qoder 包"
+  qoderclicn plugins validate "$staged/package" || fail "插件校验"
 else
   skip "未安装 qoderclicn"
 fi

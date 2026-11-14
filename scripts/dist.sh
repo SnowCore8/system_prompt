@@ -1,28 +1,24 @@
 #!/usr/bin/env bash
-# 把用户级插件打包到仓库根目录：版本取插件 manifest 的 SemVer，文件名带版本号。
+# 分别打包 Qoder、Qwen Code、DeepSeek Harness 三个包；版本取各包清单并强制一致。
 set -euo pipefail
 
 usage() {
   cat <<'EOF'
 用法: scripts/dist.sh [--allow-dirty] [--no-validate] [--require-tag]
 
-插件版本以 plugins/global-user-constraints/.qoder-plugin/plugin.json 的 version
-为准，发布流程要求它是 SemVer（如 0.2.0）。脚本不再推导或改写版本：
-升级版本时手动修改 manifest，单独提交后打 tag，再用本脚本出包。
+三个包分别是 plugins/qoder、plugins/qwen 与 plugins/dsh，版本以各自清单为准：
+`.qoder-plugin/plugin.json`、`qwen-extension.json`、`package.json` 的 version 必须一致
+（SemVer），输出 global-user-constraints-<包名>-<版本>.zip 与对应 .sha256。
 
-默认要求工作区干净；仅当显式给出 --allow-dirty 时允许从脏工作区打包，文件名追加
--dirty。浅克隆直接拒绝。--require-tag 要求 HEAD 正好带有 v<version> 注释 tag，
-发布流水线用它在 tag 上出包。
+仓库里三个包用相对软链引用共享的 skills/、rules/ 与 shared/；打包时通过
+scripts/materialize.sh 物化成自包含目录，Qoder 的 plugins validate 也会拒绝包外路径。
 
-包内会下载入仓库根的双许可证文件（LICENSE、LICENSE-CC-BY-4.0.txt、
-LICENSE-MIT.txt）；插件目录内的 rules/ 软链会解引用为真实文件，约束正文随包分发。
-排除 .DS_Store、__pycache__ 与 .pyc；打包前归一文件时间戳并按名称排序，
-用 zip -X 去除额外属性，因此同一版本、同一 tag 的产物字节可复现。
-打包后校验 zip 结构并输出 <zip>.sha256 校验和，默认还用 qoderclicn
-plugins validate 校验插件目录；qoderclicn 缺失时默认失败，可用 --no-validate 跳过
+默认要求工作区干净；--allow-dirty 放行并在文件名加 -dirty。浅克隆直接拒绝。
+--require-tag 要求 HEAD 正好带有 v<version> 注释 tag，发布流水线用它出包。
+每个包会附上双许可证、归一 mtime 与权限、按名称排序并用 zip -X 构建，产物可复现；
+默认还用 qoderclicn 校验物化后的 Qoder 包，缺失时失败，可用 --no-validate 跳过
 （CI 发布流水线没有 qoderclicn，用跳过换取可重复构建，发布前须在本地校验）。
-所有校验通过后才落盘制品；失败不会留下半成品。
-校验通过后删除较旧制品，只保留最近三个 zip 及其校验和。
+每个包保留最近三个制品。
 EOF
 }
 
@@ -40,9 +36,7 @@ for arg in "$@"; do
 done
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-PLUGIN_REL="plugins/global-user-constraints"
-PLUGIN_DIR="$REPO_ROOT/$PLUGIN_REL"
-MANIFEST_REL="$PLUGIN_REL/.qoder-plugin/plugin.json"
+cd "$REPO_ROOT"
 
 for tool in git python3 zip; do
   command -v "$tool" >/dev/null 2>&1 || {
@@ -51,36 +45,44 @@ for tool in git python3 zip; do
   }
 done
 
-if ! COMMIT="$(git -C "$REPO_ROOT" rev-parse --short HEAD 2>/dev/null)"; then
-  echo "无法读取 commit id：$REPO_ROOT 不是 git 仓库或尚无提交" >&2
+COMMIT="$(git rev-parse --short HEAD 2>/dev/null)" || {
+  echo "无法读取 commit id：不是 git 仓库或尚无提交" >&2
   exit 1
-fi
-if [ "$(git -C "$REPO_ROOT" rev-parse --is-shallow-repository 2>/dev/null || echo false)" = "true" ]; then
+}
+if [ "$(git rev-parse --is-shallow-repository 2>/dev/null || echo false)" = "true" ]; then
   echo "浅克隆无法可靠引用 tag：请先 git fetch --unshallow" >&2
   exit 1
 fi
 
-VERSION="$(python3 - "$REPO_ROOT/$MANIFEST_REL" <<'PY'
+VERSION="$(python3 - "$REPO_ROOT" <<'PY'
 import json, re, sys
+from pathlib import Path
 
-path = sys.argv[1]
-with open(path, encoding="utf-8") as f:
-    version = json.load(f).get("version", "")
-if not re.fullmatch(r"\d+\.\d+\.\d+", version):
-    sys.exit(f"manifest 的 version 不是 SemVer: {version!r}")
-print(version)
+root = Path(sys.argv[1])
+paths = {
+    "qoder": root / "plugins/qoder/.qoder-plugin/plugin.json",
+    "qwen": root / "plugins/qwen/qwen-extension.json",
+    "dsh": root / "plugins/dsh/package.json",
+}
+versions = {name: json.loads(path.read_text(encoding="utf-8")).get("version") for name, path in paths.items()}
+for name, version in versions.items():
+    if not re.fullmatch(r"\d+\.\d+\.\d+", str(version or "")):
+        sys.exit(f"{name} 的 version 不是 SemVer: {version!r}")
+if len(set(versions.values())) != 1:
+    sys.exit(f"三包版本不一致: {versions}")
+print(versions["qoder"])
 PY
 )"
 
 if [ "$REQUIRE_TAG" -eq 1 ]; then
-  TAG="$(git -C "$REPO_ROOT" describe --exact-match --tags HEAD 2>/dev/null || true)"
+  TAG="$(git describe --exact-match --tags HEAD 2>/dev/null || true)"
   if [ "$TAG" != "v$VERSION" ]; then
     echo "--require-tag: HEAD 的 tag 为 '${TAG:-无}'，期望 v$VERSION" >&2
     exit 1
   fi
 fi
 
-DIRTY="$(git -C "$REPO_ROOT" status --porcelain --untracked-files=normal || true)"
+DIRTY="$(git status --porcelain --untracked-files=normal || true)"
 SUFFIX=""
 if [ -n "$DIRTY" ]; then
   if [ "$ALLOW_DIRTY" -ne 1 ]; then
@@ -90,91 +92,107 @@ if [ -n "$DIRTY" ]; then
   SUFFIX="-dirty"
   echo "工作区有未提交改动，文件名标记 -dirty" >&2
 fi
-OUT="$REPO_ROOT/global-user-constraints-$VERSION$SUFFIX.zip"
-SUMS="$REPO_ROOT/global-user-constraints-$VERSION$SUFFIX.sha256"
 
-STAGE="$(mktemp -d)"
-BUILD="$(mktemp -d)"
-ZIPTMP="$BUILD/out.zip"
-trap 'rm -rf "$STAGE" "$BUILD"' EXIT
-
-# 插件目录内的 rules 是指向仓库根级 rules/ 的软链；解引用后进包，包里是真实文件
-cp -aL "$PLUGIN_DIR/." "$STAGE/"
-# 双许可证随包分发，使用者拿到 zip 即可确认授权范围
-cp "$REPO_ROOT/LICENSE" "$REPO_ROOT/LICENSE-CC-BY-4.0.txt" "$REPO_ROOT/LICENSE-MIT.txt" "$STAGE/"
-
-# 归一权限与 mtime，并按名称排序，配合 zip -X 让同一版本、同一 tag 的产物字节可复现
-find "$STAGE" -type d -exec chmod 755 {} +
-find "$STAGE" -type f -exec chmod 644 {} +
-find "$STAGE" -exec touch -t 198001010000 {} +
-(
-  cd "$STAGE"
-  find . -mindepth 1 \
-    ! -name '.DS_Store' ! -path '*/__pycache__/*' ! -name '*.pyc' \
-    -printf '%P\n' | LC_ALL=C sort | zip -X -q "$ZIPTMP" -@
-)
-
-python3 - "$ZIPTMP" <<'PY'
+verify_zip() {
+  local name="$1" path="$2"
+  python3 - "$name" "$path" "$VERSION" <<'PY'
 import json, sys, zipfile
 
-path = sys.argv[1]
+name, path, version = sys.argv[1], sys.argv[2], sys.argv[3]
+required = {
+    "qoder": [".qoder-plugin/plugin.json", "hooks/hooks.json", "rules/global-user-constraints.md"],
+    "qwen": ["qwen-extension.json", "hooks/qwen-hooks.json"],
+    "dsh": ["package.json", "cordis.patch.yml", "src/index.js", "rules/global-user-constraints.md"],
+}[name] + ["LICENSE", "LICENSE-CC-BY-4.0.txt", "LICENSE-MIT.txt"]
+
 with zipfile.ZipFile(path) as zf:
+    infos = zf.infolist()
     names = zf.namelist()
-    versions = {
-        name: json.loads(zf.read(name)).get("version")
-        for name in (".qoder-plugin/plugin.json", "qwen-extension.json")
-        if name in names
-    }
+    manifest = {
+        "qoder": ".qoder-plugin/plugin.json",
+        "qwen": "qwen-extension.json",
+        "dsh": "package.json",
+    }[name]
+    embedded_version = json.loads(zf.read(manifest)).get("version") if manifest in names else None
 
 problems = []
-for required in (
-    ".qoder-plugin/plugin.json",
-    "qwen-extension.json",
-    "hooks/qwen-hooks.json",
-    "rules/global-user-constraints.md",
-    "LICENSE",
-    "LICENSE-CC-BY-4.0.txt",
-    "LICENSE-MIT.txt",
-):
-    if required not in names:
-        problems.append(f"缺少 {required}")
-if not problems and len(versions) == 2:
-    if len(set(versions.values())) != 1:
-        problems.append("双端 manifest 版本不一致")
-for name in names:
-    if name.startswith("/") or ".." in name.split("/"):
-        problems.append(f"非法路径: {name}")
-if any(name.endswith(".pyc") or "__pycache__" in name for name in names):
-    problems.append("包含 Python 缓存")
+for item in required:
+    if item not in names:
+        problems.append(f"缺少 {item}")
+if embedded_version != version:
+    problems.append(f"包内版本 {embedded_version!r} 与 {version} 不一致")
+skills = [entry for entry in names if entry.count("/") == 2 and entry.endswith("/SKILL.md")]
+if len(skills) != 11:
+    problems.append(f"skill 数量为 {len(skills)}，期望 11")
+for info in infos:
+    mode = (info.external_attr >> 16) & 0o170000
+    if mode == 0o120000:
+        problems.append(f"包含未解引用的软链: {info.filename}")
+    if info.filename.endswith(".pyc") or "__pycache__" in info.filename:
+        problems.append(f"包含 Python 缓存: {info.filename}")
 if problems:
     sys.exit("zip 结构校验失败:\n- " + "\n- ".join(problems))
-
-print(f"zip 结构校验通过: {len(names)} 个条目")
+print(f"{name}: zip 结构校验通过（{len(names)} 个条目）")
 PY
+}
 
-if [ "$VALIDATE" -eq 1 ]; then
-  if ! command -v qoderclicn >/dev/null 2>&1; then
-    echo "插件校验失败: 未找到 qoderclicn；安装后重试，或显式使用 --no-validate 跳过" >&2
-    exit 1
+retain() {
+  local name="$1" old
+  mapfile -t zips < <(ls -1t "$REPO_ROOT"/global-user-constraints-"$name"-*.zip 2>/dev/null || true)
+  if [ "${#zips[@]}" -gt 3 ]; then
+    for old in "${zips[@]:3}"; do
+      rm -f "$old" "${old%.zip}.sha256"
+      echo "已删除较旧制品: $(basename "$old")" >&2
+    done
   fi
-  qoderclicn plugins validate "$STAGE"
-fi
+}
 
-mv "$ZIPTMP" "$OUT"
-if command -v sha256sum >/dev/null 2>&1; then
-  (cd "$REPO_ROOT" && sha256sum "$(basename "$OUT")") > "$SUMS"
-else
-  (cd "$REPO_ROOT" && shasum -a 256 "$(basename "$OUT")") > "$SUMS"
-fi
-echo "已生成校验和: $(basename "$SUMS")"
+build_one() {
+  local name="$1" stage build zip out sums
+  stage="$(mktemp -d)"
+  build="$(mktemp -d)"
+  trap 'rm -rf "$stage" "$build"' EXIT
 
-# 保留本次与最近两个旧制品，其余删除，避免历史制品无限堆积
-mapfile -t zips < <(ls -1t "$REPO_ROOT"/global-user-constraints-*.zip 2>/dev/null || true)
-if [ "${#zips[@]}" -gt 3 ]; then
-  for old in "${zips[@]:3}"; do
-    rm -f "$old" "${old%.zip}.sha256"
-    echo "已删除较旧制品: $(basename "$old")" >&2
-  done
-fi
+  bash scripts/materialize.sh "$name" "$stage/pkg" >/dev/null
 
-echo "插件版本 $VERSION（commit $COMMIT）；已生成 $OUT"
+  zip="$build/out.zip"
+  find "$stage/pkg" -type d -exec chmod 755 {} +
+  find "$stage/pkg" -type f -exec chmod 644 {} +
+  find "$stage/pkg" -exec touch -t 198001010000 {} +
+  (
+    cd "$stage/pkg"
+    find . -mindepth 1 \
+      ! -name '.DS_Store' ! -path '*/__pycache__/*' ! -name '*.pyc' \
+      -printf '%P\n' | LC_ALL=C sort | zip -X -q "$zip" -@
+  )
+
+  verify_zip "$name" "$zip"
+
+  if [ "$VALIDATE" -eq 1 ] && [ "$name" = "qoder" ]; then
+    if ! command -v qoderclicn >/dev/null 2>&1; then
+      echo "插件校验失败: 未找到 qoderclicn；安装后重试，或显式使用 --no-validate 跳过" >&2
+      exit 1
+    fi
+    qoderclicn plugins validate "$stage/pkg"
+  fi
+
+  out="$REPO_ROOT/global-user-constraints-$name-$VERSION$SUFFIX.zip"
+  sums="${out%.zip}.sha256"
+  mv "$zip" "$out"
+  if command -v sha256sum >/dev/null 2>&1; then
+    (cd "$REPO_ROOT" && sha256sum "$(basename "$out")") > "$sums"
+  else
+    (cd "$REPO_ROOT" && shasum -a 256 "$(basename "$out")") > "$sums"
+  fi
+  echo "已生成 $(basename "$out") 与 $(basename "$sums")"
+
+  rm -rf "$stage" "$build"
+  trap - EXIT
+  retain "$name"
+}
+
+for package in qoder qwen dsh; do
+  build_one "$package"
+done
+
+echo "版本 $VERSION（commit $COMMIT）；三个包已生成于 $REPO_ROOT"

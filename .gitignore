@@ -14,3 +14,4 @@ __pycache__/
 *.pem
 *.key
 global-user-constraints-*.sha256
+/dist/

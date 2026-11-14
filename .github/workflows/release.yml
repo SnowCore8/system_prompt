@@ -25,14 +25,17 @@ jobs:
         run: |
           python3 - <<'PY'
           import json, os
-          base = "plugins/global-user-constraints/"
-          qoder = json.load(open(base + ".qoder-plugin/plugin.json", encoding="utf-8"))["version"]
-          qwen = json.load(open(base + "qwen-extension.json", encoding="utf-8"))["version"]
+          versions = {
+              "qoder": json.load(open("plugins/qoder/.qoder-plugin/plugin.json", encoding="utf-8"))["version"],
+              "qwen": json.load(open("plugins/qwen/qwen-extension.json", encoding="utf-8"))["version"],
+              "dsh": json.load(open("plugins/dsh/package.json", encoding="utf-8"))["version"],
+          }
           tag = os.environ["GITHUB_REF_NAME"]
-          if qoder != qwen:
-              raise SystemExit(f"双端 manifest 版本不一致: {qoder} / {qwen}")
-          if tag != f"v{qoder}":
-              raise SystemExit(f"tag {tag} 与 manifest 版本 v{qoder} 不一致")
+          if len(set(versions.values())) != 1:
+              raise SystemExit(f"三包版本不一致: {versions}")
+          version = versions["qoder"]
+          if tag != f"v{version}":
+              raise SystemExit(f"tag {tag} 与清单版本 v{version} 不一致")
           PY
       # runner 没有 qoderclicn，插件校验在本地发布前完成；此处用 --no-validate 换取可重复构建
       - name: 构建制品
