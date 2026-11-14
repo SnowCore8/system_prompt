@@ -123,7 +123,7 @@ learned. The table below is the default split; a project convention overrides it
 | Changelog and release notes | User: what changed? | Version and date, grouped entries, upgrade action, issue links, highlights, categories | `CHANGELOG.md` |
 | Migration guide | Upgrader: how do I migrate? | Affected audience, timeline, field mapping, steps, verification, rollback | `docs/migrations/` |
 | Troubleshooting and FAQ | Stuck user: what does it mean? | Symptom, cause, fix, prevention, related links | `docs/troubleshooting/` |
-| Security, legal, support | Reporter: how do I report? | Supported versions, reporting channel, response time, support scope, owner, review date | `SECURITY.md` |
+| Security, legal, support | Reporter: how do I report? | Page structure: policy sections and where each links; disclosures set by security role | `SECURITY.md` |
 | Postmortem | Maintainer: why did this happen? | Summary, impact, timeline, root cause, detection, actions, owners | `docs/postmortems/` |
 
 The matrix lists primary page types; the Deprecation Notice, Glossary, and Documentation Index templates cover pages

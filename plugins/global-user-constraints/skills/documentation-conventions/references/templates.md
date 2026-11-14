@@ -307,7 +307,8 @@ Common mistake: organizing entries by internal cause, so readers cannot find the
 ## Security, Legal, and Support
 
 Purpose: state what is supported, how to report a problem, and who owns the page.
-Required sections: supported versions, reporting channel, response time, support scope, owner, review date.
+Required sections: policy sections and the owner each links to; disclosures and response commitments are set by the
+security role.
 
 ```markdown
 # Security and Support Policy

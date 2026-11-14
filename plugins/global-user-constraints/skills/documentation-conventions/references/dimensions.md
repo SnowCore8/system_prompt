@@ -157,8 +157,8 @@ supplies the default and the reason. Read the section that matches the document 
 
 ## 10. Security, Legal, and Support Docs
 
-- State supported versions, the private reporting channel, and the expected response time in `SECURITY.md`; the page
-  must match the process that is actually run.
+- Keep the security policy content in `SECURITY.md` and present it in scannable sections with links to its owner;
+  the required content and response commitments are set by the security role.
 - Never publish internal addresses, secrets, employee data, or customer data; use example values such as
   `example@test.invalid`.
 - Legal pages (license, terms, privacy) are owned by legal, not engineering; link to them and never paraphrase them
