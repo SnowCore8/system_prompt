@@ -1,6 +1,8 @@
 # 提示词模板
 
 本文件给出常用提示词类型的可复制骨架。复制后先删掉不适用的段落，再补示例与输出契约；不要保留空占位。
+带分步指令的模板面向指令遵循模型；推理模型的写法见 [SKILL.md](../SKILL.md) 的「推理模型与指令模型」
+一节。
 
 ## 系统提示
 
@@ -26,6 +28,8 @@
 ```
 
 ## 任务指令
+
+推理模型删掉「# 步骤」，只保留目标、约束与判定标准。
 
 ```text
 # 目标
@@ -63,7 +67,42 @@
 
 要求：示例使用假数据；三例的格式完全一致；示例之间不得互相矛盾。
 
+## 结构化输出（JSON Schema）
+
+需要机读结果时优先用平台的 structured output / function calling / JSON mode，把下面这份 schema 作为
+参数传入，不依赖模型“遵守文字说明”。文字写“只输出 JSON”是平台不支持时的降级兜底。
+
+```json
+{
+  "type": "object",
+  "required": ["status", "items"],
+  "additionalProperties": false,
+  "properties": {
+    "status": { "type": "string", "enum": ["ok", "refused", "needs_input"] },
+    "reason": { "type": "string", "description": "status 为 refused 或 needs_input 时填写" },
+    "items": {
+      "type": "array",
+      "maxItems": 20,
+      "items": {
+        "type": "object",
+        "required": ["id", "title"],
+        "properties": {
+          "id": { "type": "string" },
+          "title": { "type": "string" },
+          "score": { "type": "number", "minimum": 0, "maximum": 1 }
+        }
+      }
+    }
+  }
+}
+```
+
+- 允许额外字段时不写 additionalProperties: false；反之用它拦住模型编造字段。
+- 枚举、必填与嵌套写在 schema 里，别只写在文字说明里。
+
 ## 输出契约
+
+平台不支持结构化输出时，用下面这段文字兜底；支持时优先用上一节的 JSON Schema。
 
 ```text
 只输出 JSON，不要代码块标记，不要额外解释。字段：
