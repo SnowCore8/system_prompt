@@ -1,6 +1,6 @@
 # AI 编码代理 system prompt
 
-本仓库维护用户全局约束与十一个 skill（`system-prompt-authoring`，以及命名、注释、文档、代码风格、接口与数据、测试与质量、版本控制与协作、发布与运维、安全与合规、仓库治理十项通用规范），以及打包它们的用户级 Qoder 插件。约束正文与插件源是唯一真源，不另建副本。
+本仓库维护用户全局约束与十一个 skill（`system-prompt-authoring`，以及命名、注释、文档、代码风格、接口与数据、测试与质量、版本控制与协作、发布与运维、安全与合规、仓库治理十项通用规范），以及打包它们的用户级 Qoder 插件。约束正文与插件源是唯一真源，不另建副本；中文正文是规范源，英文版是参考译本。
 改约束、skill 或插件前先读本文件。维护者：仓库所有者。
 插件的使用者文档（规则激活、hook、边界）见插件 [README](plugins/global-user-constraints/README.md)。
 DSH 从仓库根 `AGENTS.md` 加载本约束；Qoder 按插件 README 的「规则激活」加载。
@@ -11,9 +11,9 @@ DSH 从仓库根 `AGENTS.md` 加载本约束；Qoder 按插件 README 的「规�
 |---|---|
 | `plugins/global-user-constraints/` | 用户级 Qoder 插件包 |
 | `plugins/marketplace.json` | 市场描述文件，承载 `category`/`tags` 等市场字段 |
-| `rules/global-user-constraints.md` | 用户全局约束正文 |
-| `rules/global-user-constraints.zh-CN.md` | 用户全局约束中文译本（英文原文为准） |
-| `AGENTS.md` | DSH 工作区指令入口，软链指向 `rules/global-user-constraints.md` |
+| `rules/global-user-constraints.md` | 用户全局约束英文参考译本 |
+| `rules/global-user-constraints.zh-CN.md` | 用户全局约束中文正文（规范源） |
+| `AGENTS.md` | DSH 工作区指令入口，软链指向 `rules/global-user-constraints.zh-CN.md` |
 | `.qoder/` | 统一入口；`rules`、`plugins` 软链指向根级同名目录 |
 | `.qwen` / `.qoder-cn` | 指向 `.qoder` 的软链 |
 | `scripts/` | `dist.sh` 打包；`check.sh` 全量校验 |
@@ -21,7 +21,7 @@ DSH 从仓库根 `AGENTS.md` 加载本约束；Qoder 按插件 README 的「规�
 
 ## 编辑
 
-1. 改约束：编辑 `rules/global-user-constraints.md`；中文译本 `rules/global-user-constraints.zh-CN.md` 同步更新。
+1. 改约束：编辑 `rules/global-user-constraints.zh-CN.md`（规范源）；英文参考译本 `rules/global-user-constraints.md` 按需同步。
 2. 改 skill：编辑 `plugins/global-user-constraints/skills/` 下对应的 skill。
 3. 只改软链目标，不另建副本。
 
