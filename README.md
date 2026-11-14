@@ -21,6 +21,7 @@ DSH 从仓库根 `AGENTS.md` 加载本仓库维护约定；Qwen Code 从 `.qwen/
 | `.dsh/skills/` | DSH 项目级 skill 入口，软链到插件内十一个 skill |
 | `docs/agent-tooling-loading.md` | 三工具 rules/skills/plugins 加载规则调研 |
 | `docs/release.md` | 版本规则、tag 发布流程与回滚 |
+| `docs/time-awareness.md` | Qoder/Qwen 时间注入的设计与接线 |
 | `scripts/` | `dist.sh` 打包；`check.sh` 全量校验 |
 | `GLOSSARY.md` | 术语与写法约定 |
 | `CHANGELOG.md` | 按日期记录的可观察变更 |
@@ -52,6 +53,10 @@ DSH 从仓库根 `AGENTS.md` 加载本仓库维护约定；Qwen Code 从 `.qwen/
 
 ## Qwen Code 适配
 
+- 插件：`plugins/global-user-constraints/` 同时带 `qwen-extension.json`，可执行
+  `qwen extensions install <目录或 zip>`；扩展的 `hooks` 指向 `hooks/qwen-hooks.json`，约束与时间随之生效。
+- 时间：Qwen 没有内建时间感知，扩展在 `SessionStart` 与 `UserPromptSubmit` 注入当前本地时间、UTC 偏移、
+  时区与星期；设计见 [docs/time-awareness.md](docs/time-awareness.md)。
 - 入口：Qwen Code 的项目级规则目录是 `.qwen/rules/`，用相对软链指向根级 `rules/`；其中的
   `global-user-constraints.md` 没有 `paths:`，属 baseline，首个请求即进入 system prompt。
 - skill：Qwen Code 从 `.qwen/skills/` 发现项目级 skill，只扫一层；该目录用相对软链指向插件内十一个 skill。
@@ -65,6 +70,8 @@ DSH 从仓库根 `AGENTS.md` 加载本仓库维护约定；Qwen Code 从 `.qwen/
 - 项目级：`.qoder/rules` 软链指向根级 `rules/`；Qoder 从当前目录向上查到 `.git`，逐层读取 `.qoder/rules/**/*.md`。
 - skill：Qoder 从 `.qoder/skills/` 发现项目级 skill；该目录用相对软链指向插件内十一个 skill，
   安装插件时另提供带插件前缀的同一批 skill。
+- 时间：插件在 `SessionStart` 与 `UserPromptSubmit` 注入当前本地时间、UTC 偏移、时区与星期，
+  与约束注入共用一次安装；设计见 [docs/time-awareness.md](docs/time-awareness.md)。
 - 用户级：安装插件后由 `SessionStart` hook 自动注入约束全文；用户级或项目级已加载同内容规则或 `AGENTS.md`
   时跳过。仍支持手动复制到 `~/.qoder-cn/rules/`，两种方式二选一。
 - 不提供两个入口：`.qoder-cn`（CN 的这个名字只用于用户级配置根）与 `.qoder/plugins`（插件包体安装在用户配置根），

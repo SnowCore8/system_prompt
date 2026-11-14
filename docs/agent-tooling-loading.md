@@ -362,6 +362,10 @@ DSH 里「插件」是 TypeScript 模块，导出 `apply(ctx)`；可分发的安
 - DeepSeek Harness：`.dsh/skills` 是 rank 100 的 skill 扫描根；根 `AGENTS.md` 是项目指令入口。
 - skills：`.qwen/skills`、`.qoder/skills`、`.dsh/skills` 各自软链到插件内十一个 skill；Qoder 与
   Qwen Code 只扫描一层，DSH 也不递归发现嵌套 `SKILL.md`。
+- 双端分发：插件包同时提供 `.qoder-plugin/plugin.json` 与 `qwen-extension.json`；前者用
+  `command` + `args`，后者用单条 `command` 字符串与 `${CLAUDE_PLUGIN_ROOT}`，共用同一批脚本。
+- 时间：两者都没有内建时间感知，插件在 `SessionStart` 与 `UserPromptSubmit` 注入一行当前时间，
+  见 `docs/time-awareness.md`。
 - 根 `AGENTS.md` 也会被 Qwen Code 当作项目级 `AGENTS.md` 读取，所以它只承载本仓库维护约定，
   不承载用户全局约束。
 - 插件包内的 `rules/` 仍随包分发，供安装后复制到用户级；宿主当前不加载它（见 Qoder 一节）。
