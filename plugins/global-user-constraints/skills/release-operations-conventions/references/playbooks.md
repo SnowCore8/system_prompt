@@ -1,247 +1,228 @@
-# Release and Operations Playbooks
+# 发布与运维操作手册
 
-Use this file with `SKILL.md` and `references/dimensions.md` when executing a release, a rollback, an incident, or a
-restore drill. Each playbook is a procedure: the dimensions file holds the rules, and this file supplies the order,
-the decision points, and the evidence to record. Adapt the thresholds to the project's written policy, and never
-skip a step because it was skipped in practice before; the step that is always skipped is the one that fails first.
+在执行发布、回滚、事故或恢复演练时，把本文件与 `SKILL.md` 和 `references/dimensions.md` 配合使用。每个操作
+手册都是一套流程：维度文件持有规则，本文件提供顺序、决策点和要记录的证据。按项目已写入文档的策略调整阈值，
+永远不要因为过去实践中跳过了某一步就继续跳过；总被跳过的那一步往往最先失败。
 
-## Release Readiness Checklist
+## 发布就绪检查清单
 
-Run this checklist at go or no-go time against the artifact and the records, not from memory. Every unchecked item
-is a blocker or a recorded accepted risk, and the person who accepts the risk is named in the release record.
+在 go/no-go 时对照制品和记录运行本检查清单，而不是凭记忆。每个未勾选项要么是阻塞项，要么是已记录的已接受
+风险，接受风险的人在发布记录中具名。
 
-- [ ] The change class and version bump are recorded, and the release type is chosen from the Release Model Matrix.
-- [ ] The release branch is frozen; only approved changes may merge before the release commit is cut.
-- [ ] The artifact was built once from the release tag in a clean checkout, and its digest is recorded with the tag
-  and the input manifest.
-- [ ] Every required gate passed on that artifact, not on an earlier build of the same branch.
-- [ ] The previous healthy version is named, and its artifact is still retained in the registry.
-- [ ] The rollout plan states the percentage, the bake time, the success metric, and the abort threshold.
-- [ ] The rollback steps, the data impact, and the decision authority are written and were exercised in staging.
-- [ ] Database migrations are backward compatible with the previous application version or approved as irreversible.
-- [ ] The service dashboard shows the deployed version and is provisioned from the repository.
-- [ ] Alerts for the affected service fire correctly in staging and name their runbooks.
-- [ ] The release note and changelog entries are written and match the artifact that will ship.
-- [ ] A restore drill passed when the change touches stored data, with measured RPO and RTO.
-- [ ] The approver, deployer, and observer for the release window are named and available.
-- [ ] The release record names the version, the digest, the approver, and the rollback target before the deploy.
-- [ ] The freeze window and exception authority are checked, and any exception is recorded with its rollback plan.
+- [ ] 变更类别与版本号递增已记录，发布类型依据发布模型矩阵选定。
+- [ ] 发布分支已冻结；切出发布提交之前只有已批准的变更可以合并。
+- [ ] 制品在干净检出中从发布标签只构建一次，其摘要连同标签和输入清单一起记录。
+- [ ] 每个必需门禁都在该制品上通过，而不是在同一分支更早的构建上通过。
+- [ ] 上一健康版本已写明，其制品仍保留在包仓库中。
+- [ ] 上线计划写明比例、观察期、成功指标和中止阈值。
+- [ ] 回滚步骤、数据影响和决策权限已写成，并已在 staging 演练。
+- [ ] 数据库迁移与上一应用版本向后兼容，或已按不可逆变更批准。
+- [ ] 服务仪表盘展示已部署版本，并且从仓库供给。
+- [ ] 受影响服务的告警在 staging 正确触发，并写明其运行手册。
+- [ ] 发布说明和变更日志条目已写好，并与将要交付的制品一致。
+- [ ] 变更触及存储数据时恢复演练已通过，并已测量 RPO 和 RTO。
+- [ ] 发布窗口的批准者、部署者和观察者已具名且可联系。
+- [ ] 部署前发布记录写明版本、摘要、批准者和回滚目标。
+- [ ] 冻结窗口与例外审批权限已核查，任何例外都连同其回滚计划记录在案。
 
-## Version-Bump Decision Table
+## 版本号递增决策表
 
-Apply the highest impact across all changes in the release and record the reason with the bump. When two rows
-disagree, take the higher bump and write down why the lower one was rejected.
+按发布中所有变更的最高影响来确定，并把理由与递增一起记录。两行判断不一致时，取更高的递增，并写下为何否决
+较低的那一个。
 
-| Change in the release | Version bump | Edge case to record |
+| 发布中的变更 | 版本号递增 | 要记录的边界情况 |
 |---|---|---|
-| Removed or renamed public name, endpoint, field, or event | Major | List every removed name and its replacement in the release note. |
-| Changed required parameter, default, or response shape | Major | A default change that alters output is a break even when the signature is stable. |
-| New optional capability, endpoint, or field | Minor | Confirm that old clients ignore it without breaking. |
-| Deprecation added without removal | Minor | Name the removal release and the date in the deprecation notice. |
-| Fix that restores documented behavior | Patch | Note the version where the wrong behavior appeared. |
-| Fix that changes behavior users may depend on | Minor or major by contract | If the buggy behavior was documented, treat the fix as breaking. |
-| Internal refactor with no external behavior | Patch, or no release | No release only when the artifact itself did not change. |
-| Security fix for a vulnerability | Patch, or major if the fix breaks a contract | Follow the disclosure schedule; the version alone does not disclose. |
-| Tooling, test, or documentation change | No version bump | Bump only if the shipped artifact or its metadata changed. |
-| Breaking change before 1.0 | Minor | Keep the previous minor working for one release when users have integrations. |
-| Several change classes in one release | The highest bump among them | Split the release rather than hiding a major inside a patch. |
-| Added optional configuration key with a safe default | Minor | Removing a key or changing its default is a break, not a cleanup. |
-| Changed error code, event name, or log field consumed downstream | Major | Treat a downstream consumer of the field as a public contract. |
+| 删除或重命名公共名称、端点、字段或事件 | 主版本 | 在发布说明中列出每个被移除的名称及其替代项。 |
+| 改变必填参数、默认值或响应结构 | 主版本 | 改变输出的默认值变更即使签名稳定也属破坏。 |
+| 新增可选能力、端点或字段 | 次版本 | 确认旧客户端会忽略它且不因此出错。 |
+| 只新增弃用、未移除 | 次版本 | 在弃用通知中写明移除版本与日期。 |
+| 恢复已写入文档行为的修复 | 补丁 | 注明错误行为出现的版本。 |
+| 改变用户可能依赖的行为的修复 | 按契约取次版本或主版本 | 如果错误行为已写入文档，把该修复视为破坏性。 |
+| 不改变外部行为的内部重构 | 补丁，或不发布 | 只有制品本身未变时才不发布。 |
+| 针对漏洞的安全修复 | 补丁；修复破坏契约时用主版本 | 遵循披露时间表；版本号本身不构成披露。 |
+| 工具、测试或文档变更 | 不递增版本 | 只有交付制品或其元数据变化时才递增。 |
+| 1.0 之前的破坏性变更 | 次版本 | 用户有集成时，让上一个次版本继续可用一个发布。 |
+| 一次发布包含多个变更类别 | 其中最高的递增 | 拆分发布，而不是把主版本藏在补丁里。 |
+| 新增带安全默认值的可选配置键 | 次版本 | 删除键或改其默认值是破坏，不是清理。 |
+| 改变下游消费的错误码、事件名或日志字段 | 主版本 | 把字段的下游消费方当作公共契约。 |
 
-- Bump by the highest impact in the release, never by the average or by the urgency of the request.
-- Never ship a major change inside a patch release; split the release instead of relabeling it.
-- Record the previous version and its support window together with the bump so the rollback target is explicit.
-- When the impact is unclear, bump higher and state the assumption; a wrong lower bump breaks consumers silently.
+- 按发布中的最高影响递增，绝不按平均值或请求紧急程度递增。
+- 绝不在补丁发布中交付主版本变更；拆分发布，而不是改标签。
+- 把上一版本及其支持窗口与递增一起记录，使回滚目标明确。
+- 影响不明确时取更高递增，并说明假设；错误的较低递增会静默破坏消费方。
 
-## Rollback Runbook
+## 回滚运行手册
 
-A rollback is a planned operation, not an improvised one. Write this runbook for each service before the first
-release that can fail, and rehearse the rollback in staging before it is needed in production.
+回滚是计划好的操作，不是临时发挥。在第一个可能失败的发布之前为每个服务写好这份运行手册，并在生产需要它之前
+在 staging 演练。
 
-### Trigger
+### 触发条件
 
-- Roll back when a success metric leaves the threshold written in the rollout plan and no known external cause
-  explains the trend.
-- Roll back when the error rate or latency for the affected journey exceeds the pre-agreed level for the bake time.
-- Roll back when data corruption, wrong results, or an authorization bypass is suspected, and stop writes before
-  further damage.
-- Roll back first when the cause is unknown and the previous version is healthy; investigate after the rollback.
-- Do not roll back blind after an irreversible migration; use the written fallback and escalate to the data owner.
+- 成功指标越出上线计划写明的阈值，且没有已知外部原因能解释该趋势时，回滚。
+- 受影响旅程的错误率或延迟在观察期内超过预先约定的水平时，回滚。
+- 怀疑数据损坏、结果错误或授权绕过时回滚，并在损害扩大前停止写入。
+- 原因未知且上一版本健康时先回滚；回滚后再调查。
+- 不可逆迁移之后不要盲目回滚；使用写明的兜底方案，并升级到数据所有者。
 
-### Authority
+### 决策权限
 
-- The on-call engineer may roll back a SEV1 or SEV2 without further approval and records the decision and its time.
-- A planned rollback outside an incident needs the release owner's approval recorded in the release record.
-- A rollback that reverses data or requires a restore needs the incident commander and the data owner, and the
-  restore follows the backup playbook.
-- A rollback that would reintroduce a known vulnerability needs the security owner; the default in that case is a
-  forward fix.
-- Record who decided, when, and why, in the release record or the incident timeline, before the next release starts.
+- 值班工程师可以不经进一步批准回滚 SEV1 或 SEV2，并记录决定及其时间。
+- 事故之外的计划回滚需要发布所有者的批准，并记录在发布记录中。
+- 会逆转数据或需要恢复的回滚需要事故指挥官和数据所有者，恢复遵循备份操作手册。
+- 会重新引入已知漏洞的回滚需要安全所有者；这种情况默认采用前向修复。
+- 在下一次发布开始前，把谁在何时为何做决定记录在发布记录或事故时间线中。
 
-### Rollback Steps
+### 回滚步骤
 
-1. Confirm the incident and its severity, and name an incident commander if one is not already named.
-2. Freeze further changes to the affected service, and stop the rollout at its current percentage.
-3. Preserve evidence: snapshot the logs, record the failing request or correlation ID, and capture the current
-   metric window before it ages out.
-4. Identify the previous healthy artifact digest, and confirm that it is retained, signed, and deployable.
-5. Check migration compatibility: if the new version wrote data the old version cannot read, stop and use the
-   written fallback instead of a plain rollback.
-6. Run the rollback job for the previous digest, or turn off the flag when the flag is the release unit.
-7. Restore the configuration and flag defaults that the release changed, and confirm the effective values.
-8. Verify the success metrics, the error rate, and the business signal against the pre-release baseline.
-9. Confirm data integrity with the written checks, then post the mitigation and keep the incident open for the
-   forward fix.
-10. Record the rollback in the release record, file the follow-up, and schedule the forward fix as a new release.
-11. Confirm through the deploy tooling that the rollout is stopped and that no new instances of the failed version
-    are starting.
-12. Set the approval level for the forward fix and keep the incident open until that fix ships or the risk is
-    accepted in writing.
+1. 确认事故及其严重级别；若尚未指定事故指挥官则指定一名。
+2. 冻结受影响服务的进一步变更，并在当前比例停下上线。
+3. 保存证据：快照日志、记录失败请求或关联 ID，并在当前指标窗口过期前抓取它。
+4. 确定上一健康制品摘要，并确认它仍被保留、已签名且可部署。
+5. 检查迁移兼容性：如果新版本写入了旧版本无法读取的数据，停下来使用写明的兜底方案，而不是直接回滚。
+6. 针对上一摘要运行回滚任务；如果开关就是发布单位，则关闭开关。
+7. 恢复发布改动过的配置与开关默认值，并确认生效值。
+8. 对照发布前基线验证成功指标、错误率和业务信号。
+9. 用写明的检查确认数据完整性，然后发布缓解结果，并保持事故开放以完成前向修复。
+10. 在发布记录中记录回滚，提交后续事项，并把前向修复安排为一次新发布。
+11. 通过部署工具确认上线已停止，且失败版本没有新实例正在启动。
+12. 设定前向修复的批准级别，并保持事故开放，直到该修复交付或风险被书面接受。
 
-### Rollback Verification
+### 回滚验证
 
-- The service dashboard shows the previous version, and every success metric is back inside the baseline.
-- The failing journey succeeds through the same check that detected the failure.
-- No new errors or alerts appear after the rollback, watched for at least one bake interval.
-- Data checks pass: row counts, checksums, and a sample read of records that the new version wrote.
-- The version endpoint and the release record both name the previous version and digest, not the failed one.
-- The incident channel and the status page report the mitigation and the next update time.
+- 服务仪表盘显示上一版本，每项成功指标都回到基线内。
+- 失败旅程通过当初发现失败的同一个检查验证成功。
+- 回滚后没有新的错误或告警出现，观察至少一个观察间隔。
+- 数据检查通过：行数、校验和，以及对新版本写入记录的抽样读取。
+- 版本端点和发布记录都写明上一版本与摘要，而不是失败的那个。
+- 事故频道和状态页报告缓解情况和下次更新时间。
 
-## Feature-Flag Lifecycle Table
+## 功能开关生命周期表
 
-A flag moves through these stages in order and leaves the code at the end, and the Emergency row can be entered
-from any stage. The naming skill owns the flag name; this table owns the states, the exit criteria, and the evidence
-that the state was reached.
+开关按顺序经过这些阶段，并在最后离开代码；应急行可以从任何阶段进入。`naming-conventions` 负责开关名；本表负责
+状态、退出标准以及证明状态已达成的证据。
 
-| Stage | Action | Exit criterion | Evidence |
+| 阶段 | 操作 | 退出标准 | 证据 |
 |---|---|---|---|
-| Propose | Record the owner, purpose, default, removal release, and failure behavior | The change review approves the flag | Flag inventory row |
-| Create | Implement both paths, default off, and test both | Staging proves that both paths work | Test report and inventory row |
-| Validate | Enable for internal users or an opt-in cohort | Error and business metrics are equal or better | Cohort report |
-| Ramp | Raise the percentage by segment with an abort threshold per step | Stable for the bake time at each step | Ramp log |
-| Extend | Justify a longer ramp in writing, with a new removal release | The flag owner approves the extension | Inventory update |
-| Full | Serve all traffic with the kill switch ready | No regression for one release, and the removal plan is confirmed | Dashboard and release record |
-| Retire | Delete the old code path, then the flag, in the next release | The flag is absent from code, configuration, and inventory | Diff and inventory check |
-| Emergency | Disable through the kill switch without a deploy | The incident is mitigated and the cause is understood | Incident record |
+| 提议 | 记录所有者、目的、默认值、移除版本和失败行为 | 变更审查批准该开关 | 开关清单行 |
+| 创建 | 实现两条路径、默认关闭，并测试两者 | staging 证明两条路径都可用 | 测试报告与清单行 |
+| 启用 | 对内部用户或自愿加入的群体启用 | 错误与业务指标持平或更好 | 群体报告 |
+| 放量 | 按细分群体提高比例，每步都有中止阈值 | 每一步的观察期内保持稳定 | 放量日志 |
+| 延期 | 以书面形式说明延长放量的理由，并给出新的移除版本 | 开关所有者批准延期 | 清单更新 |
+| 全量 | 服务全部流量，熔断开关就绪 | 一个发布内无回归，且移除计划已确认 | 仪表盘与发布记录 |
+| 退役 | 在下一发布中删除旧代码路径，然后删除开关 | 代码、配置和清单中都不再有该开关 | diff 与清单核查 |
+| 应急 | 不经部署通过熔断开关关闭 | 事故已缓解且原因已查明 | 事故记录 |
 
-- A flag is not a permission and never gates a security decision; authorization lives in the access model.
-- No nested flags: a second flag on the same behavior needs a written reason and its own removal release.
-- The removal release is set at creation; moving it requires the owner and a recorded reason.
-- A flag that fails its ramp is turned off and removed, not left in a half-on state for the next release.
-- A flag without an owner is disabled and removed at the next release, and the inventory is checked in the release
-  review.
+- 开关不是权限，也绝不为安全决策把关；授权存在于访问模型中。
+- 禁止嵌套开关：同一行为上的第二个开关需要书面理由和它自己的移除版本。
+- 移除版本在创建时设定；移动它需要所有者同意并记录理由。
+- 放量失败的开关要关闭并移除，不能以半开状态留到下一发布。
+- 没有所有者的开关在下一发布中禁用并移除，开关清单在发布审查中检查。
 
-## Incident Severity and Paging Matrix
+## 事故严重级别与呼叫矩阵
 
-Assign severity at triage from user impact, page by severity, and change the severity only with new evidence recorded
-in the timeline. When the level is ambiguous, start one level higher and downgrade after evidence justifies it.
+在分诊时按用户影响确定严重级别，按级别呼叫，只有新证据才能改级别，并记录在时间线中。级别不明确时，先按高一级
+启动，证据充分后再降级。
 
-| Severity | User impact | Paging | Update cadence | Postmortem |
+| 严重级别 | 用户影响 | 呼叫 | 更新节奏 | 事故复盘 |
 |---|---|---|---|---|
-| SEV1 | Full outage, data loss, or an actively exploited security issue | Page primary, secondary, and commander immediately; notify the executive sponsor | Every 15 to 30 minutes | Required within 5 business days |
-| SEV2 | Major function or a large user subset degraded, with no workaround | Page primary; escalate to commander if unresolved in 15 minutes | Every 30 minutes | Required within 5 business days |
-| SEV3 | The same impact as SEV2 where a workaround exists | Page during business hours or hand off to the next rotation | At start and at closure | Required when it repeats within a quarter |
-| SEV4 | Minor or cosmetic impact, no user action needed | No page; ticket for the next business day | On closure | Not required |
-| SEV5 | Question or request, no service impact | Queue, no page | As needed | Not required |
+| SEV1 | 全面中断、数据丢失或正被利用的安全问题 | 立即呼叫主值班、备值班和指挥官；通知高管发起人 | 每 15 至 30 分钟 | 5 个工作日内必须完成 |
+| SEV2 | 主要功能或大量用户子集降级，且无变通方案 | 呼叫主值班；15 分钟未解决则升级到指挥官 | 每 30 分钟 | 5 个工作日内必须完成 |
+| SEV3 | 与 SEV2 相同的影响，但存在变通方案 | 在工作时间呼叫，或交接给下一轮值 | 开始时和关闭时 | 一个季度内重复发生时必须完成 |
+| SEV4 | 轻微或外观影响，用户无需行动 | 不呼叫；开下一工作日的工单 | 关闭时 | 不要求 |
+| SEV5 | 问题或请求，无服务影响 | 进队列，不呼叫 | 按需 | 不要求 |
 
-- Severity determines the page, the channel, and the communication cadence; it is not a judgment about who caused
-  the problem or how hard the fix is.
-- Never page at SEV3 without a written escalation reason, and record that reason in the timeline.
-- A severity that changes during the incident keeps both values and the time of the change in the timeline.
-- Never lower a severity to avoid a meeting or a report; the matrix exists to make that pressure visible.
+- 严重级别决定呼叫、渠道和沟通节奏；它不是对谁造成问题或修复难度的判断。
+- 没有书面的升级理由，绝不在 SEV3 级别呼叫，并把理由记录在时间线中。
+- 事故期间变化的严重级别要在时间线中保留两个值及变更时间。
+- 绝不为了避开会议或报告而降低严重级别；矩阵的存在就是为了让这种压力可见。
 
-## Incident Checklist
+## 事故检查清单
 
-Run this checklist in the incident channel while the incident is open, not after it ends. Each unchecked item is a
-reason the response is harder than it needs to be, and the scribe records the time of each check.
+在事故仍开放时于事故频道中运行本检查清单，而不是等结束后。每个未勾选项都是响应变得比必要更困难的原因，记录员
+记录每次检查的时间。
 
-- [ ] Severity assigned from the matrix at triage and recorded with the time.
-- [ ] Incident commander named for SEV1 or SEV2, and roles assigned for operations, communication, and scribing.
-- [ ] Incident channel opened, with the audience and the scope stated.
-- [ ] Impact described in user terms: who is affected, what fails, and what still works.
-- [ ] First mitigation chosen before the root-cause investigation starts.
-- [ ] Evidence preserved: logs, failing request ID, metric snapshot, and deployed version.
-- [ ] Rollback or flag decision recorded with its time, its authority, and its expected effect.
-- [ ] Updates posted on the severity's cadence, each stating impact and the next update time.
-- [ ] Escalation triggered when the response exceeds the written timescale.
-- [ ] Mitigation verified through the same signal that detected the problem.
-- [ ] Closure criteria met: symptoms gone, metrics stable, and follow-ups filed.
-- [ ] Timeline completed with first alert, acknowledgement, mitigation, and resolution.
-- [ ] Customer-facing status page updated when users are affected, with the next update time.
-- [ ] Decisions recorded in the timeline as they are made, including the options rejected.
-- [ ] Postmortem scheduled when required, with the draft deadline and the reviewer.
-- [ ] Action items filed with an owner, a due date, and a verification step.
+- [ ] 分诊时按矩阵确定严重级别，并连同时间记录。
+- [ ] SEV1 或 SEV2 指定了事故指挥官，并分配了运维、沟通和记录角色。
+- [ ] 事故频道已开启，并写明受众与范围。
+- [ ] 用用户语言描述影响：谁受影响、什么失败、什么仍然可用。
+- [ ] 根因调查开始前已选定首个缓解措施。
+- [ ] 证据已保存：日志、失败请求 ID、指标快照和已部署版本。
+- [ ] 回滚或开关决定连同时间、决策权限和预期效果一起记录。
+- [ ] 按该严重级别的节奏发布更新，每次说明影响和下次更新时间。
+- [ ] 响应超过写明的时间尺度时触发升级。
+- [ ] 通过发现问题的同一个信号验证缓解有效。
+- [ ] 满足关闭标准：症状消失、指标稳定、后续事项已提交。
+- [ ] 时间线补齐首次告警、确认、缓解和解决。
+- [ ] 用户受影响时更新面向客户的状态页，并写明下次更新时间。
+- [ ] 决策做出时即记入时间线，包括被否决的选项。
+- [ ] 需要事故复盘时已安排，并写明草稿期限和审查者。
+- [ ] 行动项已提交，带负责人、截止日期和验证步骤。
 
-## SLO Worksheet
+## SLO 工作表
 
-Fill one worksheet per service and per user journey, store it with the service records, and review it when the
-target misses or an incident changes the design. The example values show the form; replace them with measured
-values from the project.
+每个服务和每条用户旅程各填一份工作表，与服务记录一起保存，并在目标未达成或事故改变设计时复查。示例值只展示
+形式；用项目中实测的值替换它们。
 
-| Field | Rule | Example |
+| 字段 | 规则 | 示例 |
 |---|---|---|
-| Service and journey | One SLO per user journey, not per process | Checkout submission |
-| SLI | Measurable from the user's side, with the source named | Ratio of successful valid checkout requests |
-| Measurement | State the data source, the aggregation, and the window | Request logs and edge metrics in five-minute buckets |
-| Target | Rounded to a level the team can defend from data | 99.9 percent success over 30 rolling days |
-| Error budget | One minus the target, expressed in time for the window | 0.1 percent of 30 days, about 43 minutes |
-| Burn alert | Page when the budget burns faster than the window allows | A burn rate of 14.4 in one hour pages the on-call |
-| Ownership | Name the service owner and the review cadence | Checkout team, reviewed quarterly |
-| Policy at exhaustion | State the consequence before the budget is spent | Feature release freeze until the budget recovers |
-| Exclusions | Name dependencies that are measured separately | Payment provider outage excluded and tracked separately |
-| Review trigger | State the event that forces a revision | Every SEV1 and every missed target |
-| Dashboard query | Store the exact query that computes the SLI, versioned with the dashboard | Link to the versioned query |
-| Review record | Record the target decision and its date at each review | Decision note linked from the service record |
+| 服务与旅程 | 每条用户旅程一个 SLO，而不是每个进程一个 | 结账提交 |
+| SLI | 可从用户侧测量，并写明来源 | 有效结账请求的成功比例 |
+| 测量 | 写明数据源、聚合方式和窗口 | 请求日志和边缘指标，按五分钟分桶 |
+| 目标 | 取整到团队能用数据辩护的水平 | 30 个滚动日内 99.9% 成功 |
+| 错误预算 | 1 减去目标，换算成窗口内的时间 | 30 天的 0.1%，约 43 分钟 |
+| 燃烧告警 | 预算燃烧快于窗口允许速度时呼叫 | 一小时内 14.4 的燃烧率会呼叫值班 |
+| 所有权 | 写明服务所有者和审查节奏 | 结账团队，每季度审查 |
+| 耗尽时的策略 | 在预算花光前写明后果 | 功能发布冻结直到预算恢复 |
+| 排除项 | 写明单独测量的依赖 | 支付提供商故障被排除并单独跟踪 |
+| 复审触发条件 | 写明迫使修订的事件 | 每次 SEV1 和每次目标未达成 |
+| 仪表盘查询 | 保存计算 SLI 的确切查询，与仪表盘一起版本管理 | 指向版本化查询的链接 |
+| 审查记录 | 每次审查记录目标决定及其日期 | 从服务记录链接的决策说明 |
 
-- A 100 percent target is not an SLO; it leaves no budget for change and no room to learn.
-- A budget expression that nobody has recomputed against the dashboard is not yet a measurement.
-- An SLO with no owner, no error budget, and no exhaustion policy is a target, not a reliability commitment.
-- Recalculate the budget after a target change and tell the teams whose release plans depend on it.
+- 100% 的目标不是 SLO；它没有为变更留预算，也没有留下学习空间。
+- 没有人对照仪表盘重算过的预算表达式还不算测量。
+- 没有所有者、没有错误预算、没有耗尽策略的 SLO 只是目标，不是可靠性承诺。
+- 目标变更后重算预算，并通知发布计划依赖它的团队。
 
-## Deploy-Strategy Selection Table
+## 部署策略选择表
 
-Choose the strategy by the cost of a bad release and the power to detect it, not by what the team used last time.
-Record the choice and its parameters in the release record.
+按一次坏发布的代价和发现它的能力选择策略，而不是按团队上次用了什么。把选择和参数记录在发布记录中。
 
-| Strategy | Use when | Rollback | Cost and risk |
+| 策略 | 适用场景 | 回滚 | 成本与风险 |
 |---|---|---|---|
-| Rolling | Stateless service, enough capacity, and N-1 compatibility | Redeploy the previous digest | Low cost; two versions run during the rollout |
-| Blue-green | Fast cutover and rollback are needed and double capacity exists | Switch traffic back to the previous stack | Double capacity; data written by the new version must be readable by the old |
-| Canary | Enough traffic exists to detect a bad release through a success metric | Shift traffic back to the stable version | Medium cost; a low-traffic canary proves nothing |
-| Recreate | Downtime is acceptable, the service is single-instance, or the change is migration-only | Redeploy the previous version after the downtime | Lowest cost; users see the outage |
-| Shadow | A new path must be validated without user impact | Discard the shadow receivers | High cost; duplicated side effects must be prevented |
+| 滚动 | 无状态服务、容量充足且具备 N-1 兼容性 | 重新部署上一摘要 | 成本低；上线期间两个版本同时运行 |
+| 蓝绿 | 需要快速切换与回滚，且具备双倍容量 | 把流量切回上一套环境 | 双倍容量；新版本写入的数据必须能被旧版本读取 |
+| 金丝雀 | 有足够流量能通过成功指标发现坏发布 | 把流量切回稳定版本 | 中等成本；低流量金丝雀证明不了什么 |
+| 重建 | 可接受停机、服务为单实例，或变更只涉及迁移 | 停机后重新部署上一版本 | 成本最低；用户会看到中断 |
+| 影子 | 必须在不影响用户的情况下验证新路径 | 丢弃影子接收方 | 成本高；必须防止重复的副作用 |
 
-- Write the canary percentage, duration, success metric, and abort threshold in the release record before the first
-  deploy.
-- Exercise the rollback through the same strategy at least once in staging; a rollback that was never run is a plan.
-- A blue-green cutover needs a data compatibility check before the switch, and both stacks need the same
-  configuration.
-- A rolling rollout needs readiness probes and connection draining, or the mixed-version window becomes an outage.
-- Canary and blue-green both need the previous stack kept warm for the rollback window; sizing it away removes the
-  rollback path.
+- 首次部署前把金丝雀比例、时长、成功指标和中止阈值写入发布记录。
+- 在 staging 通过同一策略至少演练一次回滚；从未跑过的回滚只是计划。
+- 蓝绿切换前需要数据兼容性检查，两套环境需要相同配置。
+- 滚动上线需要就绪探针和连接排空，否则混合版本窗口会变成中断。
+- 金丝雀和蓝绿都需要在回滚窗口内保持上一套环境热备；为了省资源把它缩掉，就等于去掉了回滚路径。
 
-## Backup and Restore Drill Checklist
+## 备份与恢复演练检查清单
 
-Run this checklist quarterly, after every change to backup scope, and before a release that migrates data. Record
-the result, the measured RPO and RTO, and every failed step in the drill record.
+每季度、每次变更备份范围后，以及迁移数据的发布之前运行本检查清单。把结果、实测 RPO 和 RTO，以及每个失败步骤
+记录在演练记录中。
 
-- [ ] The backup scope list is current and includes the stores that changed since the last drill.
-- [ ] The latest backup completed, and its age and size are recorded.
-- [ ] The encryption keys needed for the restore are available to the restore target.
-- [ ] The restore target is isolated and encrypted, with production-sized storage.
-- [ ] The timed restore starts, and the elapsed time is recorded per step.
-- [ ] Full restore plus the required log replay or incremental reaches the chosen timestamp.
-- [ ] Row counts, checksums, or document counts match the source at that timestamp.
-- [ ] The application starts against the restored data and passes its smoke queries.
-- [ ] A sample business record is read and compared with the expected value.
-- [ ] Actual RPO is measured as the age of the newest recoverable data.
-- [ ] Actual RTO is measured and compared with the target for that data class.
-- [ ] Failed steps, missing permissions, and documentation gaps are recorded.
-- [ ] The runbook and the disaster recovery plan are updated, and the next drill date is set.
-- [ ] An alert exists for a backup that fails or is older than the RPO.
-- [ ] A second person has followed the runbook and restored without asking its author.
-- [ ] The restored dataset excludes records that the retention policy should already have deleted.
-- [ ] The drill result, including the measured RPO and RTO, is stored with the service record.
+- [ ] 备份范围清单是最新的，并包含自上次演练以来发生变化的存储。
+- [ ] 最新备份已完成，其时长和大小已记录。
+- [ ] 恢复所需的加密密钥对恢复目标可用。
+- [ ] 恢复目标是隔离且加密的，存储容量与生产相当。
+- [ ] 计时恢复已开始，并逐步记录耗时。
+- [ ] 全量恢复加上所需的日志重放或增量，到达选定时间戳。
+- [ ] 行数、校验和或文档数与该时间戳的源一致。
+- [ ] 应用能针对恢复后的数据启动并通过冒烟查询。
+- [ ] 读取一条样本业务记录并与预期值比对。
+- [ ] 实际 RPO 以最新可恢复数据的年龄来衡量。
+- [ ] 实测实际 RTO，并与该数据类别的目标对照。
+- [ ] 失败步骤、缺失权限和文档缺口均已记录。
+- [ ] 运行手册和灾难恢复计划已更新，下次演练日期已设定。
+- [ ] 对失败或早于 RPO 的备份有告警。
+- [ ] 第二个人已按运行手册完成恢复，且没有询问作者。
+- [ ] 恢复后的数据集不包含保留策略本应已删除的记录。
+- [ ] 演练结果，包括实测 RPO 和 RTO，与服务记录一起保存。
 
-The drill record is the evidence: keep the date, the participants, the measured RPO and RTO, the failing steps, and
-the next drill date with the service record. A drill whose result is not recorded is repeated from the beginning.
+演练记录就是证据：把日期、参与人、实测 RPO 和 RTO、失败步骤和下次演练日期与服务记录保存在一起。结果未被
+记录的演练会从头重做。

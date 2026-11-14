@@ -1,221 +1,194 @@
 ---
 name: release-operations-conventions
-description: Defines, reviews, and repairs release and operations practice for a software project, covering version policy, change management, CI/CD, observability, incident response, and backup and recovery. Use when cutting or approving a release, planning a rollout or rollback, designing telemetry and alerting, handling an incident, or proving a restore.
-argument-hint: '[path or scope]'
+description: 定义、审查并修复软件项目的发布与运维实践，涵盖版本策略、变更管理、CI/CD、可观测性、事故响应与备份恢复。用于切出或批准发布、规划上线或回滚、设计遥测与告警、处理事故，或证明恢复可行。
+argument-hint: '[路径或范围]'
 ---
 
-# Release and Operations Conventions
+# 发布与运维规范
 
-Release and operations failures are the most expensive defects a project carries: a bad deploy harms users who never
-saw the change, an undetected incident runs until a customer reports it, and an untested restore turns a recoverable
-outage into permanent data loss. Each failure is cheap to prevent with a defined process and expensive to repair
-after the fact, and each is a process gap rather than a coding error. This skill defines that process: how a version
-is chosen and a release approved, how a change is announced and deprecated, how one artifact is built and promoted,
-what telemetry proves that a release worked, how an incident is run, and how a restore is proven. It owns the
-release process, the version policy, and the design of telemetry and recovery, and it hands every artifact it does
-not own to the skill that does.
+发布与运维失败是项目要承担的最昂贵缺陷：一次糟糕的部署会伤害从未见过该变更的用户，一次未被发现的事故会一直
+持续到客户上报，一次未经验证的恢复会把可恢复的中断变成永久数据丢失。每种失败用明确的流程预防都很便宜，事后
+修复都很昂贵，而且它们都是流程缺口而不是编码错误。本 skill 定义这套流程：如何选择版本并批准发布、如何公告和
+弃用变更、如何构建并晋级同一个制品、什么遥测能证明发布成功、如何指挥事故，以及如何证明恢复可行。它负责发布
+流程、版本策略以及遥测与恢复的设计，并把不属于自己的每份制品交给负责它的 skill。
 
-## Scope and Precedence
+## 适用范围与优先级
 
-Apply the first rule that fits, and do not mix standards inside one scope:
+应用第一条适用的规则，不要在同一范围内混用标准：
 
-1. Mandatory legal, regulatory, contractual, and platform requirements. Data-deletion duties, license obligations, a
-   signed support window, and the deploy interface of the hosting platform are not optional; record each one where
-   the release process reads it.
-2. The project's written release policy and its live pipeline, environment, runbook, and alert configuration. Read
-   the version source, CI configuration, environment definitions, and the last two incident records before
-   inventing a rule.
-3. This standard's defaults, when the two levels above are silent.
-4. Personal preference, team habit, and the convenience of the current toolchain, which never override the three
-   levels above.
+1. 法律、法规、合同和平台的强制要求。数据删除义务、许可证义务、已签署的支持窗口以及托管平台的部署接口都不是
+   可选项；把每一项记录在发布流程会读取的地方。
+2. 项目已写入文档的发布策略，以及实际运行的流水线、环境、运行手册和告警配置。在发明规则之前，先读版本来源、
+   CI 配置、环境定义和最近两次事故记录。
+3. 本标准的默认值，在前两级都没有规定时适用。
+4. 个人偏好、团队习惯和当前工具链的便利性，它们永远不能覆盖以上三级。
 
-- Version names and tags. The naming skill owns release tags, metric names, log and event field names, and version
-  identifiers; this skill owns the release process, the version policy, and the telemetry design. Send naming
-  questions there and process questions here.
-- Release documents. The documentation skill owns changelog, release-note, runbook, and postmortem documents and
-  their templates; this skill owns what must be recorded and when those documents are updated in the release and
-  incident flow.
-- Change to release. The version-control collaboration skill owns branches, pull requests, review, and ownership;
-  this skill owns how a reviewed change becomes a release, including the approval and the freeze that gate it.
-- Gates and stages. The testing and quality skill owns gate thresholds and coverage policy; this skill owns the
-  pipeline stages, their required order, environment promotion, artifacts, and rollout controls.
-- Product and API versions. The API and data skill owns API versioning and schema safety; this skill owns the
-  product version, the compatibility promise, and the release cadence. A release that ships an API version follows
-  both.
-- Access and authority. The security and compliance skill owns credentials, secret storage, disclosure, retention
-  policy, and compliance; this skill owns deploy permissions and rollback authority, and consumes the credentials
-  that the security process issues.
-- Infrastructure-managed settings are exempt. Retention, replication, autoscaling, and backup scheduling performed
-  by a managed platform stay with the platform owner; cite the platform contract, do not copy its values into the
-  project, and record the boundary in the service runbook.
-- A release is not reversible by default. Every irreversible operation needs a tested rollback path or an explicit,
-  recorded accepted risk; when a rollback is impossible, the approval level rises and the rollout narrows.
-- When two rules conflict, state the conflict and the chosen rule, record the decision in the release policy, and
-  apply the same choice to the next release.
+- 版本名与标签。`naming-conventions` 负责发布标签、指标名、日志与事件字段名以及版本标识符；本 skill 负责发布流程、
+  版本策略和遥测设计。命名问题交给那边，流程问题留在这里。
+- 发布文档。`documentation-conventions` 负责变更日志、发布说明、运行手册和事故复盘文档及其模板；本 skill 负责必须
+  记录什么，以及这些文档在发布与事故流程中何时更新。
+- 从变更到发布。`vcs-collaboration-conventions` 负责分支、PR、审查和所有权；本 skill 负责已审查变更如何
+  变成发布，包括把关的批准与冻结。
+- 门禁与阶段。`testing-and-quality-conventions` 负责门禁阈值与覆盖率策略；本 skill 负责流水线阶段、其必需顺序、环境
+  晋级、制品和上线控制。
+- 产品版本与 API 版本。`api-and-data-conventions` 负责 API 版本管理与 schema 安全；本 skill 负责产品版本、兼容性承诺
+  和发布节奏。交付某个 API 版本的发布同时遵循两者。
+- 访问与权限。`security-compliance-conventions` 负责凭据、机密存储、披露、保留策略和合规；本 skill 负责部署权限
+  与回滚决策权，并消费安全流程签发的凭据。
+- 由基础设施托管的设置不在范围内。托管平台执行的保留、复制、自动伸缩和备份调度仍归平台所有者；引用平台合同，
+  不要把它里面的取值抄进项目，并在服务运行手册中记录这条边界。
+- 发布默认不可逆。每个不可逆操作都需要经过测试的回滚路径，或一份明确记录下来的已接受风险；无法回滚时，批准
+  级别升高、上线范围收窄。
+- 当两条规则冲突时，说明冲突与所选规则，把决定记录在发布策略中，并在下一次发布沿用同样的选择。
 
-## Process
+## 流程
 
-1. Classify the change and the release. Name the artifact, the affected users, the compatibility impact, and the
-   release type from the Release Model Matrix; a change that touches data, credentials, or the schema also names
-   its security and data owners.
-2. Read the current state. Open the version source, pipeline configuration, environment definitions, SLOs, alert
-   rules, runbooks, and the last incident record before deciding anything; the process that exists constrains the
-   process that should exist.
-3. Decide the version and the compatibility promise. Apply the version-bump rule, name the previous version that
-   must remain supported, and mark every breaking change and deprecation with its removal release.
-4. Assemble the evidence. Confirm that the required gates passed, the artifact is reproducible, the rollout and
-   rollback are written, and the telemetry that proves success exists before the first deploy.
-5. Update the records in the same change. Record the release content, the approval, the rollout plan, and the
-   rollback trigger; update every runbook, dashboard, alert, and document that the change makes stale.
-6. Rehearse what has not been run. Promote through staging with production-shaped traffic and data, run a restore
-   drill when the change touches stored data, and exercise the rollback path once where the release is
-   irreversible.
-7. Release, observe, and close. Deploy the approved artifact, watch the success metric for the full bake time, roll
-   back on the written trigger without renegotiation, and record the outcome and the action items before the next
-   release.
+1. 对变更和发布分类。写明制品、受影响的用户、兼容性影响，以及发布模型矩阵中的发布类型；触及数据、凭据或
+   schema 的变更还要写明其安全和数据所有者。
+2. 阅读当前状态。在做任何决定之前，打开版本来源、流水线配置、环境定义、SLO、告警规则、运行手册和最近一次
+   事故记录；现有流程会约束应有的流程。
+3. 确定版本与兼容性承诺。应用版本号递增规则，写明必须继续受支持的上一版本，并为每项破坏性变更和弃用标注其
+   移除版本。
+4. 汇集证据。在首次部署之前确认必需门禁已通过、制品可复现、上线与回滚方案已写成，且能证明成功的遥测已经存在。
+5. 在同一次变更中更新记录。记录发布内容、批准、上线计划和回滚触发条件；更新因该变更而过期的每份运行手册、
+   仪表盘、告警和文档。
+6. 演练尚未跑过的东西。用与生产同形的流量和数据经 staging 晋级，变更触及存储数据时跑一次恢复演练，发布不可逆
+   时把回滚路径实际走一遍。
+7. 发布、观察、收尾。部署已批准的制品，在整个观察期内盯住成功指标，一旦触及写明的触发条件就回滚、不再商量，
+   并在下一次发布前记录结果和行动项。
 
-## Core Rules
+## 核心规则
 
-- **Build once, promote the artifact.** The bytes that pass staging are the bytes that reach production; rebuilding
-  per environment reintroduces untested differences and makes the rollback target ambiguous.
-- **Version by impact, not by activity.** A patch fixes behavior without changing a contract, a minor adds a
-  capability without breaking one, and a major changes a contract; a version that does not match its content
-  invalidates every dependency constraint that reads it.
-- **Make every release reversible or explicitly one-way.** Define the rollback path, its data implications, and the
-  decision authority before the deploy; a release with neither a rollback nor an accepted risk is not approved.
-- **Publish freeze windows and enforce them.** A freeze names the dates, the exception authority, and the change
-  classes still allowed; an unstated freeze is discovered by the deploy that fails during it.
-- **Automate the path, gate the exception.** The pipeline runs the same stages for every release, and a manual
-  override needs an approver, a reason, and a recorded deviation from the standard path.
-- **Publish the compatibility promise.** State which versions receive fixes, how long a deprecated path remains,
-  and what an upgrade requires; a promise made in one release is a commitment for every following one.
-- **Announce deprecation where users see the old path.** A changelog entry reaches too few people; emit a runtime
-  warning, update the page that shows the old path, and name the removal release and date.
-- **Treat flags as temporary.** Every flag has an owner, a default, a removal trigger, and a cleanup release; a flag
-  that outlives its release becomes an untested branch and a permanent second code path.
-- **Observe with signals that decide.** Name the success metric, the error rate, the latency, and the business
-  signal that prove the release worked, and define the threshold that turns each into a rollback trigger.
-- **Alert on symptoms that require action.** Page a human only for a condition that a human can act on, with a
-  runbook; a noisy alert trains the rotation to ignore the one that matters.
-- **Run every incident against a clock.** Record first alert, acknowledgement, mitigation, and resolution in
-  minutes; an incident review without a timeline cannot separate detection from response.
-- **Record and learn from every severe incident.** Severity determines the response, the communication cadence, and
-  whether a postmortem is required; action items carry an owner and a date and are reviewed at the next release.
-- **Prove the backup by restoring it.** An untested backup is a hypothesis; run a restore drill on a schedule and on
-  every change to backup scope, and record the measured RPO and RTO.
-- **State environment parity as a risk.** Staging and production differ in data, scale, and configuration; the
-  release plan names which differences are accepted and how each one is tested.
+- **只构建一次，晋级制品。** 通过 staging 的那份字节就是到达生产的那份字节；按环境重新构建会重新引入未测试的
+  差异，并让回滚目标变得模糊。
+- **按影响定版本，不按活动量。** 补丁修复行为而不改变契约，次版本增加能力而不破坏契约，主版本改变契约；版本与
+  内容不符会让每条读取它的依赖约束失效。
+- **让每次发布可逆，或明确标为单向。** 在部署前定义回滚路径、其数据影响和决策权限；既没有回滚方案也没有已接受
+  风险的发布不予批准。
+- **公布冻结窗口并强制执行。** 冻结要写明日期、例外审批权限和仍允许的变更类别；未声明的冻结会在冻结期间失败的
+  部署中被发现。
+- **自动化标准路径，为例外设门禁。** 流水线对每次发布运行相同的阶段，人工覆盖需要批准者、原因，以及对偏离标准
+  路径的书面记录。
+- **公布兼容性承诺。** 写明哪些版本会获得修复、弃用路径还会保留多久，以及升级需要做什么；在一个发布中做出的
+  承诺，对之后每个发布都是约束。
+- **在用户看到旧路径的地方公告弃用。** 变更日志条目触达的人太少；发出运行时告警、更新展示旧路径的页面，并写明
+  移除版本与日期。
+- **把开关当作临时的。** 每个开关都有所有者、默认值、移除触发条件和清理版本；活得比发布还久的开关会变成一个
+  未测试的分支和永久的第二条代码路径。
+- **用能支持决策的信号做观察。** 写明能证明发布成功的成功指标、错误率、延迟和业务信号，并定义把每一项变成回滚
+  触发条件的阈值。
+- **只对需要行动的征兆告警。** 只在人能处置且有运行手册的情况下呼叫值班人员；吵闹的告警会把轮值训练成忽略真正
+  重要的那一条。
+- **每个事故都按时钟运行。** 以分钟记录首次告警、确认、缓解和解决；没有时间线的事故复盘无法区分发现与响应。
+- **记录每次严重事故并从中学习。** 严重级别决定响应方式、沟通节奏以及是否需要事故复盘；行动项带有负责人和日期，
+  并在下一次发布时审查。
+- **用恢复来证明备份。** 未测试的备份只是一个假设；按计划并在每次变更备份范围时跑恢复演练，并记录实测的 RPO 和
+  RTO。
+- **把环境一致性表述为风险。** staging 与生产在数据、规模和配置上存在差异；发布计划写明接受哪些差异以及每项
+  差异如何测试。
 
-## Release Model Matrix
+## 发布模型矩阵
 
-Choose the row that matches the impact of the change, not the urgency of the request. The matrix is the default; a
-project release policy may tighten it, never relax the rollback or approval columns.
+选择与变更影响相符的那一行，而不是与请求紧急程度相符的行。本矩阵是默认值；项目发布策略可以收紧它，绝不能放宽
+回滚或批准两列。
 
-| Release type | Version bump | Approvals | Rollout | Rollback | Communication |
+| 发布类型 | 版本号递增 | 批准 | 上线 | 回滚 | 沟通 |
 |---|---|---|---|---|---|
-| Major, breaking contract | Major | Release owner plus the owners of every consumer surface; security when data or access changes | Canary then full, with the migration window announced before rollout | Redeploy the previous major and reverse the migration, both tested | Release note with upgrade steps, deprecation list, and support window |
-| Minor, backward-compatible feature | Minor | Release owner plus the service owner | Rolling deploy of the promoted artifact | Redeploy the previous version; no data reversal needed | Release note and changelog entry; no user action |
-| Patch, backward-compatible fix | Patch | Release owner | Rolling deploy | Redeploy the previous patch | Changelog entry; release note only when the fix is visible |
-| Pre-release, alpha, beta, or release candidate | Pre-release suffix | Release owner alone | Opt-in channel, never the default audience | Discard the pre-release; no rollback promise | Announcement that names the promotion criteria |
-| Hotfix for a production defect | Patch | On-call lead plus release owner; security when the defect is exploitable | Fastest safe path, canary when the defect touches data | Redeploy the previous version; the fix stays on its branch for the retry | Incident channel update, then a release note and a postmortem when severe |
-| Security fix | Patch, or major when the fix breaks a contract | Security owner plus release owner, coordinated with the disclosure schedule | Staged, with the disclosure date held until the fixed artifact is available | Roll forward by default; roll back only when the previous build is not the vulnerable one | Security advisory and release note, sent on the disclosed timeline |
-| Rollback deployment | None | On-call authority, recorded after the decision | Immediately to the affected scope | None further; the previous artifact is already live and a forward fix follows as a new release | Status page update and incident note; changelog only for the forward fix |
-| Configuration or flag change | None | Service owner | Staged percentage ramp | Flip the flag or restore the previous value | Note in the release record; user-facing only when behavior is visible |
+| 主版本，破坏契约 | 主版本 | 发布所有者加上每个消费面的所有者；数据或访问变更时加安全负责人 | 先金丝雀后全量，上线前公布迁移窗口 | 重新部署上一主版本并反向迁移，两者都已测试 | 发布说明，含升级步骤、弃用清单和支持窗口 |
+| 次版本，向后兼容的功能 | 次版本 | 发布所有者加上服务所有者 | 滚动部署晋级后的制品 | 重新部署上一版本；无需反向数据 | 发布说明和变更日志条目；用户无需操作 |
+| 补丁，向后兼容的修复 | 补丁 | 发布所有者 | 滚动部署 | 重新部署上一补丁 | 变更日志条目；只有修复对用户可见时才写发布说明 |
+| 预发布，alpha、beta 或候选发布版 | 预发布后缀 | 仅发布所有者 | 自愿加入的渠道，绝不是默认受众 | 丢弃预发布版；不承诺回滚 | 公告，写明晋级标准 |
+| 生产缺陷的热修复 | 补丁 | 值班负责人加发布所有者；缺陷可被利用时加安全负责人 | 最快安全路径，缺陷触及数据时用金丝雀 | 重新部署上一版本；修复留在其分支上供重试 | 更新事故频道，然后发发布说明；严重时补事故复盘 |
+| 安全修复 | 补丁；修复破坏契约时用主版本 | 安全所有者加发布所有者，与披露时间表协调 | 分阶段上线，披露日期等到修复制品可用后再定 | 默认向前滚动；只有上一构建不是易受攻击版本时才回滚 | 安全公告和发布说明，按披露时间线发送 |
+| 回滚部署 | 无 | 值班权限，决定后记录 | 立即作用于受影响范围 | 无需进一步回滚；上一制品已上线，随后以前向修复作为新发布 | 更新状态页和事故说明；只有前向修复才写变更日志 |
+| 配置或开关变更 | 无 | 服务所有者 | 分阶段按比例放量 | 翻转开关或恢复上一取值 | 在发布记录中备注；只有行为可见时才面向用户 |
 
-## Dimension Index
+## 维度索引
 
-Each dimension has detailed rules, examples, and edge cases in `references/dimensions.md`; the number in the
-dimension column is the section number in that file.
+每个维度在 `references/dimensions.md` 中有详细规则、示例和边界情况；维度一列中的编号就是该文件中的节号。
 
-| Dimension | First rule |
+| 维度 | 首要规则 |
 |---|---|
-| 1. Versioning and release | Choose one product version per artifact and bump it by compatibility impact. |
-| 2. Change management | Announce, deprecate, and remove a breaking change on a published schedule. |
-| 3. CI/CD | One pipeline builds one reproducible artifact and promotes it through environments. |
-| 4. Observability | Design telemetry so a release can be judged and an incident diagnosed. |
-| 5. Incident response | Severity decides who is paged, who leads, and how often users hear from you. |
-| 6. Backup and recovery | Back up what a restore needs and prove the restore on a schedule. |
+| 1. 版本与发布 | 每个制品只使用一个产品版本，并按兼容性影响递增。 |
+| 2. 变更管理 | 按已公布的时间表公告、弃用并移除破坏性变更。 |
+| 3. CI/CD | 一条流水线构建一个可复现制品，并让它经各环境晋级。 |
+| 4. 可观测性 | 设计遥测，使发布可被评判、事故可被诊断。 |
+| 5. 事故响应 | 严重级别决定呼叫谁、谁指挥，以及多久向用户通报一次。 |
+| 6. 备份与恢复 | 备份恢复所需之物，并按计划证明恢复可行。 |
 
-## Anti-Patterns
+## 反模式
 
-| Anti-pattern | Why it fails | Fix |
+| 反模式 | 为什么失败 | 修复 |
 |---|---|---|
-| Rebuilding the artifact per environment | The tested bytes differ from the shipped bytes and the rollback target is unknown | Build once, promote by digest, and never rebuild the same commit for production |
-| Deploying inside a freeze with no exception record | The freeze loses its meaning and the exception cannot be reviewed | Record the exception, its authority, its reason, and its rollback plan |
-| "Roll back if needed" with no command | The undo is designed during the outage, which is the worst time | Write the rollback steps, data impact, and verification before the deploy |
-| Choosing the version bump after the tag | The bump reflects the release date rather than the compatibility change | Decide the bump from the change classification before merging |
-| Changelog assembled from the commit log | Users cannot find the change that needs their action | Record user-visible changes and required actions; the log is not the record |
-| Keeping a flag after full rollout | Two code paths remain, one of them untested and unmaintained | Give every flag a removal release and delete it when the ramp completes |
-| Deprecation announced only in the changelog | Users see the removal at upgrade time, after their planning window closed | Announce where the old path is used, with the date and the replacement |
-| Printing pipeline credentials into logs | A credential exposed by the pipeline is exposed to everyone who can read the log | Never expose credentials in pipeline logs, artifacts, or output; security owns where they come from |
-| Alerting on every error | The rotation ignores pages and misses the one that matters | Alert on symptoms with a runbook and a threshold tied to an SLO |
-| Scoring an SLO with no owner or review | The target drifts from user experience and nobody notices | Assign an owner, a review cadence, and an error-budget policy |
-| Setting severity after the fact | Paging and communication drift with the responder's mood | Assign severity from the matrix at triage and change it only with evidence |
-| Postmortem with no tracked actions | The same incident recurs while the document records regret | File action items with owners and dates and review them at the next release |
-| Counting backups without restoring them | The backup may be corrupt, incomplete, or unreadable | Run a restore drill, measure RPO and RTO, and record the result |
-| Deploying from personal credentials | The deploy cannot be tied to a role and rollback authority is unclear | Use role-based deploy identities and record the approver and the operator |
-| Shipping a visible change through a config-only release | A behavior change bypasses versioning, compatibility review, and release notes | Classify the change by user impact and use the matching release type |
+| 按环境重新构建制品 | 测试过的字节与交付的字节不同，回滚目标也不明确 | 只构建一次，按摘要晋级，永不为生产重新构建同一提交 |
+| 在冻结期内无例外记录就部署 | 冻结失去意义，例外也无法审查 | 记录例外、其审批权限、原因和回滚计划 |
+| 「需要就回滚」却没有命令 | 撤销方案要在事故中设计，而那是最糟的时机 | 部署前写好回滚步骤、数据影响和验证方式 |
+| 打完标签才决定版本号递增 | 递增反映的是发布日期而不是兼容性变化 | 合并前根据变更分类确定递增 |
+| 用提交日志拼出变更日志 | 用户找不到需要自己行动的那项变更 | 记录用户可见变更和所需行动；日志不是记录 |
+| 全量上线后继续保留开关 | 留下两条代码路径，其中一条未测试也无人维护 | 给每个开关一个移除版本，放量完成后删除它 |
+| 只在变更日志里公告弃用 | 用户在升级时才看到移除，此时规划窗口已关闭 | 在使用旧路径的地方公告，附上日期和替代方案 |
+| 把流水线凭据打印到日志 | 被流水线暴露的凭据就暴露给所有能读日志的人 | 绝不在流水线日志、制品或输出中暴露凭据；凭据来源归安全负责 |
+| 对每个错误都告警 | 轮值会忽略呼叫，错过真正重要的那一次 | 对附带运行手册且阈值绑定 SLO 的征兆告警 |
+| SLO 无人负责也无人审查 | 目标偏离用户体验，却没人注意 | 指定所有者、审查节奏和错误预算策略 |
+| 事后才定严重级别 | 呼叫与沟通随响应者的心情漂移 | 在分诊时按矩阵确定严重级别，只有新证据才能改 |
+| 事故复盘没有跟踪行动项 | 同一事故重演，而文档只记录遗憾 | 提交带负责人和日期的行动项，并在下一次发布时审查 |
+| 只统计备份而不恢复 | 备份可能损坏、不完整或不可读 | 跑恢复演练，测量 RPO 和 RTO，并记录结果 |
+| 用个人凭据部署 | 部署无法关联到角色，回滚权限也不清楚 | 使用基于角色的部署身份，并记录批准者与操作者 |
+| 用仅配置的发布交付可见变更 | 行为变更绕过了版本管理、兼容性审查和发布说明 | 按用户影响给变更分类，并使用匹配的发布类型 |
 
-## Review Checklist
+## 审查清单
 
-- [ ] The version bump matches the compatibility impact of the change.
-- [ ] The release type, approvals, and rollout match the Release Model Matrix.
-- [ ] The previous version and its support window are named.
-- [ ] Breaking changes and deprecations name a removal release, a date, and a migration path.
-- [ ] The pipeline builds once and promotes the same artifact to every environment.
-- [ ] Build inputs are pinned and the artifact is reproducible from a clean checkout.
-- [ ] Stages run cheapest-failure-first, and required gates pass before promotion.
-- [ ] The pipeline consumes the credentials the security process owns and never exposes them in logs or artifacts.
-- [ ] The rollback matches the documented steps and was exercised in staging.
-- [ ] Every irreversible step has a tested rollback or a recorded accepted risk.
-- [ ] Success metrics, thresholds, and the bake time are written before the deploy.
-- [ ] Alerts page only for actionable, SLO-linked symptoms and each one has a runbook.
-- [ ] Dashboards are versioned as code and name the deployed service.
-- [ ] Logs, metrics, and traces carry a correlation ID and pass the masking rule.
-- [ ] The on-call owner, escalation path, and incident commander role are current.
-- [ ] Backup scope, retention, and encryption match the data classification.
-- [ ] A restore drill passed inside the retention window, and RPO and RTO were measured.
-- [ ] Release notes, changelog, runbook, and postmortem ownership and update timing are recorded.
-- [ ] Freeze windows and the exception authority are published for the release period.
+- [ ] 版本号递增与变更的兼容性影响匹配。
+- [ ] 发布类型、批准和上线方式与发布模型矩阵匹配。
+- [ ] 写明了上一版本及其支持窗口。
+- [ ] 破坏性变更和弃用写明了移除版本、日期和迁移路径。
+- [ ] 流水线只构建一次，并把同一制品晋级到每个环境。
+- [ ] 构建输入已固定，制品可从干净检出复现。
+- [ ] 阶段按失败成本从低到高运行，必需门禁在晋级前通过。
+- [ ] 流水线消费安全流程拥有的凭据，且绝不在日志或制品中暴露它们。
+- [ ] 回滚与已写入文档的步骤一致，并已在 staging 演练过。
+- [ ] 每个不可逆步骤都有经过测试的回滚，或有记录的已接受风险。
+- [ ] 成功指标、阈值和观察期在部署前写好。
+- [ ] 告警只对可处置且关联 SLO 的征兆呼叫，且每条告警都有运行手册。
+- [ ] 仪表盘按代码方式版本管理，并写明所部署的服务。
+- [ ] 日志、指标和追踪都带关联 ID 并通过脱敏规则。
+- [ ] 值班负责人、升级路径和事故指挥官角色保持最新。
+- [ ] 备份范围、保留和加密与数据分类匹配。
+- [ ] 恢复演练在保留窗口内通过，且已测量 RPO 和 RTO。
+- [ ] 发布说明、变更日志、运行手册和事故复盘的所有权与更新时机均已记录。
+- [ ] 发布期间的冻结窗口与例外审批权限已公布。
 
-## Examples
+## 示例
 
 <example>
-Shipping a checkout change on a minor version: build the artifact once, promote the staging digest through a
-5 percent canary, watch `checkout_success_ratio` and the error rate against the previous hour, and hold the full
-rollout until the bake time completes; abort on the written threshold instead of debating it in the channel.
+在次版本上交付结账变更：只构建一次制品，把 staging 的摘要经 5% 金丝雀晋级，对照上一小时观察
+`checkout_success_ratio` 和错误率，并在观察期结束前保持不全量；触及写明的阈值就中止，而不是在频道里争论。
 </example>
 
 <example>
-A library on 0.x adds a required argument to a public function. The minor version may carry the break under this
-project's pre-1.0 policy, but not silently: bump to `0.8.0`, keep the old signature working with a deprecation
-warning, announce the removal in `0.9.0`, and delete the old path only in that release.
+一个处于 0.x 的库给公共函数增加了必填参数。按本项目的 1.0 之前策略，次版本可以承载这个破坏，但不能静默进行：
+升到 `0.8.0`，用弃用告警让旧签名继续可用，在 `0.9.0` 公告移除，且只在该发布中删除旧路径。
 </example>
 
 <example>
-A flag gates a new tax calculation. Create it defaulting to off with an owner and a removal release, ramp by tenant
-group, hold at 100 percent for one release, then delete the old path and the flag in the next minor version and
-remove the row from the flag inventory.
+一个开关控制新的税额计算。创建时默认关闭，并带有所有者和移除版本，按租户组分批放量，在一个发布里保持 100%，
+然后在下一个次版本中删除旧路径和开关，并从开关清单中移除该行。
 </example>
 
 <example>
-Checkout error rate crosses the SLO burn threshold at 02:10. The on-call acknowledges in four minutes, assigns
-SEV-2, names an incident commander, and posts an update every 30 minutes; mitigate by rolling back to the previous
-artifact, then fix forward, then file the postmortem with an owner for each action within five business days.
+结账错误率在 02:10 越过 SLO 燃烧阈值。值班人员在四分钟内确认，判定为 SEV-2，指定事故指挥官，并每 30 分钟
+发布一次更新；通过回滚到上一制品来缓解，然后前向修复，最后在五个工作日内提交事故复盘，每个行动项都有负责人。
 </example>
 
 <example>
-A migration adds a table. Before the release, restore the latest backup to a scratch instance, run the migration,
-compare row counts and checksums, and record a restore time of 40 minutes against an RTO of one hour; the release
-waits until the drill passes because recovery is a release criterion, not a separate project.
+一次迁移新增一张表。发布前把最新备份恢复到临时实例，运行迁移，比对行数和校验和，并记录恢复耗时 40 分钟、
+对照一小时的 RTO；演练通过前发布一直等待，因为恢复是发布标准，而不是另一个独立项目。
 </example>
 
-## References
+## 参考资料
 
-Read [references/dimensions.md](references/dimensions.md) for the rule set behind each of the six dimensions:
-versioning, change management, CI/CD, observability, incident response, and backup and recovery. Read the dimension
-that matches the work before planning a release, designing telemetry, or handling an incident.
-Read [references/playbooks.md](references/playbooks.md) when executing a release, a rollback, an incident, or a
-restore drill, or when establishing the process; the playbooks carry the checklists, matrices, and runbook steps
-that apply the rules. Read both before establishing a project's release policy; during routine work, read the
-playbook for the task and the dimension behind it.
+阅读 [references/dimensions.md](references/dimensions.md) 了解六个维度各自的规则集：版本管理、变更管理、CI/CD、
+可观测性、事故响应、备份与恢复。在规划发布、设计遥测或处理事故之前，阅读与工作匹配的维度。在执行发布、回滚、
+事故或恢复演练时，或在建立流程时，阅读 [references/playbooks.md](references/playbooks.md)；操作手册承载应用
+这些规则的检查清单、矩阵和运行手册步骤。在建立项目发布策略之前先读完这两份文件；日常工作中，阅读与任务匹配的
+操作手册及其背后的维度。

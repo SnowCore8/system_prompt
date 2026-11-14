@@ -1,336 +1,265 @@
-# Release and Operations Dimensions
+# 发布与运维各维度
 
-Use this file with `SKILL.md`. Each section states the rules, examples, and edge cases for one dimension; the
-Good | Bad | Why table in each section shows the judgment behind the rule. When a project already has a release
-policy, read it first and apply the higher-precedence rule; this file supplies the default and the reason. The
-numbered sections match the Dimension Index in `SKILL.md`, and `references/playbooks.md` carries the procedures that
-apply them.
+本文件与 `SKILL.md` 配合使用。每一节给出一个维度的规则、示例和边界情况；各节的「好 | 坏 | 原因」表展示规则
+背后的判断。项目已有发布策略时，先读它并应用优先级更高的规则；本文件提供默认值与理由。各节编号与 `SKILL.md`
+中的维度索引一致，`references/playbooks.md` 承载应用这些规则的过程。
 
-## 1. Versioning and Release
+## 1. 版本与发布
 
-- Treat semantic versioning as a compatibility statement, not a marketing number: a major version changes a public
-  contract, a minor version adds capability without breaking one, and a patch version fixes behavior without changing
-  one. Derive the bump from the most significant change in the release, never from the number of commits, and never
-  let the release date decide it.
-- Semantic versioning promises nothing before 1.0; this project's pre-1.0 policy supplies the promise. Before 1.0,
-  a minor version may carry a breaking change and a patch version must stay compatible within its minor because the
-  policy says so. Announce every breaking minor with the migration path, and reserve `1.0.0` for the point at which
-  the project promises the contract.
-- Keep one version source. Set the version from the release commit, embed it in the artifact, and let every
-  environment report the same value; a promotion never rewrites it. A version computed from the branch at deploy
-  time differs between environments and invalidates dashboards, support answers, and bug reports.
-- Publish the cadence and the cutoff. A release train leaves on schedule, and a feature that misses the cutoff waits
-  for the next train instead of delaying the release. Continuous delivery of a service still cuts a versioned release
-  record, because the changelog, the support answer, and the rollback target all need one.
-- Tag the approved release commit, then build the artifact from the tag. The naming skill owns tag syntax and
-  artifact names; this process decides when the tag is created, which commit it points to, and which artifact digest
-  it identifies. Create the tag on the approved release commit, build in a clean checkout, run the gates, and
-  publish only after the gates pass and the artifact is verified to match the tag; delete the tag before publication
-  if the gates fail, because a published artifact must trace to a tag that passed.
-- Name the approver per release type, publish the freeze windows (financial close, peak season, holidays), and state
-  the exception authority and the change classes still allowed inside a freeze. A hotfix is allowed during a freeze,
-  but it needs the exception record, not a quiet bypass.
-- Set release-note ownership and timing. The documentation skill owns the release-note and changelog documents; this
-  process requires the user-visible behavior, required migration steps, removed deprecations, and known issues to be
-  written before approval, and the final publication to match the artifact that shipped. A note written after the
-  deploy cannot gate the go or no-go decision.
-- Publish the compatibility promise: the supported versions, the fix window (for example the current major plus the
-  previous major for security fixes), the minimum deprecation notice, and the upgrade path. A promise is a
-  commitment; when it cannot be met, amend it in writing before the release, not after a customer asks.
+- 把语义化版本当作兼容性声明，而不是营销数字：主版本改变公共契约，次版本增加能力而不破坏契约，补丁版本修复行为
+  而不改变契约。递增由发布中影响最大的变更推导，绝不由提交数量推导，也绝不让发布日期决定它。
+- 语义化版本在 1.0 之前不做任何承诺；本项目的 1.0 之前策略提供该承诺。在 1.0 之前，次版本可以承载破坏性变更，
+  补丁版本必须在其次版本内保持兼容，因为策略如此规定。每个破坏性次版本都要连同迁移路径一起公告，并把 `1.0.0`
+  留给项目正式承诺契约的那一刻。
+- 只保留一个版本来源。从发布提交设定版本、把它嵌入制品，并让每个环境报告同一个值；晋级永不重写它。部署时从分支
+  计算出的版本会因环境而异，并让仪表盘、支持答复和缺陷报告失效。
+- 公布节奏与截止点。发布列车按计划发车，错过截止点的功能等下一班列车，而不是推迟发布。服务的持续交付仍要切出
+  一份带版本的发布记录，因为变更日志、支持答复和回滚目标都需要它。
+- 给已批准的发布提交打标签，然后从标签构建制品。`naming-conventions` 负责标签语法与制品名；本流程决定标签何时创建、
+  指向哪个提交、标识哪个制品摘要。在已批准的发布提交上创建标签，在干净检出中构建，运行门禁，只在门禁通过且
+  核实制品与标签匹配后才发布；门禁失败时在发布前删除标签，因为已发布制品必须能追溯到通过门禁的标签。
+- 按发布类型写明批准者，公布冻结窗口（财务结算、旺季、节假日），并写明例外审批权限以及冻结期内仍允许的变更
+  类别。冻结期内允许热修复，但它需要例外记录，而不是悄悄绕过。
+- 设定发布说明的所有权与时机。`documentation-conventions` 负责发布说明和变更日志文档；本流程要求在批准前写好用户可见
+  行为、必需的迁移步骤、已移除的弃用项和已知问题，并让最终发布的说明与交付的制品一致。部署后才写的说明无法
+  把关 go/no-go 决定。
+- 公布兼容性承诺：受支持的版本、修复窗口（例如安全修复覆盖当前主版本加上一个主版本）、最短弃用通知期以及升级
+  路径。承诺就是约束；无法兑现时，在发布前以书面形式修订它，而不是等客户来问之后。
 
-| Good | Bad | Why |
+| 好 | 坏 | 原因 |
 |---|---|---|
-| `1.4.0` for a new optional endpoint | `1.4.1` for a new endpoint | A patch that adds capability breaks the constraint consumers read. |
-| `2.0.0` with a migration guide and a removal date | `1.9.9` labeled a small breaking change | A break must reach consumers before it lands. |
-| Tag on the approved commit, artifact built from the tag | Artifact built first and tagged afterward | The tag must point at the commit whose build passed the gates. |
-| Freeze dates published with the exception approver | Freeze known only to the release manager | A team that cannot see the freeze plans work inside it. |
-| Release note approved with the release | Notes written after the deploy | The note cannot inform the go decision it describes. |
-| Supported versions and fix window in the release policy | "Always upgrade to latest" | Consumers cannot plan a fix window from a slogan. |
+| 为新可选端点用 `1.4.0` | 为新端点用 `1.4.1` | 增加能力的补丁会破坏消费方读取的约束。 |
+| 带迁移指南和移除日期的 `2.0.0` | 标为「小破坏性变更」的 `1.9.9` | 破坏必须在落地前到达消费方。 |
+| 在已批准提交上打标签，从标签构建制品 | 先构建制品再补标签 | 标签必须指向构建通过门禁的那个提交。 |
+| 冻结日期连同例外批准者一起公布 | 冻结只有发布经理知道 | 看不到冻结的团队会把工作安排进冻结期。 |
+| 发布说明随发布一起批准 | 部署后才写说明 | 说明无法为它所描述的 go 决定提供依据。 |
+| 发布策略中写明受支持版本和修复窗口 | 「永远升级到最新版」 | 消费方无法依据一句口号规划修复窗口。 |
 
-The cadence follows the product and the audience; state the choice and its version behavior in the release policy:
+节奏取决于产品与受众；在发布策略中写明所选节奏及其版本行为：
 
-| Cadence | Use when | Version behavior | Approval |
+| 节奏 | 适用场景 | 版本行为 | 批准 |
 |---|---|---|---|
-| Continuous deploys | Service with feature flags and fast rollback; users see small changes often | Each deploy is an immutable artifact; a version is cut from the train for the changelog and support | Automated gates plus the on-call owner |
-| Weekly train | Product with a user-visible changelog and many contributors | One version per train from the cutoff commit | Release owner |
-| Monthly or quarterly | Mobile app, regulated product, or a long external test cycle | Longer soak, wider freeze, and a formal sign-off | Product owner plus release owner |
-| Long-term support line | Library or platform with external consumers | Patch-only line; new features go to the next major | Security owner plus release owner |
+| 持续部署 | 有功能开关和快速回滚的服务；用户经常看到小变更 | 每次部署都是不可变制品；为变更日志和支持从列车切出版本 | 自动化门禁加值班负责人 |
+| 每周列车 | 有用户可见变更日志且贡献者众多的产品 | 每班列车从截止提交切出一个版本 | 发布所有者 |
+| 每月或每季度 | 移动应用、受监管产品或长时间外部测试周期 | 更长的观察期、更宽的冻结和正式签核 | 产品所有者加发布所有者 |
+| 长期支持线 | 有外部消费方的库或平台 | 只出补丁；新功能进入下一主版本 | 安全所有者加发布所有者 |
 
-The release policy records the semantic-version rule, the chosen cadence row, the freeze calendar, the support
-window, and the approver per release type, and the repository entry point links that policy. A rule kept only in the
-release manager's calendar cannot be applied by the next release.
+发布策略记录语义化版本规则、所选节奏行、冻结日历、支持窗口和每种发布类型的批准者，仓库入口链接该策略。只存在
+于发布经理日历里的规则，下一次发布无法应用。
 
-## 2. Change Management
+## 2. 变更管理
 
-- Classify every change as breaking, behavior-changing, or internal at merge time, and record the classification
-  where the release tooling reads it. The version bump, the notice window, and the approval level all derive from the
-  class, not from the author's confidence, and one release should carry one class of change where possible because a
-  bundle widens the rollback scope.
-- Treat these as breaking: a removed or renamed public name; a changed required parameter, default, or response
-  shape; a changed event schema; a changed permission, quota, or rate limit; and a changed behavior of a documented
-  workflow. Update the test that asserts the old behavior in the same change; deleting it silently converts an
-  intended break into an accident.
-- Set the minimum notice per surface: one major release or six months for a public API, one minor release for a CLI
-  flag, one release for an internal service contract, and one release for a configuration default. A deprecated path
-  keeps working, receives critical fixes, and warns at use; removing it early is a breaking change with no notice.
-- Announce on three paths: where the old path is used (runtime warning, interface note, documentation of the old
-  path), where users plan upgrades (release note and migration guide), and directly to contract-bearing consumers who
-  must act. Choose the audience and the channel for each path; relying on one channel is an assumption, not a
-  communication plan.
-- Give every feature flag an owner, a purpose, a default, and a removal release. New behavior defaults off, a flag
-  never replaces a permission check, flags do not nest, and a name is never reused. The naming skill owns the name
-  format; this process owns the lifecycle, and removal is part of the release where the ramp completes.
-- Require a migration path with every break: a mapping from the old name, field, or behavior to the new one, a
-  mechanical step where one is possible, a rollback for the migration itself, and a rehearsal on production-shaped
-  data. Telling users to rewrite their client is not a migration path.
-- Schedule the communication: announcement date, reminder at the midpoint, and removal date, with the reminder as a
-  process step because the audience forgets. Measure reach by responses and support tickets, not by messages sent; a
-  notice with no measured reach is a hope.
-- Write the rollback criteria before the deploy: error rate, latency, business conversion, evidence of data
-  corruption, and support volume. Prefer rollback when the cause is unknown and the previous version is healthy, and
-  prefer a forward fix when a rollback would reverse a completed data migration. Cap the time from trigger to action
-  and name the authority that calls it.
+- 合并时把每项变更分为破坏性、行为改变或内部变更，并把分类记录在发布工具会读取的地方。版本号递增、通知窗口和
+  批准级别都由类别推导，而不是由作者信心推导；一次发布应尽可能只承载一个类别的变更，因为捆绑会扩大回滚范围。
+- 把以下情形视为破坏性：删除或重命名公共名称；改变必填参数、默认值或响应结构；改变事件 schema；改变权限、
+  配额或速率限制；以及改变已写入文档的工作流行为。在同一次变更中更新断言旧行为的测试；静默删除它会把有意破坏
+  变成意外。
+- 按面设定最短通知期：公共 API 为一个主版本或六个月，CLI 开关为一个次版本，内部服务契约为一个发布，配置默认值
+  为一个发布。弃用路径继续可用、接收关键修复并在使用时告警；提前移除它是不带通知的破坏性变更。
+- 在三条路径上公告：使用旧路径的地方（运行时告警、界面提示、旧路径的文档），用户规划升级的地方（发布说明和
+  迁移指南），以及直接通知必须采取行动、承担契约的消费方。为每条路径选择受众与渠道；只依赖一个渠道是假设，
+  不是沟通计划。
+- 给每个功能开关一个所有者、目的、默认值和移除版本。新行为默认关闭，开关绝不替代权限检查，开关不嵌套，名称绝不
+  重用。`naming-conventions` 负责名称格式；本流程负责生命周期，删除是放量完成那次发布的一部分。
+- 每个破坏都要带迁移路径：从旧名称、字段或行为到新名称、字段或行为的映射，可行时的机械步骤，迁移自身的回滚，
+  以及在与生产同形数据上的演练。让用户重写客户端不是迁移路径。
+- 安排沟通时间：公告日期、中点提醒和移除日期，并把提醒设为流程步骤，因为受众会忘。用回复和支持工单衡量触达，
+  而不是用已发送的消息数；没有衡量触达的通知只是愿望。
+- 部署前写好回滚标准：错误率、延迟、业务转化、数据损坏证据和支持量。原因未知且上一版本健康时优先回滚；回滚会
+  逆转已完成的数据迁移时优先前向修复。限制从触发到行动的时长，并写明由谁决策。
 
-| Good | Bad | Why |
+| 好 | 坏 | 原因 |
 |---|---|---|
-| Classification recorded on the change before merge | "It is probably not breaking" in review | The bump and the notice depend on the class. |
-| Deprecated flag warns at use for one minor release | Flag removed in the next patch | Users lose a path with no planning window. |
-| Three announcement paths with named audiences | One changelog line for a breaking API change | Most affected users never read the changelog. |
-| Flag deleted with its old code path in one release | Flag kept after launch "just in case" | The second path stays untested and unmaintained. |
-| Migration mapping table and a rehearsal record | "Update your integration accordingly" | The mapping is the work the user must do. |
-| Rollback trigger and authority written before deploy | Debating the rollback during the incident | A decision made under pressure is slower and worse. |
+| 合并前在变更上记录分类 | 审查中说「大概不是破坏性变更」 | 递增与通知都取决于类别。 |
+| 弃用的开关在一个次版本内于使用时告警 | 下一个补丁就移除开关 | 用户在没有规划窗口的情况下失去一条路径。 |
+| 三条公告路径且受众具名 | 破坏性 API 变更只在变更日志里写一行 | 大多数受影响的用户从不读变更日志。 |
+| 开关与其旧代码路径在同一发布中删除 | 上线后「以防万一」保留开关 | 第二条路径继续未测试、无人维护。 |
+| 迁移映射表和演练记录 | 「请相应更新你的集成」 | 映射就是用户必须做的工作。 |
+| 部署前写好回滚触发条件与权限 | 事故中才争论要不要回滚 | 压力下做出的决定更慢也更差。 |
 
-The default notice periods by change class; a project may lengthen them, and shortening one needs a recorded
-exception:
+按变更类别的默认通知期；项目可以延长，缩短则需记录例外：
 
-| Change class | Notice window | User action | Evidence of announcement |
+| 变更类别 | 通知窗口 | 用户行动 | 公告证据 |
 |---|---|---|---|
-| Breaking public API or data format | One major release or six months | Code or configuration change | Deprecation notice, runtime warning, migration guide link |
-| Behavior change with visible output | One minor release | Review and adjust expectations | Release note and affected documentation |
-| CLI flag or configuration key removal | One minor release | Script or configuration update | CLI warning plus reference page update |
-| Internal service contract change | One release, coordinated across consumers | Deploy ordering or client update | Changelog entry for internal consumers |
-| Data model change with backfill | The longest applicable deprecation window | Data migration | Migration guide and rehearsal record |
+| 破坏性公共 API 或数据格式 | 一个主版本或六个月 | 修改代码或配置 | 弃用通知、运行时告警、迁移指南链接 |
+| 输出可见的行为变更 | 一个次版本 | 复查并调整预期 | 发布说明和受影响的文档 |
+| 移除 CLI 开关或配置键 | 一个次版本 | 更新脚本或配置 | CLI 告警加参考页更新 |
+| 内部服务契约变更 | 一个发布，在消费方之间协调 | 调整部署顺序或更新客户端 | 面向内部消费方的变更日志条目 |
+| 带回填的数据模型变更 | 适用的最长弃用窗口 | 数据迁移 | 迁移指南和演练记录 |
 
-The change ledger records the class of every change, the notice window it takes, the announcement dates, the
-deprecation pages, and the rollback criteria per release. A change whose class is known only to its author has no
-notice and no migration path.
+变更台账记录每项变更的类别、所需通知窗口、公告日期、弃用页面和每次发布的回滚标准。类别只有作者知道的变更，
+既没有通知也没有迁移路径。
 
 ## 3. CI/CD
 
-- Fix the pipeline stages and their required order: clean checkout of the tagged release commit, static checks, one
-  build that records the artifact digest, tests against that artifact, integration and end-to-end checks, publish
-  with signature and bill of materials, deploy to development, promote to staging, acceptance check, recorded
-  approval, deploy to production, and post-deploy verification. Independent stages run in parallel, the build always
-  precedes the tests, and the published artifact is the one that was tested.
-- Order stages fastest-failure first: cheap, deterministic checks before slow, environment-dependent ones, and a
-  failing stage stops everything after it. Fix a flaky stage or quarantine it with an owner and an expiry date;
-  retrying until green converts a defect into noise and teaches the team to bypass the pipeline.
-- Make the build hermetic: pin toolchain and dependency versions, use a lockfile against a registry of record, deny
-  network access beyond that registry, and build from a clean checkout with no local state. Record the commit,
-  toolchain, and lockfile with the artifact, and state explicitly where the build is not bit-reproducible.
-- Publish each artifact to an immutable registry, tag it by digest as well as version, and never mutate or delete an
-  artifact that a recorded release points to. Retain every production artifact at least for the rollback and support
-  window, and retain pre-release artifacts long enough to debug the release they came from; an artifact retention
-  shorter than the rollback window makes the documented rollback impossible. Cache only immutable dependencies keyed
-  by the lockfile hash, never build outputs or test results across commits.
-- Promote the same artifact through development, staging, and production, and keep environment definitions in
-  version control with their differences listed and reviewed. Staging must be production-shaped: anonymized data,
-  matching topology and dependencies where feasible. Promotion to production needs a recorded approval against a
-  specific digest, and no manual configuration edit bypasses it.
-- Choose the deploy strategy by risk and state: rolling for a stateless service with N-1 compatibility, blue-green
-  for fast cutover and rollback where double capacity exists, and canary where a success metric and enough traffic
-  can detect a bad release. Write the percentage, duration, success metric, and abort criteria before the deploy;
-  every strategy needs a rollback that redeploys a retained artifact rather than rebuilding one.
-- Keep database migrations compatible with the rollback: expand, migrate, contract, so the previous application
-  version can run against the new schema for the length of the rollout. A migration that drops or renames a column in
-  the same release as the code change removes the rollback option and must be approved as irreversible.
-- The pipeline consumes credentials that the security process owns and must never expose them; never print one in a
-  configuration diff, log, artifact label, or test output. A change to pipeline configuration or deploy permissions
-  is a privileged change and needs the same review as code.
+- 固定流水线阶段及其必需顺序：干净检出带标签的发布提交、静态校验、一次记录制品摘要的构建、针对该制品的测试、
+  集成与端到端校验、带签名与物料清单的发布、部署到开发环境、晋级到 staging、验收校验、记录批准、部署到生产、
+  部署后验证。独立阶段并行运行，构建始终先于测试，发布出去的制品就是被测试过的那个。
+- 阶段按最早暴露失败优先排序：便宜、确定性的校验先于缓慢、依赖环境的校验，失败阶段会停掉其后的一切。修复不稳定
+  阶段，或连同负责人和到期日一起隔离它；重试到绿会把缺陷变成噪声，并教会团队绕过流水线。
+- 让构建封闭：固定工具链与依赖版本，使用指向权威包仓库的锁文件，拒绝访问该包仓库之外的网络，并从无本地状态的干净
+  检出构建。把提交、工具链和锁文件随制品一起记录，并明确说明构建在哪些地方不是逐位可复现的。
+- 把每个制品发布到不可变包仓库，同时按摘要和版本打标签，并且永不修改或删除已记录发布所指向的制品。每个生产制品
+  至少保留到回滚和支持窗口结束，预发布制品保留到足以调试其来源发布；制品保留期短于回滚窗口会让写入文档的回滚
+  无法执行。只缓存按锁文件哈希键控的不可变依赖，绝不跨提交缓存构建输出或测试结果。
+- 让同一制品经开发、staging 和生产晋级，并把环境定义保存在版本控制中，列出并审查其差异。staging 必须与生产
+  同形：匿名化数据，可行时拓扑与依赖也一致。晋级到生产需要针对特定摘要的书面批准，任何手工配置修改都不能绕过它。
+- 按风险与状态选择部署策略：有 N-1 兼容性的无状态服务用滚动部署，具备双倍容量且需要快速切换和回滚时用蓝绿部署，
+  有成功指标和足够流量能发现坏发布时用金丝雀。部署前写好比例、时长、成功指标和中止标准；每种策略都需要一个重新
+  部署已保留制品而非重新构建的回滚。
+- 让数据库迁移与回滚兼容：扩展、迁移、收缩，使上一应用版本能在整个上线期间针对新 schema 运行。与代码变更在同一
+  发布中删除或重命名列的迁移会消除回滚选项，必须按不可逆变更批准。
+- 流水线消费安全流程拥有的凭据，且绝不能暴露它们；永远不要在配置 diff、日志、制品标签或测试输出中打印凭据。
+  对流水线配置或部署权限的变更是特权变更，需要与代码相同的审查。
 
-| Good | Bad | Why |
+| 好 | 坏 | 原因 |
 |---|---|---|
-| Tests run against the built artifact | Tests run against the working tree, then a separate build ships | The shipped bytes were never tested. |
-| Digest promoted to production with an approval record | Production deployed from a rebuilt branch | The deployed artifact is not the reviewed one. |
-| Lockfile pinned and registry restricted | Floating dependency versions resolved at build time | A dependency change lands without a review. |
-| Artifact retained through the support window | Last release overwritten in the registry | The documented rollback has no target. |
-| Staging with anonymized production-shaped data | Staging with a different database engine | The release passes only on the environment it was tuned for. |
-| Rollback job deploys a retained digest | Rollback means re-running the build | A rollback should not depend on the build being reproducible now. |
+| 测试针对构建出的制品运行 | 测试针对工作树运行，然后另做一次构建交付 | 交付的字节从未被测试过。 |
+| 摘要带着批准记录晋级到生产 | 从重新构建的分支部署生产 | 部署的制品不是被审查过的那个。 |
+| 锁文件固定、包仓库受限 | 构建时才解析浮动依赖版本 | 依赖变更未经审查就落地。 |
+| 制品保留到支持窗口结束 | 上一发布在包仓库中被覆盖 | 写入文档的回滚没有目标。 |
+| staging 使用匿名化的生产同形数据 | staging 使用不同的数据库引擎 | 发布只在它被调优过的环境上通过。 |
+| 回滚任务部署已保留的摘要 | 回滚意味着重新运行构建 | 回滚不应依赖构建现在仍可复现。 |
 
-The stage contract; a stage that cannot produce its evidence does not pass:
+阶段契约；无法产出其证据的阶段不算通过：
 
-| Stage | Required result | Fails when | Evidence recorded |
+| 阶段 | 必需结果 | 失败条件 | 记录的证据 |
 |---|---|---|---|
-| Validate | Format, lint, and type checks pass | Any check reports a finding | Report plus exit code |
-| Build | One artifact with a digest and bill of materials | Inputs are unpinned or the artifact is nondeterministic | Digest and input manifest |
-| Verify | Unit, integration, and end-to-end checks pass on the artifact | A check fails on the artifact | Test report |
-| Publish | Immutable, signed registry entry | A tag is mutated or the signature is missing | Signature and retention entry |
-| Promote | Same digest deployed with the environment configuration applied | A rebuild or a manual configuration edit occurs | Approval and configuration diff |
-| Verify production | Smoke checks and success metrics stay within threshold | A metric leaves the written range during the bake time | Deploy record and dashboard snapshot |
+| 校验 | 格式、lint 和类型校验通过 | 任何校验报告发现项 | 报告加退出码 |
+| 构建 | 一个带摘要和物料清单的制品 | 输入未固定或制品不确定 | 摘要与输入清单 |
+| 验证 | 针对制品的单元、集成和端到端校验通过 | 针对制品的校验失败 | 测试报告 |
+| 发布 | 不可变、已签名的包仓库条目 | 标签被修改或签名缺失 | 签名与保留条目 |
+| 晋级 | 同一摘要带着已应用的环境配置部署 | 发生重新构建或手工配置修改 | 批准与配置 diff |
+| 验证生产 | 冒烟校验与成功指标保持在阈值内 | 观察期内有指标越出写明范围 | 部署记录与仪表盘快照 |
 
-The pipeline definition records the stages, their order, the artifact digest rule, the retention window, the
-environment differences, and the secret sources. An undocumented pipeline is rebuilt by guesswork at the first
-platform change.
+流水线定义记录阶段、其顺序、制品摘要规则、保留窗口、环境差异和机密来源。没有文档的流水线会在第一次平台变更时
+靠猜测重建。
 
-## 4. Observability
+## 4. 可观测性
 
-- Emit structured log events, one per request or state transition, with stable fields for time, level, service,
-  version, event, correlation ID, and error code. Define the levels: error means an action is needed, warn means
-  degraded but handled, info means a state change worth auditing, and debug stays off in production and is sampled
-  when enabled. Log enough to diagnose a single request without logging secrets or unmasked personal data.
-- Instrument the four signals for every service (traffic, errors, latency, saturation) plus one business metric per
-  critical journey. Bound the cardinality: never use a user ID, request ID, email address, or raw URL as a metric
-  label, and use histograms with explicit buckets rather than averages. The naming skill owns metric and field names;
-  this process owns the design, units, and label policy.
-- Propagate a correlation ID from the edge through every synchronous and asynchronous hop, include it in logs and
-  error responses, and return it to the user for support. Sample every error and a percentage of successes, keep
-  trace attributes free of secrets and personal data, and treat a boundary that drops the ID as a defect.
-- Define SLIs from the user's experience: the success ratio of valid requests, latency at the percentile the
-  experience requires, and the availability of the critical journey. Set one to three SLOs per service with a target
-  and a rolling window, derive the error budget, and review the targets quarterly and after every incident.
-- Write the error-budget policy before the budget burns: state what happens as it is consumed (feature releases
-  freeze, reliability work takes priority, deploy approval rises for the affected service). An SLO without a
-  consequence is a dashboard decoration, and a budget that nobody measures cannot be defended.
-- Alert on user-visible symptoms or on the burn rate of an SLO, not on raw resource values, and give every alert a
-  severity, an owner, a runbook, and an expected action. Delete or downgrade an alert that nobody acts on; route by
-  severity so that a warning never pages a human at night.
-- Keep dashboards as code: version each dashboard, review it like code, provision it from the pipeline, and give each
-  service one dashboard with the four signals, the SLO state, the deployed version, and dependency health. A
-  hand-edited dashboard is lost at the next provision, and a dashboard without the deployed version cannot explain a
-  change.
-- Set retention per signal from the incident, audit, and cost needs. Keep every signal long enough to diagnose an
-  incident detected late: for example, 30 days of logs, 13 months of SLO aggregates, and a trace window measured in
-  days. A retention window shorter than the detection window is a defect, and audit retention follows the
-  retention policy that security owns.
+- 输出结构化日志事件，每个请求或状态转换一条，带有时间、级别、服务、版本、事件、关联 ID 和错误码等稳定字段。
+  定义级别：error 表示需要行动，warn 表示降级但已处理，info 表示值得审查的状态变化，debug 在生产保持关闭、
+  启用时采样。记录足以诊断单个请求的信息，同时不记录机密或未脱敏的个人数据。
+- 为每个服务埋点四大信号（流量、错误、延迟、饱和度），再为每条关键用户旅程加一个业务指标。限制基数：绝不用
+  用户 ID、请求 ID、电子邮件地址或原始 URL 作为指标标签，并使用带显式分桶的直方图而不是平均值。`naming-conventions`
+  负责指标与字段名；本流程负责设计、单位和标签策略。
+- 把关联 ID 从边缘传播经过每个同步与异步跳，放进日志和错误响应，并返回给用户以便支持。对每个错误和一定比例的
+  成功请求采样，保持追踪属性不含机密和个人数据，并把丢弃该 ID 的边界视为缺陷。
+- 从用户体验定义 SLI：有效请求的成功比例、体验所要求的百分位延迟，以及关键旅程的可用性。每个服务设定一到三个
+  SLO，带目标和滚动窗口，推导错误预算，并每季度及每次事故后复查目标。
+- 在预算烧掉之前写好错误预算策略：写明预算被消耗时会发生什么（功能发布冻结、可靠性工作优先、受影响服务的部署
+  批准级别升高）。没有后果的 SLO 只是仪表盘装饰，无人测量的预算也无法辩护。
+- 对用户可见的征兆或 SLO 的燃烧率告警，而不是对原始资源值告警，并给每条告警严重级别、所有者、运行手册和预期
+  行动。删除或降级无人响应的告警；按严重级别路由，使 warning 永远不在夜里呼叫人工。
+- 把仪表盘当代码管理：为每个仪表盘做版本管理、像代码一样审查、从流水线供给，并给每个服务一个仪表盘，包含四大
+  信号、SLO 状态、已部署版本和依赖健康状况。手工编辑的仪表盘会在下次供给时丢失，不含已部署版本的仪表盘无法
+  解释一次变更。
+- 按事故、审查和成本需求为每种信号设定保留期。每种信号都要保留到足以诊断发现得晚的事故：例如 30 天日志、
+  13 个月 SLO 聚合、以天计的追踪窗口。保留窗口短于发现窗口就是缺陷，审查日志的保留遵循安全负责的保留策略。
 
-| Good | Bad | Why |
+| 好 | 坏 | 原因 |
 |---|---|---|
-| SLO based on successful user requests | SLO based on process uptime | A process can be up while every request fails. |
-| Canary watched through the release success metric | Canary judged by "no errors in the log" | The absent signal is not a passing signal. |
-| Alert names the runbook and the expected action | Alert says "CPU high" with no action | The responder cannot decide what to do. |
-| Correlation ID returned to the user | A support ticket asking for the timestamp | Support cannot find the request without an ID. |
-| Dashboards provisioned from the repository | Dashboard edited in the UI only | The next provision reverts it and nobody notices. |
-| Masking applied before a log line leaves the process | Email addresses written to logs and masked on search | The data is already in the store and cannot be un-leaked. |
+| SLO 基于成功的用户请求 | SLO 基于进程正常运行时间 | 进程可以正常而每个请求都失败。 |
+| 通过发布成功指标观察金丝雀 | 用「日志里没有错误」判断金丝雀 | 信号缺失不等于通过信号。 |
+| 告警写明运行手册和预期行动 | 告警只说「CPU 高」而不给行动 | 响应者无法决定该做什么。 |
+| 把关联 ID 返回给用户 | 支持工单只能索要时间戳 | 没有 ID，支持无法找到该请求。 |
+| 仪表盘从仓库供给 | 只在 UI 中编辑仪表盘 | 下次供给会还原它，且没人注意。 |
+| 日志行离开进程前完成脱敏 | 电子邮件地址写进日志、搜索时才脱敏 | 数据已进入存储，无法再收回。 |
 
-The signal contract; if a signal cannot answer its question, redesign it before the release:
+信号契约；如果某种信号回答不了它的问题，就在发布前重新设计：
 
-| Signal | Question it answers | Example | Failure mode when absent |
+| 信号 | 它回答的问题 | 示例 | 缺失时的失效模式 |
 |---|---|---|---|
-| Log event | What happened to this request | `order.create.failed` with correlation ID and error code | Debugging restarts from guesswork |
-| Metric | Is the service healthy now | Error ratio and latency histogram by endpoint | The rollout cannot be judged |
-| Trace | Where the time went | Span tree from edge to database | The slow dependency hides for days |
-| Business metric | Did users succeed | Checkout success ratio per release | Technical health masks a product failure |
+| 日志事件 | 这个请求发生了什么 | 带关联 ID 和错误码的 `order.create.failed` | 调试从猜测重新开始 |
+| 指标 | 服务现在健康吗 | 按端点统计的错误率和延迟直方图 | 无法评判上线结果 |
+| 追踪 | 时间花在哪里 | 从边缘到数据库的 span 树 | 缓慢的依赖隐藏数天 |
+| 业务指标 | 用户成功了吗 | 每次发布的结账成功率 | 技术健康掩盖产品失败 |
 
-The observability document records the SLIs, targets, windows, error-budget policy, alert severities and owners, the
-dashboard source of truth, and the retention per signal. A dashboard that exists only in the tool has no review and
-no history.
+可观测性文档记录 SLI、目标、窗口、错误预算策略、告警严重级别与所有者、仪表盘的权威来源，以及每种信号的保留期。
+只存在于工具里的仪表盘既没有审查也没有历史。
 
-## 5. Incident Response
+## 5. 事故响应
 
-- Set severity from user impact, not cause: SEV1 for a full outage, data loss, or an actively exploited security
-  issue; SEV2 for a major function or a large user subset degraded with no workaround; SEV3 for the same impact
-  where a workaround exists; SEV4 for minor impact; and SEV5 for a request with no service impact. Assign severity
-  at triage, page according to the matrix, and change it only with new evidence while recording the change and the
-  time.
-- Staff a named primary and secondary on-call for every rotation, publish the schedule and the handoff notes, and
-  define an escalation chain with timeouts; a page that nobody acknowledges escalates automatically. Review alert
-  volume and on-call load monthly, because a rotation that is paged for noise stops reading pages.
-- Name one incident commander for every SEV1 and SEV2. That person coordinates, decides, and communicates, and is
-  not the person debugging; the roles are incident commander, operations lead, communications lead, and scribe. The
-  commander declares severity, approves user-visible statements, and closes the incident.
-- Communicate on a schedule: first update within the policy target for the severity (15 minutes for SEV1 and SEV2 is
-  a common default), then every 30 minutes until resolution. State impact, what is being tried, and the next update
-  time without speculation; the communications lead drafts and the commander approves before anything reaches users.
-- Mitigate before analyzing root cause: stop the harm first with a rollback, a flag, a scale-out, a failover, or a
-  rate limit. Preserve evidence before the mitigation destroys it by snapshotting logs, capturing the failing
-  request, and recording times; a mitigation that hides the cause is acceptable while the cause is fixed, provided
-  the evidence survives.
-- Require a postmortem for every SEV1, SEV2, data-loss, and security incident. Draft it within five business days
-  and cover impact, timeline, detection, contributing causes, what worked, and actions; the documentation skill owns
-  the template, this process owns the requirement, the deadline, and the review meeting.
-- Track every action with an owner, a due date, a tracking item, and a verification step, and review open actions at
-  every release and at the next incident. A repeated incident reopens its actions at a higher priority, and an
-  action that is not verified is not done.
-- Apply the blameless policy: assume that people acted reasonably given the information, tooling, and time
-  available. Name system causes rather than individuals as causes; accountability applies to follow-through on
-  actions and to honest reporting of the timeline, not to punishment for a human error. A deliberate policy
-  violation is still a management matter, and it is still not a technical root cause.
+- 按用户影响而不是原因确定严重级别：全面中断、数据丢失或正被利用的安全问题为 SEV1；主要功能或大量用户子集降级
+  且无变通方案为 SEV2；同样影响但存在变通方案为 SEV3；轻微影响为 SEV4；无服务影响的请求为 SEV5。在分诊时确定
+  严重级别，按矩阵呼叫，只有新证据才能改，并记录变更及其时间。
+- 每个轮值都安排具名的主值班和备值班，公布排班与交接记录，并定义带超时的升级链；无人确认的呼叫会自动升级。
+  每月审查告警量和值班负载，因为被噪声呼叫的轮值会不再看呼叫。
+- 每个 SEV1 和 SEV2 指定一名事故指挥官。此人负责协调、决策和沟通，不是调试的人；角色包括事故指挥官、运维负责人、
+  沟通负责人和记录员。指挥官宣布严重级别、批准用户可见声明并关闭事故。
+- 按计划沟通：首次更新在该严重级别的策略目标内（SEV1 和 SEV2 常见默认为 15 分钟），之后每 30 分钟一次直到
+  解决。说明影响、正在尝试什么以及下次更新时间，不做猜测；沟通负责人起草，指挥官批准后才对用户发布。
+- 先缓解再分析根因：用回滚、开关、扩容、故障转移或限流先止住伤害。在缓解破坏证据之前保存证据：快照日志、捕获
+  失败请求、记录时间；只要证据得以保留，掩盖原因的缓解在修复原因期间是可接受的。
+- 每个 SEV1、SEV2、数据丢失和安全事故都必须有事故复盘。在五个工作日内起草，覆盖影响、时间线、发现过程、促成
+  原因、有效做法和行动项；`documentation-conventions` 负责模板，本流程负责要求、期限和审查会议。
+- 每个行动项都带负责人、截止日期、跟踪条目和验证步骤，并在每次发布和下次事故时审查未完成行动项。重复发生的事故
+  其行动项以更高优先级重开；未验证的行动项不算完成。
+- 执行无责策略：假定人们在当时的信息、工具和时间下做出了合理行为。把原因归为系统原因而不是个人；问责适用于
+  行动项的落实和对时间线的如实报告，而不是惩罚人为错误。故意违反策略仍属管理问题，但它仍不是技术根因。
 
-| Good | Bad | Why |
+| 好 | 坏 | 原因 |
 |---|---|---|
-| Severity assigned at triage from the matrix | Severity raised after the fix out of embarrassment | The paging and communication level drifted late. |
-| Commander coordinates while an engineer debugs | The debugging engineer also runs communications | Both jobs slow down and updates stop. |
-| Status update states impact and next update time | "We are looking into it" with no time | Users cannot decide whether to wait. |
-| Rollback first, root cause after the mitigation | Root cause hunt while the outage continues | Users absorb the cost of the investigation. |
-| Action items with owner, date, and verification | Postmortem ends with lessons learned | Nothing changes and the incident repeats. |
-| Postmortem describes the missing guardrail | Postmortem names the engineer who deployed | Naming a person hides the system cause. |
+| 分诊时按矩阵确定严重级别 | 修复后因难堪而抬高严重级别 | 呼叫与沟通级别事后漂移。 |
+| 指挥官协调，工程师调试 | 调试的工程师同时负责沟通 | 两项工作都变慢，更新也停了。 |
+| 状态更新说明影响和下次更新时间 | 「我们正在排查」而不给时间 | 用户无法决定是否等待。 |
+| 先回滚，缓解后再查根因 | 中断持续时先找根因 | 用户承担调查的代价。 |
+| 行动项带负责人、日期和验证 | 事故复盘以「经验教训」收尾 | 一切照旧，事故重演。 |
+| 事故复盘描述缺失的护栏 | 事故复盘点名部署的工程师 | 点名个人会掩盖系统原因。 |
 
-The incident roles; name someone explicitly rather than assuming the team will self-organize:
+事故角色；明确指定人员，而不是假定团队会自组织：
 
-| Role | Owns | Does not own | Required at |
+| 角色 | 负责 | 不负责 | 何时必须 |
 |---|---|---|---|
-| Incident commander | Decisions, severity, coordination, closure | Debugging the system or writing code | SEV1 and SEV2 |
-| Operations lead | The technical mitigation and the fix | User communication | SEV1 and SEV2 |
-| Communications lead | Status page, internal channel, and update cadence | Technical decisions | SEV1, and SEV2 when users are affected |
-| Scribe | Timeline, decisions, action items, and evidence references | Any decision | SEV1 and SEV2 |
-| Executive sponsor | External commitments and staffing | Operational choices | SEV1 when external commitments exist |
+| 事故指挥官 | 决策、严重级别、协调、关闭 | 调试系统或写代码 | SEV1 和 SEV2 |
+| 运维负责人 | 技术缓解和修复 | 用户沟通 | SEV1 和 SEV2 |
+| 沟通负责人 | 状态页、内部频道和更新节奏 | 技术决策 | SEV1；SEV2 且用户受影响时 |
+| 记录员 | 时间线、决策、行动项和证据引用 | 任何决策 | SEV1 和 SEV2 |
+| 高管发起人 | 对外承诺和人员配置 | 运营选择 | SEV1 且存在对外承诺时 |
 
-The incident policy records the severity matrix, the paging targets, the rotation and escalation path, the update
-cadence, and the postmortem deadline. A severity table that exists only in a chat message is rediscovered during
-the next incident.
+事故策略记录严重级别矩阵、呼叫目标、轮值与升级路径、更新节奏和事故复盘期限。只存在于聊天消息里的严重级别表，会在
+下一次事故中重新被发现。
 
-## 6. Backup and Recovery
+## 6. 备份与恢复
 
-- Back up every data store that cannot be reconstructed, including the primary database, object storage, and
-  message data whose loss changes state. Include configuration and infrastructure state that is not in version
-  control and the metadata needed to decrypt and restore data. Derived data may be rebuilt when the rebuild time
-  fits the RTO, and that choice is recorded with the RTO.
-- Set the frequency from the RPO and apply the retention that the retention policy requires, covering the recovery
-  window, the rollback window, and the compliance obligation. Keep at least one immutable, off-site copy so that a
-  deletion, a compromised credential, or a regional failure cannot destroy every copy. A retention period that
-  expires before the next drill cannot be tested and is therefore not a recovery plan.
-- Publish the recovery point objective (the newest data a restore may lose) and the recovery time objective (how
-  long a restore may take) per data class, run a restore drill at least quarterly and after every change to backup
-  scope, restore to an isolated environment, and measure the actual duration against the target. Record the result,
-  the failed step, and the gap; a drill that restores only part of the data tests only part of the plan.
-- Verify restores, not backup jobs: compare checksums or row counts, run application-level smoke queries, confirm
-  that the encryption keys are available to the restore target, and check that the restored state is the expected
-  point in time. A successful backup job is not evidence that the restore works, and an unverified backup is a
-  hypothesis.
-- Encrypt backups at rest and in transit, store keys separately from the data, restrict restore permission to a
-  named role, and log every restore. Never copy production data to an unencrypted scratch environment; the security
-  skill owns the key policy and access review, and this process enforces them in the drill.
-- Define the point-in-time recovery window and granularity, test recovery to a timestamp before and after a bad
-  write, and document which operations PITR cannot reverse. A PITR window shorter than the time it takes to detect
-  data corruption is useless, and the detection time comes from the observability rules.
-- Name the disaster recovery owner, the contact tree, the failover criteria, the alternate region, and the
-  data-loss statement for a regional failure. Exercise the plan annually and after any infrastructure change; the
-  documentation skill owns the plan document, and this process owns its content, its review date, and the exercise.
-- Resolve data deletion against backup retention in writing: a deletion either propagates to backups or the policy
-  states the maximum time a deleted record survives in one. The security skill owns the retention policy and the
-  legal obligation, the API and data skill owns the deletion mechanism, and this process owns the backup schedule
-  and the restore path that satisfy both. A restore overwrites live data, so it needs the authority of a destructive
-  change, with the current state archived first and a verification plan approved before it starts.
+- 备份每个无法重建的数据存储，包括主数据库、对象存储以及丢失即改变状态的消息数据。把不在版本控制中的配置与
+  基础设施状态，以及解密和恢复数据所需的元数据也包含进来。派生数据在重建时间符合 RTO 时可以重建，并把这一
+  选择随 RTO 一起记录。
+- 按 RPO 设定频率，并应用保留策略要求的保留期，覆盖恢复窗口、回滚窗口和合规义务。至少保留一份不可变的异地
+  副本，使删除、凭据失陷或区域故障无法毁掉所有副本。在下次演练之前就到期的保留期无法测试，因此不构成恢复计划。
+- 按数据类别公布恢复点目标（恢复最多可丢失的最新数据）和恢复时间目标（恢复最长可耗时多久），至少每季度以及
+  每次变更备份范围后跑恢复演练，恢复到隔离环境，并对照目标测量实际耗时。记录结果、失败步骤和差距；只恢复部分
+  数据的演练只测试了计划的一部分。
+- 验证恢复，而不是备份任务：比对校验和或行数，运行应用级冒烟查询，确认加密密钥对恢复目标可用，并检查恢复后的
+  状态是预期时间点。备份任务成功不是恢复可用的证据，未经验证的备份只是假设。
+- 备份在静态和传输中都加密，把密钥与数据分开存储，把恢复权限限制给具名角色，并记录每次恢复。绝不把生产数据
+  复制到未加密的临时环境；`security-compliance-conventions` 负责密钥策略与访问审查，本流程在演练中执行它们。
+- 定义时间点恢复的窗口与粒度，测试恢复到错误写入之前和之后的时间戳，并记录 PITR 无法逆转的操作。PITR 窗口短于
+  发现数据损坏所需时间就是无用的，而发现时间来自可观测性规则。
+- 指定灾难恢复负责人、联系人树、故障转移标准、备用区域以及区域故障的数据丢失声明。每年以及任何基础设施变更后
+  演练该计划；`documentation-conventions` 负责计划文档，本流程负责其内容、审查日期和演练。
+- 以书面形式解决数据删除与备份保留的冲突：删除要么传播到备份，要么由策略写明被删除记录在备份中最多存活多久。
+  `security-compliance-conventions` 负责保留策略与法律义务，`api-and-data-conventions` 负责删除机制，本流程负责同时满足两者的备份计划与
+  恢复路径。恢复会覆盖线上数据，因此需要销毁性变更的权限，先归档当前状态，并在开始前批准验证计划。
 
-| Good | Bad | Why |
+| 好 | 坏 | 原因 |
 |---|---|---|
-| Restore drill quarterly with measured RTO | Backup dashboard green with no restore attempt | A green job does not prove readable, complete data. |
-| Immutable copies in a second region | One copy in the same account and region | A single credential or region failure destroys both. |
-| Deletion policy states backup expiry | Deleted record reappears from a six-month backup | Users asked for deletion and did not get it. |
-| Restore to production is a destructive change | Restore run by whoever finds the script | The current data can be overwritten without approval. |
-| PITR tested before and after a bad write | PITR enabled and never exercised | The window and granularity are assumptions. |
-| DR plan exercised annually with a named owner | Plan written once and filed | The contact tree and failover steps are stale. |
+| 每季度做带 RTO 实测的恢复演练 | 备份仪表盘全绿却从不尝试恢复 | 任务全绿不能证明数据可读、完整。 |
+| 第二区域的不可变副本 | 同一账户同一区域只有一份副本 | 一次凭据失陷或区域故障会毁掉两者。 |
+| 删除策略写明备份到期时间 | 已删除记录从六个月前的备份中重新出现 | 用户要求删除却没有得到。 |
+| 恢复到生产属于销毁性变更 | 谁找到脚本谁就跑恢复 | 当前数据可能在未批准时被覆盖。 |
+| 在错误写入前后测试 PITR | 启用了 PITR 却从未演练 | 窗口和粒度只是假设。 |
+| DR 计划每年演练且有具名负责人 | 计划写一次就归档 | 联系人树和故障转移步骤已过期。 |
 
-The recovery objective by data class; a class without an objective has no backup decision behind it:
+按数据类别的恢复目标；没有目标的数据类别背后没有备份决策：
 
-| Data class | RPO | Backup method | Retention | Restore test |
+| 数据类别 | RPO | 备份方式 | 保留 | 恢复测试 |
 |---|---|---|---|---|
-| Transactional store | Minutes | Continuous log shipping plus daily full | Support window plus one quarter | Full restore quarterly |
-| Object storage and user files | One hour | Versioning plus cross-region replication | Version window per policy | Sample restore quarterly |
-| Configuration and infrastructure state | None if versioned | Version control plus state snapshots | Indefinite history | Restore to scratch on change |
-| Audit and compliance records | No loss accepted | Append-only store plus export | Per compliance policy | Annual restore check |
-| Derived and analytics data | One day | Rebuild from the source of truth | Rebuild window | Rebuild instead of restore |
+| 事务型存储 | 分钟级 | 持续日志传送加每日全量 | 支持窗口加一个季度 | 每季度全量恢复 |
+| 对象存储与用户文件 | 一小时 | 版本控制加跨区域复制 | 按策略的版本窗口 | 每季度抽样恢复 |
+| 配置与基础设施状态 | 已版本化则为零 | 版本控制加状态快照 | 无限期历史 | 变更时恢复到临时环境 |
+| 审查与合规记录 | 不接受丢失 | 只追加存储加导出 | 按合规策略 | 每年恢复检查 |
+| 派生与分析数据 | 一天 | 从权威来源重建 | 重建窗口 | 重建而不是恢复 |
 
-The recovery plan records the scope, the RPO and RTO per data class, the retention, the key ownership, the drill
-schedule and results, the disaster recovery owner, and the deletion policy as it applies to backups. A plan that
-nobody has exercised is a hypothesis with a filename.
+恢复计划记录范围、按数据类别的 RPO 与 RTO、保留、密钥所有权、演练计划与结果、灾难恢复负责人，以及删除策略
+在备份上的适用方式。没人演练过的计划只是一个有文件名的假设。
