@@ -1,7 +1,7 @@
 # Documentation Templates
 
 Copy the skeleton for the document type, replace the example content with the project's real content, and trim what
-the page does not need. Read the matching dimension in `references/dimensions.md` for the rules behind each section.
+the page does not need. Read the matching dimension in `dimensions.md` for the rules behind each section.
 
 ## README
 
@@ -228,7 +228,7 @@ Required sections: version and date, grouped entries, upgrade action, issue link
 
 Added: `POST /v1/charges` accepts an `Idempotency-Key` header (issue #142).
 
-Deprecated: `GET /v1/orders` in 2.3; use `/v2`; removed in 3.0 (issue #151).
+Deprecated: `GET /v1/orders` in 2.3; use `/v2/orders`; removed in 3.0 (issue #151).
 
 Upgrade: send `Idempotency-Key` on every charge request.
 ```
@@ -307,19 +307,21 @@ Common mistake: organizing entries by internal cause, so readers cannot find the
 ## Security, Legal, and Support
 
 Purpose: state what is supported, how to report a problem, and who owns the page.
-Required sections: policy sections and the owner each links to; disclosures and response commitments are set by the
-security role.
+Required sections: policy sections and the owner each links to; disclosures and response commitments are set by
+`security-compliance-conventions`.
 
 ```markdown
 # Security and Support Policy
 
 Supported versions: 2.x receives security fixes; 1.x is end-of-life.
 
-Report a vulnerability through the private channel in `SUPPORT.md`; we
-acknowledge reports within two business days and publish a timeline.
+Report a vulnerability through the private channel in `SUPPORT.md`. Example
+values: acknowledgement within two business days; the security owner sets the real commitment.
 
 Owner: security team. Last reviewed: 2026-02-10. Legal and support terms: [SUPPORT.md](SUPPORT.md).
 ```
+
+The acknowledgement window and review date above are example values; the security owner sets the real commitments.
 
 Common mistake: publishing a reporting address that no one monitors, so reporters give up or go public.
 

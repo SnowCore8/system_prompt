@@ -12,8 +12,8 @@ Each failure is cheap to prevent at authoring time and expensive to repair after
 skill gives one decision procedure and a complete rule set for every document a project publishes: README and
 contribution guides, architecture and design docs, decisions, tutorials and guides, reference and API pages, runbooks,
 postmortems, changelogs and release notes, migration and deprecation guides, security and legal pages,
-troubleshooting, glossaries, diagrams, and the documentation site that connects them. It applies to any language, framework, and docs toolchain,
-and it treats documentation as part of the product rather than a side artifact.
+troubleshooting, glossaries, diagrams, and the documentation site that connects them. It applies to any language,
+framework, and docs toolchain, and it treats documentation as part of the product rather than a side artifact.
 
 ## Scope and Precedence
 
@@ -26,8 +26,17 @@ Apply the first rule that fits, and do not mix standards inside one scope:
 3. This standard's defaults, when the two levels above are silent.
 4. Personal preference, which never overrides the three levels above.
 
-- Source-code comments, docstrings, and doc comments are out of scope; a separate comment skill owns them. Generated
-  reference pages built from doc comments get their structure from this skill and their prose from the comment skill.
+- Hand-written document structure, templates, and prose are owned here. Cadence and triggers that decide when
+  changelogs, release notes, runbooks, and postmortems are written or updated belong to
+  `release-operations-conventions`.
+- API contract content (fields, request and response shapes, versioning) and data migrations belong to
+  `api-and-data-conventions`; this skill owns the structure and prose of the API reference page.
+- Which files must exist and their required metadata belong to `repository-governance-conventions`; this skill owns
+  the content and structure of those pages.
+- Docs checks and gates in CI belong to `testing-and-quality-conventions`, and pipeline configuration to
+  `release-operations-conventions`; this skill owns which links, samples, and pages to validate.
+- Source-code comments, docstrings, and doc comments are owned by `comment-conventions`; generated reference pages
+  built from doc comments get their structure from this skill and their prose from that skill.
 - Generated documentation, vendored documentation, and copied third-party guides are exempt. Never hand-edit generated
   output, keep the generation marker, and record the upstream source in the page or the index.
 - Keep one canonical home per fact. Link to that home from every other page; a second copy is a defect even while it is
@@ -74,8 +83,9 @@ Apply the first rule that fits, and do not mix standards inside one scope:
   end that the author never noticed.
 - **State applicability.** Name the product version, platform, deployment model, or audience the page serves;
   unversioned instructions rot silently when the next release changes behavior.
-- **Name an owner and a review trigger.** Give each page an owning team and the event that forces a review (release,
-  schema change, incident); an unowned page is fixed by nobody.
+- **Name an owner and a review trigger.** Give each page an owning team and the event that forces a review, with the
+  trigger definition taken from the owning process skill: `release-operations-conventions` for release and incident
+  triggers, `api-and-data-conventions` for schema-change triggers; an unowned page is fixed by nobody.
 - **Delete or archive stale pages.** Remove what no longer applies and leave a redirect or tombstone naming the
   replacement; a stale page keeps ranking in search and keeps misleading readers.
 - **Keep the public line visible.** Separate customer-facing pages from internal notes and mark the audience; an
@@ -123,7 +133,7 @@ learned. The table below is the default split; a project convention overrides it
 | Changelog and release notes | User: what changed? | Version and date, grouped entries, upgrade action, issue links, highlights, categories | `CHANGELOG.md` |
 | Migration guide | Upgrader: how do I migrate? | Affected audience, timeline, field mapping, steps, verification, rollback | `docs/migrations/` |
 | Troubleshooting and FAQ | Stuck user: what does it mean? | Symptom, cause, fix, prevention, related links | `docs/troubleshooting/` |
-| Security, legal, support | Reporter: how do I report? | Page structure: policy sections and where each links; disclosures set by security role | `SECURITY.md` |
+| Security, legal, support | Reporter: how do I report? | Page structure: policy sections and where each links; disclosures set by `security-compliance-conventions` | `SECURITY.md` |
 | Postmortem | Maintainer: why did this happen? | Summary, impact, timeline, root cause, detection, actions, owners | `docs/postmortems/` |
 
 The matrix lists primary page types; the Deprecation Notice, Glossary, and Documentation Index templates cover pages
@@ -184,7 +194,8 @@ Each dimension has detailed rules, examples, and edge cases in `references/dimen
 ## Review Checklist
 
 - [ ] The page has one named reader and one question.
-- [ ] The doc type matches the Doc Type Matrix.
+- [ ] The page uses the matching template (Doc Type Matrix type or the template-only types named in the Doc Type
+      Matrix note).
 - [ ] The fact has one canonical page and is linked, not copied.
 - [ ] Scope, prerequisites, and outcome appear in the first screen.
 - [ ] Commands include the working directory and required variables.
@@ -219,12 +230,12 @@ hours return the original response). Link the rejected alternatives and the migr
 <example>
 Runbook `payments-queue-backlog`: trigger is queue depth above 10,000 for 10 minutes; list impact, pre-checks, the
 scale command, the drain verification, and the rollback. Name the escalation channel and its owner, and review the
-runbook after every incident that uses it.
+runbook when the trigger set by the incident process fires.
 </example>
 
 <example>
-Deprecation notice: mark `GET /v1/orders` deprecated in `v2.3`, name `GET /v2/orders` as the replacement, state the
-removal release `v3.0` and date, and show the request and response mapping. Announce it where users see the old
+Deprecation notice: mark `GET /v1/orders` deprecated in 2.3, name `GET /v2/orders` as the replacement, state the
+removal release 3.0 and date, and show the request and response mapping. Announce it where users see the old
 endpoint, not only in the changelog.
 </example>
 

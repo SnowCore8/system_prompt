@@ -124,13 +124,14 @@ supplies the default and the reason. Read the section that matches the document 
 - Link each entry to the issue or pull request that explains it; the entry is a summary, not the only record.
 - Mark deprecations and breaking changes explicitly with the removal version; never bury them under "changed".
 - Keep one line per user-visible change; a paragraph per entry hides the list the reader came for.
-- Keep an unreleased section for entries without a version, and move the entries when the release is cut.
+- Keep an unreleased section for entries without a version; when entries move into a released section follows the
+  trigger set by `release-operations-conventions`.
 - Never rewrite a released section to hide a regression; add a corrected entry that references the original.
-- Generate release notes from the changelog where possible so the two cannot disagree.
+- If the release process generates release notes from the changelog, verify the two agree.
 
 | Good | Bad | Why |
 |---|---|---|
-| "`GET /v1/orders` removed in 3.0; use v2." | "Orders API cleaned up." | Reader needs action and release. |
+| "`GET /v1/orders` removed in 3.0; use `/v2/orders`." | "Orders API cleaned up." | Reader needs action and release. |
 | Entries grouped by version with a date. | One undated list since launch. | Version and date decide relevance. |
 | Fixed entries link the issue and release. | "Various bug fixes." | A vague entry cannot be acted on. |
 | Breaking changes listed first. | Breaking change under "changed". | Readers miss the required upgrade. |
@@ -144,9 +145,10 @@ supplies the default and the reason. Read the section that matches the document 
 - Include verification that the operation worked and a rollback that restores the previous state.
 - Name the escalation path and the decision authority for when the rollback is worse than the outage.
 - Link dashboards, alerts, and pipelines by stable name or ID; a link only the author can find is useless at 03:00.
-- Review the runbook after every incident and every infrastructure change; an untested runbook is a guess.
-- Write a postmortem after every severe incident and link it from the runbook; a runbook carries the procedure,
-  a postmortem carries the narrative.
+- Keep the runbook procedure consistent with the postmortem of the last incident it handled; the review trigger and
+  cadence are set by `release-operations-conventions`.
+- Link the postmortem from the runbook: the runbook carries the procedure and the postmortem the narrative; when a
+  postmortem is written is set by `release-operations-conventions`.
 
 | Good | Bad | Why |
 |---|---|---|
@@ -158,7 +160,7 @@ supplies the default and the reason. Read the section that matches the document 
 ## 10. Security, Legal, and Support Docs
 
 - Keep the security policy content in `SECURITY.md` and present it in scannable sections with links to its owner;
-  the required content and response commitments are set by the security role.
+  the required content and response commitments are set by `security-compliance-conventions`.
 - Never publish internal addresses, secrets, employee data, or customer data; use example values such as
   `example@test.invalid`.
 - Legal pages (license, terms, privacy) are owned by legal, not engineering; link to them and never paraphrase them
@@ -167,7 +169,6 @@ supplies the default and the reason. Read the section that matches the document 
   obligation.
 - Keep the security policy, the support path, and the license reachable from the README and the docs home.
 - Record the owner and the last review date on every risk-bearing page; security and legal text decays silently.
-- Publish a disclosure timeline that tells the reporter when to expect an update.
 - Review the security page against the actual incident process after every exercise; a policy nobody has walked
   through is a hypothesis.
 
@@ -189,7 +190,7 @@ supplies the default and the reason. Read the section that matches the document 
 - Provide a mapping table from removed names, fields, or endpoints to their replacements.
 - Give a step-by-step migration with a backup before data is touched and a rollback for each irreversible step.
 - Include a validation step that proves the migration worked, with the command or check the reader runs.
-- Test the migration on a copy of production-shaped data before publishing the guide.
+- Confirm the migration owner tested it on production-shaped data before publishing the guide.
 - Deprecation notices name the replacement and the removal release and appear where users see the old path.
 - Warn at runtime or in generated clients where possible; a docs-only deprecation is found too late.
 - Do not remove the old path before the announced release; a silent removal violates the published contract.
@@ -197,7 +198,7 @@ supplies the default and the reason. Read the section that matches the document 
 | Good | Bad | Why |
 |---|---|---|
 | Mapping table from `amount` to `amount_cents`. | "Update your integration." | The mapping is the work. |
-| Removal in `v3.0` with a date and guide link. | "Will be removed soon." | "Soon" cannot be planned against. |
+| Removal in 3.0 with a date and guide link. | "Will be removed soon." | "Soon" cannot be planned against. |
 | Backup and rollback before the data rewrite. | A one-way migration script. | A failed migration loses data. |
 | Validation command after the migration. | "Verify it worked." | The reader needs a pass condition. |
 
@@ -306,8 +307,8 @@ supplies the default and the reason. Read the section that matches the document 
 
 - Give every page an owner (team or role) in front matter or the docs index; a page without an owner is maintained by
   no one.
-- Define the review trigger per doc type: every release for runbooks and reference, on architecture change for design
-  docs, annually for legal pages.
+- Record the review trigger per doc type in the page metadata or docs index; the cadence for changelogs, release
+  notes, runbooks, and postmortems is set by `release-operations-conventions`.
 - Track the last review date and flag pages past their review interval; freshness is a maintenance signal, not a
   promise of correctness.
 - Update the page in the change that alters behavior, and put the docs step in the same issue as the code.
@@ -345,7 +346,8 @@ supplies the default and the reason. Read the section that matches the document 
 - Spell-check and style-check with a project dictionary; a checker that flags every product term is turned off.
 - Build the docs site on every change, not only at release; a build that runs late hides errors until the worst time.
 - Review the rendered output for tables, code blocks, and navigation; source-only review misses rendering failures.
-- Treat a failing docs check as a failing build, with the same urgency as a failing test.
+- Report a failing docs check as a defect in the change; the gate owner, `testing-and-quality-conventions`, decides
+  whether it blocks.
 - Keep the check configuration in the repository so a local run matches CI exactly.
 
 ## 22. Docs Site and Tooling
@@ -387,7 +389,8 @@ supplies the default and the reason. Read the section that matches the document 
 
 ## 24. Generated Docs
 
-- Never edit generated output; change the source, the generator configuration, or the doc comment, then regenerate.
+- Never edit generated output; change the generator configuration, or have the comment owner update the source, then
+  regenerate.
 - Keep a visible generation marker with the command so the next reader knows the file is not hand-edited.
 - Commit generated pages only when the review or hosting process requires it; otherwise build them at publish time.
 - Document how to regenerate locally so contributors can rebuild before review.
