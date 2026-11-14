@@ -143,7 +143,8 @@ rule; this file supplies the default and the reasoning. Section numbers match th
 - Use a stable replacement name that can be searched, and give a migration snippet when the shape of the API
   changes.
 - Deprecation is a public API change: this skill owns the tag, the migration note, and the source comment; the
-  release-note announcement is owned by the documentation skill.
+  release-note document belongs to documentation-conventions, and announcement timing and placement belong to
+  release-operations-conventions.
 - Do not mark internal helpers deprecated as a substitute for deleting them; delete unused internals.
 - When the deprecation window ends, remove the symbol, its doc comment, and its references in one change.
 
@@ -262,7 +263,7 @@ rule; this file supplies the default and the reasoning. Section numbers match th
   wide to fix one site.
 - Always give the reason in the form the tool supports (`-- reason` for ESLint, a nearby comment for others); an
   unexplained suppression cannot be audited.
-- Suppression is not a fix: leave a ticket or a note stating when it can be removed.
+- Suppression is not a fix: a file-level suppression also leaves a cleanup ticket stating when it can be removed.
 - Directive families: lint disables (`eslint-disable-next-line`, `# noqa`, `//nolint`, `@SuppressWarnings`),
   formatter off (`prettier-ignore`, `# fmt: off`, `clang-format off`), coverage ignores (`pragma: no cover`),
   type ignores (`@ts-expect-error`, `# type: ignore`).
@@ -288,7 +289,8 @@ rule; this file supplies the default and the reasoning. Section numbers match th
   is a silent deletion.
 - Fixture data comments state the scenario and never contain real personal data; use fake values and note the
   generator when one exists.
-- Do not comment out a failing test; fix it, skip it with a reason and a ticket, or delete it.
+- Do not comment out a failing test; fix it and follow testing-and-quality-conventions for any skip, quarantine, or
+  waiver disposition.
 
 ## 16. Configuration and Infrastructure
 

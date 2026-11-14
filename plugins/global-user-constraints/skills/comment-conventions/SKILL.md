@@ -18,16 +18,17 @@ trusted.
 
 Apply the first rule that fits, and do not mix conventions inside one scope:
 
-1. Mandatory language or documentation-tool convention and linter. Javadoc doclint, rustdoc, TSDoc, godoc comment
-   placement, and a configured comment linter are not optional.
+1. Mandatory language or documentation-tool convention, plus a comment linter when one is configured. Javadoc
+   doclint, rustdoc, TSDoc, and godoc comment placement are not optional.
 2. Existing project convention. Read the code, the doc-tool configuration, and the linter before inventing a rule.
 3. This standard's defaults, when the two levels above are silent.
 4. Personal preference, which never overrides the three levels above.
 
 - Comments versus documentation. This skill covers comments embedded in source, API documentation generated from
   doc comments, markers, directives, and legal headers. Standalone documents (README, docs sites, ADRs,
-  changelogs, API reference pages) are out of scope; a separate documentation skill owns them. When a comment grows
-  into a document, move it and link it instead of copying it.
+  changelogs, release notes, API reference pages) are out of scope; documentation-conventions owns them, and
+  release-operations-conventions owns deprecation announcement timing and placement. When a comment grows into a
+  document, move it and link it instead of copying it.
 - Generated, vendored, and third-party code is exempt from style edits. Keep the generated marker and the upstream
   comments; regenerate or re-vendor instead of hand-editing, and record local patches outside the file.
 - One natural language per repository. Declare it (English by default for libraries and open source, the team
@@ -39,8 +40,13 @@ Apply the first rule that fits, and do not mix conventions inside one scope:
   it.
 - A comment is not a substitute for a test, a type, or a clear name. When correctness matters, encode it in code or
   in a test; a comment that only promises behavior the code does not enforce is a wish, not a contract.
-- Review depth follows API visibility. A public symbol's doc comment gets the same review as its signature; an
-  internal helper's comment is judged by whether it prevents a future mistake.
+- Within comment review, follow the symbol's visibility. A public symbol's doc comment gets the same review as its
+  signature; an internal helper's comment is judged by whether it prevents a future mistake.
+- Formatter, line-width, and linter configuration belong to code-style-conventions; this skill owns comment content,
+  placement, and directive syntax.
+- Gate thresholds and skip, quarantine, and waiver policy belong to testing-and-quality-conventions.
+- Secret scanning, rotation, and disclosure belong to security-compliance-conventions.
+- Overall change review depth and merge gating belong to vcs-collaboration-conventions.
 
 ## Process
 
@@ -50,7 +56,8 @@ Apply the first rule that fits, and do not mix conventions inside one scope:
    legal header, tool directive, or commented-out code. The classification decides the required fields and the
    checklist item that will judge it.
 3. Read the surrounding code, the project convention, and the doc-tool configuration; find the linter rule that
-   will judge the result. The doc build and the linter are the acceptance test, not decoration.
+   will judge the result when one is configured. The doc build and the configured linter are the acceptance test,
+   not decoration.
 4. Write the content the reader cannot get from the code: the contract, the reason, the hazard, the external
    constraint, or the plan. Prefer one precise sentence to three vague ones.
 5. Apply the form: correct syntax and position, required tags or sections, one natural language, the project's
@@ -77,15 +84,15 @@ Apply the first rule that fits, and do not mix conventions inside one scope:
   marker spelling.
 - **Deprecation names the replacement and the removal.** Use the language's deprecation mechanism with a migration
   note and a version or date; a bare `@deprecated` leaves the caller without a path.
-- **Tool directives are minimal and justified.** Start at the narrowest scope, one line and then one function; a
-  file-level suppression needs a reason and a cleanup ticket, and nothing disables a rule repository-wide for one
-  site.
+- **Tool directives are minimal and justified.** Start at the narrowest scope, one line and then one function; every
+  directive needs a reason, a file-level suppression also needs a cleanup ticket, and nothing disables a rule
+  repository-wide for one site.
 - **Legal headers and generated markers stay byte-identical.** They are read by tools and licenses; do not
   reformat, translate, or hand-edit them, and never remove a third-party notice.
 - **Document the non-obvious, not the familiar.** Record external constraints, workarounds, unsafe invariants,
   surprising edge cases, and measured performance bounds; skip the language tutorial. When an explanation grows
   past a paragraph, it belongs in a design note that the comment links.
-- **State units, ranges, nullability, and ownership.** When the type cannot carry them, the doc comment must:
+- **State units, ranges, nullability, and ownership.** When the type cannot carry them, the doc comment must state:
   milliseconds versus seconds, inclusive versus exclusive, absent versus empty, borrowed versus owned.
 - **Attach the comment to its subject.** A doc comment sits on the declaration, an inline comment on the line or
   block it explains, and a file header on the file. A stranded comment is read against the wrong code, and a
@@ -108,12 +115,12 @@ a doc comment and an inline comment obey different rules:
 | Block explanation | Multi-line rationale, algorithm, external constraint | Project block syntax, wrapped, no decorative border | `/* The vendor caps a batch at 500 items. */` |
 | API doc tags | Machine-readable fields for generated reference | Language tag syntax and order required by the tool | `@throws InvoiceNotFoundError when the id is unknown` |
 | TODO | Owned, planned work | Marker plus owner, action, issue or removal trigger | `// TODO(maria): drop the shim after v2 ships (#512).` |
-| FIXME / HACK / NOTE / WARNING | Defect, shortcut, context, or hazard | FIXME/HACK: wrong behavior, owner, removal trigger; NOTE/WARNING: condition, consequence, action | `// WARNING: caller must hold the lock.` |
+| FIXME / HACK / NOTE / WARNING | Defect, shortcut, context, or hazard | FIXME/HACK: wrong behavior, owner, removal trigger; NOTE/WARNING: condition, consequence, action | `// WARNING: without the caller's lock, the balance read races writers; acquire the lock first (#318).` |
 | Deprecation marker | Migration path and removal plan | Language mechanism plus replacement and version | `@deprecated Use create_invoice; removed in v3.0.` |
 | Legal header | License and copyright obligations | Exact SPDX and copyright lines in the required position | `// SPDX-License-Identifier: Apache-2.0` |
 | Tool directive | Instruction to a linter, formatter, or generator | Exact tool syntax at the narrowest scope, with reason | `// eslint-disable-next-line no-console -- CLI output.` |
 | Generated marker | Prevent hand edits and point to the generator | Tool-native marker at the top, byte-identical | `// Code generated by sqlc. DO NOT EDIT.` |
-| Commented-out code | None: version control owns old code | Delete it; use the build system or a marked directive with expiry | `Delete it; history stays in version control` |
+| Commented-out code | None: version control owns old code | Delete it; use the build system or a marked directive with expiry | `n/a` |
 
 ## Dimension Index
 
@@ -135,7 +142,7 @@ dimension column is the section number in that file.
 | 11. Code examples in doc comments | A doc example is executable documentation. |
 | 12. Generated and vendored code markers | Regenerate or re-vendor; never hand-edit. |
 | 13. Legal and license headers | Keep them byte-identical where the tool expects them. |
-| 14. Tool directives | Narrowest scope, supported reason, cleanup ticket. |
+| 14. Tool directives | Narrowest scope; reason for every directive; file-level cleanup ticket. |
 | 15. Tests and fixtures | Explain the scenario, not the call sequence. |
 | 16. Configuration and infrastructure | Use the format's comment syntax and state the constraint. |
 | 17. Shell scripts | Document purpose, arguments, and non-obvious quoting. |
@@ -174,13 +181,13 @@ dimension column is the section number in that file.
 - [ ] Every doc comment matches the current signature, behavior, and errors.
 - [ ] Public parameters, returns, errors, side effects, and invariants are documented.
 - [ ] Units, ranges, nullability, and ownership are explicit where the type cannot carry them.
-- [ ] The summary line is one sentence in the project's tense and ends with punctuation.
+- [ ] The summary is one sentence: present tense for descriptions, imperative for instructions, with end punctuation.
 - [ ] Inline comments sit above or beside the line they explain, at the same indentation.
 - [ ] Every TODO, FIXME, and HACK has an owner and a tracked issue or removal trigger.
 - [ ] No commented-out code or debug output is left in the change.
 - [ ] Deprecations name a replacement and a removal version or date.
 - [ ] Legal headers and generated markers are intact and unmodified.
-- [ ] Tool directives are minimal and include a reason and a cleanup plan.
+- [ ] Tool directives are minimal and include a reason; file-level suppressions also have a cleanup ticket.
 - [ ] No secret, token, personal datum, or internal address appears in any comment.
 - [ ] The comment language is the declared repository language, with identifiers unchanged.
 - [ ] Line width, punctuation, capitalization, and spacing match the project.
@@ -209,7 +216,7 @@ One idea per comment; a second reason gets its own line and its own review.
 
 <example>
 Concurrency warning on a lock-free read:
-`// WARNING: the snapshot may be stale; take the write lock before comparing versions.`
+`// WARNING: the snapshot may be stale if a writer commits; take the write lock before comparing versions (#412).`
 State the condition, the consequence, and the required action in that order, and link the full history to the
 issue. Never bury a hazard inside a paragraph of description.
 </example>
@@ -233,7 +240,7 @@ stale comment.
 
 Read [references/dimensions.md](references/dimensions.md) for the full rule set by comment type and hazard, and
 [references/languages.md](references/languages.md) for exact syntax, doc tools, and marker conventions per
-language. Read both before establishing a project's comment policy and linter configuration; during routine work,
-read the dimension that applies and the language row that applies. When a reference file disagrees with this file,
-the language file wins for syntax and the dimension file wins for the rule; report the conflict instead of
-blending both.
+language. Read both before establishing a project's comment policy; the comment linter is configured under
+code-style-conventions. During routine work, read the dimension that applies and the language row that applies. When
+a reference file disagrees with this file, the language file wins for syntax and the dimension file wins for the rule;
+report the conflict instead of blending both.

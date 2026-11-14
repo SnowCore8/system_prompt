@@ -122,7 +122,8 @@ single convention, use the defaults in `SKILL.md`.
 - Directives are `// @phpstan-ignore-next-line` and `// phpcs:ignore Rule -- reason`; Psalm suppresses with a
   `/** @psalm-suppress IssueName */` docblock on the enclosing declaration; deprecation is `@deprecated` plus
   `trigger_error(..., E_USER_DEPRECATED)`.
-- The file docblock follows `declare(strict_types=1)`; a class docblock sits immediately above the class.
+- A file-level docblock sits after the opening `<?php` tag and before `declare(strict_types=1)`; the namespace
+  follows it, and a class docblock sits immediately above the class.
 
 ## Swift
 
@@ -188,8 +189,9 @@ single convention, use the defaults in `SKILL.md`.
   and references or `moved` blocks express dependencies.
 - Scanner directives are `# trivy:ignore:<ID>`, `#tfsec:ignore:<rule>`, and `# tflint-ignore: <rule>`; only tflint
   documents an inline reason, so put the reason in an adjacent comment for the other two.
-- Terraform has no deprecation annotation: the source comment states the replacement and removal, while the README
-  announcement belongs to the documentation skill.
+- Terraform 1.15+ has a `deprecated` argument on `variable` and `output` blocks; for older versions or provider
+  arguments, the source comment states the replacement and the removal. The release-note document belongs to
+  documentation-conventions; announcement timing and placement belong to release-operations-conventions.
 
 ## Markdown and XML
 
