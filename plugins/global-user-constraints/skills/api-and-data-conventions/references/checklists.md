@@ -1,212 +1,179 @@
-# API and Data Checklists
+# 接口与数据清单
 
-Use this file with `SKILL.md` during review, rollout, and cleanup. Each checklist applies at the moment named in its
-heading: the design list before a contract change is approved, the playbook while a migration runs, the retention
-worksheet when a dataset is created rather than when someone asks for deletion. An item that does not apply gets a
-short reason instead of a check; an unchecked item is an open risk, not a formality.
+在审查、发布与清理期间，把本文件与 `SKILL.md` 一起使用。每份清单在其标题所指的时刻适用：设计清单用于契约变更
+获批之前，操作手册用于迁移运行期间，保留工作表用于数据集创建时，而不是有人要求删除时。不适用的条目要给出简短
+理由，而不是打勾；未勾选的条目是未决风险，不是形式。
 
-## API Design Review Checklist
+## API 设计审查清单
 
-Run this list against the contract diff itself, not against memory of what the service is supposed to do.
+对照契约 diff 本身运行这份清单，而不是凭服务本应做什么的记忆。
 
-- [ ] The operation, request, response, errors, and events are defined in the IDL, and the implementation matches the
-  IDL in a CI check.
-- [ ] Every consumer is listed: mobile clients, partner integrations, internal services, dashboards, reports,
-  exports, and analytics jobs that read the old shape.
-- [ ] The change is declared additive or breaking, with the version or compatibility policy that supports the
-  declaration.
-- [ ] A breaking change has a version boundary, a replacement, a deprecation window, and a usage measurement that can
-  prove when removal is safe.
-- [ ] Field presence and nullability are explicit: optional means absent is valid, and null is a documented state
-  rather than an accident.
-- [ ] Enums state how unknown values are handled, and clients are expected to tolerate values added later.
-- [ ] Every error uses a stable code, the correct status family, a safe message, and structured details.
-- [ ] Validation details name the field path and the violated rule, not a database column or an internal exception
-  message.
-- [ ] Collection endpoints enforce a maximum page size, a deterministic sort with a unique tiebreaker, and one
-  pagination style.
-- [ ] Filters and sorts are allowlisted, validated, and indexed, or the contract records the accepted cost of not
-  indexing them.
-- [ ] Retryable writes accept an idempotency key, and replay plus key-reuse behavior is covered by a test.
-- [ ] Rate limits and quotas are documented, return limit headers and 429 with `Retry-After`, and budget per tenant
-  and per principal.
-- [ ] Authorization is object-level, and tenant, owner, and subject IDs come from the verified token rather than the
-  request payload.
-- [ ] The existence policy for 403 versus 404 is consistent across resources and tested for a caller who lacks
-  access.
-- [ ] A long operation returns 202 with a status resource, terminal states, and a documented retry or cancel path.
-- [ ] Events and webhooks carry a type, schema version, event ID, timestamp, and signature, and consumers are
-  replay-safe.
-- [ ] The synchronous path fits the caller's timeout, or the contract states the timeout and the asynchronous
-  alternative.
-- [ ] The versioning decision is recorded, and a new version exists only for a breaking change that was proved
-  breaking.
-- [ ] The support window and sunset dates are recorded in the contract, not only in a planning document.
-- [ ] The API reference, examples, changelog, and error catalogue are updated in the same change.
-- [ ] Contract tests run the previous client version against the new schema, and both current versions during a dual
-  run.
-- [ ] A failed deploy has a rollback or forward-fix path that accounts for clients that cached the old schema or
-  response.
+- [ ] 操作、请求、响应、错误与事件都在 IDL 中定义，并且实现在 CI 校验中与 IDL 一致。
+- [ ] 列出每个消费方：读取旧形态的移动客户端、合作伙伴集成、内部服务、仪表盘、报表、导出与分析任务。
+- [ ] 变更被声明为增量式或破坏性，并附支撑该声明的版本或兼容性策略。
+- [ ] 破坏性变更要有版本边界、替代方案、废弃窗口，以及能证明何时可以安全移除的用量测量。
+- [ ] 字段存在性与可空性明确：可选意味着缺失有效，null 是有文档的状态，而不是意外。
+- [ ] 枚举说明如何处理未知值，并预期客户端能容忍后来新增的值。
+- [ ] 每个错误都使用稳定错误码、正确的状态码族、安全的消息与结构化 details。
+- [ ] 校验 details 指出字段路径与违反的规则，而不是数据库列或内部异常消息。
+- [ ] 集合端点强制最大页大小、带唯一决胜键的确定性排序，以及一种分页风格。
+- [ ] 过滤与排序在允许列表中、经过校验且有索引，或契约记录了不为它们建索引而接受的成本。
+- [ ] 可重试写入接受幂等键，且重放与键复用行为由测试覆盖。
+- [ ] 速率限制与配额有文档，返回限制头与带 `Retry-After` 的 429，并按租户与按主体做预算。
+- [ ] 授权是对象级的，租户、所有者与主体 ID 来自已验证的令牌，而不是请求 payload。
+- [ ] 403 与 404 的存在性策略在各资源间一致，并针对无访问权限的调用方测试。
+- [ ] 长操作返回 202 与状态资源、终态，以及有文档的重试或取消路径。
+- [ ] 事件与 webhook 携带类型、schema 版本、事件 ID、时间戳与签名，且消费方对重放安全。
+- [ ] 同步路径能装进调用方超时时间，或契约说明超时与异步替代方案。
+- [ ] 版本化决定有记录，且只为已被证明是破坏性的变更创建新版本。
+- [ ] 支持窗口与停用日期记录在契约中，而不只在计划文档中。
+- [ ] API 参考、示例、变更日志与错误码目录在同一次变更中更新。
+- [ ] 契约测试用前一客户端版本针对新 schema 运行，并在双跑期间运行两个当前版本。
+- [ ] 部署失败时有回滚或前向修复路径，并考虑缓存了旧 schema 或响应的客户端。
 
-## Error Model
+## 错误模型
 
-Use one envelope for every error. The HTTP status carries the family, the code carries the exact cause, and the
-client chooses behavior from the code rather than from the message text.
+每个错误都使用同一个信封。HTTP 状态码承载大类，错误码承载确切原因，客户端根据错误码而不是消息文本选择行为。
 
-| Code family | HTTP status | Retryable | Example |
+| 错误码族 | HTTP 状态 | 可重试 | 示例 |
 |---|---|---|---|
-| validation | 400 | No | `validation.invalid_field`: a field is missing, malformed, or out of range. |
-| authentication | 401 | No | `auth.unauthenticated`: the credential is missing, expired, or invalid. |
-| authorization | 403 | No | `auth.forbidden`: the caller is known but lacks the permission. |
-| not found or hidden | 404 | No | `resource.not_found`: the resource does not exist or is hidden from this caller. |
-| conflict | 409 | No | `conflict.version_mismatch`: the resource changed since the caller read it. |
-| semantic | 422 | No | `order.not_cancellable`: the request is well formed but the state forbids it. |
-| rate limit | 429 | Yes, after `Retry-After` | `rate_limit.exceeded`: a budget or quota is exhausted. |
-| dependency | 502 or 503 | Yes, with backoff | `dependency.unavailable`: an upstream dependency is failing. |
-| internal | 500 | Only with an idempotency key | `internal.unexpected`: an unhandled failure; include the request ID only. |
+| 校验 | 400 | 否 | `validation.invalid_field`：字段缺失、格式错误或超出范围。 |
+| 认证 | 401 | 否 | `auth.unauthenticated`：凭据缺失、过期或无效。 |
+| 授权 | 403 | 否 | `auth.forbidden`：调用方已知但缺少权限。 |
+| 未找到或已隐藏 | 404 | 否 | `resource.not_found`：资源不存在或对该调用方隐藏。 |
+| 冲突 | 409 | 否 | `conflict.version_mismatch`：资源自调用方读取以来已变化。 |
+| 语义 | 422 | 否 | `order.not_cancellable`：请求格式正确，但状态不允许该操作。 |
+| 速率限制 | 429 | 是，在 `Retry-After` 之后 | `rate_limit.exceeded`：预算或配额耗尽。 |
+| 依赖 | 502 或 503 | 是，带退避 | `dependency.unavailable`：上游依赖失败。 |
+| 内部 | 500 | 仅在带幂等键时 | `internal.unexpected`：未处理的失败；只包含请求 ID。 |
 
-- `code` is stable, unique, documented, and never reused for a different cause; adding one is compatible, renaming
-  or removing one is a breaking change.
-- `message` is safe to show to a user or an operator, is never parsed, and may be localized outside the contract
-  boundary; an error message never contains a secret, a token, a stack trace, or personal data.
-- `details` is a list of structured objects with a field path, a rule identifier, and the rejected value only when
-  echoing it is safe; do not flatten details into the message.
-- Every error response carries a request identifier in the body and in a response header, so support can correlate a
-  report with logs without asking the caller for more.
-- Retryable families include `Retry-After` or a retry hint, and a 500 is retryable only when the request is
-  idempotent under its key.
-- The same envelope is returned by the application, the gateway, and the validation layer; an empty body with a 500
-  is a contract violation.
+- `code` 稳定、唯一、有文档，绝不因不同原因复用；新增是兼容的，重命名或删除是破坏性变更。
+- `message` 可安全展示给用户或运维者，绝不被解析，并可在契约边界之外本地化；错误消息绝不包含机密、令牌、堆栈跟
+  踪或个人数据。
+- `details` 是结构化对象的列表，包含字段路径、规则标识符，以及仅在回显安全时才包含的被拒绝值；不要把 details 压
+  平进消息。
+- 每个错误响应都在响应体与响应头中携带请求标识符，使支持人员能把报告与日志关联起来，而无需再向调用方索取信息。
+- 可重试的族包含 `Retry-After` 或重试提示；只有请求在其键下幂等时，500 才可重试。
+- 应用、网关与校验层返回同一个信封；带 500 的空响应体是契约违规。
 
-## Pagination, Idempotency, and Versioning Decisions
+## 分页、幂等与版本化决策
 
-Record one decision per row in the contract before implementation. The default stands until measured need overrides
-it, and every endpoint in one API uses the same choice for the same row.
+实现之前，在契约中为每一行记录一个决策。默认值持续有效，直到已测量的需求将其推翻；同一 API 中的每个端点对同一行
+使用相同的选择。
 
-| Decision | Default | Choose otherwise when | Contract obligation |
+| 决策 | 默认 | 选择其他方案的情形 | 契约义务 |
 |---|---|---|---|
-| Pagination style | Cursor | Small, stable sets where users jump to a page number | Next cursor, stable sort, maximum page size |
-| Page size | Fixed default and hard maximum | Report or export flows need larger pages | Default, maximum, and the error for exceeding it |
-| Total count | Omitted | A user interface needs an exact count and accepts the cost | Accuracy guarantee and maximum latency |
-| Filter grammar | Repeated query parameters | Deep compound queries are a real product requirement | Allowed fields, operators, value formats, unknown-parameter policy |
-| Sort | Documented default plus a unique tiebreaker | A caller needs a different order | Allowed fields, direction, stability guarantee |
-| Idempotency window | 24 hours for client-retried writes | Batch jobs or partners need a longer replay window | TTL, key scope, fingerprint-mismatch behavior |
-| Versioning | Additive evolution inside one major version | A breaking change is approved for external callers | Major boundary, support window, migration guide |
-| Deprecation window | At least 90 days for external clients, one major release for internal ones | A security or legal fix requires immediate removal | Sunset date, replacement, headers, usage threshold |
-| Sync versus async | Synchronous when the work fits the request budget | Work exceeds the timeout or must survive a connection loss | 202 shape, status states, polling or webhook |
-| Rate-limit scope | Per tenant and per principal | One workflow needs its own budget | Limits, headers, 429 body, `Retry-After` |
+| 分页风格 | 游标 | 小型稳定集合，用户会跳到指定页码 | 下一个游标、稳定排序、最大页大小 |
+| 页大小 | 固定默认值与硬上限 | 报表或导出流程需要更大页 | 默认值、最大值与超限错误 |
+| 总数 | 省略 | 用户界面需要精确计数并接受其成本 | 准确性保证与最大延迟 |
+| 过滤语法 | 重复查询参数 | 深层复合查询是真实产品需求 | 允许字段、操作符、值格式、未知参数策略 |
+| 排序 | 有文档的默认值加唯一决胜键 | 调用方需要不同顺序 | 允许字段、方向、稳定性保证 |
+| 幂等窗口 | 客户端可重试写入 24 小时 | 批处理任务或合作伙伴需要更长重放窗口 | TTL、键作用域、指纹不匹配行为 |
+| 版本化 | 在一个主版本内增量演进 | 为外部调用方批准破坏性变更 | 主版本边界、支持窗口、迁移指南 |
+| 废弃窗口 | 外部客户端至少 90 天，内部客户端一个主版本 | 安全或法律修复需要立即移除 | 停用日期、替代方案、头、用量阈值 |
+| 同步与异步 | 工作能装进请求预算时用同步 | 工作超出超时或必须在连接丢失后继续 | 202 形状、状态、轮询或 webhook |
+| 速率限制作用域 | 按租户与按主体 | 某个工作流需要自己的预算 | 限制、头、429 响应体、`Retry-After` |
 
-- Record each decision in the contract or its ADR; a decision that lives only in a reviewer's head is re-litigated on
-  the next change.
-- Revisit a decision when measurements change, and state the condition that would reopen it instead of leaving the
-  question open.
-- Consistency beats local optimization: an endpoint that paginates differently from its siblings is a new decision
-  for the whole API, not a shortcut for one route.
+- 把每个决策记录在契约或其 ADR 中；只活在审查者脑子里的决策会在下一次变更时被重新争论。
+- 测量结果变化时重新审视决策，并说明会重新打开它的条件，而不是让问题悬着。
+- 一致性胜过局部优化：与同类端点分页方式不同的端点，是整个 API 的新决策，而不是一条路由的捷径。
 
-## Expand-Contract Migration Playbook
+## Expand-Contract 迁移操作手册
 
-Apply this playbook to any schema change that old code can observe. Never collapse the phases into one deploy, even
-when the table is small today; the discipline is the plan for the day the table is large.
+把这份操作手册应用于旧代码能观察到的任何 schema 变更。绝不要把各阶段压缩成一次部署，即使表今天很小；这套纪律
+是为表变大的那一天准备的计划。
 
-| Phase | Action | Rollback | Verification |
+| 阶段 | 动作 | 回滚 | 验证 |
 |---|---|---|---|
-| Prepare | Count affected rows, estimate duration and lock, confirm backup and point-in-time recovery, choose a quiet window, get approval. | None yet; abort before the first write. | Counts and estimate match the plan; owner and window agreed. |
-| Expand | Add the nullable column or table, or build the index concurrently; nothing reads or writes it yet. | Drop the new object; it is unused. | Old code and old queries are unaffected. |
-| Dual-write | Deploy code that writes both forms and reads the old one. | Redeploy the previous release. | New rows populate both forms; error rate and latency unchanged. |
-| Backfill | Run the batched, idempotent backfill with throttling and a saved cursor. | Stop the job; old form still serves reads. | Row coverage complete, mismatch count zero, replication lag recovered. |
-| Validate | Reconcile mismatches, validate the constraint, then add NOT NULL or the unique index. | Drop the constraint; keep the nullable column. | Zero violating rows; constraint valid; old code still works. |
-| Switch reads | Deploy code that reads the new form and keeps writing both. | Redeploy the code that reads the old form. | Parity checks, error rate, and latency are within bounds. |
-| Contract | Stop writing the old form, then drop the old object after the deprecation window. | Restore from backup only; this phase needs the approval gate. | No references remain; row counts and docs are updated. |
+| 准备 | 统计受影响行数，估算时长与锁，确认备份与时间点恢复，选择低峰时段，取得批准。 | 暂无；在第一次写入前中止。 | 计数与估算符合计划；负责人与窗口已商定。 |
+| 扩展 | 新增可空列或表，或并发构建索引；此时没有任何东西读写它。 | 删除新对象；它未被使用。 | 旧代码与旧查询不受影响。 |
+| 双写 | 部署同时写入两种形式并读取旧形式的代码。 | 重新部署前一发布。 | 新行填充两种形式；错误率与延迟不变。 |
+| 回填 | 运行带限流与保存游标的分批幂等回填。 | 停止任务；旧形式仍服务读取。 | 行覆盖完整、不匹配计数为零、复制延迟恢复。 |
+| 验证 | 对账不匹配，验证约束，然后新增 NOT NULL 或唯一索引。 | 删除约束；保留可空列。 | 零违规行；约束有效；旧代码仍可用。 |
+| 切换读取 | 部署读取新形式并继续双写的代码。 | 重新部署读取旧形式的代码。 | 一致性检查、错误率与延迟在范围内。 |
+| 收缩 | 停止写入旧形式，然后在废弃窗口之后删除旧对象。 | 只能从备份恢复；本阶段需要审批门禁。 | 无引用残留；行数与文档已更新。 |
 
-### Pre-Flight
+### 预检
 
-- Count the affected rows and record the count; a migration that starts without a number cannot be verified.
-- Estimate the duration and the lock on production-sized data, and state which writes the lock blocks.
-- Confirm a backup or point-in-time-recovery point exists and a restore was tested, not merely configured.
-- Choose the window, the timezone, the owner, and the on-call contact before scheduling the migration.
-- Define the stop condition: the error, lag, or lock-wait threshold that aborts the run.
+- 统计受影响行数并记录；没有数字就开始的迁移无法验证。
+- 在生产规模数据上估算时长与锁，并说明锁阻塞哪些写入。
+- 确认存在备份或时间点恢复点，并且恢复经过测试，而不仅仅是配置了。
+- 在安排迁移之前选定窗口、时区、负责人与值班联系人。
+- 定义停止条件：中止运行所依据的错误、延迟或锁等待阈值。
 
-### Rollback
+### 回滚
 
-- Phases up to and including the read switch are reversible by redeploying the previous code; keep the old column
-  and the old read path until the deprecation window closes.
-- The contract phase is irreversible: it needs a verified backup or point-in-time-recovery point and the approval
-  gate before the drop.
-- Prefer a forward fix over an inverse migration, because down scripts are rarely exercised against real data.
-- Stop a backfill rather than reversing it; an idempotent batch can resume from its cursor.
-- Rehearse the rollback on a staging clone before the production run.
-- After new code has written data, rolling back code is safe only when both forms were kept consistent.
+- 截至并包括读取切换的各阶段都可通过重新部署前一代码回滚；在废弃窗口关闭之前保留旧列与旧读取路径。
+- 收缩阶段不可逆：在删除之前需要经过验证的备份或时间点恢复点以及审批门禁。
+- 优先前向修复而不是反向迁移，因为 down 脚本很少针对真实数据演练。
+- 停止回填而不是逆转它；幂等批次可以从其游标继续。
+- 在生产运行之前，在 staging 克隆上演练回滚。
+- 新代码写入数据之后，只有两种形式保持一致时回滚代码才安全。
 
-### Verification
+### 验证
 
-- Compare row counts and checksums before and after, per phase rather than only at the end.
-- Read the same rows through the old and the new path and compare results for a sample and for known edge cases.
-- Run the violating-row queries for every new constraint; a valid constraint does not prove the data is correct.
-- Check replication lag, lock waits, error rate, and latency after the run, not only during it.
-- Re-run the query plans for the hot queries; a new index or column can change a plan in either direction.
+- 比较各阶段前后的行数与校验和，而不是只在结束时比较。
+- 通过旧路径与新路径读取相同的行，并对样本与已知边界情况比较结果。
+- 为每个新约束运行违规行查询；约束有效并不证明数据正确。
+- 在运行结束后检查复制延迟、锁等待、错误率与延迟，而不只在运行期间检查。
+- 重新运行热查询的查询计划；新索引或新列可能朝任一方向改变计划。
 
-## Destructive-Change Approval Checklist
+## 销毁性变更审批清单
 
-A destructive change drops, truncates, renames, narrows, or overwrites live data. Confirm every item in writing before
-execution; a verbal approval does not cover a later, larger version of the change.
+销毁性变更会删除、截断、重命名、收窄或覆盖在线数据。执行之前以书面形式确认每一项；口头批准不覆盖后来更大范围的
+同类变更。
 
-- [ ] The change is named: which object, in which environment, and what exactly disappears.
-- [ ] Data loss is quantified: rows, size, and the values that cannot be reconstructed from another source.
-- [ ] A backup or point-in-time-recovery point exists, and a restore from it was tested recently.
-- [ ] The consumer list is complete: no live service, report, export, or analytics job still reads the object.
-- [ ] The person with authority approved this exact operation, not a general cleanup effort.
-- [ ] A deprecation window has passed, or a security or legal need justifies skipping it.
-- [ ] The execution window, timezone, and on-call owner are agreed and the team is notified.
-- [ ] A dry run reported the affected rows and the number matched the expectation.
-- [ ] The script or migration is idempotent, or guarded by a precondition that fails closed.
-- [ ] The stop condition is explicit: which error, lag, or duration aborts the run.
-- [ ] The post-change verification query was written in advance and is run immediately after.
-- [ ] Rollback is possible and tested for the code and schema, or the loss is accepted as irreversible in writing.
-- [ ] Derived copies are handled: search, cache, warehouse, exports, and logs.
-- [ ] Backups and their expiry were considered, and the deletion window is stated correctly.
-- [ ] The operator, time, counts, and outcome are logged in the system of record.
-- [ ] The dropped definition and counts are recorded in the approved request for a future reconstruction attempt.
+- [ ] 变更已具名：哪个对象、在哪个环境，以及究竟什么会消失。
+- [ ] 数据丢失已量化：行数、大小，以及无法从其他来源重建的值。
+- [ ] 存在备份或时间点恢复点，且最近测试过从它恢复。
+- [ ] 消费方清单完整：没有在线服务、报表、导出或分析任务仍在读取该对象。
+- [ ] 有权者批准的是这个确切操作，而不是泛泛的清理工作。
+- [ ] 废弃窗口已过，或安全/法律需求证明跳过它是合理的。
+- [ ] 执行窗口、时区与值班负责人已商定，且团队已收到通知。
+- [ ] 试运行报告了受影响行数，且数字符合预期。
+- [ ] 脚本或迁移是幂等的，或由失败时关闭的前置条件保护。
+- [ ] 停止条件明确：哪种错误、延迟或时长会中止运行。
+- [ ] 变更后验证查询已提前写好，并在变更后立即运行。
+- [ ] 代码与 schema 的回滚可行且经过测试，或以书面形式接受损失不可逆。
+- [ ] 派生副本已处理：搜索、缓存、数据仓库、导出与日志。
+- [ ] 已考虑备份及其到期时间，并正确说明删除窗口。
+- [ ] 操作者、时间、计数与结果记录在权威记录系统中。
+- [ ] 被删除对象的定义与计数记录在获批请求中，供未来重建尝试使用。
 
-## Data Retention Worksheet
+## 数据保留工作表
 
-Fill one row per dataset when the dataset is created and review the table yearly. The class and the period come from
-the security data inventory; this worksheet records where they are enforced and how deletion happens. Retention
-starts at the trigger, not at table creation, and an empty cell is an open risk.
+每个数据集创建时填一行，并每年审查该表。类别与期限来自安全数据清单；本工作表记录它们在哪里执行以及删除
+如何发生。保留期从触发条件开始，而不是从建表开始；空单元格是未决风险。
 
-| Data class | Location | Retention | Deletion mechanism | Owner |
+| 数据类别 | 位置 | 保留期 | 删除机制 | 负责人 |
 |---|---|---|---|---|
-| Public | Published content in the CMS and CDN | Until unpublish plus 30 days | Delete the row and purge the cache | Content team |
-| Internal | Service configuration and telemetry in the primary database | 13 months rolling | Scheduled partition drop | Service owner |
-| Confidential | Contracts and billing records in the primary database and warehouse | 7 years after contract end | Purge job per contract ID | Finance systems |
-| Restricted | Customer profile in the primary database, search index, and cache | Account closure plus 30 days | Erasure job fans out to all stores | Identity team |
-| Restricted | Support attachments in object storage | Ticket closure plus 90 days | Object delete plus receipt check | Support systems |
+| 公开 | CMS 与 CDN 中已发布的内容 | 取消发布后加 30 天 | 删除该行并清除缓存 | 内容团队 |
+| 内部 | 主数据库中的服务配置与遥测 | 滚动 13 个月 | 定时删除分区 | 服务负责人 |
+| 机密 | 主数据库与数据仓库中的合同与账单记录 | 合同结束后 7 年 | 按合同 ID 运行清理任务 | 财务系统 |
+| 受限 | 主数据库、搜索索引与缓存中的客户资料 | 账户关闭后加 30 天 | 擦除任务扇出到所有存储 | 身份团队 |
+| 受限 | 对象存储中的支持附件 | 工单关闭后加 90 天 | 删除对象并检查回执 | 支持系统 |
 
-- The class and the period are copied from the inventory; never invent either, and never default to forever.
-- The trigger names the event that starts the clock, such as an account closure or a last activity date.
-- The deletion mechanism names the job, API, or policy that removes the data, not the intention to remove it.
-- The owner is a team or role that can answer for the row during an audit; a shared owner means no owner.
-- A legal hold set by the security or legal role suspends the row's schedule; record its scope, authority, and
-  review date and lift it only on that role's direction.
-- Every row is tested once: run the deletion mechanism on a sample and verify that the copy is gone from the store.
+- 类别与期限从清单复制；绝不臆造任一项，也绝不默认永久保留。
+- 触发条件指明启动计时的那个事件，例如账户关闭或最后活动日期。
+- 删除机制指明移除数据的任务、API 或策略，而不是移除它的意图。
+- 负责人是审查期间能为该行负责的团队或角色；共同负责人等于没有负责人。
+- 安全或法务角色设定的法律保全暂停该行的计划；记录其范围、授权与审查日期，并只在该角色的指示下解除。
+- 每一行都测试一次：对样本运行删除机制，并验证副本已从存储中消失。
 
-### Copy and Store Map
+### 副本与存储映射
 
-Deletion reaches the row only after it reaches every copy. The canonical copy and store map is in
-`references/dimensions.md` section 3; use it for the per-store list and record the dataset-level rows above.
+删除只有在到达每个副本之后才到达该行。规范的副本与存储映射在 `references/dimensions.md` 第 3 节；用它获取按
+存储的列表，并记录上面的数据集级行。
 
-## Test-Data Rules
+## 测试数据规则
 
-Fixture isolation, deterministic seed data, and credential scoping belong to the testing-and-quality-conventions
-role. This list covers only what test data must never contain or become, and how it is retired.
+Fixture 隔离、确定性种子数据与凭据作用域属于 `testing-and-quality-conventions`。本清单只覆盖测试数据绝不能包含或变成什么，以
+及它如何退役。
 
-- Generate synthetic data for tests, and never restore a production dump into a development, test, or staging store.
-- When production data must leave production for debugging, mask it irreversibly, limit the extract, and delete it
-  when the investigation closes.
-- Build the test schema by running the migration history from empty, and also test the upgrade from the previous
-  release; an ORM-generated schema hides migration defects.
-- Fixtures contain no real email addresses, phone numbers, secrets, or internal addresses; reserved names such as
-  `example.test.invalid` keep the rule visible.
-- Non-production stores get a short retention and a scheduled reset, so stale personal data cannot accumulate.
-- Snapshot and golden files are reviewed for personal data before they are committed, because they are copies too.
-- Deletion and retention jobs are tested like any other code: a fixture and an assertion for each store the job is
-  supposed to clear.
+- 为测试生成合成数据，绝不把生产转储恢复到开发、测试或 staging 存储。
+- 当生产数据必须为调试离开生产时，不可逆地脱敏，限制提取范围，并在调查结束后删除它。
+- 通过从空库运行迁移历史来构建测试 schema，并测试从上一发布升级；ORM 生成的 schema 会掩盖迁移缺陷。
+- Fixture 不含真实邮箱地址、电话号码、机密或内部地址；`example.test.invalid` 等保留名称让规则保持可见。
+- 非生产存储获得较短保留期与定时重置，使陈旧个人数据无法累积。
+- 快照与 golden 文件在提交前审查个人数据，因为它们也是副本。
+- 删除与保留任务像其他代码一样测试：任务应当清理的每个存储都有一个 fixture 与一条断言。

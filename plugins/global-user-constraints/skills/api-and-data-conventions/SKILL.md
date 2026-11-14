@@ -1,225 +1,198 @@
 ---
 name: api-and-data-conventions
-description: Defines, reviews, and repairs API contracts and database/data-lifecycle practice across services, including resource and error design, pagination, idempotency, authorization boundaries, versioning, migrations, and retention. Use when adding or changing an endpoint, event, field, table, index, constraint, or deletion path, or when planning a breaking change or zero-downtime schema rollout.
-argument-hint: '[path or scope]'
+description: 定义、审查并修复跨服务的 API 契约与数据库/数据生命周期实践，包括资源与错误设计、分页、幂等性、授权边界、版本化、迁移与保留。适用于新增或更改端点、事件、字段、表、索引、约束或删除路径，或计划破坏性变更与零停机 schema 发布。
+argument-hint: '[路径或范围]'
 ---
 
-# API and Data Conventions
+# 接口与数据规范
 
-API contracts and database schemas are the interfaces with the longest lifetime in a system: outside callers build
-against them, and the data behind them accumulates for years. A changed field breaks clients the author cannot see;
-a dropped column, an unbatched migration, or a lock that queues every writer loses data or causes an outage; none of
-these is repaired by reverting the code. This skill defines how to design, review, and change API contracts, how to
-evolve databases without downtime, and how to retire data through its whole lifecycle. It serves the author of a new
-endpoint or migration, the reviewer judging a schema diff, and the engineer planning a deprecation or an erasure path.
+API 契约与数据库 schema 是系统中生命周期最长的接口：外部调用方基于它们构建，而它们背后的数据会累积多年。改动
+的字段会破坏作者看不见的客户端；删除的列、未分批的迁移，或让每个写入者排队的锁，都会丢失数据或造成中断；这些
+都不是回滚代码能修复的。本 skill 定义如何设计、审查与更改 API 契约，如何在不中断服务的情况下演进数据库，以及
+如何让数据走完整个生命周期后退役。它服务于新端点或新迁移的作者、评判 schema diff 的审查者，以及规划废弃或擦除
+路径的工程师。
 
-## Scope and Precedence
+## 适用范围与优先级
 
-Apply the first rule that fits, and do not mix standards inside one scope:
+采用第一条适用的规则，同一范围内不要混用标准：
 
-1. Mandatory protocol, platform, or legal rule. HTTP semantics, the IDL in use (OpenAPI, protobuf, GraphQL), the
-   database engine's behavior, and data-protection obligations are not optional.
-2. Existing contract, schema, and published compatibility policy. Read the current API version, the migration
-   tooling, the error catalogue, and the project's stated support window before inventing a rule.
-3. This standard's defaults, when the two levels above are silent.
-4. Personal preference, which never overrides the three levels above.
+1. 强制的协议、平台或法律规则。HTTP 语义、所用 IDL（OpenAPI、protobuf、GraphQL）、数据库引擎的行为以及数据
+   保护义务都不是可选项。
+2. 既有契约、schema 与已发布的兼容性策略。发明规则之前，先阅读当前 API 版本、迁移工具、错误码目录以及项目声
+   明的支持窗口。
+3. 本标准的默认值，在前两层未作规定时适用。
+4. 个人偏好，永远不能覆盖上述三层。
 
-- **Names belong to the naming-conventions role.** It owns resource, field, table, column, index, and enum names;
-  this skill owns the contract and process around them, and does not rename what that role governs. When a contract
-  change needs a new name, ask that role for it rather than inventing a second vocabulary.
-- **Standalone documentation belongs to the documentation-conventions role.** It owns API reference pages and other
-  pages; this skill owns the design rules those pages describe, and the pages are updated with the contract. The
-  design is reviewed here; the page is reviewed there.
-- **Release operations belong to the release-operations-conventions role.** It owns product versioning, release
-  process, and CI/CD; this skill owns API versioning policy inside the contract. It also owns incidents and backups;
-  this skill owns destructive schema-change safety.
-- **Test strategy belongs to the testing-and-quality-conventions role.** It owns test strategy and gates; this skill
-  owns contract tests as a requirement, not the tooling that runs them. A contract test that nobody runs during a
-  release is a comment.
-- **Privacy policy belongs to the security-compliance-conventions role.** It owns privacy policy, the data
-  inventory with PII classification and retention periods, and license; this skill consumes that inventory and owns
-  enforcement: schema metadata, deletion propagation, backup expiry, and test-data handling.
-- **Generated and third-party surfaces are exempt.** Generated clients and servers, vendored schemas, and external
-  APIs keep their shape; isolate them behind an adapter, map them to the canonical contract at the boundary, and
-  regenerate rather than hand-edit.
-- **A contract change is a breaking change unless proven otherwise.** Proof is a consumer inventory plus a contract
-  test against real clients; missing evidence that a field is used is not evidence that it is unused.
-- **When two rules conflict, state the conflict and the chosen rule.** Record the decision in the contract or an ADR
-  so the next change follows it instead of re-arguing the same question.
+- **名称属于 `naming-conventions`。** 它拥有资源、字段、表、列、索引与枚举的名称；本 skill 拥有围绕这些名称的契约与
+  流程，不重命名该 skill 管辖的名称。当契约变更需要新名称时，向该 skill 索取，而不是另造第二套词汇。
+- **独立文档属于 `documentation-conventions`。** 它拥有 API 参考页与其他页面；本 skill 拥有这些页面所描述的设计规则，页面
+  随契约一起更新。设计在这里审查；页面在那里审查。
+- **发布运维属于 `release-operations-conventions`。** 它拥有产品版本化、发布流程与 CI/CD；本 skill 拥有契约内部的 API 版
+  本化策略。它同时拥有事故与备份；本 skill 拥有销毁性 schema 变更的安全性。
+- **测试策略属于 `testing-and-quality-conventions`。** 它拥有测试策略与门禁；本 skill 拥有作为要求的契约测试，而不拥有运
+  行它们的工具。发布期间没人运行的契约测试只是一句注释。
+- **隐私策略属于 `security-compliance-conventions`。** 它拥有隐私策略、带 PII 分类与保留期的数据清单，以及许可证；本 skill
+  使用该清单，并拥有执行：schema 元数据、删除传播、备份到期与测试数据处理。
+- **生成接口面与第三方接口面属于例外。** 生成的客户端与服务端、第三方引入的 schema 以及外部 API 保持其形态；把
+  它们隔离在适配器之后，在边界映射到规范契约，并重新生成而不是手工编辑。
+- **契约变更默认是破坏性变更，除非被证明不是。** 证明是消费方清单加上针对真实客户端的契约测试；缺少字段被使用
+  的证据，并不等于该字段未被使用。
+- **当两条规则冲突时，说明冲突与所选规则。** 把决定记录在契约或 ADR 中，让下一次变更遵循它，而不是重炒同一个
+  问题。
 
-## Process
+## 流程
 
-1. Identify the contract surface and the data touched: operations, request and response fields, events, tables,
-   columns, indexes, and derived stores. Map every consumer, including mobile clients, partners, dashboards, exports,
-   and analytics jobs that depend on the current shape. When the inventory is incomplete, finish it before proposing
-   the change; an unlisted consumer is a future outage.
-2. Check the current version and compatibility policy: the published version, the recorded support window, the
-   deprecation state of neighboring fields, and the migration history that produced the current schema.
-3. Choose additive or breaking: make the change in two deployable steps when the contract allows it, and introduce a
-   version boundary only for a proven break. Prefer expansion plus a deprecation window over a simultaneous cutover.
-   If you cannot describe the two-step path, the change is not ready.
-4. Write the migration and rollout plan with rollback: schema phases, backfill batches, deploy order, feature-flag
-   state, verification queries, and the forward-fix or restore path for each step. The plan names who executes, who
-   watches, and who can stop it.
-5. Verify against real clients and data: run contract tests with the previous client version, plan the statements on
-   production-sized data, replay a sample of real requests, and confirm that old clients still work during the dual
-   run. If a client cannot be tested, record it as an unverified compatibility risk instead of assuming that it
-   tolerates the change.
-6. Update docs and examples: the IDL, the error catalogue, API reference handoff, migration guide, changelog, and code
-   samples; a contract change without its examples is incomplete. The migration guide addresses the caller's change,
-   not the implementer's.
-7. Review: run the checklists in `references/checklists.md`, obtain the required reviewers, record approval for
-   destructive and breaking changes, and confirm the rollback path was tested rather than assumed. A review that
-   approves a breaking change without usage evidence is incomplete.
+1. 识别契约接口面与受影响的数据：操作、请求与响应字段、事件、表、列、索引以及派生存储。映射每个消费方，包括依
+   赖当前形态的移动客户端、合作伙伴、仪表盘、导出与分析任务。清单不完整时，在提出变更之前补全；未列出的消费
+   方就是未来的中断。
+2. 检查当前版本与兼容性策略：已发布的版本、记录的支持窗口、相邻字段的废弃状态，以及产生当前 schema 的迁移历
+   史。
+3. 选择增量式或破坏性：契约允许时，用两个可部署步骤完成变更，并且只为已证明的破坏引入版本边界。优先选择扩展加
+   废弃窗口，而不是同时切换。如果你无法描述两步路径，这次变更就还没准备好。
+4. 编写带回滚的迁移与发布计划：schema 阶段、回填批次、部署顺序、功能开关状态、验证查询，以及每一步的前向修复
+   或恢复路径。计划要写明谁执行、谁观察、谁可以叫停。
+5. 针对真实客户端与数据验证：用前一客户端版本运行契约测试，在生产规模数据上规划语句，重放真实请求样本，并确认
+   旧客户端在双跑期间仍能工作。如果某个客户端无法测试，把它记录为未验证的兼容性风险，而不是假设它能容忍变更。
+6. 更新文档与示例：IDL、错误码目录、API 参考交接、迁移指南、变更日志与代码示例；没有示例的契约变更是不完整
+   的。迁移指南面向调用方的改动，而不是实现者的改动。
+7. 审查：运行 `references/checklists.md` 中的清单，取得所需审查者，为销毁性变更与破坏性变更记录批准，并确认回滚路
+   径经过测试而非假定。批准一个没有使用证据的破坏性变更的审查是不完整的。
 
-## Core Rules
+## 核心规则
 
-- **The published contract is the source of truth.** The IDL, schema, and error catalogue are reviewed like code; an
-  implementation that disagrees with them is a defect fixed in the same change, never documented as an exception. A
-  stale generated artifact is regenerated, not patched by hand.
-- **Additive by default; breaking by decision.** Add optional fields, operations, and error codes freely; remove,
-  rename, retype, or newly require something only behind a version boundary, a deprecation window, and measured
-  usage. A deprecated field stays supported, documented, and tested until its removal date.
-- **A contract change includes its consumers.** Update clients, generated SDKs, contract tests, examples, and docs in
-  the same delivery; an old client that still works is tested, not assumed.
-- **Machines read codes; humans read messages.** Keep error codes stable, unique, and permanent; keep messages safe
-  and changeable; put field-level detail in structured details, never in a string a client parses. The error catalogue
-  is a release artifact and grows by addition.
-- **Every retried write has an idempotency contract.** Key scope, stored response, TTL, and replay behavior are
-  specified and tested; never rely on clients not retrying.
-- **Collections are bounded, ordered, and repeatable.** Enforce a maximum page size, a deterministic sort, one
-  pagination style, allowlisted filters, and no unbounded export on the request path.
-- **Authorization is checked per object, not per route.** Tenant and owner come from the verified token; 401, 403, and
-  404 follow one documented existence policy. An endpoint that returns data before checking the object is a data leak
-  with a test suite.
-- **Long work and event delivery are designed, not improvised.** Long operations return 202 with a status resource;
-  events are at least once, carry an ID and a schema version, and have dedupe, signature, retry, dead-letter, and
-  replay paths.
-- **Version and deprecate deliberately.** Version at the boundary that changes: a major path segment for public APIs,
-  additive evolution for coordinated internal IDLs, a media type only when every hop preserves it. Deprecate with a
-  replacement, `Deprecation` and `Sunset` headers, a migration guide, and per-caller usage measurement.
-- **Schema changes expand, then contract.** Add the new structure, dual-write, backfill, validate, switch reads, then
-  remove the old structure. Phases up to the read switch are code-reversible; the final drop is irreversible and
-  needs a verified backup or point-in-time-recovery point plus the approval gate. A change that cannot complete
-  inside the support window is split until it can.
-- **Estimate the lock before executing DDL.** Name the lock, set timeouts, measure on production-sized data, run the
-  migration as an explicit step in a quiet window, and watch replication lag and lock waits while it runs.
-- **Destructive data changes need approval, a backup, and verification.** A migration or backfill is a production
-  write: explicit consent, a consumer list, a recovery point, a dry run with counts, and a post-change query.
-- **Every dataset has a class, a retention rule, and an owner.** Deletion propagates to every copy; soft delete is
-  retention rather than deletion; backups, logs, and exports are copies with their own expiry and deletion path.
-- **Test from migrations, with synthetic data.** Test databases are built from the migration history and upgraded
-  from the previous release; production data never enters a non-production store unmasked.
+- **已发布的契约是唯一真源。** IDL、schema 与错误码目录像代码一样审查；与它们不一致的实现是缺陷，在同一次变更
+  中修复，绝不记录为例外。过期的生成制品要重新生成，而不是手工修补。
+- **默认增量式；破坏性需经决策。** 可以自由新增可选字段、操作与错误码；只有在版本边界、废弃窗口与已测量的使用
+  量之后，才删除、重命名、改类型或新增必填项。被废弃的字段在移除日期之前保持受支持、有文档且受测试。
+- **契约变更包含其消费方。** 在同一次交付中更新客户端、生成的 SDK、契约测试、示例与文档；仍能工作的旧客户端是
+  测试出来的，不是假定出来的。
+- **机器读错误码，人读消息。** 保持错误码稳定、唯一且永久；保持消息安全且可变更；把字段级细节放在结构化 details
+  中，绝不放进客户端会解析的字符串。错误码目录是发布制品，按新增方式增长。
+- **每个会被重试的写入都有幂等契约。** 键的作用域、存储的响应、TTL 与重放行为都要明确规定并测试；绝不依赖客户
+  端不重试。
+- **集合有界、有序且可重复。** 强制最大页大小、确定性排序、一种分页风格、允许列表过滤条件，并且请求路径上没有
+  无界导出。
+- **授权按对象检查，不按路由检查。** 租户与所有者来自已验证的令牌；401、403 与 404 遵循一套有文档的存在性策
+  略。在检查对象之前就返回数据的端点，是带测试套件的数据泄露。
+- **长时间工作与事件投递是设计出来的，不是临时拼凑的。** 长操作返回 202 与状态资源；事件是至少一次投递，携带
+  ID 与 schema 版本，并有去重、签名、重试、死信与重放路径。
+- **有意识地版本化与废弃。** 在发生变化的边界处版本化：公共 API 用主版本路径段，协调发布的内部 IDL 用增量演
+  进，只有当每一跳都保留媒体类型时才用媒体类型。废弃时提供替代方案、`Deprecation` 与 `Sunset` 头、迁移指南以
+  及按调用方统计的使用量。
+- **schema 变更先扩展，再收缩。** 新增结构、双写、回填、校验、切换读取，然后移除旧结构。到读取切换为止的阶段
+  都可由代码回滚；最后的删除不可逆，需要经过验证的备份或时间点恢复点加上审批门禁。无法在支持窗口内完成的变更
+  要拆分，直到能完成。
+- **执行 DDL 之前估算锁。** 说明锁的名称，设置超时，在生产规模数据上测量，在低峰时段把迁移作为显式步骤运行，
+  并在运行期间观察复制延迟与锁等待。
+- **销毁性数据变更需要批准、备份与验证。** 迁移或回填是生产写入：明确同意、消费方清单、恢复点、带计数的试运行，
+  以及变更后查询。
+- **每个数据集都有类别、保留规则与负责人。** 删除传播到每个副本；软删除是保留而不是删除；备份、日志与导出是各
+  自带到期时间与删除路径的副本。
+- **从迁移构建测试，并使用合成数据。** 测试数据库由迁移历史构建，并从上一个发布版本升级；生产数据绝不未脱敏地
+  进入非生产存储。
 
-## Change Risk Matrix
+## 变更风险矩阵
 
-| Change | Compatibility | Required path | Verification |
+| 变更 | 兼容性 | 必需路径 | 验证 |
 |---|---|---|---|
-| Add an optional response field | Compatible | Add it to the IDL and release the server before the clients | The previous client passes the contract test |
-| Add an optional request field with a default | Compatible | Document the default and accept the field's absence | Old client payload test without the field |
-| Add a required request field | Breaking | New version, or an optional window with a default until callers migrate | Consumer inventory and a dual-run test |
-| Rename a field or endpoint | Breaking | New name beside an alias, dual-write and dual-read, deprecate the old | Usage reaches zero on the old name before removal |
-| Remove a field or endpoint | Breaking | Deprecation window, sunset date, replacement, and usage proof | Client tests and per-caller telemetry |
-| Change a field type or format | Breaking | New field beside the old, or a new major version | Round-trip test and consumer test |
-| Add an enum value | Breaking for closed clients | New version, or a documented tolerant-client requirement | Test a client build that predates the value |
-| Change the default page size or sort | Behavioral break | Announce and version it, or keep the old behavior behind a parameter | Client assertion on order and page contents |
-| Add a nullable column | Compatible | Expansion phase only: add it, dual-write, backfill later | Migration on production-sized data; old code check |
-| Add NOT NULL, UNIQUE, or foreign key | Blocking if data is dirty | Clean the data, add unvalidated, validate in a separate step | Violating-row query and lock estimate |
-| Drop a column or table | Breaking and destructive | Stop readers, wait out deprecation, back up, obtain approval | No references remain; counts; a restore test |
-| Backfill or build an index on a hot table | Operational risk | Batch with a throttle or build concurrently, outside peak hours | Replication lag, lock waits, total duration |
+| 新增可选响应字段 | 兼容 | 加入 IDL，并先发布服务端再发布客户端 | 前一版本客户端通过契约测试 |
+| 新增带默认值的可选请求字段 | 兼容 | 记录默认值并接受字段缺失 | 不带该字段的旧客户端 payload 测试 |
+| 新增必填请求字段 | 破坏性 | 新版本，或带默认值的可选窗口直到调用方迁移 | 消费方清单与双跑测试 |
+| 重命名字段或端点 | 破坏性 | 在别名旁边新增名称，双写与双读，废弃旧名 | 移除前旧名的使用量降到零 |
+| 移除字段或端点 | 破坏性 | 废弃窗口、停用日期、替代方案与使用量证明 | 客户端测试与按调用方的遥测 |
+| 更改字段类型或格式 | 破坏性 | 在旧字段旁新增字段，或新主版本 | 往返测试与消费方测试 |
+| 新增枚举值 | 对封闭客户端是破坏性 | 新版本，或记录容忍未知值的客户端要求 | 用早于该值的客户端构建做测试 |
+| 更改默认页大小或排序 | 行为破坏 | 公告并版本化，或把旧行为保留在参数之后 | 客户端对顺序与页内容的断言 |
+| 新增可空列 | 兼容 | 仅扩展阶段：新增、双写、稍后回填 | 生产规模数据上的迁移；旧代码检查 |
+| 新增 NOT NULL、UNIQUE 或外键 | 数据不干净时会阻塞 | 清理数据，以未验证形式新增，在独立步骤中验证 | 违规行查询与锁估算 |
+| 删除列或表 | 破坏性且销毁性 | 停止读取，等待废弃期结束，备份，取得批准 | 无引用残留；计数；恢复测试 |
+| 在热表上回填或建索引 | 运行风险 | 限流分批或并发构建，避开高峰时段 | 复制延迟、锁等待、总耗时 |
 
-## Dimension Index
+## 维度索引
 
-| Dimension | First rule | Detail |
+| 维度 | 首条规则 | 详情 |
 |---|---|---|
-| 1. API design | Define the contract before code; change it additively unless a version boundary is approved. | Section 1 in `references/dimensions.md` |
-| 2. Database and schema change | Expand, backfill, validate, contract; estimate the lock before executing. | Section 2 in `references/dimensions.md` |
-| 3. Data retention and lifecycle | Apply the data inventory at field level, enforce its periods, delete through every copy. | Section 3 in `references/dimensions.md` |
+| 1. API 设计 | 先定义契约再写代码；除非版本边界获批，否则以增量方式变更。 | `references/dimensions.md` 第 1 节 |
+| 2. 数据库与 schema 变更 | 扩展、回填、校验、收缩；执行前估算锁。 | `references/dimensions.md` 第 2 节 |
+| 3. 数据保留与生命周期 | 在字段级应用数据清单，执行其期限，删除穿透每个副本。 | `references/dimensions.md` 第 3 节 |
 
-## Anti-Patterns
+## 反模式
 
-| Anti-pattern | Why it fails | Fix |
+| 反模式 | 为什么失败 | 修复 |
 |---|---|---|
-| Expose the storage model as the API | Callers couple to tables and every migration becomes an API break. | Design the wire contract and map it at the boundary. |
-| Error message as the only signal | Clients string-match text or break when a message changes. | Stable code plus structured details. |
-| Offset pagination on a changing collection | Pages skip and duplicate rows as data shifts underneath. | Cursor pagination with a deterministic sort. |
-| "Clients should retry" without keys | A retried POST duplicates orders or charges. | Idempotency key with a stored response. |
-| 200 with an error body | Gateways, caches, and client libraries treat it as success. | The correct 4xx or 5xx status. |
-| 429 without `Retry-After` | Clients hammer the service and make throttling worse. | 429 with limit headers and `Retry-After`. |
-| 403 for every failure | Clients cannot tell re-authenticate from stop, and debugging slows. | 401 unauthenticated, 403 denied, 404 when existence is hidden. |
-| "We will version later" | Compatibility debt compounds while clients multiply. | Set the versioning policy before the first external consumer. |
-| Silent enum extension | Exhaustive clients crash or mis-handle the new value. | Version it or document the tolerant-client requirement. |
-| A large ALTER inside the deploy pipeline | A lock wait queues every writer behind it. | Explicit migration step, `lock_timeout`, concurrent index builds. |
-| Editing an applied migration | Environments diverge and history no longer explains the schema. | Add a follow-up migration. |
-| One UPDATE as the backfill | Long transaction, bloat, replication lag, and blocked writes. | Batched keyset backfill with a throttle. |
-| A production dump in staging | Personal data spreads to every machine and backup. | Synthetic or irreversibly masked data. |
-| A delete that only sets a flag | Data and personal records live forever under another name. | Purge job, filtered reads, and a retention rule. |
-| "We might need it" retention | Data kept indefinitely with no owner or legal basis. | Class, period, trigger, owner, and a yearly review. |
-| Rate limits as concurrency control | Legitimate retries fail while correctness depends on luck. | Idempotency, reservations, or a queue. |
+| 把存储模型暴露为 API | 调用方耦合到表，每次迁移都变成 API 破坏。 | 设计线上契约并在边界映射它。 |
+| 错误消息作为唯一信号 | 客户端对文本做字符串匹配，消息一变就破坏。 | 稳定错误码加结构化 details。 |
+| 在变化的集合上用 OFFSET 分页 | 数据在底下移动时，页会跳过并重复行。 | 带确定性排序的游标分页。 |
+| 只说“客户端应当重试”而没有键 | 被重试的 POST 会重复订单或扣款。 | 带存储响应的幂等键。 |
+| 用 200 返回错误体 | 网关、缓存与客户端库会把它当作成功。 | 正确的 4xx 或 5xx 状态码。 |
+| 429 不带 `Retry-After` | 客户端猛打服务，让限流更糟。 | 带限制头与 `Retry-After` 的 429。 |
+| 每个失败都返回 403 | 客户端无法区分重新认证还是停止，调试也变慢。 | 401 表示未认证，403 表示被拒绝，存在性隐藏时用 404。 |
+| “以后再版本化” | 客户端增加时兼容性债务会累积。 | 在第一个外部消费方之前设定版本化策略。 |
+| 静默扩展枚举 | 穷举式客户端会崩溃或错误处理新值。 | 版本化它，或记录容忍未知值的客户端要求。 |
+| 在部署流水线中执行大型 ALTER | 锁等待会让每个写入者在它后面排队。 | 显式迁移步骤、`lock_timeout`、并发索引构建。 |
+| 编辑已应用的迁移 | 环境产生分歧，历史不再能解释 schema。 | 新增后续迁移。 |
+| 用一条 UPDATE 完成回填 | 长事务、表膨胀、复制延迟与写入阻塞。 | 带限流的 keyset 分批回填。 |
+| 把生产转储恢复到 staging | 个人数据扩散到每台机器与备份。 | 合成数据或不可逆脱敏的数据。 |
+| 只设置标志的删除 | 数据与个人记录以另一个名字永远存活。 | 清理任务、过滤读取与保留规则。 |
+| “我们以后可能要用”的保留 | 数据被无限期保存，没有负责人或法律依据。 | 类别、期限、触发条件、负责人与年度审查。 |
+| 把速率限制当作并发控制 | 合法重试会失败，而正确性靠运气。 | 幂等、预留或队列。 |
 
-## Review Checklist
+## 审查清单
 
-- [ ] The contract change is in the IDL, and the implementation matches it in a CI check.
-- [ ] Every affected consumer is listed, including clients outside this repository.
-- [ ] Additive or breaking is declared with the compatibility policy; a breaking change has a version boundary, a
-  deprecation window, a migration guide, and a recorded support window.
-- [ ] New errors use a stable code, the correct status family, and structured details.
-- [ ] Collections are bounded, deterministically ordered, and use one pagination style.
-- [ ] Filters and sorts are allowlisted and indexed, or the accepted cost is recorded.
-- [ ] Retryable writes have an idempotency contract and a replay test.
-- [ ] Rate limits and quotas are documented with headers, 429, and `Retry-After`.
-- [ ] Authorization is object-level, tenant IDs come from the token, and the 404/403 policy is consistent.
-- [ ] Long operations and events define status states, delivery guarantees, dedupe, and replay behavior.
-- [ ] The migration follows expand-contract and every phase is independently deployable.
-- [ ] Backfills are batched, idempotent, restartable, and throttled.
-- [ ] Lock impact and duration were measured on production-sized data.
-- [ ] Constraints validate only after the data satisfies them.
-- [ ] Destructive changes have approval, a consumer list, a backup, and a verification query.
-- [ ] Every new field, table, and collection has a class, a retention period, and a deletion path.
-- [ ] Deletion propagates to search, cache, analytics, logs, and backups; soft deletes have a purge job.
-- [ ] Test data is synthetic, and the test schema is built from the migration history.
-- [ ] Docs, examples, changelog, and the error catalogue are updated in the same change.
-- [ ] The change has a rollback or forward-fix path, or a verified restore path for an irreversible drop.
+- [ ] 契约变更在 IDL 中，且实现在 CI 校验中与其一致。
+- [ ] 列出每个受影响的消费方，包括本仓库之外的客户端。
+- [ ] 声明增量式或破坏性，并附兼容性策略；破坏性变更要有版本边界、废弃窗口、迁移指南与记录的支持窗口。
+- [ ] 新错误使用稳定错误码、正确的状态码族与结构化 details。
+- [ ] 集合有界、确定性有序，并使用一种分页风格。
+- [ ] 过滤与排序在允许列表中且有索引，或记录了接受的成本。
+- [ ] 可重试写入有幂等契约与重放测试。
+- [ ] 速率限制与配额有文档，并带响应头、429 与 `Retry-After`。
+- [ ] 授权是对象级的，租户 ID 来自令牌，404/403 策略一致。
+- [ ] 长操作与事件定义了状态、投递保证、去重与重放行为。
+- [ ] 迁移遵循 expand-contract，每个阶段都能独立部署。
+- [ ] 回填分批、幂等、可重启且限流。
+- [ ] 锁影响与持续时间在生产规模数据上测量过。
+- [ ] 约束只在数据满足后才验证。
+- [ ] 销毁性变更有批准、消费方清单、备份与验证查询。
+- [ ] 每个新字段、新表与新集合都有类别、保留期与删除路径。
+- [ ] 删除传播到搜索、缓存、分析、日志与备份；软删除有清理任务。
+- [ ] 测试数据是合成的，测试 schema 由迁移历史构建。
+- [ ] 文档、示例、变更日志与错误码目录在同一次变更中更新。
+- [ ] 变更有回滚或前向修复路径，或对不可逆删除有经过验证的恢复路径。
 
-## Examples
+## 示例
 
 <example>
-Add an optional `tracking_number` to the order response: add it to the IDL, release the server before the clients,
-and run the previous client version against the new schema. No version boundary is needed because absence remains a
-valid state. Verify both directions: old client without the field, new client with it.
+给订单响应新增可选 `tracking_number`：把它加入 IDL，先发布服务端再发布客户端，并用前一客户端版本针对新 schema
+运行。不需要版本边界，因为缺失仍是有效状态。双向验证：不带该字段的旧客户端，以及带该字段的新客户端。
 </example>
 
 <example>
-Rename `customer_email` to `email`: add `email` beside the old field, populate both, switch readers, publish a
-deprecation with a sunset date, and measure per-caller usage. Drop the old field only after usage reaches zero, with
-the removal announced one release ahead.
+把 `customer_email` 重命名为 `email`：在旧字段旁新增 `email`，同时填充两者，切换读取方，发布带停用日期的废弃
+通知，并按调用方统计使用量。只有使用量降到零后才删除旧字段，并提前一个版本公告移除。
 </example>
 
 <example>
-Add a required `tenant_id` to a large orders table: add it nullable, deploy dual-write code, backfill in keyset
-batches with `lock_timeout` set, validate a `NOT VALID` constraint, then enforce NOT NULL. Each step is a separate
-deploy with its own rollback, and the backfill duration is measured on production-sized data first.
+给大型订单表新增必填 `tenant_id`：先以可空形式新增，部署双写代码，在设置 `lock_timeout` 的情况下按 keyset 分
+批回填，验证 `NOT VALID` 约束，然后强制 NOT NULL。每一步都是独立部署并带自己的回滚，回填时长先在生产规模数据
+上测量。
 </example>
 
 <example>
-Handle an erasure request: delete or anonymize rows in the primary store, remove documents from the search index,
-invalidate cache keys, queue warehouse and log purge jobs, and record the backup expiry date that ends the process.
-Verify per store, not only in the database.
+处理擦除请求：在主存储中删除或匿名化行，从搜索索引移除文档，使缓存键失效，排队数据仓库与日志清理任务，并记录
+结束该流程的备份到期日期。按存储分别验证，而不只在数据库中验证。
 </example>
 
 <example>
-Change the `status` query parameter to a required filter in v2: publish `/v2/orders`, keep `/v1` served for the
-recorded support window, publish the migration guide, and return `Deprecation` and `Sunset` headers on v1. Remove v1
-only when every caller has migrated or the sunset date arrives. Both versions write the same records; only the
-contract differs.
+在 v2 中把 `status` 查询参数改为必填过滤条件：发布 `/v2/orders`，在记录的支持窗口内继续提供 `/v1`，发布迁移
+指南，并在 v1 上返回 `Deprecation` 与 `Sunset` 头。只有当每个调用方都已迁移或停用日期到来时才移除 v1。两个
+版本写入相同记录；只有契约不同。
 </example>
 
-## References
+## 参考文档
 
-Read [references/dimensions.md](references/dimensions.md) for the rules, edge cases, and examples behind the three
-dimensions; read it before designing a new contract, planning a schema change, or reviewing a retention and deletion
-design.
+阅读 [references/dimensions.md](references/dimensions.md)，了解三个维度背后的规则、边界情况与示例；在设计新契
+约、规划 schema 变更，或审查保留与删除设计之前阅读它。
 
-Read [references/checklists.md](references/checklists.md) for the API review list, error model, decision tables,
-expand-contract playbook, destructive-change approval, retention worksheet, and test-data rules; read it during review
-and rollout.
+阅读 [references/checklists.md](references/checklists.md)，了解 API 审查清单、错误模型、决策表、expand-contract
+操作手册、销毁性变更审批、保留工作表与测试数据规则；在审查与发布期间阅读它。

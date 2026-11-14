@@ -1,248 +1,188 @@
-# API and Data Dimensions
+# 接口与数据维度
 
-Use this file with `SKILL.md`. Each section gives the rules, edge cases, and failure modes for one dimension. When a
-project already has a contract, schema, or compatibility policy, read it first and apply the higher-precedence rule;
-this file supplies the default and the reasoning. Section numbers match the dimension index in `SKILL.md`. Names of
-resources, fields, tables, columns, indexes, and enum members come from the naming-conventions role; this file decides
-what must exist, how it behaves, and how it changes.
+把本文件与 `SKILL.md` 一起使用。每个章节给出一个维度的规则、边界情况与失败模式。当项目已有契约、schema 或兼容
+性策略时，先阅读它并应用更高优先级的规则；本文件提供默认值与理由。章节编号与 `SKILL.md` 中的维度索引对应。资
+源、字段、表、列、索引与枚举成员的名字来自 `naming-conventions`；本文件决定必须存在什么、它如何表现，以及它如何变化。
 
-## 1. API Design
+## 1. API 设计
 
-The contract is the part of the service that code outside the repository can see, so it has the longest lifetime and
-the slowest change cycle. Design it for the callers still on the previous version, not for the client being written
-today.
+契约是服务中仓库之外的代码能看到的部分，因此它生命周期最长、变更周期最慢。为仍停留在前一版本的调用方设计它，而
+不是为今天正在编写的客户端设计。
 
-- **Define the contract before the implementation.** Commit the machine-readable definition (OpenAPI, protobuf,
-  GraphQL SDL, JSON Schema, or the equivalent IDL) with the service, and review its diff as the API change. Generate
-  or validate server implementations and client stubs from it in CI; a schema generated from annotations after the
-  fact is a description, not a contract. A hand edit that bypasses the IDL is drift, fixed in the same change rather
-  than in a later cleanup. When a behavior cannot be expressed in the IDL (semantic constraints, conditional
-  presence), record it in prose in the contract document and test it explicitly.
-- **Model operations, not storage.** Path shape, resource names, HTTP method choice, and path-parameter casing
-  follow the naming-conventions role; this dimension decides the request and response semantics. PUT replaces the
-  whole representation and is idempotent; PATCH states its merge semantics (JSON Merge Patch or JSON Patch); batch
-  endpoints define a per-item partial-failure result. Never expose an ORM entity, an internal join table, or a
-  storage nullability quirk directly. Member and collection endpoints stay symmetric: the same operation returns the
-  same shape whether the item is fetched alone or inside a list.
-- **Make the error response a stable public type.** Every error carries a machine-readable `code`, a human-readable
-  `message` safe to show, structured `details`, and a request identifier. Codes are unique and permanent: adding a
-  code is compatible, changing its meaning or deleting it is not. Messages are for operators and end users, may
-  change, and are never parsed by clients; the HTTP status carries the broad family. Validation details name the
-  field path and the violated rule. Never put a stack trace, SQL fragment, secret, or personal data in an error.
-  Return the same envelope for gateway and validation failures too, and expose the request identifier as a response
-  header so a support ticket can be traced without the client body.
-- **Fix collection behavior once and apply it everywhere.** Use cursor pagination for large or changing collections
-  and page/offset only for small, stable ones, never both in one operation; enforce a maximum page size server-side.
-  Document the default sort, make it deterministic, and break ties with a unique key so pages neither skip nor
-  duplicate. Return the next cursor or link; make total counts optional because they are expensive; treat a full
-  export as a separate job rather than a page. Allowlist filter fields, operators, and value formats, apply one
-  documented policy to unknown filters, and index every field offered for filtering or sorting. Keep the default page
-  size and default sort fixed within a version; changing either is a behavioral break even when the schema is
-  unchanged.
-- **Build retry safety and load control into the contract.** A POST or action endpoint that a client may retry
-  accepts an `Idempotency-Key` scoped to the principal, and the service keeps the request fingerprint and stored
-  response for a documented TTL: the same key and body replay the stored response, and the same key with a different
-  body is a conflict. PUT and DELETE are idempotent by definition. Advertise rate limits with response headers,
-  return 429 with `Retry-After`, separate burst limits from sustained quotas, budget per tenant and per principal,
-  and expect clients to back off with jitter. A quota is never a correctness mechanism; use idempotency,
-  reservations, or a queue instead. Scope the key to the endpoint and the principal, reject a reused key before the
-  handler runs, and document the TTL in the contract rather than in code.
-- **Make authentication and authorization boundaries explicit per operation.** Authenticate at the edge and
-  authorize at the resource: every operation names the principal, tenant, and object it checks, and the tenant and
-  owner come from the verified token, never from a request body or query parameter. Scope tokens narrowly, keep
-  internal operations off the public gateway, return 401 for missing or invalid credentials, 403 for an
-  authenticated caller that is denied, and 404 when resource existence is itself sensitive. An authorization change
-  is a contract change and follows the same versioning and deprecation path. Internal and admin endpoints pass the
-  same policy check as public ones; a debug bypass is a public endpoint with a different name.
-- **Decide synchronous versus asynchronous delivery explicitly.** A synchronous call returns the final state and is
-  correct only when the work fits the caller's timeout. A long operation returns 202 with a status resource that has
-  documented pending, success, and failure states, plus a cancel or retry path. Events and webhooks carry a stable
-  type, schema version, event ID, timestamp, and causation ID; delivery is at least once, so consumers dedupe by
-  event ID, tolerate out-of-order delivery, and verify a signature. Publish the retry schedule, dead-letter path, and
-  replay procedure. The webhook receiver is an API in its own right: it acknowledges fast, processes idempotently,
-  and exposes its failure and retry behavior; the event schema promises additive fields only and is versioned when a
-  field disappears.
-- **Plan compatibility, deprecation, and versioning together.** Additive changes (optional fields, new operations,
-  new error codes) are compatible; removing or renaming a field, making an optional field required, narrowing a
-  type, or extending a closed enum is breaking unless proven otherwise. Deprecate with a replacement, a
-  `Deprecation` header, a `Sunset` date, a migration guide, and measured usage, then remove only when usage is zero
-  or the announced date has passed. Version at the boundary that changes: a major path segment (`/v1`) for a public
-  API, additive evolution for a coordinated internal IDL, and a media type or header only when every hop preserves
-  it. Never version individual fields, and never keep two live names for one concept indefinitely. Record a support
-  window in the contract (current major plus one previous major, or a fixed number of months) and measure field usage
-  per caller, because one small consumer can block a removal indefinitely.
+- **先定义契约再实现。** 把机器可读定义（OpenAPI、protobuf、GraphQL SDL、JSON Schema 或等价 IDL）与服务一起
+  提交，并把其 diff 作为 API 变更来审查。在 CI 中由它生成或校验服务端实现与客户端 stub；事后从注解生成的
+  schema 是描述，不是契约。绕过 IDL 的手工编辑是漂移，应在同一次变更中修复，而不是留到以后清理。当某种行为无
+  法在 IDL 中表达（语义约束、条件存在）时，把它以文字记录在契约文档中，并显式测试它。
+- **建模操作，而不是存储。** 路径形状、资源名、HTTP 方法选择与路径参数大小写遵循 `naming-conventions`；本维度决定请求
+  与响应语义。PUT 替换整个表示且幂等；PATCH 说明其合并语义（JSON Merge Patch 或 JSON Patch）；批量端点定义逐
+  项的部分失败结果。绝不直接暴露 ORM 实体、内部连接表或存储层可空性怪癖。成员端点与集合端点保持对称：同一操作
+  在单独获取条目与在列表中获取时返回相同形状。
+- **让错误响应成为稳定的公开类型。** 每个错误都携带机器可读的 `code`、可安全展示的面向人的 `message`、结构化
+  `details` 以及请求标识符。错误码唯一且永久：新增错误码是兼容的，改变其含义或删除它则不是。消息面向运维者与
+  最终用户，可以变化，且绝不被客户端解析；HTTP 状态码承载大类。校验 details 指出字段路径与违反的规则。绝不把
+  堆栈跟踪、SQL 片段、机密或个人数据放进错误。网关与校验失败也返回同一个信封，并把请求标识符暴露为响应头，使
+  支持工单无需客户端响应体也能追踪。
+- **集合行为只定义一次，并在所有地方应用它。** 大型或变化的集合用游标分页，只有小型稳定集合才用 page/offset，
+  且同一操作绝不同时使用两者；在服务端强制最大页大小。记录默认排序，使其确定，并用唯一键打破平局，让页既不跳过
+  也不重复。返回下一个游标或链接；把总数设为可选，因为它代价高昂；把完整导出当作独立任务而不是一页。把过滤字
+  段、操作符与值格式加入允许列表，对未知过滤条件应用一套有文档的策略，并为每个提供过滤或排序的字段建索引。在一
+  个版本内保持默认页大小与默认排序固定；即使 schema 未变，改变任一项也是行为破坏。
+- **把重试安全与负载控制构建进契约。** 客户端可能重试的 POST 或动作端点接受作用于主体的 `Idempotency-Key`，服
+  务按有文档的 TTL 保存请求指纹与存储的响应：相同键与相同请求体重放存储的响应，相同键配不同请求体则是冲突。
+  PUT 与 DELETE 按定义幂等。用响应头公布速率限制，返回带 `Retry-After` 的 429，把突发限制与持续配额分开，按
+  租户与按主体做预算，并预期客户端带抖动退避。配额绝不是正确性机制；改用幂等、预留或队列。把键的作用域限定到端
+  点与主体，在处理程序运行之前拒绝被复用的键，并在契约而非代码中记录 TTL。
+- **为每个操作明确认证与授权边界。** 在边缘认证、在资源处授权：每个操作都说明它检查的主体、租户与对象，租户与
+  所有者来自已验证的令牌，绝不来自请求体或查询参数。令牌作用域要窄，让内部操作不经过公共网关，凭据缺失或无效返
+  回 401，已认证但被拒绝的调用方返回 403，资源存在性本身敏感时返回 404。授权变更就是契约变更，遵循相同的版本化
+  与废弃路径。内部端点与管理端点要通过与公共端点相同的策略检查；调试绕过就是一个换了名字的公共端点。
+- **显式决定同步还是异步投递。** 同步调用返回最终状态，只有当工作能装进调用方超时时间时才正确。长操作返回 202
+  与状态资源，该资源记录待处理、成功与失败状态，并带取消或重试路径。事件与 webhook 携带稳定类型、schema 版本、
+  事件 ID、时间戳与因果关系 ID；投递是至少一次，因此消费方按事件 ID 去重、容忍乱序投递并验证签名。公布重试计
+  划、死信路径与重放流程。webhook 接收方本身就是一个 API：它快速确认、幂等处理，并暴露其失败与重试行为；事件
+  schema 只承诺增量字段，并在字段消失时版本化。
+- **把兼容性、废弃与版本化放在一起规划。** 增量变更（可选字段、新操作、新错误码）是兼容的；删除或重命名字段、把
+  可选字段变为必填、收窄类型或扩展封闭枚举，除非被证明不是，否则都是破坏性的。废弃时提供替代方案、`Deprecation`
+  头、`Sunset` 日期、迁移指南与已测量的使用量，然后只在用量为零或公告日期已过时才移除。在发生变化的边界处版本化：公
+  共 API 用主版本路径段（`/v1`），协调发布的内部 IDL 用增量演进，只有当每一跳都保留时才用媒体类型或头。绝不
+  对单个字段版本化，也绝不为一个概念长期保留两个存活名称。在契约中记录支持窗口（当前主版本加前一主版本，或固定
+  月数），并按调用方测量字段用量，因为一个小消费方就可能无限期阻止移除。
 
-| Good | Bad | Why |
+| 正例 | 反例 | 原因 |
 |---|---|---|
-| `GET /v1/orders?status=paid&page_size=50` | `POST /v1/orders/search` with a filter body | A read stays a safe, retryable GET; wrapping it in POST hides semantics. |
-| `{"code":"resource.not_found","details":{"resource":"order"}}` | `{"error":"Order 42 does not exist"}` | The code is stable and machine-readable; the message can change. |
-| `202 Accepted` with `Location: /v1/jobs/{jobId}` | A 90-second request that clients time out and retry | Long work needs a status resource, not a longer timeout. |
-| An `Idempotency-Key` with a stored response | "Clients should not retry" in a README | Gateways and users retry even when the client code does not. |
-| Cursor plus a unique tiebreaker in the sort | `OFFSET 20000 LIMIT 20` on an active table | Offset pages drift when rows are inserted or deleted. |
-| 401 for a missing token, 403 for a denied caller | 403 for every failure | Clients cannot tell whether to re-authenticate or stop. |
-| Add `email_hash` beside `email`, deprecate the old field | Replace `email` with `email_hash` in place | Callers on the previous release break at deploy time. |
+| `GET /v1/orders?status=paid&page_size=50` | 带过滤体的 `POST /v1/orders/search` | 读取保持安全、可重试的 GET；把它包进 POST 隐藏了语义。 |
+| `{"code":"resource.not_found","details":{"resource":"order"}}` | `{"error":"Order 42 does not exist"}` | 错误码稳定且机器可读；消息可以变化。 |
+| `202 Accepted` 带 `Location: /v1/jobs/{jobId}` | 一个 90 秒的请求，客户端会超时并重试 | 长时间工作需要状态资源，而不是更长的超时。 |
+| 带存储响应的 `Idempotency-Key` | README 中的“客户端不应重试” | 即使客户端代码不重试，网关与用户也会重试。 |
+| 排序中的游标加唯一决胜键 | 在活跃表上用 `OFFSET 20000 LIMIT 20` | 插入或删除行时 OFFSET 页会漂移。 |
+| 缺少令牌返回 401，被拒绝的调用方返回 403 | 每个失败都返回 403 | 客户端无法判断该重新认证还是停止。 |
+| 在 `email` 旁新增 `email_hash`，废弃旧字段 | 就地用 `email_hash` 替换 `email` | 停留在前一发布的调用方会在部署时破坏。 |
 
-| Versioning strategy | Use when | Avoid when |
+| 版本化策略 | 适用情形 | 避免情形 |
 |---|---|---|
-| Major path segment (`/v1`) | A public or partner API needs a clean breaking boundary and routing is simple | Internal calls where every client regenerates from one IDL in lockstep |
-| Media type or `Accept` header | One URL serves different representations and every hop preserves the header | Shared caches, gateways, or mobile stacks that strip or normalize it |
-| Additive evolution only | GraphQL, protobuf, or internal services with tolerant readers and coordinated releases | A removal, a rename, or a required input, which no additive rule makes safe |
-| Feature flag or shadow endpoint | A migration window where old and new behavior run side by side | A substitute for a stable public version after the window closes |
+| 主版本路径段（`/v1`） | 公共或合作伙伴 API 需要干净的破坏边界且路由简单 | 每个客户端都按同一 IDL 同步重新生成的内部调用 |
+| 媒体类型或 `Accept` 头 | 一个 URL 提供不同表示，且每一跳都保留该头 | 会剥离或规范化它的共享缓存、网关或移动端技术栈 |
+| 仅增量演进 | GraphQL、protobuf 或带容忍式读取方且发布协调的内部服务 | 移除、重命名或必填输入，任何增量规则都无法使其安全 |
+| 功能开关或影子端点 | 新旧行为并行的迁移窗口 | 窗口关闭后作为稳定公共版本的替代品 |
 
-## 2. Database and Schema Change
+## 2. 数据库与 schema 变更
 
-Schema changes are harder than code changes because old and new data coexist during rollout and every step touches
-the live database. Assume zero downtime and a code-reversible path for every step up to the read switch; treat the
-final drop as a destructive change with its own backup and approval gate, and treat the absence of either as a design
-defect rather than a scheduling inconvenience.
+schema 变更比代码变更更难，因为发布期间新旧数据共存，且每一步都触碰在线数据库。假设零停机，并假设到读取切换为
+止的每一步都有可由代码回滚的路径；把最后的删除当作带自身备份与审批门禁的销毁性变更，并把缺少任一者视为设计缺
+陷，而不是排期上的不便。
 
-- **Keep one ordered, immutable migration history.** Migrations live in the repository, are applied in order by the
-  same tool in every environment, and are never edited after they apply anywhere; a correction is a new migration.
-  The tool takes a lock so two deploys cannot race, test databases are built by running the whole history, and manual
-  production DDL is a break-glass action followed by a migration that records it. Do not let an ORM autogenerate
-  schema against the live database as the source of truth. Forward-only is the default; when the tool offers down
-  migrations, still prefer a forward fix, because down scripts are rarely exercised against real data.
-- **Use expand-contract for every change that old code can see.** The phases are: add the new structure without
-  removing anything; deploy code that writes both forms and reads the old one; backfill existing rows; verify that
-  both forms agree; switch reads to the new form; drop the old structure after a deprecation window. Each phase up to
-  the read switch is a separate deploy and reversible by redeploying the previous code; the final drop is
-  irreversible and waits for a verified backup or point-in-time-recovery point and the approval gate. An inverse
-  migration is a last resort, not the plan. Keep the two forms consistent during dual-write and reconcile them before
-  the switch; a count of mismatched rows is part of the exit criteria for the expansion phase.
-- **Backfill in batches that are restartable and observable.** Select keyset ranges, not OFFSET windows; commit per
-  batch; make the update idempotent (`WHERE new_column IS NULL`) so a rerun is safe; throttle by rows per second;
-  record the last processed key; monitor replication lag, lock waits, CPU, and disk. Estimate the duration on
-  production-sized data and define a stop condition and a dry-run count before starting. One UPDATE over a large
-  table holds locks, bloats the table, and lags replicas for as long as it runs. A backfill is a production data
-  write and needs its own approval, throttle, and kill switch, run in a quiet window with the owner watching.
-- **Estimate the lock before executing DDL.** Name the lock the engine takes and what it blocks: on PostgreSQL,
-  adding a column with a volatile default rewrites the table; a column type change that is not binary-coercible
-  rewrites and blocks writes; a plain index build blocks writes while a concurrent build does not; and
-  `VALIDATE CONSTRAINT` takes SHARE UPDATE EXCLUSIVE, which blocks other DDL and VACUUM but not reads or writes.
-  Set `lock_timeout` and `statement_timeout`, retry, run the migration as its own deployment step, and watch the
-  database while it runs. A migration that queues
-  behind a long transaction and then blocks every writer is an outage, not a deploy detail. Run migrations as an
-  explicit deployment step, never on application startup: a rolling deploy would multiply the lock attempts by the
-  replica count.
-- **Choose indexes and constraints from queries and invariants.** Index every foreign key and every hot filter and
-  join; order composite columns by equality first and range second; use partial indexes for status and soft-delete
-  predicates; remove duplicate and unused indexes because each one costs writes; build large indexes concurrently.
-  Add constraints in the validating-off form, then validate in a separate step, and only after the data satisfies
-  them. Enforce at the database the invariants the application cannot guarantee, including uniqueness under
-  concurrency. A unique constraint is the only reliable duplicate check under concurrent writers; an application
-  check-then-insert races and loses.
-- **Time constraints after the data is clean.** Check for violating and orphan rows before adding NOT NULL, UNIQUE,
-  FOREIGN KEY, or CHECK; add the constraint unvalidated, deploy code that writes valid rows, validate, then enforce.
-  A constraint added before the backfill turns old data into a production failure as soon as old code writes, and a
-  unique constraint added to dirty data leaves a half-applied migration. Deferrable constraints serve multi-statement
-  transactions, not unordered writes. Count the violating rows before choosing the fix; sometimes the answer is data
-  cleanup rather than a schema change.
-- **Treat destructive changes as production changes with an approval gate.** Dropping or renaming a column or table,
-  truncating, narrowing a type, and mass deletion can lose data that no code revert restores. Require explicit
-  approval for each operation (a migration is a database write under the global constraints), a consumer list, a
-  backup or point-in-time-recovery check, a quiet window, a dry run with affected row counts, and a post-change
-  verification query. Prefer deprecation and a later drop over a rename in place. Write down the dropped object's
-  definition and affected row counts in the approved request so a future restore attempt knows what to reconstruct.
-- **Review and test migrations like code, including the upgrade path.** A migration review covers the file, the
-  forward fix, the backfill, the estimated duration and lock, the verification query, and the data that will
-  disappear. CI runs the full history on an empty database and upgrades a snapshot of the previous release to the
-  new head; tests never start from an ORM-generated schema. Rehearse destructive or lock-heavy migrations on a
-  production-sized copy with masked data, never on shared staging data that another team is using. CI fails when the
-  migration history and the deployed schema snapshot diverge, so drift is caught before it reaches an environment.
+- **保持一条有序、不可变的迁移历史。** 迁移存放在仓库中，在每个环境中由同一工具按顺序应用，一旦在任何地方应用
+  过就绝不编辑；更正是一条新迁移。工具会加锁，使两次部署不会竞争；测试数据库通过运行完整历史来构建；手工生产
+  DDL 是紧急破例操作，之后要补一条记录它的迁移。不要让 ORM 针对在线数据库自动生成 schema 并把它当作真源。默认
+  只向前；当工具提供向下迁移时，仍优先前向修复，因为 down 脚本很少针对真实数据演练。
+- **对旧代码能看到的每个变更使用 expand-contract。** 阶段是：新增结构而不移除任何东西；部署同时写入两种形式并读
+  取旧形式的代码；回填既有行；验证两种形式一致；把读取切换到新形式；在废弃窗口之后删除旧结构。到读取切换为止的
+  每个阶段都是独立部署，并可通过重新部署前一代码来回滚；最后的删除不可逆，要等待经过验证的备份或时间点恢复点以
+  及审批门禁。反向迁移是最后手段，不是计划。双写期间保持两种形式一致，并在切换前对账；不匹配行数是扩展阶段退出
+  标准的一部分。
+- **以可重启、可观测的批次回填。** 选择 keyset 区间，而不是 OFFSET 窗口；按批提交；使更新幂等
+  （`WHERE new_column IS NULL`），让重跑安全；按每秒行数限流；记录最后处理的键；监控复制延迟、锁等待、CPU 与
+  磁盘。在生产规模数据上估算时长，并在开始前定义停止条件与试运行计数。对大型表执行一条 UPDATE 会在其运行期间
+  持续持锁、使表膨胀并拖慢副本。回填是生产数据写入，需要自己的批准、限流与急停开关，在低峰时段由负责人观察运
+  行。
+- **执行 DDL 之前估算锁。** 说明引擎会取什么锁以及它阻塞什么：在 PostgreSQL 上，新增带易变默认值的列会重写表；
+  不是二进制兼容的列类型变更会重写表并阻塞写入；普通索引构建阻塞写入，而并发构建不阻塞；`VALIDATE CONSTRAINT`
+  取 SHARE UPDATE EXCLUSIVE，阻塞其他 DDL 与 VACUUM，但不阻塞读或写。设置 `lock_timeout` 与
+  `statement_timeout`，重试，把迁移作为独立部署步骤运行，并在运行期间观察数据库。排在长事务后面、随后阻塞每个
+  写入者的迁移是中断，不是部署细节。把迁移作为显式部署步骤运行，绝不在应用启动时运行：滚动部署会把锁尝试次数乘
+  以副本数。
+- **根据查询与不变量选择索引和约束。** 为每个外键以及每个热过滤与连接建索引；复合列先按等值、再按范围排序；对状
+  态与软删除谓词使用部分索引；移除重复与未使用的索引，因为每个索引都让写入付出代价；并发构建大型索引。以关闭验
+  证的形式新增约束，然后在独立步骤中验证，并且只在数据满足它们之后。在数据库层强制应用无法保证的不变量，包括并
+  发下的唯一性。唯一约束是并发写入者下唯一可靠的重复检查；应用层的先查后插会竞争并失败。
+- **在数据干净之后再安排约束。** 在新增 NOT NULL、UNIQUE、FOREIGN KEY 或 CHECK 之前，检查违规行与孤儿行；以
+  未验证形式新增约束，部署写入有效行的代码，验证，然后强制。在回填之前新增约束，会让旧数据在旧代码写入时立即变
+  成生产故障；向脏数据新增唯一约束会留下半途应用的迁移。可延迟约束服务于多语句事务，而不是无序写入。在选择修复
+  方案之前先统计违规行；有时答案是数据清理，而不是 schema 变更。
+- **把销毁性变更当作带审批门禁的生产变更。** 删除或重命名列或表、截断、收窄类型与批量删除，都可能丢失任何代码
+  回滚都无法恢复的数据。每个操作都要求明确批准（在用户全局约束下，迁移是数据库写入）、消费方清单、备份或时间点
+  恢复检查、低峰时段、带受影响行数的试运行，以及变更后验证查询。优先选择废弃与稍后删除，而不是就地重命名。在获
+  批请求中写下被删除对象的定义与受影响行数，使未来的恢复尝试知道要重建什么。
+- **像审查代码一样审查与测试迁移，包括升级路径。** 迁移审查覆盖文件、前向修复、回填、估算时长与锁、验证查询，
+  以及将会消失的数据。CI 在空数据库上运行完整历史，并把前一发布的快照升级到新 head；测试绝不从 ORM 生成的
+  schema 开始。在生产规模、已脱敏的副本上演练销毁性或重锁迁移，绝不在其他团队正在使用的共享 staging 数据上
+  演练。当迁移历史与已部署 schema 快照分歧时 CI 失败，让漂移在到达环境之前被捕获。
 
-| Good | Bad | Why |
+| 正例 | 反例 | 原因 |
 |---|---|---|
-| Add nullable `tenant_id`, dual-write, backfill, then NOT NULL | Add `tenant_id NOT NULL` in one migration | The single step fails on existing rows and locks or rewrites the table. |
-| `CREATE INDEX CONCURRENTLY idx_orders_tenant_id ...` | A plain `CREATE INDEX` in a transaction on a hot table | The plain build blocks writes for the whole build. |
-| `ADD CONSTRAINT ... NOT VALID`, then `VALIDATE CONSTRAINT` | One `ADD CONSTRAINT` that validates every row while holding ACCESS EXCLUSIVE | `VALIDATE CONSTRAINT` takes SHARE UPDATE EXCLUSIVE on PostgreSQL: other DDL and VACUUM wait, reads and writes do not. |
-| Batched backfill with a saved cursor and sleeps between batches | One `UPDATE` over the whole table | The single update holds locks, bloats, and lags replicas for minutes. |
-| New column plus dual-write, old column dropped later | `ALTER TABLE ... RENAME COLUMN` | A rename breaks every reader on the old release during rollout. |
-| A follow-up migration after a merged mistake | Editing an applied migration | Applied files are immutable; editing leaves environments with different schemas. |
-| Restore or forward fix plus a verification query | "Revert the deploy" after a drop | A code revert cannot restore dropped data. |
+| 新增可空 `tenant_id`，双写，回填，然后 NOT NULL | 在一次迁移中新增 `tenant_id NOT NULL` | 单步会在既有行上失败，并锁定或重写表。 |
+| `CREATE INDEX CONCURRENTLY idx_orders_tenant_id ...` | 在热表的事务中执行普通 `CREATE INDEX` | 普通构建在整个构建期间阻塞写入。 |
+| `ADD CONSTRAINT ... NOT VALID`，然后 `VALIDATE CONSTRAINT` | 一条 `ADD CONSTRAINT` 在持有 ACCESS EXCLUSIVE 时验证每一行 | `VALIDATE CONSTRAINT` 在 PostgreSQL 上取 SHARE UPDATE EXCLUSIVE：其他 DDL 与 VACUUM 等待，读写不等待。 |
+| 带回填游标与批次间休眠的分批回填 | 对整个表执行一条 `UPDATE` | 单条更新持锁、使表膨胀，并让副本延迟数分钟。 |
+| 新列加双写，稍后删除旧列 | `ALTER TABLE ... RENAME COLUMN` | 重命名会在发布期间破坏停留在旧版本的每个读取方。 |
+| 合并错误后的后续迁移 | 编辑已应用的迁移 | 已应用文件不可变；编辑会让环境拥有不同 schema。 |
+| 恢复或前向修复加验证查询 | 删除后“回滚部署” | 代码回滚无法恢复已删除的数据。 |
 
-| Operation | Lock and cost | Risk | Mitigation |
+| 操作 | 锁与成本 | 风险 | 缓解 |
 |---|---|---|---|
-| Add nullable column with no default | Brief metadata lock | Low, but waits behind long transactions | Set `lock_timeout`, run as its own step |
-| Add column with volatile default or change type | Table rewrite, writes blocked | High on large or busy tables | Add nullable, backfill, swap in a new column |
-| Plain `CREATE INDEX` | Blocks writes for the build | High on hot tables | Build concurrently, outside a transaction |
-| `ADD CONSTRAINT ... NOT VALID` | Brief lock, no row scan | Low | Follow with a separate validation step |
-| `VALIDATE CONSTRAINT` (PostgreSQL) | SHARE UPDATE EXCLUSIVE; blocks DDL and VACUUM, not reads or writes | Low to medium, in proportion to scan time on large tables | Off-peak, `lock_timeout`, monitor waits |
-| Batched `UPDATE` backfill | Row locks plus replication load | Medium, grows with batch size | Small batches, sleep, watch lag |
-| `DROP COLUMN` or `DROP TABLE` | Brief metadata lock | Irreversible data loss | Stop readers first, back up, get approval |
-| `TRUNCATE` | Access-exclusive lock | Destructive and fast | Approval, count first, never in a shared migration |
+| 新增无默认值的可空列 | 短暂元数据锁 | 低，但会排在长事务后面等待 | 设置 `lock_timeout`，作为独立步骤运行 |
+| 新增带易变默认值的列或更改类型 | 重写表，写入被阻塞 | 在大型或繁忙表上风险高 | 先加可空列、回填，再换入新列 |
+| 普通 `CREATE INDEX` | 在整个构建期间阻塞写入 | 在热表上风险高 | 并发构建，且在事务之外 |
+| `ADD CONSTRAINT ... NOT VALID` | 短暂锁，不扫描行 | 低 | 随后进行独立的验证步骤 |
+| `VALIDATE CONSTRAINT`（PostgreSQL） | SHARE UPDATE EXCLUSIVE；阻塞 DDL 与 VACUUM，不阻塞读或写 | 低到中，与大型表扫描时间成正比 | 低峰时段、`lock_timeout`、监控等待 |
+| 分批 `UPDATE` 回填 | 行锁加复制负载 | 中，随批次大小增长 | 小批次、休眠、观察延迟 |
+| `DROP COLUMN` 或 `DROP TABLE` | 短暂元数据锁 | 不可逆数据丢失 | 先停止读取，备份，取得批准 |
+| `TRUNCATE` | ACCESS EXCLUSIVE 锁 | 销毁性且快速 | 批准、先计数、绝不在共享迁移中做 |
 
-## 3. Data Retention and Lifecycle
+## 3. 数据保留与生命周期
 
-A dataset outlives the request that created it, and every copy outlives the deletion of the record it came from.
-The security-compliance role sets the class and the retention period in its data inventory; this section covers how
-the schema and the API enforce and evidence them, not how the policy is decided.
+数据集会比创建它的请求活得更久，而每个副本又比其来源记录的删除活得更久。`security-compliance-conventions` 在其数据清单中设
+定类别与保留期；本节覆盖 schema 与 API 如何执行并证明它们，而不是策略如何被决定。
 
-- **Apply the data inventory at the field level.** Map each inventory class (public, internal, confidential, or
-  restricted) onto the tables, collections, and fields that carry it, and record the mapping in schema
-  metadata or the data dictionary because a column name does not classify its content. A derived field inherits the
-  most restrictive class of its inputs, and an unclassified field is treated as restricted until the inventory
-  covers it. The mapping drives access control, encryption, redaction at log time, and enforcement of the
-  inventory's retention period.
-- **Enforce the retention period the inventory sets.** For each dataset record the period it inherits, the trigger
-  that starts the clock (created_at, account closure, contract end, last activity), the disposition (delete,
-  anonymize, archive), and the owner. Never default to forever and never invent a period: legal minimums, maximums,
-  exceptions, and holds belong to the security and legal roles, and this skill records how the schedule is
-  implemented, reviewed yearly, and tested.
-- **Treat deletion as a path through every copy, not one DELETE.** A deletion or erasure request starts in the
-  primary store and propagates to the search index, cache, analytics or warehouse tables, event streams, logs, and
-  exports; each destination has a mechanism and a measured lag. Run deletion jobs idempotently with retries and an
-  audit record, verify with per-store counts or queries, and report the backup expiry date as the end of the process.
-  A delete endpoint that clears one table while three copies remain is a compliance defect, not a partial success.
-  Model deletion as an asynchronous pipeline: the API accepts the request, a job performs it, and a receipt reports
-  per-store completion and any residual copies.
-- **Choose soft delete or hard delete explicitly and implement its obligations.** Soft delete (`deleted_at`) suits
-  recovery windows and audit needs, but it is retention, not deletion: every read filters it or reads through a view,
-  unique constraints use partial indexes, and a purge job exists with a date. Hard delete suits erasure requests and
-  short-lived data with no audit requirement. An erasure that fans out across copies returns 202 with a status
-  resource and a per-store receipt; return 204 only for a single-store synchronous hard delete with no restore path.
-  Never describe a soft delete as erased. A soft-deleted row still counts for storage, export, backup cost, and
-  access requests, so an erasure that leaves it in place is not complete.
-- **Count backups as copies with their own retention and restore behavior.** Backups, snapshots, and point-in-time
-  recovery contain deleted rows until they expire, so their retention bounds the true deletion window and is
-  documented. An erasure process states the backup expiry date instead of claiming immediate removal; a restore must
-  not resurrect data the retention schedule already purged, so the restore runbook includes a post-restore purge.
-  Encryption at rest and the restore drill belong to the release and operations role. Backup retention longer than
-  the inventory's period is a security decision with a recorded justification and a compensating control, never an
-  unexamined default.
-- **Control logs, analytics, and exports as data copies.** Logs are a copy written at high volume: redact personal
-  data and secrets at write time, enforce the inventory's log retention, and never log full request or response
-  bodies by default. Analytics and warehouse tables carry subject identifiers and need the same deletion
-  propagation; event streams have their own retention; exports are copies with an expiry, a signed URL, an access
-  log, and a deletion path. A copy that no one owns is a copy that no one deletes. Prefer structured fields with a
-  redaction rule over free-text messages, because templates can be tested and messages cannot.
-- **Never put production data in test or development.** Generate synthetic data, or mask it irreversibly before it
-  leaves production; anonymization that can be reversed through a lookup table is not masking. Test fixtures contain
-  no real people, secrets, or internal addresses, and example values use reserved names such as
-  `example.test.invalid`. Non-production stores get a short retention and a periodic reset so stale copies do not
-  accumulate. A production export used for debugging follows the same rules as a product export: expiry, access log,
-  and deletion.
-- **Keep archives and cold storage under the same rules.** Moving data to cold storage, an archive bucket, or an
-  offline export changes the cost, not the obligations: access control, encryption, retention, deletion, and audit
-  still apply. Record the archive format and schema so the data stays readable without the application, include a
-  checksum, test a restore, and tie the archive's retention to the same schedule. A legal hold from the security or
-  legal role suspends the schedule; record its scope, authority, and expiry against the dataset and lift it only on
-  that role's direction. Cold or archived data may outlive hot data only when the inventory's period says so.
+- **在字段级应用数据清单。** 把每个清单类别（公开、内部、机密或受限）映射到承载它的表、
+  集合与字段，并把映射记录在 schema 元数据或数据字典中，因为列名并不能对其内容分类。派生字段继承其输入中最严格
+  的类别；未分类字段在清单覆盖它之前按受限处理。该映射驱动访问控制、加密、日志时的脱敏以及清单保留期的
+  执行。
+- **执行清单设定的保留期。** 为每个数据集记录它继承的期限、启动计时的触发条件（created_at、账户关闭、合同结束、
+  最后活动）、处置方式（删除、匿名化、归档）与负责人。绝不默认永久保留，也绝不凭空发明期限：法律下限、上限、例
+  外与保全属于安全与法务角色，本 skill 记录该计划如何实施、每年审查与测试。
+- **把删除当作穿过每个副本的路径，而不是一条 DELETE。** 删除或擦除请求从主存储开始，并传播到搜索索引、缓存、分
+  析或数据仓库表、事件流、日志与导出；每个目的地都有机制与已测量的延迟。以幂等方式运行删除任务，带重试与审查记
+  录，按存储计数或查询验证，并把备份到期日期报告为流程的终点。清空一张表却有三个副本仍存在的删除端点，是合规缺
+  陷，不是部分成功。把删除建模为异步流水线：API 接受请求，任务执行它，回执报告每个存储的完成情况与任何残留副
+  本。
+- **显式选择软删除或硬删除，并履行其义务。** 软删除（`deleted_at`）适合恢复窗口与审查需求，但它是保留而不是删
+  除：每次读取都要过滤它或通过视图读取，唯一约束使用部分索引，并且存在带日期的清理任务。硬删除适合擦除请求以及
+  没有审查要求的短生命周期数据。跨副本扇出的擦除返回 202 与状态资源以及按存储的回执；只有单存储、无恢复路径的
+  同步硬删除才返回 204。绝不把软删除描述为已擦除。软删除的行仍然计入存储、导出、备份成本与访问请求，因此把它留
+  在原地的擦除并不完整。
+- **把备份当作具有自身保留与恢复行为的副本。** 备份、快照与时间点恢复在到期之前仍包含已删除的行，因此其保留期
+  界定了真正的删除窗口，并且要有文档。擦除流程说明备份到期日期，而不是声称立即移除；恢复不得复活保留计划已经清
+  除的数据，因此恢复运行手册包含恢复后清理。静态加密与恢复演练属于 `release-operations-conventions`。备份保留长于清单期限是安全
+  决策，要有记录的理由与补偿控制，绝不能是未经审视的默认值。
+- **把日志、分析与导出当作数据副本管理。** 日志是高频写入的副本：在写入时脱敏个人数据与机密，执行清单的日志保
+  留期，默认绝不记录完整请求或响应体。分析与数据仓库表携带主体标识符，需要相同的删除传播；事件流有自己的保留
+  期；导出是带到期时间、签名 URL、访问日志与删除路径的副本。没人拥有的副本就是没人删除的副本。优先使用带脱敏规
+  则的结构化字段，而不是自由文本消息，因为模板可以测试，而消息不能。
+- **绝不把生产数据放进测试或开发环境。** 生成合成数据，或在离开生产之前不可逆地脱敏；能通过查找表逆转的匿名化
+  不是脱敏。测试 fixture 不含真实人员、机密或内部地址，示例值使用保留名称，例如 `example.test.invalid`。非生产
+  存储获得较短保留期与定期重置，使陈旧副本不会累积。用于调试的生产导出遵循与产品导出相同的规则：到期、访问日志
+  与删除。
+- **让归档与冷存储遵循同一套规则。** 把数据移到冷存储、归档桶或离线导出只改变成本，不改变义务：访问控制、加密、
+  保留、删除与审查仍然适用。记录归档格式与 schema，使数据在没有应用时仍可读；包含校验和；测试恢复；把归档保留
+  期绑定到同一计划。来自安全或法务角色的法律保全暂停该计划；针对数据集记录其范围、授权与到期时间，并只在该
+  角色的指示下解除。冷数据或归档数据只有在清单期限允许时才可以比热数据存活更久。
 
-| Good | Bad | Why |
+| 正例 | 反例 | 原因 |
 |---|---|---|
-| `deleted_at` plus a purge job and filtered reads | `deleted_at` treated as deletion with no purge | The row and its personal data live forever under a different name. |
-| A deletion job per store with per-store verification | `DELETE FROM users WHERE id = 42` only | Search, cache, warehouse, and logs still expose the person. |
-| Synthetic fixtures from a generator | A nightly production dump restored in staging | Personal data spreads to every developer machine and backup. |
-| Redacted logs that carry only a subject ID | Email and phone numbers in log messages | Log copies outlive the account and cannot be deleted reliably. |
-| Bounded backup retention with a stated erasure window | "Backups are kept forever" | The deletion promise is false because the data is still recoverable. |
-| Expiring export URL plus access log | A permanent public export link | Any holder can recall the full dataset after the purpose ends. |
+| `deleted_at` 加清理任务与过滤读取 | 把 `deleted_at` 当作删除且没有清理 | 该行及其个人数据以另一个名字永远存活。 |
+| 每个存储一个删除任务并逐存储验证 | 只执行 `DELETE FROM users WHERE id = 42` | 搜索、缓存、数据仓库与日志仍然暴露该人员。 |
+| 由生成器产生的合成 fixture | 每晚把生产转储恢复到 staging | 个人数据扩散到每台开发者机器与备份。 |
+| 只携带主体 ID 的脱敏日志 | 日志消息中出现邮箱与电话号码 | 日志副本比账户存活更久，且无法可靠删除。 |
+| 有界备份保留并声明擦除窗口 | “备份永久保留” | 数据仍可恢复，删除承诺就是假的。 |
+| 会过期的导出 URL 加访问日志 | 永久的公共导出链接 | 目的结束后任何持有者都能重取完整数据集。 |
 
-| Store | Copy type | Deletion mechanism | Verification |
+| 存储 | 副本类型 | 删除机制 | 验证 |
 |---|---|---|---|
-| Primary database | Source of truth | Delete or anonymize rows in a transaction | Row count and a read query |
-| Search index | Derived | Delete by ID or reindex the affected scope | Query by subject ID |
-| Cache | Derived, short-lived | Delete keys and let the TTL expire | Key existence check |
-| Warehouse or analytics | Derived, append-only | Partition drop or a purge job per subject | Subject query and job log |
-| Logs and traces | Event copies | Retention expiry plus redaction at write | Retention config and sample query |
-| Backups and point-in-time recovery | Snapshot copies | Expiry only, no selective delete | Backup expiry date and restore test |
-| Exports and files | Explicit extracts | Delete the object and invalidate the URL | Access log and object listing |
+| 主数据库 | 真源 | 在事务中删除或匿名化行 | 行数与读取查询 |
+| 搜索索引 | 派生 | 按 ID 删除或重建受影响范围 | 按主体 ID 查询 |
+| 缓存 | 派生、短生命周期 | 删除键并让 TTL 到期 | 键存在性检查 |
+| 数据仓库或分析 | 派生、只追加 | 删除分区或按主体运行清理任务 | 主体查询与任务日志 |
+| 日志与跟踪 | 事件副本 | 保留到期加写入时脱敏 | 保留配置与样本查询 |
+| 备份与时间点恢复 | 快照副本 | 只有到期，没有选择性删除 | 备份到期日期与恢复测试 |
+| 导出与文件 | 显式提取 | 删除对象并使 URL 失效 | 访问日志与对象列表 |
