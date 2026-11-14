@@ -2,6 +2,21 @@
 
 按版本从新到旧记录可观察变更。自 0.2.0 起版本采用 SemVer、发布点为 tag `v<version>`，每节记录一个发布版本；0.2.0 之前按日期记录。条目按主题合并，记录最终可观察状态；被后续提交推翻的中间状态只在修复项里说明。
 
+## 0.4.0（2026-11-14）
+
+**新增**
+
+- 双端时间感知：新增 `scripts/inject-clock.py`，在 `SessionStart` 与 `UserPromptSubmit` 注入当前本地时间、
+  UTC 偏移、时区与星期；Qoder 插件与 Qwen 扩展各接一条 hook，长会话与压缩后仍能拿到最新时间。
+- Qwen Code 原生扩展清单 `qwen-extension.json` 与 `hooks/qwen-hooks.json`：同一插件包可被 Qwen 作为扩展安装，
+  约束注入、时间注入、十一个 skill 与审查命令一并生效。
+
+**变更**
+
+- 约束注入脚本兼容双端根目录与去重路径（新增 Qwen 用户级/项目级规则与 `QWEN.md`），并移除重复的时间头。
+- `scripts/check.sh`、`scripts/dist.sh` 与 release 工作流校验双端清单版本一致；hook 测试增至 18 项。
+- 仓库 README、加载规则调研文档与插件说明同步双端安装与时间设计，新增 `docs/time-awareness.md`。
+
 ## 0.3.0（2026-11-14）
 
 **变更**
