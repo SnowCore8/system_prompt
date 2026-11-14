@@ -33,7 +33,7 @@
 | 宿主 | host | 加载插件与规则的 Qoder 客户端 | |
 | 打包 | package | 生成 zip | |
 | 分发 | distribute | 通过市场或内网分发 | |
-| 软链 | symlink | 指向另一路径的链接 | 符号链接 |
+| 软链 | symlink | 指向仓库内另一路径的相对链接；目标必须在仓库内且不指向另一软链 | 符号链接 |
 | 变更日志 | changelog | `CHANGELOG.md` | 更新日志 |
 
 英文技术名保持原样（如 skill、hook、manifest、zip、payload、Markdown、JSON）。

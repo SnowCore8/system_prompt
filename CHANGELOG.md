@@ -18,6 +18,7 @@
 - `repository-governance-conventions` skill：仓库治理规范，覆盖必需文件与元数据、仓库卫生、治理流程与打包分发。
 - 根 `AGENTS.md` 软链指向 `rules/global-user-constraints.md`，供 DSH 作为工作区指令加载；Qoder 仍按插件规则激活。
 - DeepSeek Harness 适配：新增 `.dsh/skills/` 项目级入口，以相对软链暴露插件内十一个 skill；`scripts/check.sh` 增加 DSH 适配校验。
+- 软链治理：`scripts/check.sh` 增加全量软链校验（必须入库、相对路径、目标在仓库内且存在、不指向另一软链或 `.git`、目标已跟踪）；README 补充软链约定。
 
 **变更**
 

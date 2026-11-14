@@ -25,6 +25,13 @@ DSH 从仓库根 `AGENTS.md` 加载本约束，并从 `.dsh/skills/` 发现 skil
 2. 改 skill：编辑 `plugins/global-user-constraints/skills/` 下对应的 skill。
 3. 只改软链目标，不另建副本。
 
+## 软链约定
+
+- 软链只做入口，不承载内容：目标必须在仓库内，用相对路径书写，指向真实文件或目录，且不指向另一软链。
+- 每个入口只指向唯一真源（`rules/`、`plugins/` 或插件内 skill 目录），不复制第二份文件。
+- 新增或调整入口前先确认目标路径稳定；`scripts/check.sh` 的「软链」段校验未入库、缺失、绝对路径、目标出仓、指向 `.git`、链式软链、目标不存在或未跟踪等情况。
+- Windows 检出需启用 `core.symlinks`；否则软链会落成普通文本文件。
+
 ## DeepSeek Harness 适配
 
 - 指令：DSH 的 `dsh-agent-instructions` 自动加载根 `AGENTS.md`，内容指向 `rules/global-user-constraints.md`。
