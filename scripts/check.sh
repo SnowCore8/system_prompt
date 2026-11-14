@@ -36,6 +36,14 @@ python3 -m ruff --version >/dev/null 2>&1 || {
   echo "缺少 ruff，先运行 python3 -m pip install -r requirements-dev.txt" >&2
   exit 2
 }
+python3 -c 'import coverage' >/dev/null 2>&1 || {
+  echo "缺少 coverage，先运行 python3 -m pip install -r requirements-dev.txt" >&2
+  exit 2
+}
+python3 -m pip_audit --version >/dev/null 2>&1 || {
+  echo "缺少 pip-audit，先运行 python3 -m pip install -r requirements-dev.txt" >&2
+  exit 2
+}
 
 echo "== Markdown 格式 =="
 while IFS= read -r -d '' file; do
@@ -67,6 +75,21 @@ fi
 
 echo "== Python lint =="
 python3 -m ruff check . || fail "ruff"
+
+echo "== 依赖审计 =="
+audit_cache="$(mktemp -d)"
+python3 -m pip_audit --cache-dir "$audit_cache" -r requirements-dev.txt || fail "pip-audit"
+rm -rf "$audit_cache"
+
+echo "== 覆盖率 =="
+cov_cfg="$(mktemp)"
+printf '[run]\nbranch = true\nparallel = true\nsource = %s/shared/scripts,%s/skills/system-prompt-authoring/scripts\ndata_file = %s/.coverage\ndisable_warnings = no-data-collected\n' \
+  "$REPO_ROOT" "$REPO_ROOT" "$REPO_ROOT" > "$cov_cfg"
+COVERAGE_PROCESS_START="$cov_cfg" python3 -B -m coverage run --rcfile="$cov_cfg" -m unittest discover -s tests/skill -p 'test_*.py' || fail "覆盖率 skill 测试"
+COVERAGE_PROCESS_START="$cov_cfg" python3 -B -m coverage run --rcfile="$cov_cfg" -m unittest discover -s tests/hooks -p 'test_*.py' || fail "覆盖率 hook 测试"
+python3 -m coverage combine --rcfile="$cov_cfg" >/dev/null 2>&1 || fail "覆盖率合并"
+python3 -m coverage report --rcfile="$cov_cfg" --fail-under=90 || fail "覆盖率低于 90%"
+rm -f "$cov_cfg" .coverage .coverage.*
 
 echo "== JSON =="
 while IFS= read -r -d '' file; do

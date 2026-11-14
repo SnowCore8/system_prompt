@@ -17,6 +17,8 @@ global-user-constraints-*.sha256
 /dist/
 *.tgz
 .ruff_cache/
+.coverage*
+.pytest_cache/
 *.sql
 *.sqlite
 *.sqlite3
