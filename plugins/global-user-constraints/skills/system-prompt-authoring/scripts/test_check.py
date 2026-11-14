@@ -204,9 +204,13 @@ class TableTest(unittest.TestCase):
         text = "# 标题\n\n| 甲 | 乙 |\n|---|---|\n| 1 | 2 | 3 |\n"
         self.assertIn("MD-TABLE-COLS", rules_of(text))
 
-    def test_escaped_and_code_pipe_not_counted(self):
-        text = "# 标题\n\n| 甲 | 乙 |\n|---|---|\n| a \\| b | `x | y` |\n"
+    def test_escaped_pipe_not_counted(self):
+        text = "# 标题\n\n| 甲 | 乙 |\n|---|---|\n| a \\| b | c |\n"
         self.assertNotIn("MD-TABLE-COLS", rules_of(text))
+
+    def test_unescaped_pipe_in_code_span_is_counted(self):
+        text = "# 标题\n\n| 甲 | 乙 |\n|---|---|\n| `x | y` | 2 |\n"
+        self.assertIn("MD-TABLE-COLS", rules_of(text))
 
     def test_missing_delimiter_row(self):
         self.assertIn("MD-TABLE-BROKEN", rules_of("# 标题\n\n|a|b|\n|1|2|\n"))
@@ -816,7 +820,9 @@ class HelperTest(unittest.TestCase):
 
     def test_count_row_cells(self):
         self.assertEqual(check.count_row_cells("| a | b |"), 2)
-        self.assertEqual(check.count_row_cells("| a \\| b | `x | y` |"), 2)
+        self.assertEqual(check.count_row_cells("| a \\| b | c |"), 2)
+        # GFM 要求代码跨度内的管道也转义，未转义时按分隔符计数
+        self.assertEqual(check.count_row_cells("| `x | y` | 2 |"), 3)
 
     def test_count_inline_backticks(self):
         self.assertEqual(check.count_inline_backticks("`a` 和 \\`"), 2)

@@ -15,7 +15,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from urllib.parse import unquote
 
-DEPENDENCY = "markdown-it-py>=3"
+DEPENDENCY = "markdown-it-py==4.2.0"
 
 ERROR = "错误"
 WARNING = "警告"
@@ -91,26 +91,24 @@ def strip_inline_code(line: str) -> str:
 
 
 def count_row_cells(line: str) -> int:
-    """按 GFM 规则数一行的单元格数，跳过转义管道与行内代码里的管道。"""
+    """按 GFM 规则数一行的单元格数：只有反斜杠转义的管道不算分隔符。"""
     text = strip_quote_prefix(line).strip()
     if text.startswith("|"):
         text = text[1:]
     cells = 1
-    in_code = False
+    last_pipe = -1
     i = 0
     while i < len(text):
-        ch = text[i]
-        if ch == "\\" and i + 1 < len(text):
+        if text[i] == "\\" and i + 1 < len(text):
             i += 2
             continue
-        if ch == "`":
-            in_code = not in_code
-        elif ch == "|" and not in_code:
+        if text[i] == "|":
             cells += 1
+            last_pipe = i
         i += 1
-    if not in_code and text.endswith("|") and not text.endswith("\\|"):
+    if last_pipe == len(text) - 1:
         cells -= 1
-    return cells
+    return max(cells, 1)
 
 
 def count_inline_backticks(line: str) -> int:
