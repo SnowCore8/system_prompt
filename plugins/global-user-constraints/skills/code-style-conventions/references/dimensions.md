@@ -1,355 +1,289 @@
-# Code Style Dimensions
+# 代码风格维度
 
-Use this file with `SKILL.md`. Each numbered section gives the defaults, the decision rule, and the edge cases for one
-dimension; a configured tool or a documented project convention outranks every default here. Read the section that
-matches the concern, and read `SKILL.md` first for the precedence order and for the boundaries against sibling skills.
-Each section states a default, the tool that enforces it where one exists, and the edge case that decides when the
-default does not apply.
+把本文件与 `SKILL.md` 一起使用。每个编号章节给出一个维度的默认值、决策规则与边界情况；已配置的工具或有文档的
+项目约定优先于这里的每个默认值。阅读与关注点匹配的章节，并先读 `SKILL.md` 了解优先级顺序以及与其他 skill 的
+边界。每个章节都会说明一个默认值、在存在时强制执行它的工具，以及决定默认值何时不适用的边界情况。
 
-## 1. Code Style and Formatting
+## 1. 代码风格与格式化
 
-Formatting is the one style class a machine can settle completely. Configure one formatter per language and file type,
-run it everywhere, and spend review attention on the decisions no tool can make: width, structure, and exceptions. The
-test of a formatting rule is whether a machine can decide it; if a person has to argue the case, the rule is a structure
-or naming rule in disguise.
+格式化是机器可以完全裁决的唯一风格类别。每种语言与文件类型配置一个 formatter，在所有地方运行它，并把审查注意
+力花在工具无法做出的决定上：行宽、结构与例外。判断一条格式化规则的标准是机器能否裁决它；如果需要人来争论，这
+条规则实际上是结构规则或命名规则。
 
-- Name exactly one formatter per file type, keep its configuration in the repository, and pin the tool version in the
-  build image or pre-commit hook. Two formatters that rewrite the same file produce an endless loop of changes, and an
-  unpinned formatter version reformats unrelated files on the day it updates. Run the check mode in CI and the write
-  mode locally, from the same pinned command, so a formatting failure is caught before review.
-- Treat formatter output as correct by construction. A reviewer who dislikes a wrapped argument changes the line width
-  or the code itself; editing the formatting by hand is undone by the next run, wastes two reviews, and hides whether
-  the author understood the rule. Review the configuration diff when the configuration changes, because that diff
-  decides the next hundred formatting diffs.
-- Set the width once in the formatter config: Black and Ruff format 88, Prettier 80, rustfmt 100,
-  google-java-format 100, LLVM and Google clang-format 80, Microsoft clang-format 120, ktlint 140, and RuboCop 120.
-  The project configuration wins over every number here, and a width is not a per-file or per-author setting.
-- Decide quotes, semicolons, indentation, and trailing commas in configuration, not in code. Black and Ruff format
-  normalize strings to double quotes, Prettier defaults to double quotes and semicolons, and Go requires tabs. A
-  disagreement with the choice is a configuration change for the project, never an inline override in one file.
-- Order imports in three groups: standard library, third-party, project. Sort inside a group, separate groups with one
-  blank line, and ban wildcard imports. goimports, Ruff `I`, eslint-plugin-import, and clang-format `IncludeBlocks`
-  enforce the grouping; an import that crosses two groups often signals a module boundary that is wrong. Pruning is a
-  separate rule: goimports adds and removes imports, Ruff `F401` flags unused imports while `I` only sorts, isort
-  removes redundant aliases with `remove-redundant-aliases` enabled, ESLint `no-unused-vars` flags unused bindings,
-  and clang-format never removes an include.
-- Keep block structure flat: one statement per line, braces in every language that makes them optional, early returns
-  instead of `else` after a return, and no nesting deeper than three levels without extraction. A block that needs a
-  comment to explain its shape is a function waiting to be extracted. Extract when a block no longer fits one screen or
-  when its header comment states a different operation from the code around it.
-- Run the formatter over the whole tree from one command and exclude generated, vendored, and build-output directories
-  in that configuration. Reformatting generated code hides the real regeneration diff, and formatting vendored code
-  turns every upstream patch into a conflict that a future maintainer cannot resolve.
-- Configure editor defaults in a committed `.editorconfig`: UTF-8, LF endings, a final newline, no trailing whitespace
-  except where Markdown needs it, and per-language indentation. Commit a minimal shared IDE settings file or ignore the
-  IDE directory, because a formatter cannot fix a file that one editor saves with the wrong encoding. An editor plugin
-  that reformats on save with its own settings is the most common source of mixed diffs; commit its settings or turn
-  the plugin off for the repository.
+- 每种文件类型只指定一个 formatter，将其配置保存在仓库中，并在构建镜像或 pre-commit hook 中锁定工具版本。两个
+  重写同一文件的 formatter 会产生无休止的变更循环，而未锁定的 formatter 版本会在升级当天重新格式化无关文件。
+  在 CI 中运行校验模式、在本地运行写入模式，二者使用同一个已锁定的命令，让格式化失败在审查之前被捕获。
+- 把 formatter 输出视为构造上正确。审查者若不喜欢某个折行的参数，应修改行宽或代码本身；手工编辑格式会被下一次
+  运行撤销，浪费两次审查，还掩盖了作者是否理解规则。配置变化时审查配置 diff，因为那次 diff 决定了接下来上百个
+  格式化 diff。
+- 在 formatter 配置中只设置一次行宽：Black 与 Ruff format 为 88，Prettier 为 80，rustfmt 为 100，
+  google-java-format 为 100，LLVM 与 Google clang-format 为 80，Microsoft clang-format 为 120，ktlint
+  为 140，RuboCop 为 120。项目配置优先于这里的每个数字，行宽不是按文件或按作者设置的。
+- 引号、分号、缩进与尾随逗号在配置中决定，不在代码中决定。Black 与 Ruff format 会把字符串统一为双引号，
+  Prettier 默认使用双引号与分号，Go 要求制表符。对选择有异议时，应作为项目级配置变更处理，绝不在单个文件中内联
+  覆盖。
+- 按三个组排列 import：标准库、第三方、项目。组内排序，组间空一行，并禁止通配符导入。goimports、Ruff `I`、
+  eslint-plugin-import 与 clang-format `IncludeBlocks` 强制分组；跨两个组的 import 往往说明模块边界有误。清理
+  是另一条规则：goimports 增删 import，Ruff `F401` 标记未使用的导入而 `I` 只负责排序，isort 在启用
+  `remove-redundant-aliases` 时删除冗余别名，ESLint `no-unused-vars` 标记未使用的绑定，clang-format 从不删除
+  include。
+- 保持块结构扁平：每行一条语句，在花括号可选的语言中也写花括号，用提前返回代替 return 之后的 `else`，嵌套超过
+  三层就提取。需要注释解释形状的代码块，是一个等待被提取的函数。当代码块放不下一屏，或其头部注释描述的操作与
+  周围代码不同时，就提取。
+- 用一个命令在整个代码树上运行 formatter，并在该配置中排除生成目录、第三方引入目录与构建输出目录。重新格式化生成
+  代码会掩盖真正的重新生成 diff，而格式化第三方引入代码会把每个上游补丁变成未来维护者无法解决的冲突。
+- 在已提交的 `.editorconfig` 中设置编辑器默认值：UTF-8、LF 换行、文件末尾换行、除 Markdown 需要处之外没有行尾
+  空白，以及按语言的缩进。提交最小的共享 IDE 设置文件，或忽略 IDE 目录，因为 formatter 无法修复某个编辑器以错误
+  编码保存的文件。按自己的设置保存时重新格式化的编辑器插件，是混合 diff 最常见的来源；提交它的设置，或在该仓库
+  中关闭该插件。
 
-| Good | Bad | Why |
+| 正例 | 反例 | 原因 |
 |---|---|---|
-| `ruff format` in a pre-commit hook | A reviewer asking for Black at review time | A machine settles whitespace; humans review logic |
-| `.editorconfig` with `end_of_line = lf` | CRLF on one machine and LF on another | Line endings stop appearing in every diff |
-| `gen/` excluded from Prettier | Reformatting the generated client | Regeneration keeps a small, reviewable diff |
-| Imports grouped stdlib, third-party, project | One alphabetical block | Dependency direction is visible before a test fails |
-| `line-length = 100` in `pyproject.toml` | Hand-wrapping at 120 | The formatter rejoins hand-wrapped lines |
-| Early return instead of an `else` chain | Deeply indented `else` branches | Reads top to bottom and lowers nesting |
-| Formatter version pinned in the build image | A `latest` formatter version | Formatting cannot change without a commit |
-| One statement per line | `x = 1; y = 2` on one line | Debuggers, coverage, and diffs treat statements separately |
+| `ruff format` 放在 pre-commit hook 中 | 审查者在审查时要求用 Black | 机器裁决空白；人审查逻辑 |
+| 带 `end_of_line = lf` 的 `.editorconfig` | 一台机器用 CRLF，另一台用 LF | 换行不再出现在每个 diff 中 |
+| Prettier 排除 `gen/` | 重新格式化生成的客户端 | 重新生成保持小且可审查的 diff |
+| import 按标准库、第三方、项目分组 | 一个按字母排序的整块 | 依赖方向在测试失败之前就可见 |
+| `pyproject.toml` 中 `line-length = 100` | 按 120 手工折行 | formatter 会重新合并手工折行的行 |
+| 用提前返回代替 `else` 链 | 深层缩进的 `else` 分支 | 自上而下阅读并降低嵌套 |
+| formatter 版本锁定在构建镜像中 | 使用 `latest` formatter 版本 | 格式化不会在没有提交的情况下变化 |
+| 每行一条语句 | 一行写 `x = 1; y = 2` | 调试器、覆盖率与 diff 会分别处理语句 |
 
-A formatter cannot split a long string, URL, hash, or base64 blob; leave the line long and record the exception rather
-than weakening the width for the whole project. A formatter version bump reformats unrelated files, so land the bump
-as its own change. Markdown tables, generated data, and minified assets are outside this rule set. For a language with
-no formatter, a lint rule is the next authority; for one with neither, write the rule in the project style guide with
-one good and one bad example so the next change follows the same shape. A formatting disagreement is settled by a
-configuration change with its own review, never by asking reviewers to remember an exception. A file on which the
-formatter and the linter disagree is a configuration conflict to resolve, not a file to exempt.
+formatter 无法拆分长字符串、URL、哈希或 base64 数据块；让该行保持长，并记录这一例外，而不是为整个项目放宽行
+宽。formatter 版本升级会重新格式化无关文件，所以把升级作为独立变更落地。Markdown 表格、生成数据与压缩后的资源
+不在本规则集范围内。对于没有 formatter 的语言，下一条权威是 lint 规则；两者都没有时，把规则写进项目风格指南，
+并给一个好的和一个坏的示例，让下一次变更遵循同一形态。格式化分歧通过一次带自身审查的配置变更解决，绝不要求审查
+者记住某个例外。formatter 与 linter 对同一文件意见不一致时，那是需要解决的配置冲突，而不是要豁免的文件。
 
-## 2. Layout, Modules, and Boundaries
+## 2. 布局、模块与边界
 
-Layout is where the dependency graph becomes visible. A tree that mirrors the domain keeps changes local, while a tree
-that mirrors tools forces one feature to touch every directory, and a boundary that exists only in a diagram is not a
-boundary. Layout rules are cheap to state before the second feature exists and expensive to change once imports have
-spread, so choose the axis early and write it down where the owner of the next file will look.
+布局是依赖图变得可见的地方。镜像领域的树让变更保持局部，而镜像工具的树迫使一个功能触碰每个目录；只存在于图上
+的边界不是边界。布局规则在第二个功能出现之前陈述成本很低，在 import 扩散之后修改却代价高昂，所以尽早选择组织
+轴，并把它写在下一个文件的负责人会看的地方。
 
-- Choose the organizing axis once per project. Feature-first means each feature owns its interface, domain logic, and
-  persistence; layer-first means top-level entry, domain, and infrastructure directories. Feature-first keeps a change
-  local and suits product code, layer-first suits a small service with one domain, and mixing the axes below the top
-  level leaves readers guessing where the next file belongs.
-- Keep entry points thin: `main.py`, `cmd/api/main.go`, `src/index.ts`, `Program.cs`. An entry point parses arguments,
-  loads configuration, builds dependencies, and calls the application. It contains no business rule, no query, and no
-  formatting logic, so replacing the transport or the startup sequence never changes behavior.
-- Declare one public surface per module: `__all__` and a leading underscore in Python, `pub` and private modules in
-  Rust, `internal/` packages in Go, package-private types in Java and C#, an `index.ts` barrel in TypeScript.
-  Everything outside the surface is unimportable from another module, which turns a boundary violation into a build
-  error instead of a review comment. A language without a visibility keyword enforces the surface with a package
-  boundary plus a lint rule against deep imports.
-- Point dependencies inward. Domain and application code import no infrastructure, framework, or third-party SDK;
-  adapters implement interfaces the domain owns. The inversion is what lets a test replace a database with an
-  in-memory implementation, and what keeps a vendor change away from business rules.
-- Forbid import cycles and treat each one as a design finding. Detect cycles with `import-linter` in Python,
-  `dependency-cruiser` or `import/no-cycle` in JavaScript, `jdeps` in Java, and the compiler in Go. Break a cycle by
-  moving the shared type down or inverting with an interface, never by a suppression comment. `pydeps` and `madge`
-  draw the graph, and `ArchUnit` or a small dependency test keeps the rule executable rather than advisory.
-- Give a file one cohesive reason to change. Set a team threshold, for example warn at 300 and split at 500 lines of
-  application code; split a file that grows a second responsibility even when it is under the count, and exempt
-  generated files and data tables from the threshold because their length follows the generator, not the design. The
-  threshold is a review trigger that starts a split conversation, not a hard gate that blocks an unrelated change.
-- Allow shared code only with an owner and a written definition. A `common/`, `shared/`, or `utils/` module without a
-  boundary becomes the place unrelated helpers accumulate and the usual source of cycles. Promote code into a named
-  module after the third caller, or keep the duplication because it is cheaper than the coupling. When a shared helper
-  must change for two callers at once, split it by responsibility instead of adding a mode flag.
-- Move a file only when its responsibility changes location, and keep the move in its own change. A move commit that
-  also edits logic is unreviewable because the tool shows a rewrite rather than a rename; a rename-only commit is
-  reviewable in seconds and can be reverted on its own. A directory rename follows the same rule and updates ignore
-  rules, CI paths, and references in one change, never as a side effect of a feature.
+- 每个项目只选一次组织轴。功能优先意味着每个功能拥有自己的接口、领域逻辑与持久化；分层优先意味着顶层入口、领
+  域与基础设施目录。功能优先让变更保持局部，适合产品代码；分层优先适合只有一个领域的小服务；在顶层之下混用两
+  种轴会令读者猜测下一个文件该放哪里。
+- 保持入口轻薄：`main.py`、`cmd/api/main.go`、`src/index.ts`、`Program.cs`。入口解析参数、加载配置、构建依
+  赖并调用应用。它不含业务规则、查询与格式化逻辑，因此替换传输层或启动顺序永远不会改变行为。
+- 每个模块声明一个公开接口面：Python 用 `__all__` 与前导下划线，Rust 用 `pub` 与私有模块，Go 用 `internal/`
+  包，Java 与 C# 用包私有类型，TypeScript 用 `index.ts` barrel。接口面之外的一切都无法从另一个模块导入，这使
+  边界违规变成构建错误，而不是审查意见。没有可见性关键字的语言通过包边界加上禁止深层导入的 lint 规则来强制接口
+  面。
+- 依赖指向内部。领域与应用代码不导入基础设施、框架或第三方 SDK；适配器实现领域拥有的接口。正是这种反转让测试
+  可以用内存实现替换数据库，并让供应商变更远离业务规则。
+- 禁止导入循环，并把每个循环视为一项设计发现。Python 用 `import-linter`、JavaScript 用 `dependency-cruiser`
+  或 `import/no-cycle`、Java 用 `jdeps`、Go 用编译器来检测循环。通过把共享类型下移或用接口反转来打破循环，
+  绝不用抑制注释。`pydeps` 与 `madge` 绘制依赖图，而 `ArchUnit` 或一个小型依赖测试让规则保持可执行，而不只
+  是建议。
+- 让每个文件只有一个内聚的变更理由。设置团队阈值，例如应用代码到 300 行警告、到 500 行拆分；即使未达行数，文
+  件长出第二项职责时也要拆分；生成文件与数据表不受该阈值约束，因为它们的长度取决于生成器而非设计。阈值是触发
+  拆分讨论的审查信号，不是阻止无关变更的硬性门禁。
+- 只有具备负责人与书面定义时才允许共享代码。没有边界的 `common/`、`shared/` 或 `utils/` 模块会变成无关辅助
+  代码堆积的地方，也是循环依赖的常见来源。在第三个调用方出现后，把代码提升为命名模块；或者保留重复，因为它比
+  耦合更便宜。当共享辅助函数必须为两个调用方同时变更时，按职责拆分它，而不是加一个模式标志。
+- 只有当职责改变位置时才移动文件，并把移动放在独立变更中。同时编辑逻辑的移动提交无法审查，因为工具显示的是重
+  写而不是重命名；纯重命名提交几秒内就能审查，并可单独回滚。目录重命名遵循同一规则，并在一次变更中更新忽略规
+  则、CI 路径与引用，绝不作功能的副作用。
 
-| Good | Bad | Why |
+| 正例 | 反例 | 原因 |
 |---|---|---|
-| Each feature owns its interface, domain, and store | Global `controllers/`, `services/`, `repositories/` | A feature change stays inside one directory |
-| `internal/parser` imported only inside its module | Another module imports `internal/parser` | The boundary is enforced by the compiler |
-| Domain imports no ORM or HTTP types | Domain entities import the ORM | Business rules stay testable and replaceable |
-| `cmd/api/main.go` builds dependencies and calls in | `main` contains the SQL query | Startup can change without touching rules |
-| Cycle broken by an interface owned by the domain | `// noqa` on a circular import | The coupling is removed rather than hidden |
-| A 220-line `billing/invoice.py` | A 1800-line `billing/helpers.py` with five roles | One file, one reason to change |
-| A named `pdf/` module | `utils/` holding formatting, dates, and parsing | Ownership and purpose are stated |
-| Move and edit in separate changes | A rename hidden inside a refactor | Each change can be reviewed and reverted |
+| 每个功能拥有自己的接口、领域与存储 | 全局 `controllers/`、`services/`、`repositories/` | 功能变更留在一个目录内 |
+| `internal/parser` 只在其模块内被导入 | 另一个模块导入 `internal/parser` | 边界由编译器强制 |
+| 领域不导入 ORM 或 HTTP 类型 | 领域实体导入 ORM | 业务规则保持可测试、可替换 |
+| `cmd/api/main.go` 构建依赖并调用应用 | `main` 里包含 SQL 查询 | 启动流程可在不触碰规则的情况下变化 |
+| 用领域拥有的接口打破循环 | 在循环导入上加 `// noqa` | 耦合被移除而非隐藏 |
+| 一个 220 行的 `billing/invoice.py` | 一个 1800 行、承担五种角色的 `billing/helpers.py` | 一个文件，一个变更理由 |
+| 一个具名的 `pdf/` 模块 | `utils/` 同时放格式化、日期与解析 | 归属与用途明确陈述 |
+| 移动与编辑分成两次变更 | 把重命名藏在重构里 | 每个变更都能单独审查与回滚 |
 
-Single-file scripts and notebooks do not need a layout; apply the rules when a second module appears. A monorepo
-repeats the same tree per package and shares only an explicitly named package, never a relative climb into another
-package. Boundaries protect a rate of change: the domain is stable and adapters churn, so dependencies point at the
-stable side. Ask of every change which side of a boundary owns the behavior; when the answer is two sides, the boundary
-is in the wrong place and the change is about to edit both. A directory that exists to hold one file restates a name
-rather than forming a module, and a module without a stated surface is only a folder.
+单文件脚本与 notebook 不需要布局；第二个模块出现时再应用规则。monorepo 为每个包重复相同的树，并且只共享显式
+命名的包，绝不相对爬入另一个包。边界保护变化速率：领域是稳定的而适配器频繁变动，所以依赖指向稳定的一侧。对每
+个变更问：行为归边界的哪一侧所有；当答案是两侧时，边界位置错了，这次变更即将同时编辑两边。只为放一个文件而存
+在的目录只是在重复一个名称，并没有构成模块；没有声明接口面的模块只是一个文件夹。
 
-## 3. Dependency Management
+## 3. 依赖管理
 
-A dependency is code the project ships but does not maintain. Each one adds a version constraint, a license, an attack
-surface, and a release cadence, so the manifest is a design document rather than a convenience list. The manifest and
-the lockfile are reviewed together, and the lockfile diff is the evidence of what actually ships.
+依赖是项目随制品发布但不维护的代码。每个依赖都会增加版本约束、许可证、攻击面与发布节奏，因此 manifest 是设计
+文档，而不是便利清单。manifest 与锁文件一起审查，锁文件 diff 是实际发布内容的证据。
 
-- Depend directly only. Import a package because the manifest declares it, not because another dependency installed it.
-  A transitive import disappears at the next lock update, is invisible to the manifest review, and cannot be pinned
-  independently by the application that relies on it. A dependency imported only by tests or scripts is still a
-  declared dependency of the project.
-- Commit exactly one lockfile per project and treat it as the build input: `package-lock.json` or `pnpm-lock.yaml`,
-  `uv.lock` or `poetry.lock`, `go.sum`, `Cargo.lock`, `Gemfile.lock`, `composer.lock`. Install in frozen mode in CI
-  with `npm ci`, `pnpm install --frozen-lockfile`, `uv sync --locked`, `cargo build --locked`, or
-  `bundle install --frozen`; never delete a lockfile to make a conflict disappear. Resolve a lockfile conflict by
-  regenerating on the target branch and reviewing the result, because a hand-edited lock entry is a state no tool can
-  reproduce.
-- Pin by role. Applications pin exact versions and image digests so a build changes only when a commit changes it;
-  libraries declare a compatible range and test the lowest supported and the latest version. Pin CI tools and base
-  images the same way and bump them deliberately, because a floating tool version is an unreviewed dependency. Every
-  pin movement states its reason in the change, because an unexplained bump is indistinguishable from a mistake.
-- Schedule updates instead of taking them opportunistically. Automated pull requests on a fixed cadence handle patch
-  releases, while major versions get a deliberate review of the release notes, deprecations, and breaking changes. Run
-  the full build and tests for the upgrade and keep it out of a feature change. Apply a minimum release age to automated
-  updates, because a compromised maintainer account can publish a malicious release within minutes and a short delay
-  turns an immediate install into a reviewed one.
-- Admit a dependency against written criteria: the standard library or an existing dependency cannot do it; the
-  package is maintained, with recent releases, responsive issues, and more than one maintainer; no known unpatched
-  vulnerability; the license is compatible and recorded; install size and transitive count are acceptable; and an
-  owner can remove it. Record the evidence in the pull request, check that the package name and registry origin cannot
-  be shadowed by a public package with the same name, and prefer a scoped name for anything internal.
-- Remove completely. Delete usages and imports, remove the manifest entry, regenerate the lockfile, then remove
-  configuration, environment variables, CI references, and credentials attached to it. A dependency removed from code
-  but left in the manifest still ships, still gets scanned, and still produces update noise. Update the license notice
-  and the SBOM in the same change when a dependency leaves, so the inventory never describes code that is gone.
-- Route private registries through repository configuration: scope and registry in `.npmrc`, an index URL in
-  `pip.conf` or the project's package manager config, a mirror in `settings.xml`, repositories in `composer.json`.
-  Inject credentials from the environment or a CI secret store, never commit a token, and fail closed when the
-  registry is unreachable instead of falling back to a public mirror.
-- Hand license and vulnerability decisions to security. Run the scanner in CI with `pip-audit`, `npm audit`,
-  `cargo audit`, `govulncheck`, `bundle audit`, or an SBOM and license scanner; record the allowed license set; and
-  report a denied or unknown license for approval instead of approving it in code review. An SBOM per release gives
-  that handoff a stable inventory and makes a withdrawn dependency visible after it shipped.
+- 只依赖直接依赖。导入某个包是因为 manifest 声明了它，而不是因为另一个依赖安装了它。传递导入会在下一次锁更新
+  时消失，对 manifest 审查不可见，也无法由依赖它的应用独立锁定。只被测试或脚本导入的依赖，仍然是项目声明的依
+  赖。
+- 每个项目只提交一个锁文件，并把它当作构建输入：`package-lock.json` 或 `pnpm-lock.yaml`、`uv.lock` 或
+  `poetry.lock`、`go.sum`、`Cargo.lock`、`Gemfile.lock`、`composer.lock`。在 CI 中用 `npm ci`、
+  `pnpm install --frozen-lockfile`、`uv sync --locked`、`cargo build --locked` 或
+  `bundle install --frozen` 以冻结模式安装；绝不要为了让冲突消失而删除锁文件。通过在目标分支上重新生成并审查
+  结果来解决锁文件冲突，因为手工编辑的锁条目是任何工具都无法重现的状态。
+- 按角色锁定。应用锁定精确版本与镜像摘要，使构建只在提交变化时变化；库声明兼容范围，并测试最低支持版本与最新
+  版本。用同样的方式锁定 CI 工具与基础镜像，并有意识地升级它们，因为浮动工具版本就是未审查的依赖。每次锁定变更
+  都在变更中说明理由，因为无法解释的升级与错误无法区分。
+- 按计划更新，而不是机会主义地更新。固定节奏的自动化拉取请求处理补丁版本，而主版本要专门审查发布说明、废弃项
+  与破坏性变更。为升级运行完整构建与测试，并让它不混入功能变更。对自动更新设置最短发布时长，因为被攻陷的维护
+  者账号可以在几分钟内发布恶意版本，而短暂延迟能把立即安装变成经过审查的安装。
+- 依据书面标准准入依赖：标准库或现有依赖做不到；该包有维护，近期有发布、issue 响应及时且维护者不止一人；没有
+  已知未修补漏洞；许可证兼容并已记录；安装大小与传递依赖数量可接受；有负责人能够移除它。把证据记录在拉取请求
+  中，检查包名与包仓库来源不会被同名的公共包遮蔽，内部包优先使用带作用域的名称。
+- 彻底移除。删除使用点与 import，移除 manifest 条目，重新生成锁文件，然后移除与其相关的配置、环境变量、CI 引
+  用与凭据。代码中已移除但仍留在 manifest 中的依赖仍会发布、仍会被扫描，并仍会产生更新噪声。依赖离开时，在同
+  一次变更中更新许可证声明与 SBOM，使清单永不描述已不存在的代码。
+- 通过仓库配置接入私有包仓库：在 `.npmrc` 中设置作用域与包仓库，在 `pip.conf` 或项目的包管理器配置中
+  设置索引 URL，在 `settings.xml` 中设置镜像，在 `composer.json` 中设置仓库。凭据从环境或 CI 机密存储注入，
+  绝不提交令牌，并在包仓库不可达时失败关闭，而不是回退到公共镜像。
+- 把许可证与漏洞决定交给安全团队。在 CI 中用 `pip-audit`、`npm audit`、`cargo audit`、`govulncheck`、
+  `bundle audit`，或 SBOM 与许可证扫描器运行扫描；记录允许的许可证集合；对被拒绝或未知的许可证上报审批，而
+  不是在代码审查中批准它。每次发布附一份 SBOM，为该交接提供稳定清单，并让已撤回的依赖在发布后仍可见。
 
-| Good | Bad | Why |
+| 正例 | 反例 | 原因 |
 |---|---|---|
-| A direct manifest entry per imported package | Importing a package that a dependency installed | The manifest states what the project relies on |
-| One committed lockfile installed in frozen mode | Deleting the lockfile to clear a conflict | Installs are reproducible and reviewed |
-| An application pins `1.4.2` | An application declares `^1.4.2` | A build changes only with a commit |
-| A scheduled patch-update pull request | A silent auto-update in production | The change is tested and attributable |
-| Admission evidence in the pull request | "It is popular, so it is safe" | Health, license, and footprint are checked |
-| Registry and secret injected from CI | A token committed in `.npmrc` | Credentials never enter the repository |
-| A license scanner gates the build | Reviewers approving a copyleft license | License risk becomes a recorded decision |
-| Manifest entry removed with the last import | Unused dependency left in the manifest | Unused code stops shipping and scanning |
+| 每个被导入的包都有一条直接的 manifest 条目 | 导入某个依赖所安装的包 | manifest 说明项目依赖什么 |
+| 一个已提交的锁文件以冻结模式安装 | 删除锁文件来清除冲突 | 安装可复现且经过审查 |
+| 应用锁定 `1.4.2` | 应用声明 `^1.4.2` | 构建只在提交变化时变化 |
+| 按计划生成的补丁更新拉取请求 | 生产中的静默自动更新 | 变更经过测试且可归因 |
+| 拉取请求中的准入证据 | “它很流行，所以安全” | 健康度、许可证与占用都经过检查 |
+| 包仓库与机密从 CI 注入 | 在 `.npmrc` 中提交令牌 | 凭据绝不进入仓库 |
+| 许可证扫描器门禁构建 | 审查者批准 copyleft 许可证 | 许可证风险成为有记录的决策 |
+| 最后一个 import 移除时 manifest 条目一并移除 | manifest 中留下未使用的依赖 | 未使用代码不再发布与扫描 |
 
-Development-only dependencies belong in the development scope and do not ship in the artifact. Peer and optional
-dependencies follow the rules of the ecosystem that defines them. Workspace-internal packages order the build but are
-not scanned as external dependencies. An air-gapped build vendors dependencies, and that vendor tree follows the
-generated and third-party rules. Keep a dependency budget in both count and total transitive size; when the budget is
-exceeded, remove one before adding the next. A pre-release or a commit hash is not a release: use it only when no
-version exists, and record why the pin cannot move to a version.
+仅开发用依赖属于开发作用域，不随制品发布。peer 依赖与可选依赖遵循定义它们的生态规则。工作区内包只决定构建
+顺序，不按外部依赖扫描。气隙（air-gapped）构建会 引入依赖，该第三方引入树遵循生成代码与第三方代码规则。从
+数量与传递依赖总大小两方面维持依赖预算；超出预算时，先移除一个再添加下一个。预发布版本或提交哈希不是发布版本：
+只在没有任何版本可用时使用，并记录该锁定为何不能移到某个版本。
 
-## 4. Configuration Management
+## 4. 配置管理
 
-Configuration decides how one build behaves in each environment. When precedence is undocumented or validation is
-deferred, the same commit behaves differently in two places and the difference appears only under production load.
-Configuration is code that runs in every environment, so it receives the same review, versioning, and rollback path as
-the code that reads it.
+配置决定同一份构建在每个环境中的行为。当优先级没有文档或校验被推迟时，同一个提交在两个地方表现不同，而差异只
+在生产负载下才出现。配置是在每个环境中运行的代码，因此它接受与读取它的代码相同的审查、版本管理与回滚路径。
 
-- Fix and document one precedence order: command-line flag, then environment variable, then local config file, then
-  shared config file, then compiled default. Load and merge once at startup in that order, and keep one module
-  responsible for reading every source so no feature invents a second ladder. Document the ladder in the README and
-  exercise the merge with one test per level.
-- Use the source that fits the setting's change frequency and secrecy. Safe compiled defaults live in code,
-  checked-in environment files hold shared non-secret settings, environment variables or a config service hold
-  deployment-specific values, and flags carry one-off operator intent. A secret is referenced by name and resolved
-  from the secret store at runtime. When a value must be identical everywhere, it belongs in the shared file or a
-  compiled constant, not repeated in each environment file.
-- Separate environments by data, not by branch: `config/dev.yaml`, `config/staging.yaml`, and `config/prod.yaml`
-  selected by one environment variable. Production configuration is reviewed like code, deployed through the
-  pipeline, and never edited in place on a running host where the next deployment silently reverts it. Select the file
-  by an explicit environment variable, and make a missing file an error instead of a silent fallback to defaults.
-- Do not branch on the environment inside business logic. Load typed configuration at the edge and inject it; a
-  conditional such as `if env == "prod"` in a request handler means tests exercise one branch while production runs
-  another, and the untested branch is where the incident happens.
-- Validate the merged configuration once at startup against a schema: required keys present, type and range correct,
-  URL parses, referenced path exists, mutually exclusive options rejected. Name the failing key, state the expected
-  form, and exit non-zero before the process accepts traffic. Validate once and pass the result down; validating
-  values from request parameters is a different boundary and does not replace startup validation.
-- Give every optional key a documented default with a unit and a range, and give required keys no fallback at all.
-  Remove hidden fallbacks in call sites such as `timeout or 30`, because they contradict the documented default and
-  make behavior depend on whether the value was absent, empty, or zero.
-- Pass a typed configuration object to modules instead of a dictionary or direct environment access. A module that
-  reads `os.environ` or `process.env` bypasses the precedence ladder, skips validation, and makes its tests depend on
-  the developer's shell. Dependency injection or a small config module both satisfy this; the property that matters is
-  one read point for the whole application.
-- Retire configuration that no longer controls a behavior: no code reads it, two keys control one behavior, or a
-  boolean became a permanent path. One behavior has one key, and renaming a key is a migration with a compatibility
-  window rather than a rename applied to every deployment at once. A removed key leaves a migration note in the
-  reference page and in the change that stops reading it, not only in the configuration file.
+- 固定并记录一套优先级顺序：命令行标志、环境变量、本地配置文件、共享配置文件、编译期默认值。启动时按该顺序加
+  载并合并一次，并让一个模块负责读取所有来源，使任何功能都不能另造第二套阶梯。在 README 中记录这个阶梯，并为
+  每一层用一个测试验证合并。
+- 使用与该设置的变化频率和保密性相匹配的来源。安全的编译期默认值放在代码中，签入的环境文件保存共享的非机密设
+  置，环境变量或配置服务保存部署特定的值，标志承载一次性的运维意图。机密按名称引用，并在运行时从机密存储解
+  析。当某个值必须在所有地方相同，它属于共享文件或编译期常量，而不是在每个环境文件中重复。
+- 按数据而非分支分离环境：用同一个环境变量选择 `config/dev.yaml`、`config/staging.yaml` 与
+  `config/prod.yaml`。生产配置像代码一样审查，通过流水线部署，绝不在运行中的主机上就地编辑，否则下一次部署
+  会静默还原它。用显式环境变量选择文件，并让缺失文件成为错误，而不是静默回退到默认值。
+- 不要在业务逻辑中按环境分支。在边缘加载类型化配置并注入；请求处理器中的 `if env == "prod"` 之类条件意味着
+  测试走一个分支而生产走另一个，而事故恰好发生在未测试的分支。
+- 启动时按 schema 校验合并后的配置一次：必填键存在、类型与范围正确、URL 可解析、引用的路径存在、互斥选项被拒
+  绝。指出失败的键，说明预期形式，并在进程接收流量之前以非零状态退出。只校验一次并把结果向下传递；校验请求参
+  数中的值是另一个边界，不能替代启动时校验。
+- 为每个可选键提供有文档的默认值，并带单位与范围；必填键则完全不提供回退。移除调用点中诸如 `timeout or 30`
+  的隐藏回退，因为它们与有文档的默认值矛盾，并使行为取决于该值是缺失、空还是零。
+- 向模块传入类型化配置对象，而不是字典或直接访问环境。读取 `os.environ` 或 `process.env` 的模块会绕过优先级
+  阶梯、跳过校验，并使其测试依赖开发者的 shell。依赖注入或一个小型配置模块都能满足这一点；关键属性是整个应用
+  只有一个读取点。
+- 退役不再控制任何行为的配置：没有代码读取它、两个键控制同一行为，或某个布尔值变成了永久路径。一个行为只有一
+  个键，重命名键是一次带兼容窗口的迁移，而不是一次性应用到所有部署的重命名。被移除的键要在参考页和停止读取它
+  的那次变更中留下迁移说明，而不只是留在配置文件里。
 
-| Good | Bad | Why |
+| 正例 | 反例 | 原因 |
 |---|---|---|
-| Documented flag over environment over file over default | Each module reads its own source | Behavior is predictable in every environment |
-| A missing required key exits with its name | A missing URL defaults to an empty string | Failure appears at startup, not under load |
-| A typed config object injected into modules | A dictionary passed through five layers | Access is checked and validated once |
-| `config/prod.yaml` selected by one variable | `if env == "prod"` inside a handler | The same code path runs everywhere |
-| A secret referenced by name | A value committed in `config.yaml` | Storage and rotation stay with security |
-| One key per behavior | `TIMEOUT` and `TIMEOUT_MS` both read | No precedence puzzle between duplicate keys |
-| Production config through the pipeline | A manual edit on the production host | The change is reviewed and reversible |
-| `APP_PORT=0` rejected at startup | First request fails on a bad port | Range checks run before traffic arrives |
+| 有文档的标志优先于环境变量、环境变量优先于文件、文件优先于默认值 | 每个模块读取自己的来源 | 行为在每个环境中都可预测 |
+| 缺失的必填键以其名称退出 | 缺失的 URL 默认为空字符串 | 失败在启动时出现，而不是在负载下 |
+| 类型化配置对象注入模块 | 字典穿过五层传递 | 访问被检查且只校验一次 |
+| 用一个变量选择 `config/prod.yaml` | 处理器内部的 `if env == "prod"` | 同一代码路径在所有环境运行 |
+| 按名称引用机密 | 在 `config.yaml` 中提交值 | 存储与轮换留在安全团队 |
+| 每个行为一个键 | `TIMEOUT` 与 `TIMEOUT_MS` 都被读取 | 重复键之间没有优先级难题 |
+| 生产配置通过流水线部署 | 在生产主机上手工编辑 | 变更经过审查且可回滚 |
+| `APP_PORT=0` 在启动时被拒绝 | 第一个请求因坏端口失败 | 范围检查在流量到达之前运行 |
 
-Secret storage, rotation, and access policy belong to security; this section owns precedence, validation, and the
-fail-fast boundary. Test suites build an explicit configuration fixture rather than reading the developer's
-environment, so a green test does not depend on an unexported variable. A long-lived boolean that still selects a
-code path is configuration and retires through this section; a flag that changes deployment behavior belongs to
-release operations. A configuration change that cannot be rolled back on its own is a deployment risk: keep the
-previous value available until the new value shows the expected behavior, then remove it in a later change.
+机密存储、轮换与访问策略属于安全团队；本节负责优先级、校验与快速失败边界。测试套件构建显式配置 fixture，而不
+是读取开发者的环境，这样通过的测试不依赖未导出的变量。长期存在且仍选择代码路径的布尔值属于配置，通过本节退役；
+改变部署行为的标志属于发布与运维。不能单独回滚的配置变更是一项部署风险：在新值表现出预期行为之前保留旧值，然后
+在后续变更中移除它。
 
-## 5. Error Handling and Logging
+## 5. 错误处理与日志
 
-Errors and logs are the only witnesses to a production failure. An error that loses its cause, a catch that swallows
-it, or a log line without fields turns the incident into a guess and the fix into a search. Handle an error where the
-decision can be made and log it where the outcome is known, because a layer that can neither decide nor report only
-adds noise.
+错误与日志是生产故障的唯一见证。丢失原因的错误、吞掉错误的 catch，或没有字段的日志行，会把事故变成猜测、把修
+复变成搜索。在能做出决定的地方处理错误，在结果已知的地方记录日志，因为既不能决定也不能报告的层只会增加噪声。
 
-- Choose one error style per layer: exceptions for unexpected and unrecoverable conditions, result or error values for
-  expected domain outcomes such as validation, not-found, or a declined payment. Do not mix both styles in one API,
-  and state the chosen style on the module's public surface so callers know whether to catch or inspect.
-- Never swallow. Catch only to handle, to add context, or to convert to a result. An empty catch, a catch that logs
-  and rethrows at every layer, and a catch-all that maps every failure to one generic error destroy the stack, the
-  error type, and the evidence that a responder needs to tell a timeout from a validation bug. Catch the narrowest type
-  available, because catching a base type turns a programming mistake into a handled case and hides the fix.
-- Wrap with context and keep the cause: `raise InvoiceSyncError(invoice_id=...) from exc` in Python,
-  `fmt.Errorf("sync invoice %s: %w", id, err)` in Go, `throw new InvoiceSyncException("...", cause)` in Java. Add the
-  operation and a safe identifier, and never replace the cause with a formatted string that discards the stack.
-- Give boundary errors stable codes: one code per cause, machine-readable, localized only at display time. Map
-  internal errors to public codes at the API edge, and never leak stack traces, SQL, internal hostnames, or exception
-  class names to a client, because those reveal topology and implementation details. The public code catalogue, its
-  envelope, and the code values are part of the external contract that the api-and-data role defines; map internal
-  failures onto those codes at the boundary and do not keep a parallel catalogue here.
-- Log an event once, at the boundary that decides the outcome, with stable fields such as `timestamp`, `level`,
-  `event`, `service`, `trace_id`, and `error_code`. Lower layers return errors and do not log what an upper layer will
-  log again; duplicate lines multiply volume and make the first occurrence ambiguous. The event name is stable and
-  low-cardinality, while variable data belongs in fields rather than in the event string.
-- Use the level that states who must act: ERROR for a failed user-visible operation that needs a person, WARN for a
-  degraded but handled condition worth a look, INFO for lifecycle and business events, DEBUG for diagnostics that stay
-  off in production, TRACE only for short investigations. A level is not decoration, and no log level replaces a
-  metric or an alert. The level belongs to the outcome rather than to the exception type: the same timeout is WARN
-  when it is retried and ERROR when it ends the request.
-- Never log secrets, tokens, passwords, cookies, authorization headers, session identifiers, encryption keys, full
-  request or response bodies, or full personal data. Log an identifier or a masked value: `user_id` rather than an
-  email, `a***@example.test.invalid` rather than a real address, and the last four digits only when a business rule
-  requires them.
-- Return actionable messages: say what failed and what the caller or user can do, include a correlation ID, and keep
-  stack traces and internal topology in the log. At startup, fail with the configuration key or dependency name that
-  blocked startup instead of a generic message that sends the responder to the logs without a lead. Name the component,
-  the operation, and the correlation ID in the log, and name only the failed step and the next action in the response.
+- 每层只选一种错误风格：异常用于意外且不可恢复的情况，结果值或错误值用于预期的领域结果，例如校验失败、未找到
+  或支付被拒。不要在一个 API 中混用两种风格，并在模块的公开接口面上说明所选风格，让调用方知道该 catch 还是
+  检查返回值。
+- 绝不吞掉错误。只有为了处理、补充上下文或转换为结果时才 catch。空 catch、每层都记录并重抛的 catch，以及把
+  所有失败都映射为一个通用错误的 catch-all，会破坏堆栈、错误类型，以及响应者区分超时与校验缺陷所需的证据。捕
+  获可用的最窄类型，因为捕获基类会把编程错误变成已处理情况，并掩盖修复。
+- 用上下文包装并保留原因：Python 用 `raise InvoiceSyncError(invoice_id=...) from exc`，Go 用
+  `fmt.Errorf("sync invoice %s: %w", id, err)`，Java 用
+  `throw new InvoiceSyncException("...", cause)`。加上操作与安全标识符，绝不用丢弃堆栈的格式化字符串替换原因。
+- 为边界错误提供稳定错误码：每个原因一个错误码，机器可读，只在展示时本地化。在 API 边缘把内部错误映射为公开错
+  误码，绝不向客户端泄露堆栈跟踪、SQL、内部主机名或异常类名，因为这些会暴露拓扑与实现细节。公开错误码目录、其
+  信封以及错误码值，是 `api-and-data-conventions` 定义的外部契约的一部分；在边界把内部失败映射到这些错误码，不要在这
+  里维护平行目录。
+- 在决定结果的边界只记录一次事件，并带上稳定字段，例如 `timestamp`、`level`、`event`、`service`、`trace_id`
+  与 `error_code`。较低层返回错误，不记录上层会再次记录的内容；重复日志行会放大日志量并使首次出现变得含糊。
+  事件名稳定且基数低，可变数据放在字段中，而不是事件字符串里。
+- 使用能说明谁必须行动的级别：ERROR 用于需要人处理的用户可见操作失败，WARN 用于值得一看的降级但已处理情况，
+  INFO 用于生命周期与业务事件，DEBUG 用于在生产中保持关闭的诊断信息，TRACE 只用于短期调查。级别不是装饰，
+  任何日志级别都不能替代指标或告警。级别属于结果而非异常类型：同一个超时在被重试时是 WARN，在结束请求时是
+  ERROR。
+- 绝不记录机密、令牌、密码、cookie、Authorization 头、会话标识符、加密密钥、完整请求或响应体，或完整个人数
+  据。记录标识符或脱敏值：用 `user_id` 而不是邮箱，用 `a***@example.test.invalid` 而不是真实地址，并且只在
+  业务规则要求时记录最后四位数字。
+- 返回可操作的错误消息：说明什么失败了、调用方或用户可以做什么，包含关联 ID，并把堆栈跟踪与内部拓扑留在日志
+  中。启动时，用阻塞启动的配置键或依赖名失败，而不是用一条让响应者在没有线索的情况下去翻日志的通用消息。在日志
+  中写出组件、操作与关联 ID；在响应中只写失败的步骤与下一步操作。
 
-| Good | Bad | Why |
+| 正例 | 反例 | 原因 |
 |---|---|---|
-| Context added, original cause kept | A bare rethrow or a new message-only error | The chain points at the real failure |
-| A handled catch with a recovery path | An empty catch block | A failure is either fixed or surfaced |
-| Stable public error code at the API edge | A raw exception returned as HTTP 500 | Clients can act and internals stay private |
-| Structured event with named fields | An interpolated sentence with five values | Queries and alerts can match fields |
-| ERROR only when a person must act | Every failure logged at ERROR | Severity keeps its meaning |
-| `user_id` in the log line | Email, phone, or address in the log | Personal data stays out of log storage |
-| One log line at the outcome boundary | The same error logged at four layers | Volume stays down and the cause stays clear |
-| Startup names the blocking key | A generic "cannot start" message | The responder has a lead without searching |
+| 增加了上下文，并保留原始原因 | 裸重抛，或只带消息的新错误 | 错误链指向真正的失败 |
+| 带恢复路径的已处理 catch | 空 catch 块 | 失败要么被修复，要么被暴露 |
+| API 边缘的稳定公开错误码 | 把原始异常作为 HTTP 500 返回 | 客户端可以行动，内部细节保持私有 |
+| 带命名字段的结构化事件 | 含五个值的插值句子 | 查询与告警可以匹配字段 |
+| 只在必须有人行动时用 ERROR | 每个失败都以 ERROR 记录 | 严重级别保持其含义 |
+| 日志行中用 `user_id` | 日志中出现邮箱、电话或地址 | 个人数据不进入日志存储 |
+| 在结果边界记录一行日志 | 同一个错误在四层分别记录 | 日志量保持低，原因保持清晰 |
+| 启动时指出阻塞的键 | 通用的“无法启动”消息 | 响应者无需搜索就有线索 |
 
-Cancellation, timeouts, and shutdown signals are expected conditions rather than errors, and retries must not emit a
-fresh error line for each attempt without a final outcome. Library code returns errors and lets the caller decide what
-to log. The field schema, dashboards, and alert rules for logs and traces belong to release operations; this section
-owns level selection and content policy. Classify failures as retryable or fatal and retry only at one boundary with a
-backoff and a cap, because a retry storm multiplies error volume and can turn a partial outage into a full one. A
-health check that logs every probe is noise, while one that hides why it is unhealthy is a blind spot.
+取消、超时与关闭信号是预期情况而非错误；重试不得在每次尝试时发出新的错误行而没有最终结果。库代码返回错误，由
+调用方决定记录什么。日志与跟踪的字段 schema、仪表盘与告警规则属于发布与运维；本节负责级别选择与内容策略。把失
+败分为可重试与致命，只在一个边界重试，并带退避与上限，因为重试风暴会成倍放大错误量，可能把部分中断变成全面中
+断。记录每次探测的健康检查是噪声，而隐藏不健康原因的健康检查是盲点。
 
-## 6. Generated and Third-Party Code
+## 6. 生成代码与第三方代码
 
-Generated and vendored code is owned by a generator or an upstream project, not by this project's style rules. Treat
-both as build inputs with provenance, or the next regeneration silently erases every hand edit. The rule is simple:
-generated code changes by changing its source, and vendored code changes by changing its version.
+生成代码与第三方引入代码归生成器或上游项目所有，不归本项目的风格规则所有。把两者都当作带来源的构建输入，否则下
+一次重新生成会静默抹掉所有手工编辑。规则很简单：生成代码通过修改其来源来变化，第三方引入代码通过修改其版本来变化。
 
-- Put generated output in a declared directory or filename pattern such as `gen/`, `generated/`, `*.pb.go`,
-  `*_generated.py`, or `*.g.dart`, and add a machine-detectable header naming the generator, its version, and the
-  command. Use the ecosystem marker such as `// Code generated by protoc-gen-go. DO NOT EDIT.` or `@generated`, so
-  tools can exclude the file automatically instead of a hand-maintained list.
-- Never hand-edit generated code. Change the schema, template, or generator invocation, regenerate, and commit the
-  input together with the output. A hand edit survives until the next generation and then disappears without a review
-  trail, so the fix is lost the moment someone else regenerates. Record the generator version in the header so a
-  reviewer can tell which regeneration produced the file.
-- When a local change is unavoidable, keep it outside the generated tree: a patch file under `patches/`, an adapter,
-  or a wrapper with a pinned upstream version, an owner, an issue link, and a removal condition. The build applies the
-  patch, and CI fails if it stops applying instead of shipping a silent divergence.
-- Review the inputs, not the generated lines. Review the schema or template diff, the generator version bump, and a
-  summary of the regeneration. A large generated diff is expected when the input changed and is suspicious when the
-  input did not, which is exactly the signal a line-by-line review of generated code cannot give.
-- Regenerate in CI and fail on drift. Run the generator in a job, compare the working tree with the committed output
-  using `git diff --exit-code` or the tool's check mode, and report the command that reproduces the output. Stale
-  generated code becomes a build failure rather than a review finding that a later change silently contradicts. Use the
-  generator's own check mode when it has one; `git diff --exit-code` is the fallback for generators without one.
-- Keep vendored code in one isolated directory with provenance: upstream source, version or commit, license text, and
-  the reason for vendoring in a manifest or README. Import it through one boundary so a later replacement or upgrade
-  touches one file, and treat a copied snippet as vendored code that needs the same provenance and license record.
-  Record why the dependency was vendored rather than declared, and revisit that reason at every upgrade.
-- Exclude generated and vendored code from formatters, linters, coverage thresholds, and style review, and keep the
-  exclusions in tool configuration where they can be audited. Exclusion from tests, search, or security analysis is a
-  separate decision, because a style exemption does not imply that unread code is unexamined code. Each exclusion
-  carries a comment naming the generator or the upstream project, so a later reader can tell why the file is outside.
-- Distinguish generated source from build output. A lockfile or a generated client is committed because it is an input
-  to reproduction and review; build directories, caches, compiled binaries, and package-manager trees are ignored and
-  rebuilt. A committed build artifact becomes a merge conflict on every branch, and its provenance is undefined. Keep
-  ignore rules at the repository root and confirm that a clean clone can rebuild every ignored artifact.
+- 把生成输出放在已声明的目录或文件名模式中，例如 `gen/`、`generated/`、`*.pb.go`、`*_generated.py` 或
+  `*.g.dart`，并加上机器可检测的头部，写明生成器、其版本与命令。使用生态标记，例如
+  `// Code generated by protoc-gen-go. DO NOT EDIT.` 或 `@generated`，让工具自动排除文件，而不是依赖手工维
+  护的列表。
+- 绝不手工编辑生成代码。修改 schema、模板或生成器调用，重新生成，并把输入与输出一起提交。手工编辑只能存活到
+  下一次生成，然后不留审查轨迹地消失，因此一旦别人重新生成，修复就丢了。在头部记录生成器版本，让审查者能看出文
+  件由哪次重新生成产生。
+- 当本地改动无法避免时，把它放在生成树之外：`patches/` 下的补丁文件、适配器，或带锁定上游版本、负责人、issue
+  链接与移除条件的包装层。构建应用该补丁，如果补丁不再能应用则 CI 失败，而不是发布静默的分歧。
+- 审查输入，而不是生成的行。审查 schema 或模板 diff、生成器版本升级，以及重新生成的摘要。输入变化时生成 diff
+  很大是预期内的，输入未变时则可疑，这正是一行行审查生成代码无法给出的信号。
+- 在 CI 中重新生成，并对漂移失败。在任务中运行生成器，用 `git diff --exit-code` 或工具自身的校验模式比较
+  工作树与已提交输出，并报告能重现该输出的命令。过期的生成代码成为构建失败，而不是一条后来会被静默否定的审查
+  发现。生成器自带校验模式时就用它；`git diff --exit-code` 是没有该模式的生成器的回退方案。
+- 把第三方引入代码放进隔离目录，并附来源：上游来源、版本或提交、许可证文本，以及引入的理由，放在
+  manifest 或 README 中。通过一个边界导入它，后续替换或升级只触碰一个文件；复制的代码片段同样按第三方
+  引入代码处理，需要相同的来源与许可证记录。记录该依赖为何被引入而不是直接声明，并在每次升级时重新审视
+  这个理由。
+- 把生成代码与第三方引入代码排除在 formatter、linter、覆盖率阈值与风格审查之外，并把排除项保留在可审查的工具配
+  置中。是否排除测试、搜索或安全分析是另一个决定，因为风格豁免并不意味着未阅读的代码就是未检查的代码。每个排除
+  项都带注释，写明生成器或上游项目，让后来的读者能看出该文件为何被排除在外。
+- 区分生成源码与构建输出。锁文件或生成的客户端要提交，因为它是可复现与审查的输入；构建目录、缓存、编译后的二
+  进制与包管理器目录被忽略并重建。提交的构建制品会在每个分支上变成合并冲突，且其来源不明。把忽略规则放在仓库
+  根，并确认干净克隆能重建每个被忽略的制品。
 
-| Good | Bad | Why |
+| 正例 | 反例 | 原因 |
 |---|---|---|
-| A header naming generator, version, and command | An unmarked file that looks hand-written | Tools and readers can identify and exclude it |
-| CI regenerates and diffs the committed output | Stale generated code committed by hand | Drift fails the build instead of a review |
-| A patch directory with owner and issue link | A hand-edited vendor file | The patch is visible and removable |
-| A vendor manifest with version and license | Vendor code with no provenance | Upgrade and license questions are answerable |
-| The generator tree excluded from the formatter | Formatting the generated client | Regeneration produces no churn |
-| `dist/` ignored and rebuilt | Build output committed | No merge conflicts on binary artifacts |
-| Generator input and version reviewed | Generated lines reviewed one by one | Review attention goes where the decision is |
-| A copied snippet with source and license | An unlicensed copy of upstream code | Attribution and license obligations are met |
+| 头部写明生成器、版本与命令 | 看起来像手写、没有标记的文件 | 工具与读者能识别并排除它 |
+| CI 重新生成并 diff 已提交输出 | 手工提交过期的生成代码 | 漂移使构建失败，而不是变成审查发现 |
+| 带负责人与 issue 链接的补丁目录 | 手工编辑的第三方引入文件 | 补丁可见且可移除 |
+| 带版本与许可证的第三方引入清单 | 没有来源的第三方引入代码 | 升级与许可证问题都能回答 |
+| 生成树排除在 formatter 之外 | 格式化生成的客户端 | 重新生成不产生噪声 |
+| 忽略并重建 `dist/` | 提交构建输出 | 二进制制品没有合并冲突 |
+| 审查生成器输入与版本 | 逐行审查生成的行 | 审查注意力放在决策所在处 |
+| 带来源与许可证的复制片段 | 没有许可证的上游代码副本 | 归属与许可证义务得到满足 |
 
-Generated documentation and migration files are documents and schema changes owned by the documentation and
-api-and-data conventions skills; they still carry markers and provenance. IDE-generated and scaffolding output is
-generated code even when the project retains it. Regeneration must be deterministic: pin the generator version, sort
-its inputs, and exclude timestamps, absolute paths, and machine names from the output so a no-change run produces no
-diff. A generated client's public API is an API contract, so the api-and-data review covers the schema while a code
-review covers the adapter and error mapping around it. When a generator cannot be pinned, record the output hash in CI
-so an unexplained regeneration fails the build.
+生成的文档与迁移文件是由 `documentation-conventions` 与 `api-and-data-conventions` 拥有的文档和 schema 变更；它们仍然带有标记与
+来源。IDE 生成与脚手架输出属于生成代码，即使项目保留它们。重新生成必须确定性：锁定生成器版本、排序其输入，并
+从输出中排除时间戳、绝对路径与机器名，使无变化运行不产生 diff。生成客户端的公开 API 是 API 契约，因此接口与
+数据审查覆盖 schema，代码审查覆盖其周围的适配器与错误映射。当生成器无法锁定时，在 CI 中记录输出哈希，使无法解
+释的重新生成导致构建失败。

@@ -1,225 +1,204 @@
 ---
 name: code-style-conventions
-description: Defines, reviews, and repairs code style, repository layout, dependency management, configuration handling, and error and log policy for any programming project. Use when choosing formatter and linter rules, adding or removing a dependency, separating environments and validating configuration, reviewing error handling and logging, isolating generated or vendored code, or reconciling inconsistent project layout.
-argument-hint: '[path or scope]'
+description: 定义、审查并修复任意编程项目的代码风格、仓库布局、依赖管理、配置处理以及错误与日志策略。适用于选择 formatter 与 linter 规则、增删依赖、分离环境并校验配置、审查错误处理与日志、隔离生成代码或第三方引入代码，或统一不一致的项目布局。
+argument-hint: '[路径或范围]'
 ---
 
-# Code Style Conventions
+# 代码风格规范
 
-Style, layout, dependency, configuration, and error-handling failures compound: mechanical noise in a diff hides the
-one behavioral change a reviewer needed to see; an implicit boundary between modules becomes hidden coupling that
-every later change drags along; ambient configuration makes a service behave one way locally and another way in
-production; and a swallowed error turns a visible failure into a silent one that surfaces days later. Each problem is
-cheap to prevent with one rule and expensive to diagnose after release. This skill gives one decision procedure and a
-complete rule set for the mechanical and structural side of code: formatting, source tree and module boundaries,
-dependencies, configuration, error and log policy, and generated and third-party code. It serves the author setting up
-a repository and the reviewer judging a diff, because the same rules decide where a fact belongs and whether a change
-is safe. The rules are language-agnostic; the per-language reference supplies the tool defaults, and a project that
-already enforces a different default keeps it. The skill applies in three modes: define the rules when a project
-starts, review a change against them, and repair an existing repository in one scoped migration.
+风格、布局、依赖、配置与错误处理上的失败会叠加：diff 中的机械噪声会掩盖审查者本应看到的那一处行为变更；模块
+之间隐含的边界会变成后续每次变更都要拖动的隐藏耦合；环境差异配置会让服务在本地和生产表现不同；被吞掉的错误会
+把可见故障变成几天后才浮现的静默故障。每个问题用一个规则预防成本很低，发布后再诊断却代价高昂。本 skill 给出
+一套决策流程与完整规则集，覆盖代码的机械与结构层面：格式化、源码树与模块边界、依赖、配置、错误与日志策略，以及
+生成代码与第三方代码。它服务于搭建仓库的作者和评判 diff 的审查者，因为同一套规则既决定事实该放在哪里，也决定
+变更是否安全。这些规则与语言无关；各语言参考文档给出工具默认值，项目若已强制另一种默认值则沿用项目。本 skill
+在三种模式下适用：项目启动时定义规则、按规则审查变更，以及用一次范围明确的迁移修复既有仓库。
 
-## Scope and Precedence
+## 适用范围与优先级
 
-Apply the first rule that fits, and do not mix standards inside one scope:
+采用第一条适用的规则，同一范围内不要混用标准：
 
-1. Mandatory tool or project standard. A configured formatter, a linter rule set, `.editorconfig`, compiler warnings,
-   and a documented project style guide are not optional; the tool output is the rule.
-2. Existing project convention. Read the code, the configuration, and the build scripts before inventing a rule; a
-   convention the code follows consistently still outranks this file even when no tool enforces it.
-3. This standard's defaults, when the two levels above are silent.
-4. Personal preference, which never overrides the three levels above.
+1. 强制的工具或项目标准。已配置的 formatter、linter 规则集、`.editorconfig`、编译器警告以及有文档的项目风格
+   指南都不是可选项；工具输出就是规则。
+2. 既有项目约定。发明规则之前先阅读代码、配置与构建脚本；代码一致遵循的约定即使没有工具强制，也优先于本文件。
+3. 本标准的默认值，在前两层未作规定时适用。
+4. 个人偏好，永远不能覆盖上述三层。
 
-- Naming belongs to the naming conventions skill. Identifiers, file and directory names, casing, and naming tables are
-  out of scope here; this skill consumes those names and applies them to layout, format, and policy. When a rename and
-  a reformat land together, split them, because the rename is the other skill's scope.
-- Comments and doc comments belong to the comment conventions skill. The formatter decides how a comment block is
-  indented; whether the comment should exist is that skill's decision.
-- Standalone documentation and its templates belong to the documentation conventions skill. Configuration reference
-  pages and runbooks are documents; the keys they describe follow this skill.
-- API contract design and database schema and data-retention process belong to the api-and-data conventions skill.
-  This skill covers general code craft inside a service, not the shape of its external contract.
-- Tests, quality gates, and the development environment belong to the testing-and-quality conventions skill. A
-  formatter or linter gate lives in CI; which gates are mandatory is that skill's decision.
-- CI/CD pipelines, releases, observability field schemas, incident response, and backups belong to the
-  release-operations conventions skill. Log levels and log content policy stay here; where logs are stored, indexed,
-  and alerted on stays there.
-- Instruction and prompt files belong to the system prompt authoring skill; they are not application code and do not
-  follow this skill's formatter or lint rules. A prompt file reviewed for style is reviewed against its own skill.
-- Generated and vendored code is exempt from edits but not from the rules below: keep the generation marker, keep
-  vendored files untouched, exclude both from formatters and linters, and regenerate or re-vendor instead of editing.
-- Enforcement stays in the repository. A rule without a formatter, linter, test, or review checkpoint erodes within
-  a quarter; put the check where the change happens, keep it visible in CI, and name the command in the guide.
-- A style change is a code change. Apply it in one scoped change, keep it out of a behavior change's diff, update the
-  formatter or linter configuration that enforces it, update affected docs in the same delivery, and verify on a
-  clean checkout. Do not reformat a file you touched for another reason, because the reviewer cannot separate the two
-  changes.
-- When two rules conflict, state the conflict first, follow the higher-precedence level, and record which rule the
-  project deviates from. Following both halfway is a defect.
+- 命名属于 `naming-conventions`。标识符、文件与目录名、大小写以及命名表不在本 skill 范围内；本 skill 使用这些名称，
+  并将它们应用到布局、格式与策略。当重命名与重新格式化同时落地时，要把它们拆开，因为重命名属于 `naming-conventions`
+  的范围。
+- 注释与 doc 注释属于 `comment-conventions`。formatter 决定注释块如何缩进；注释是否应当存在由那个 skill 决定。
+- 独立文档及其模板属于 `documentation-conventions`。配置参考页与运行手册是文档；它们描述的配置键遵循本 skill。
+- API 契约设计，以及数据库 schema 与数据保留流程，属于 `api-and-data-conventions`。本 skill 覆盖服务内部的通用代码
+  技艺，不覆盖其对外契约的形态。
+- 测试、质量门禁与开发环境属于 `testing-and-quality-conventions`。formatter 或 linter 门禁位于 CI；哪些门禁是强制性的由
+  那个 skill 决定。
+- CI/CD 流水线、发布、可观测性字段 schema、事故响应与备份属于 `release-operations-conventions`。日志级别与日志内容策略留
+  在本 skill；日志存储在哪里、如何索引与告警则由那个 skill 负责。
+- 指令文件与提示文件属于 `system-prompt-authoring`；它们不是应用代码，不遵循本 skill 的 formatter 或 lint 规则。按
+  风格审查提示文件时，要依据它所属 skill 的规则。
+- 生成代码与第三方引入代码不受编辑要求约束，但仍受下列规则约束：保留生成标记，保持第三方引入文件不被改动，将两者
+  排除在 formatter 与 linter 之外，并用重新生成或重新引入 代替编辑。
+- 强制手段留在仓库内。没有 formatter、linter、测试或审查检查点的规则会在一个季度内失效；把校验放在变更发生
+  处，让它在 CI 中可见，并在指南中写明命令。
+- 风格变更就是代码变更。用一次范围明确的变更实施它，不要把它混进行为变更的 diff，更新强制该风格的 formatter
+  或 linter 配置，在同一次交付中更新受影响的文档，并在干净检出的代码上验证。不要重新格式化你因其他原因碰过
+  的文件，因为审查者无法把两处变更分开。
+- 当两条规则冲突时，先说明冲突，遵循优先级更高的一层，并记录项目偏离了哪条规则。两边各做一半就是缺陷。
 
-## Process
+## 流程
 
-1. Find the configured authority. Locate the formatter and linter configuration, `.editorconfig`, package manifest,
-   lockfile, configuration loader, and CI commands. Read the project style guide if one exists.
-2. Classify the concern. Decide whether it is formatting, layout or a module boundary, a dependency, configuration,
-   error or log policy, or generated and third-party code. A change that spans classes is a plan, not one edit, and a
-   concern that fits two classes needs two changes with their own verification.
-3. Decide whether the linter already enforces it. If a rule exists, fix the violation instead of documenting a
-   convention. If no rule exists, either add one rule in its own configuration change or record the convention in the
-   project style guide.
-4. Make the smallest config or code change. Prefer one configuration line or one scoped code change; do not reformat
-   unrelated files, and do not raise a tool version inside a style fix.
-5. Verify on a clean checkout. Run the formatter check, the linter, the build, and the relevant tests through the
-   project's documented commands, then paste the actual output and exit codes. A check that passes locally and fails
-   in CI means the tool versions or the checkout state differ; align them before changing rules.
-6. Update docs and config in the same change. A rule needs its enforcing configuration and one line in the project
-   style guide; a dependency needs the manifest, lockfile, and license notice; a config key needs the reference page.
-7. Review the diff. Confirm only intended files changed, no generated or vendored file was edited, no secret appears,
-   no behavior change hides inside formatting, and the change can be reverted on its own. State the verification
-   command and its exit code in the delivery instead of a claim that it passed.
+1. 找到已配置的权威来源。定位 formatter 与 linter 配置、`.editorconfig`、包 manifest、锁文件、配置加载器与
+   CI 命令。如果项目有风格指南，阅读它。
+2. 对关注点分类。判断它属于格式化，布局或模块边界，依赖，配置，错误或日志策略，还是生成与第三方代码。跨类别
+   的变更是一份计划，而不是一次编辑；同时符合两个类别的关注点需要两次变更，各自验证。
+3. 判断 linter 是否已经强制它。若已有规则，修正违规，而不是记录一条约定。若没有规则，要么在独立的配置变更中
+   新增一条规则，要么把约定记录到项目风格指南中。
+4. 做最小的配置或代码变更。优先一行配置或一次范围明确的代码变更；不要重新格式化无关文件，也不要在风格修复中
+   升级工具版本。
+5. 在干净检出的代码上验证。通过项目文档中的命令运行 formatter 校验、linter、构建与相关测试，然后粘贴真实输出
+   与退出码。本地通过而 CI 失败的校验，说明工具版本或检出状态不一致；先对齐它们，再改规则。
+6. 在同一次变更中更新文档与配置。一条规则需要其强制配置和项目风格指南中的一行说明；一个依赖需要 manifest、
+   锁文件与许可证声明；一个配置键需要参考页。
+7. 审查 diff。确认只有预期文件被改动、没有生成文件或第三方引入文件被编辑、没有机密出现、没有行为变更藏在格式
+   化里，且该变更可以单独回滚。在交付中说明验证命令及其退出码，而不是声称它通过了。
 
-## Core Rules
+## 核心规则
 
-- **The formatter owns whitespace.** Run the configured formatter instead of hand-wrapping, aligning, or re-indenting;
-  a hand edit is undone by the next run and becomes review noise in the meantime.
-- **One line width, set in configuration.** Read the width from the formatter config and wrap code at it; keep string
-  literals, URLs, hashes, and data tables unbroken because they cannot be split without changing meaning.
-- **Mechanical changes are reviewed by tool output, not by eye.** A formatting-only change carries the formatter
-  command in its description and nothing else; a behavior change never contains a reflow.
-- **Import order states dependency structure.** Group imports as standard library, third-party, and project, sort
-  inside a group, and ban wildcard imports; the ordering makes a boundary violation visible before a test fails.
-- **Dependencies point one direction.** Domain and application code import no infrastructure; adapters implement
-  interfaces the domain owns, so replacing a database or a queue never reaches into business rules.
-- **Every module declares its public surface.** Expose named exports, keep the rest unimportable, and import another
-  module only through its surface; an import of an internal path is a boundary violation, not a shortcut.
-- **Use only declared dependencies.** Import a package because the manifest declares it, never because another
-  dependency installed it; import what is declared and declare what is imported.
-- **Adding a dependency is a design decision.** Check the standard library and existing dependencies first, then
-  maintenance, known vulnerabilities, license, install footprint, and an exit path, and record the evidence.
-- **Configuration has one documented precedence order.** Apply flags over environment variables over config files over
-  compiled defaults, load and merge once at startup, and forbid modules from reading the environment on their own.
-- **Validate configuration once, at startup.** Check required keys, types, ranges, and combinations against a schema,
-  name the failing key, and refuse to start instead of failing later under load.
-- **Secrets never enter code, configuration, logs, or errors.** Reference a secret by name and resolve it at runtime
-  from the store security owns; mask or omit it everywhere it could be written down.
-- **Catch only what you can handle.** Handle the failure, add context and keep the cause, or let it propagate; an empty
-  catch and a log-and-rethrow both destroy the evidence the next responder needs.
-- **Log once, structured, at a level that states who should act.** Emit stable fields at the boundary that decides the
-  outcome; ERROR means a person must act, and no log line contains secrets or unmasked personal data.
-- **Generated code is never hand-edited.** Change the generator, schema, or template and regenerate; keep a local
-  patch outside the generated tree with an owner and an upstream reference, and remove it when upstream fixes it.
+- **空白由 formatter 负责。** 运行已配置的 formatter，而不是手工折行、对齐或重新缩进；手工编辑会被下一次运行
+  撤销，其间只是审查噪声。
+- **行宽只有一个，且在配置中设定。** 从 formatter 配置中读取行宽，并按它折行；字符串字面量、URL、哈希与
+  数据表保持不拆断，因为拆分它们会改变含义。
+- **机械变更靠工具输出审查，而不是靠肉眼。** 纯格式化变更在其描述中只带 formatter 命令，不带其他内容；行为变
+  更绝不夹带重排。
+- **导入顺序表达依赖结构。** 按标准库、第三方、项目分组排列 import，组内排序，并禁止通配符导入；这种顺序让边
+  界违规在测试失败之前就可见。
+- **依赖只指向一个方向。** 领域与应用代码不导入基础设施；适配器实现领域拥有的接口，因此替换数据库或队列永远
+  不会伸进业务规则。
+- **每个模块声明自己的公开接口面。** 暴露命名导出，其余内容不可导入，并且只通过模块接口面导入其他模块；导入
+  内部路径是边界违规，不是捷径。
+- **只使用已声明的依赖。** 导入某个包是因为 manifest 声明了它，绝不是因为另一个依赖安装了它；导入已声明的，
+  声明已导入的。
+- **新增依赖是设计决策。** 先检查标准库与现有依赖，再检查维护状况、已知漏洞、许可证、安装占用与退出路径，并
+  记录证据。
+- **配置只有一套有文档的优先级顺序。** 按命令行标志优先于环境变量、环境变量优先于配置文件、配置文件优先于编
+  译期默认值的顺序应用，在启动时加载并合并一次，并禁止模块自行读取环境。
+- **在启动时校验配置一次。** 按 schema 检查必填键、类型、范围与组合，指出失败的键，并拒绝启动，而不是等负载
+  上来后才失败。
+- **机密绝不进入代码、配置、日志或错误。** 按名称引用机密，并在运行时从安全团队拥有的存储中解析；在所有可能
+  被写下的地方掩码或省略它。
+- **只捕获你能处理的错误。** 处理失败、补充上下文并保留原因，或者让它继续传播；空 catch 与记录日志后再抛出，
+  都会破坏下一位响应者需要的证据。
+- **只记录一次结构化日志，并用能说明谁该行动的级别。** 在决定结果的边界输出稳定字段；ERROR 意味着必须有人行
+  动，任何日志行都不包含机密或未脱敏的个人数据。
+- **生成代码绝不手工编辑。** 修改生成器、schema 或模板后重新生成；把本地补丁放在生成树之外，并附上负责人与
+  上游引用，在上游修复后移除。
 
-## Style Decision Matrix
+## 风格决策矩阵
 
-| Concern | Default rule | Where the rule lives | Example |
+| 关注点 | 默认规则 | 规则所在位置 | 示例 |
 |---|---|---|---|
-| Formatting | Configured formatter rewrites files; reviewers never debate whitespace | Formatter config and pre-commit hook | `ruff format`, `prettier --write`, `gofmt -w` |
-| Line width | One value per language read from config; wrap code at it | Formatter config | `line-length = 100`, `"printWidth": 100` |
-| Import order | Standard library, third-party, project; sorted inside a group | Lint rule or formatter | Ruff `I001`, `import/order`, goimports |
-| Block structure | Braces where optional; extract instead of nesting past three levels | Linter rule and review | `curly`, `max-depth`, early return |
-| Module surface | Named public exports; internals unimportable across a boundary | Package config and lint rule | `__all__`, `internal/`, `pub(crate)` |
-| Dependency direction | Infrastructure depends on domain; domain imports no infrastructure | Import rules and review | `dependency-cruiser`, `import-linter` |
-| New dependency | Admission needs a need, health, license, and footprint check | Pull request checklist | `cargo deny`, `pip-audit`, license scan |
-| Version pinning | Applications pin exact versions; libraries declare ranges; lockfile committed | Manifest and lockfile | `package-lock.json`, `uv.lock`, `go.sum` |
-| Config policy | Flags over environment over file over default; validate at startup | Config loader and schema | `APP_PORT` overrides `config.yaml`; `APP_PORT=0` exits non-zero |
-| Error wrapping | Add operation context, keep the typed cause, log once at the boundary | Code convention and lint rule | `raise InvoiceSyncError(...) from exc`, `%w` |
-| Log content | Events with stable fields; no secrets, tokens, or full personal data | Logger config and review | `logger.error("invoice.sync_failed", error_code="E_SYNC")` |
-| Generated code | Regenerate, never edit; CI fails when committed output differs | Generator config and CI job | `git diff --exit-code -- gen/` |
+| 格式化 | 已配置的 formatter 重写文件；审查者从不争论空白 | formatter 配置与 pre-commit hook | `ruff format`, `prettier --write`, `gofmt -w` |
+| 行宽 | 每种语言从配置读取一个值；按它折行 | formatter 配置 | `line-length = 100`, `"printWidth": 100` |
+| 导入顺序 | 标准库、第三方、项目；组内排序 | linter 规则或 formatter | Ruff `I001`, `import/order`, goimports |
+| 块结构 | 可选花括号处都写花括号；超过三层嵌套就提取 | linter 规则与审查 | `curly`, `max-depth`, 提前返回 |
+| 模块接口面 | 命名公开导出；跨边界时内部内容不可导入 | 包配置与 lint 规则 | `__all__`, `internal/`, `pub(crate)` |
+| 依赖方向 | 基础设施依赖领域；领域不导入基础设施 | 导入规则与审查 | `dependency-cruiser`, `import-linter` |
+| 新依赖 | 准入需要必要性、健康度、许可证与占用检查 | 拉取请求检查清单 | `cargo deny`, `pip-audit`, 许可证扫描 |
+| 版本锁定 | 应用锁定精确版本；库声明范围；提交锁文件 | manifest 与锁文件 | `package-lock.json`, `uv.lock`, `go.sum` |
+| 配置策略 | 标志优先于环境变量、文件、默认值；启动时校验 | 配置加载器与 schema | `APP_PORT` 覆盖 `config.yaml`；`APP_PORT=0` 以非零退出 |
+| 错误包装 | 增加操作上下文，保留类型化原因，在边界记录一次日志 | 代码约定与 lint 规则 | `raise InvoiceSyncError(...) from exc`, `%w` |
+| 日志内容 | 带稳定字段的事件；不包含机密、令牌或完整个人数据 | 日志器配置与审查 | `logger.error("invoice.sync_failed", error_code="E_SYNC")` |
+| 生成代码 | 重新生成，绝不编辑；提交的输出有差异时 CI 失败 | 生成器配置与 CI 任务 | `git diff --exit-code -- gen/` |
 
-## Dimension Index
+## 维度索引
 
-| No. | Dimension | First rule |
+| 序号 | 维度 | 首条规则 |
 |---|---|---|
-| 1 | Code style and formatting | One configured formatter owns whitespace; line width, quotes, and import order are config values. |
-| 2 | Layout, modules, and boundaries | Pick one organizing axis, expose one public surface per module, and point dependencies inward. |
-| 3 | Dependency management | Declare direct dependencies only, commit one lockfile, and admit a dependency against written criteria. |
-| 4 | Configuration management | Fix the precedence order, validate the merged result at startup, and keep secrets out of every source. |
-| 5 | Error handling and logging | Wrap with context and keep the cause; log once, structured, with stable fields and no personal data. |
-| 6 | Generated and third-party code | Mark generated output, never edit it, regenerate in CI, and isolate vendored code with provenance. |
+| 1 | 代码风格与格式化 | 一个已配置的 formatter 负责空白；行宽、引号与导入顺序都是配置值。 |
+| 2 | 布局、模块与边界 | 只选一个组织轴，每个模块只暴露一个公开接口面，依赖指向内部。 |
+| 3 | 依赖管理 | 只声明直接依赖，提交一个锁文件，并依据书面标准准入依赖。 |
+| 4 | 配置管理 | 固定优先级顺序，启动时校验合并后的结果，并让机密远离一切来源。 |
+| 5 | 错误处理与日志 | 带上下文包装并保留原因；只记录一次结构化日志，字段稳定且不含个人数据。 |
+| 6 | 生成代码与第三方代码 | 标记生成输出，绝不编辑，在 CI 中重新生成，并隔离带来源记录的第三方引入代码。 |
 
-## Anti-Patterns
+## 反模式
 
-| Anti-pattern | Why it fails | Fix |
+| 反模式 | 为什么失败 | 修复 |
 |---|---|---|
-| Hand-wrapping lines to a width the formatter ignores | The next run rejoins them, so the diff is churn twice over | Set the width in config and let the formatter wrap |
-| Reformatting a whole file inside a behavior change | The real change disappears into noise and rollback is all or nothing | Land formatting as its own scoped change first |
-| Wildcard imports such as `from x import *` or `import java.util.*` | Hides where a name comes from and breaks when the dependency changes | Import names explicitly and enforce the rule |
-| `utils/`, `helpers/`, or `common/` as an unowned directory | Attracts unrelated helpers, then cycles and unclear ownership | Name the responsibility and give the module an owner |
-| Fixing an import cycle with a suppression comment | The coupling stays and the next cycle is hidden too | Invert with an interface or move the shared type down |
-| Importing a transitive dependency directly | Disappears when the intermediate dependency changes; not declared | Declare the dependency or use the owning API |
-| Deleting the lockfile to clear a conflict | Installs unreviewed versions and destroys reproducibility | Resolve the conflict, regenerate, and review the lock diff |
-| Using `latest` or an unpinned tool in a production build | The build changes without a commit or review | Pin a version or image digest and bump deliberately |
-| Branching on the environment inside business logic | Tests cover one branch and production runs another | Load typed config at the edge and inject it |
-| Defaulting a required config key to an empty or plausible value | The service starts and fails at the first request instead of at boot | Validate at startup and name the missing key |
-| Committing `.env` or a secret value "temporarily" | It persists in history after the temporary need ends | Reference the secret store and ignore the local file |
-| Empty catch, or catch-log-rethrow at every layer | The failure disappears or duplicates while the cause is lost | Handle it, wrap it with context, or propagate it |
-| Logging full requests, responses, or interpolated personal data | Copies personal data into log storage and alerts | Log stable fields, IDs, and masked values only |
-| Editing a generated file directly | The next regeneration deletes the edit without a trace | Change the generator input and regenerate |
-| Running the formatter over generated or vendored trees | Regeneration produces churn and upstream patches conflict | Exclude those trees and keep the exclusion visible |
-| Committing build output the pipeline can rebuild | Every branch conflicts on a binary artifact with no provenance | Ignore the directory and rebuild it in the pipeline |
+| 手工把行折到 formatter 忽略的宽度 | 下一次运行会把它们重新合并，diff 变成双重噪声 | 在配置中设置宽度，让 formatter 折行 |
+| 在行为变更中重新格式化整个文件 | 真正的变更淹没在噪声里，回滚只能全有全无 | 先作为独立的范围变更落地格式化 |
+| 通配符导入，如 `from x import *` 或 `import java.util.*` | 隐藏名称来源，依赖变化时就会破坏 | 显式导入名称并强制该规则 |
+| 把 `utils/`、`helpers/` 或 `common/` 作为无主目录 | 吸引无关辅助代码，随后出现循环依赖与不清晰的归属 | 命名职责，并为模块指定负责人 |
+| 用抑制注释修复导入循环 | 耦合仍在，下一个循环也会被隐藏 | 用接口反转，或把共享类型下移 |
+| 直接导入传递依赖 | 中间依赖变化时它就消失；且未被声明 | 声明该依赖，或使用拥有它的 API |
+| 删除锁文件来清除冲突 | 安装未审查的版本并破坏可复现性 | 解决冲突、重新生成并审查锁文件 diff |
+| 在生产构建中使用 `latest` 或未锁定的工具 | 构建会在没有提交或审查的情况下变化 | 锁定版本或镜像摘要，并有意识地升级 |
+| 在业务逻辑中按环境分支 | 测试覆盖一个分支，生产却运行另一个 | 在边缘加载类型化配置并注入 |
+| 把必填配置键默认成空值或看似合理的值 | 服务会启动，并在第一个请求时失败，而不是在启动时失败 | 在启动时校验并指出缺失的键 |
+| “临时”提交 `.env` 或机密值 | 临时需求结束后它仍留在历史中 | 引用机密存储并忽略本地文件 |
+| 空 catch，或每一层都 catch-日志-重抛 | 失败消失或重复，同时原因丢失 | 处理它、用上下文包装它，或传播它 |
+| 记录完整请求、响应或插值后的个人数据 | 把个人数据复制进日志存储与告警 | 只记录稳定字段、ID 与脱敏值 |
+| 直接编辑生成文件 | 下一次重新生成会无痕删除该编辑 | 修改生成器输入并重新生成 |
+| 对生成树或第三方引入树运行 formatter | 重新生成产生噪声，上游补丁冲突 | 排除这些树，并让排除项可见 |
+| 提交流水线可以重建的构建输出 | 每个分支都在无来源的二进制制品上冲突 | 忽略该目录，并在流水线中重建 |
 
-## Review Checklist
+## 审查清单
 
-- [ ] The formatter check passes without rewriting any file.
-- [ ] The configured linter passes with the project rule set.
-- [ ] No code line exceeds the configured width, and no hand-wrapped line will be rejoined.
-- [ ] Imports are grouped and sorted; no wildcard and no unused import remains.
-- [ ] Each module has an explicit public surface and no internal import crosses it.
-- [ ] No import cycle exists; dependencies point from infrastructure toward the domain.
-- [ ] Every imported package is declared directly in the manifest.
-- [ ] A dependency addition or removal carries the admission evidence and the lockfile change.
-- [ ] The lockfile is committed and CI installs in frozen mode.
-- [ ] Configuration precedence is documented and the merged configuration is validated at startup.
-- [ ] Required configuration has no silent fallback in call sites.
-- [ ] No secret value appears in code, configuration, fixtures, logs, or examples.
-- [ ] Caught errors add context and keep the cause; no empty catch and no log-and-rethrow.
-- [ ] Internal failures map to the public contract's codes at the boundary, with no parallel catalogue.
-- [ ] Logs are structured, carry the agreed fields, and use the level that matches who must act.
-- [ ] No secret, token, full request body, or unmasked personal data appears in a log line.
-- [ ] Generated files carry a marker and were regenerated, not edited; vendored files are untouched.
-- [ ] The configuration and documentation that describe the behavior changed in the same delivery.
-- [ ] The change is one scoped commit that can be reverted without touching another concern.
-- [ ] No build output, cache, or vendored file appears in the diff unless it is a reviewed input.
+- [ ] formatter 校验通过，且没有重写任何文件。
+- [ ] 已配置的 linter 按项目规则集通过。
+- [ ] 没有代码行超过配置宽度，也没有手工折行的行会被重新合并。
+- [ ] import 已分组并排序；没有通配符导入，也没有未使用的 import。
+- [ ] 每个模块都有明确的公开接口面，且没有内部导入越过它。
+- [ ] 不存在导入循环；依赖从基础设施指向领域。
+- [ ] 每个被导入的包都在 manifest 中直接声明。
+- [ ] 新增或删除依赖带有准入证据与锁文件变更。
+- [ ] 锁文件已提交，CI 以冻结模式安装。
+- [ ] 配置优先级有文档，合并后的配置在启动时校验。
+- [ ] 必填配置在调用点没有静默回退。
+- [ ] 代码、配置、fixture、日志与示例中都不出现机密值。
+- [ ] 捕获的错误增加上下文并保留原因；没有空 catch，也没有记录后再抛出。
+- [ ] 内部失败在边界映射为公开契约的错误码，不存在并行的目录。
+- [ ] 日志是结构化的，携带约定字段，并使用与“谁必须行动”相匹配的级别。
+- [ ] 日志行中不出现机密、令牌、完整请求体或未脱敏的个人数据。
+- [ ] 生成文件带有标记，且是重新生成的而非编辑的；第三方引入文件未被改动。
+- [ ] 描述该行为的配置与文档在同一次交付中变更。
+- [ ] 该变更是一次范围明确的提交，可以在不触碰其他关注点的情况下回滚。
+- [ ] diff 中不出现构建输出、缓存或第三方引入文件，除非它是经过审查的输入。
 
-## Examples
+## 示例
 
 <example>
-A pull request changes one function and also reflows 400 lines of a second file. Split it: commit the formatter run on
-the second file as a mechanical change with only the formatter command, then land the behavior change against a clean
-file so the diff shows the logic.
+一个拉取请求修改了一个函数，还重排了另一个文件的 400 行。拆开它：把对第二个文件的 formatter 运行作为仅含
+formatter 命令的机械变更提交，然后针对干净的文件落地行为变更，让 diff 显示逻辑。
 </example>
 
 <example>
-A service reads `APP_DATABASE_URL` from the environment and falls back to an empty string when it is absent. Replace
-the fallback with startup validation that names the key and exits non-zero; prove the failure with a test fixture
-that uses `db.example.test.invalid` and no real address.
+一个服务从环境读取 `APP_DATABASE_URL`，缺失时回退为空字符串。把回退替换为启动时校验：指出该键并以非零状态
+退出；用一个使用 `db.example.test.invalid` 且不含真实地址的测试 fixture 证明该失败。
 </example>
 
 <example>
-One feature module imports a repository from another feature to reuse a query. Move the query behind an interface
-owned by the domain package, or promote the shared type into its own module; never import the other feature's
-internal path.
+一个功能模块导入了另一个功能的仓储以复用查询。把该查询移到领域包拥有的接口之后，或把共享类型提升到自己的模
+块；绝不导入另一个功能的内部路径。
 </example>
 
 <example>
-A generated API client needs a timeout field. Change the generator template or the schema input, regenerate, and
-commit the input and the output together; the generated file stays untouched by hand.
+一个生成的 API 客户端需要超时字段。修改生成器模板或 schema 输入，重新生成，并把输入与输出一起提交；生成文件
+保持不被手工触碰。
 </example>
 
 <example>
-A dependency promises to replace 30 lines of parsing. Check the standard library and existing dependencies first,
-then maintenance status, license, and install footprint; record the reason in the pull request next to the manifest
-and lockfile change.
+一个依赖承诺替代 30 行解析代码。先检查标准库与现有依赖，再检查维护状态、许可证与安装占用；在拉取请求中把理
+由记录在 manifest 与锁文件变更旁边。
 </example>
 
-## References
+## 参考文档
 
-Read [references/dimensions.md](references/dimensions.md) for the full rule set behind the six dimensions, one
-numbered section each with defaults, good and bad examples, and edge cases. Read it when setting up a repository,
-choosing a boundary, or deciding a policy that the formatter and linter do not cover, and read the matching section
-before changing a rule in that dimension.
+阅读 [references/dimensions.md](references/dimensions.md)，了解六个维度背后的完整规则集：每个维度各有一节编号章节，
+包含默认值、正例与反例以及边界情况。在搭建仓库、选择边界，或决定 formatter 与 linter 未覆盖的策略时阅读它，
+并且在更改某个维度的规则前先读对应章节。
 
-Read [references/languages.md](references/languages.md) for the formatter, linter, line width, and import-order
-defaults per language. Read the language row before adding a tool to a project, read the whole matrix when a
-repository spans several languages, and treat a project-specific configured value as overriding the row. When a
-project has no configured tool chain, start from the matrix row for its main language and add one formatter before
-adding any second rule.
+阅读 [references/languages.md](references/languages.md)，了解各语言的 formatter、linter、行宽与导入顺序默认值。
+在向项目添加工具前阅读对应语言行，仓库跨多种语言时阅读整个矩阵，并把项目配置的值视为覆盖该行。当项目没有已配
+置的工具链时，从其主要语言对应的矩阵行开始，并在添加任何第二条规则之前先加一个 formatter。

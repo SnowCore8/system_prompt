@@ -1,249 +1,224 @@
-# Language Style Conventions
+# 各语言风格约定
 
-Read this file after `SKILL.md`. It supplies the formatter, linter, line width, and import-order default for each
-language, plus the tool-specific rules that override the language-agnostic defaults. A configured project value wins
-over every number here; when the project already sets a stricter value, follow the project.
+在 `SKILL.md` 之后阅读本文件。它给出每种语言的 formatter、linter、行宽与导入顺序默认值，以及覆盖语言无关默认值的
+工具特定规则。项目配置的值优先于这里的每个数字；当项目已设置更严格的值时，遵循项目。
 
-## Matrix
+## 矩阵
 
-| Language | Formatter | Linter | Line width | Import order |
+| 语言 | formatter | linter | 行宽 | 导入顺序 |
 |---|---|---|---|---|
-| Python | Black, Ruff format | Ruff | 88 | stdlib, third-party, first-party |
-| TypeScript / JavaScript | Prettier or Biome | ESLint or Biome | 80 | builtin, external, internal, relative |
-| Java | google-java-format | Checkstyle, SpotBugs | 100 | static imports first, then ASCII-sorted |
-| Kotlin | ktlint | detekt | 140 (ktlint official); detekt defaults to 120, align explicitly | lexicographic, IDE groups |
-| C# | dotnet format | Roslyn analyzers, StyleCop | 120 as a review rule | `System` first, then alphabetical |
-| Go | gofmt, goimports | go vet, staticcheck | no limit | stdlib, third-party, local prefix |
-| Rust | rustfmt | Clippy | 100 | alphabetical per `use` block |
-| C / C++ | clang-format | clang-tidy | 80 LLVM and Google, 120 Microsoft | own header, C, C++, third-party, project |
-| Ruby | RuboCop | RuboCop | 120 | not enforced by default |
-| PHP | PHP-CS-Fixer | PHPCS | 120 soft limit | alphabetical, one per statement |
-| Swift | swift-format | SwiftLint | 100 | alphabetical, `sorted_imports` opt-in |
-| Dart | dart format | dart analyze | 80 | `dart:`, `package:`, relative |
-| SQL | sqlfluff format | sqlfluff | 80 | n/a; CTEs top-down |
-| Shell | shfmt | ShellCheck | no limit | n/a; source libraries at the top |
-| HTML / CSS | Prettier | Stylelint | 80 | n/a; `@import` before other rules |
-| YAML / JSON / TOML | Prettier, tombi | yamllint, tombi | 80 common | n/a; anchors before use |
+| Python | Black, Ruff format | Ruff | 88 | 标准库、第三方、第一方 |
+| TypeScript / JavaScript | Prettier 或 Biome | ESLint 或 Biome | 80 | 内置、外部、内部、相对 |
+| Java | google-java-format | Checkstyle, SpotBugs | 100 | 静态导入在前，随后按 ASCII 排序 |
+| Kotlin | ktlint | detekt | 140（ktlint 官方）；detekt 默认 120，需显式对齐 | 字典序、IDE 分组 |
+| C# | dotnet format | Roslyn analyzers, StyleCop | 120（审查规则） | `System` 在前，随后按字母顺序 |
+| Go | gofmt, goimports | go vet, staticcheck | 不限制 | 标准库、第三方、本地前缀 |
+| Rust | rustfmt | Clippy | 100 | 每个 `use` 块内按字母顺序 |
+| C / C++ | clang-format | clang-tidy | 80（LLVM 与 Google），120（Microsoft） | 自身头文件、C、C++、第三方、项目 |
+| Ruby | RuboCop | RuboCop | 120 | 默认不强制 |
+| PHP | PHP-CS-Fixer | PHPCS | 120（软限制） | 字母顺序，每条语句一个 |
+| Swift | swift-format | SwiftLint | 100 | 字母顺序，可选启用 `sorted_imports` |
+| Dart | dart format | dart analyze | 80 | `dart:`、`package:`、相对路径 |
+| SQL | sqlfluff format | sqlfluff | 80 | 不适用；CTE 自上而下 |
+| Shell | shfmt | ShellCheck | 不限制 | 不适用；在顶部 source 库 |
+| HTML / CSS | Prettier | Stylelint | 80 | 不适用；`@import` 位于其他规则之前 |
+| YAML / JSON / TOML | Prettier, tombi | yamllint, tombi | 通常 80 | 不适用；锚点先定义后使用 |
 
 ## Python
 
-- Format with Black (`line-length = 88`, `target-version` set to the oldest supported Python) or with Ruff format,
-  which is Black-compatible; check with `black --check` or `ruff format --check`. Never run both on one tree.
-- Lint with Ruff: the default rule families are `E4`, `E7`, `E9`, and `F`; enable `I` for import sorting and `UP` for
-  syntax modernization, and pin one Ruff version in `pyproject.toml`.
-- Import order: standard library, third-party, first-party, each block sorted, one blank line between blocks. isort
-  with `profile = "black"` and Ruff `I` implement the same order; set the same line length for isort when it is used.
-- Double quotes are the default. Black keeps single quotes with `skip-string-normalization`; Ruff format uses
-  `quote-style = "preserve"`. Each is a project-level setting, not a per-file one.
-- Type checking is a separate gate: mypy or pyright belongs with tests, not with the formatter, and its configuration
-  does not change the style rules.
+- 用 Black（`line-length = 88`，`target-version` 设为支持的最旧 Python 版本）或与 Black 兼容的 Ruff format
+  格式化；用 `black --check` 或 `ruff format --check` 检查。绝不要在同一棵树上同时运行两者。
+- 用 Ruff 做 lint：默认规则族为 `E4`、`E7`、`E9` 与 `F`；启用 `I` 做 import 排序、启用 `UP` 做语法现代化，
+  并在 `pyproject.toml` 中锁定一个 Ruff 版本。
+- 导入顺序：标准库、第三方、第一方，每个块内排序，块间空一行。带 `profile = "black"` 的 isort 与 Ruff `I`
+  实现相同顺序；使用 isort 时为其设置相同行宽。
+- 默认使用双引号。Black 通过 `skip-string-normalization` 保留单引号；Ruff format 使用
+  `quote-style = "preserve"`。两者都是项目级设置，不是按文件设置。
+- 类型检查是独立门禁：mypy 或 pyright 属于测试一侧，而不属于 formatter，其配置不改变风格规则。
 
-## TypeScript and JavaScript
+## TypeScript 与 JavaScript
 
-- Format with Prettier (`printWidth: 80`, `tabWidth: 2`, `semi: true`, `singleQuote: false`,
-  `trailingComma: "all"`, `arrowParens: "always"`) from `.prettierrc`, and check with `prettier --check .` in CI.
-- Lint with ESLint in flat config (`eslint.config.js`), with `eslint-config-prettier` last so formatting rules do not
-  fight Prettier; `typescript-eslint` type-aware rules run as a second pass.
-- Biome is a single-tool alternative: formatter plus linter, `lineWidth: 80`, `indentStyle: "space"`, double quotes,
-  and organized imports. Choose Biome or Prettier plus ESLint per repository and never run the two pairs together.
-- Import order: Node builtins, external packages, internal aliases, parent and sibling paths.
-  `eslint-plugin-import` or `simple-import-sort` enforces the order, and `import/no-cycle` catches cycles.
-- JSX text, template literals, and long strings are exempt where breaking them changes rendered output; Prettier
-  leaves them alone, so a long line there is not a lint failure.
+- 用 Prettier（`printWidth: 80`、`tabWidth: 2`、`semi: true`、`singleQuote: false`、
+  `trailingComma: "all"`、`arrowParens: "always"`）从 `.prettierrc` 中读取配置来格式化，并在 CI 中用
+  `prettier --check .` 检查。
+- 用 flat config（`eslint.config.js`）配置的 ESLint 做 lint，把 `eslint-config-prettier` 放在最后，使格式化规则
+  不与 Prettier 冲突；`typescript-eslint` 的类型感知规则作为第二轮运行。
+- Biome 是单工具替代方案：formatter 加 linter、`lineWidth: 80`、`indentStyle: "space"`、双引号与自动整理
+  import。每个仓库在 Biome 与 Prettier 加 ESLint 之间二选一，绝不把两套一起运行。
+- 导入顺序：Node 内置模块、外部包、内部别名、父级与同级路径。`eslint-plugin-import` 或
+  `simple-import-sort` 强制该顺序，`import/no-cycle` 捕获循环。
+- 当拆分会改变渲染输出时，JSX 文本、模板字面量与长字符串属于例外；Prettier 不处理它们，因此那里的长行不构成
+  lint 失败。
 
 ## Java
 
-- Format with google-java-format through the Spotless Maven or Gradle plugin: 2-space indent, 100-column limit,
-  imports sorted, unused imports removed with `--fix-imports-only`. Check with `spotlessCheck` in CI.
-- Lint with Checkstyle using `google_checks.xml` or the project ruleset. Checkstyle covers imports, blocks, and
-  declarations that the formatter does not, so keep it as a gate rather than a report.
-- Run SpotBugs for bytecode defects (null handling, resource leaks, bad equality) and fail on high-priority findings;
-  it is a bug gate, not a style formatter.
-- Import order: static imports first, then non-static, each block ASCII-sorted; no wildcard imports and no unused
-  imports, because google-java-format and Checkstyle both enforce it.
-- google-java-format does not split long string literals, so an overlong literal is a code change (a resource file or
-  a concatenation), not a formatting exception.
+- 通过 Spotless 的 Maven 或 Gradle 插件使用 google-java-format 格式化：2 空格缩进、100 列上限、import 排
+  序、用 `--fix-imports-only` 移除未使用的 import。在 CI 中用 `spotlessCheck` 检查。
+- 用 Checkstyle 做 lint，使用 `google_checks.xml` 或项目规则集。Checkstyle 覆盖 formatter 不处理的 import、
+  代码块与声明，所以把它保留为门禁，而不是报告。
+- 运行 SpotBugs 检查字节码缺陷（null 处理、资源泄漏、错误的相等判断），并对高优先级发现失败；它是缺陷门禁，
+  不是风格 formatter。
+- 导入顺序：静态导入在前，然后是非静态导入，每个块按 ASCII 排序；没有通配符导入，也没有未使用的导入，因为
+  google-java-format 与 Checkstyle 都会强制它。
+- google-java-format 不拆分长字符串字面量，因此超长字面量是一项代码变更（资源文件或拼接），而不是格式化例外。
 
 ## Kotlin
 
-- Format with ktlint in `ktlint_official` code style: 4-space indent and `max_line_length = 140`. Put both in
-  `.editorconfig` so the IDE and ktlint read the same value.
-- Lint with detekt (`maxLineLength` default 120) for complexity, style, and potential bugs; align its line length with
-  ktlint or the two tools will disagree about the same file.
-- Import order: lexicographic, no wildcard imports, `java`, `javax`, and `kotlin` grouped per the IDE layout;
-  ktlint's `import-ordering` rule enforces it.
-- Trailing commas are allowed in declarations and calls (Kotlin 1.4+) and the `trailing-comma` rule can enforce them;
-  they keep multi-line diffs append-only.
-- A detekt finding the project accepts is baselined with a reason and an owner, never disabled globally in the
-  configuration.
+- 用 `ktlint_official` 代码风格中的 ktlint 格式化：4 空格缩进与 `max_line_length = 140`。把两者放进
+  `.editorconfig`，让 IDE 与 ktlint 读到相同的值。
+- 用 detekt（`maxLineLength` 默认 120）检查复杂度、风格与潜在缺陷；把它的行宽与 ktlint 对齐，否则两个工具会
+  对同一文件产生分歧。
+- 导入顺序：字典序，禁止通配符导入，`java`、`javax` 与 `kotlin` 按 IDE 布局分组；ktlint 的
+  `import-ordering` 规则强制它。
+- 声明与调用中允许尾随逗号（Kotlin 1.4+），`trailing-comma` 规则可以强制它们；尾随逗号让多行 diff 只做追加。
+- 项目接受的 detekt 发现要通过基线记录，并附理由与负责人，绝不在配置中全局关闭。
 
 ## C#
 
-- Format with `dotnet format` (whitespace and style rules from `.editorconfig`) and check with
-  `dotnet format --verify-no-changes` in CI. It enforces indentation and spacing but not a column limit.
-- Lint with Roslyn analyzers (`CAxxxx`, `IDExxxx`) and StyleCop.Analyzers (`SAxxxx`), with severities set in
-  `.editorconfig`; `TreatWarningsAsErrors` turns the chosen set into a gate.
-- Line width is a review rule (120 is common), because neither the formatter nor the analyzers wraps a long line.
-- Import order: `System` namespaces first, then the rest alphabetically, blank lines between groups; global usings
-  live in one file and IDE0005 removes unused usings.
-- StyleCop's using-directive placement rule (inside or outside the namespace) is chosen once per repository and
-  applied through `.editorconfig`, not per file.
+- 用 `dotnet format`（空白与风格规则来自 `.editorconfig`）格式化，并在 CI 中用
+  `dotnet format --verify-no-changes` 检查。它强制缩进与间距，但不强制列上限。
+- 用 Roslyn 分析器（`CAxxxx`、`IDExxxx`）与 StyleCop.Analyzers（`SAxxxx`）做 lint，在 `.editorconfig` 中
+  设置严重级别；`TreatWarningsAsErrors` 把选定的集合变成门禁。
+- 行宽是审查规则（常用 120），因为 formatter 与分析器都不折行长行。
+- 导入顺序：`System` 命名空间在前，其余按字母顺序，组间空行；global using 放在一个文件中，IDE0005 移除未使用
+  的 using。
+- StyleCop 的 using 指令位置规则（放在命名空间内或外）每个仓库选择一次，并通过 `.editorconfig` 应用，而不是
+  按文件决定。
 
 ## Go
 
-- Format with `gofmt`, which is mandatory: tabs for indentation, no column limit, no line wrapping. Fail CI when
-  `gofmt -l` prints a file; the language leaves no room for a style debate.
-- Manage imports with `goimports`, which adds and removes imports and groups the standard library separately from
-  third-party packages; use `-local` for the module prefix and one blank line between groups.
-- Lint with `go vet` for compiler-adjacent checks and `staticcheck` (`SA`, `S`, `ST` families) for bugs and style.
-  Run both with the same Go version as the build.
-- There is no line-width rule; a long function or expression is a review concern, and gofmt will not split it.
-- Exclude generated `*.pb.go`, mocks, and the vendor tree from linting, and keep dot imports out of production code.
+- 用 `gofmt` 格式化，这是强制的：用制表符缩进，没有列上限，不折行。当 `gofmt -l` 打印出文件时让 CI 失败；这
+  门语言没有给风格争论留空间。
+- 用 `goimports` 管理 import，它增删 import，并把标准库与第三方包分开分组；用 `-local` 指定模块前缀，组间空
+  一行。
+- 用 `go vet` 做贴近编译器的检查，用 `staticcheck`（`SA`、`S`、`ST` 规则族）检查缺陷与风格。两者都用与构建
+  相同的 Go 版本运行。
+- 没有行宽规则；长函数或长表达式是审查关注点，gofmt 不会拆分它们。
+- 把生成的 `*.pb.go`、mock 与第三方引入树排除在 lint 之外，并让生产代码不出现点导入。
 
 ## Rust
 
-- Format with rustfmt (`max_width = 100`, `hard_tabs = false`, `edition` set) and check with `cargo fmt --check`.
-  Overrides live in `rustfmt.toml` and apply to the workspace rather than to one crate.
-- Lint with Clippy: `cargo clippy --all-targets -- -D warnings` in CI. Allow a specific lint only with `#[allow]` on
-  the narrowest item and a written reason.
-- Import order is alphabetical inside a `use` block by default (`reorder_imports`); `group_imports =
-  "StdExternalCrate"` is an unstable nightly option, so enable it only on a nightly toolchain and keep it consistent
-  across the workspace.
-- rustfmt does not format code inside macro invocations such as `quote!` or `select!`; format that code by hand and
-  accept that the tool will not check it.
-- Keep `cargo fmt`, Clippy, and the build on one toolchain, pinned by `rust-toolchain.toml`.
+- 用 rustfmt（`max_width = 100`、`hard_tabs = false`、设置 `edition`）格式化，并用 `cargo fmt --check`
+  检查。覆盖项放在 `rustfmt.toml` 中，作用于工作区而不是单个 crate。
+- 用 Clippy 做 lint：在 CI 中运行 `cargo clippy --all-targets -- -D warnings`。只允许在最窄的项上用
+  `#[allow]` 并写明理由来放行特定 lint。
+- 默认在 `use` 块内按字母顺序排列（`reorder_imports`）；`group_imports = "StdExternalCrate"` 是不稳定的
+  nightly 选项，所以只在 nightly 工具链上启用，并在整个工作区保持一致。
+- rustfmt 不格式化宏调用（如 `quote!` 或 `select!`）内部的代码；那段代码需手工格式化，并接受工具不会检查它。
+- 让 `cargo fmt`、Clippy 与构建使用同一个工具链，并由 `rust-toolchain.toml` 锁定。
 
-## C and C++
+## C 与 C++
 
-- Format with clang-format from a committed `.clang-format`: `BasedOnStyle` LLVM or Google (80 columns), Chromium
-  (80), or Microsoft (120). Set `SortIncludes: true`, `IncludeBlocks: Regroup`, and `IncludeCategories`.
-- Lint with clang-tidy from `.clang-tidy` (`bugprone-*`, `modernize-*`, `performance-*`, `readability-*`, and the
-  project's `cert-*` subset), on changed files with a `compile_commands.json`.
-- Include order: matching header first, then C system, C++ standard library, third-party, and project headers, as
-  encoded in `IncludeCategories`; angle brackets for system headers, quotes for project headers.
-- Column limits come from the chosen style (80 for LLVM and Google, 120 for Microsoft); preprocessor directives and
-  long string literals are not wrapped by the formatter.
-- Pin the clang-format and clang-tidy version in CI, because minor releases change formatting and produce large churn.
+- 用已提交的 `.clang-format` 中的 clang-format 格式化：`BasedOnStyle` 选 LLVM 或 Google（80 列）、
+  Chromium（80）或 Microsoft（120）。设置 `SortIncludes: true`、`IncludeBlocks: Regroup` 与
+  `IncludeCategories`。
+- 用 `.clang-tidy` 中的 clang-tidy 做 lint（`bugprone-*`、`modernize-*`、`performance-*`、
+  `readability-*` 以及项目的 `cert-*` 子集），对变更文件使用 `compile_commands.json` 运行。
+- include 顺序：匹配的头文件在前，然后是 C 系统头、C++ 标准库、第三方与项目头文件，按 `IncludeCategories`
+  编码；系统头用尖括号，项目头用引号。
+- 列上限来自所选风格（LLVM 与 Google 为 80，Microsoft 为 120）；预处理指令与长字符串字面量不会被 formatter
+  折行。
+- 在 CI 中锁定 clang-format 与 clang-tidy 版本，因为次要版本会改变格式化并产生大量噪声。
 
 ## Ruby
 
-- Format and lint with RuboCop from a committed `.rubocop.yml`: `Layout/LineLength` defaults to `Max: 120` and
-  `Style/StringLiterals` defaults to single quotes. Inherit from a shared gem rather than listing every cop.
-- Autocorrect with `rubocop -a` for safe fixes and `rubocop -A` for unsafe ones; review the diff, because an unsafe
-  autocorrect can change behavior in edge cases.
-- There is no default require-order cop; keep requires ordered standard library, gems, then project files as a team
-  rule, and enable a check when the order keeps breaking.
-- Set `TargetRubyVersion` in the configuration; without it, cops for newer syntax disable silently and the lint result
-  depends on the installed Ruby.
-- Exclude generated code, the vendor bundle, and schema dumps from the run, and keep the exclusion list in
-  `.rubocop.yml`.
+- 用已提交的 `.rubocop.yml` 中的 RuboCop 格式化并 lint：`Layout/LineLength` 默认 `Max: 120`，
+  `Style/StringLiterals` 默认单引号。从共享 gem 继承，而不是列出每一个 cop。
+- 用 `rubocop -a` 自动修正安全项，用 `rubocop -A` 修正不安全项；审查 diff，因为不安全的自动修正可能在边界情况
+  下改变行为。
+- 没有默认的 require 顺序 cop；把 require 按标准库、gem、项目文件排序作为团队规则，并在顺序反复被破坏时启用
+  检查。
+- 在配置中设置 `TargetRubyVersion`；缺少它时，针对较新语法的 cop 会静默禁用，lint 结果取决于安装的 Ruby。
+- 把生成代码、第三方引入包 与 schema 转储排除在运行之外，并把排除列表保留在 `.rubocop.yml` 中。
 
 ## PHP
 
-- Format with PHP-CS-Fixer on the `@PSR12` ruleset plus project rules (`array_syntax: short`, `single_quote`,
-  `declare_strict_types`, `ordered_imports`, `no_unused_imports`); check with `--dry-run --diff` in CI.
-- Lint with PHPCS against `PSR12` where the project already uses it. Choose PHP-CS-Fixer or PHPCS as the fixer and
-  keep the other as a checker, because two fixers over one tree fight.
-- Import order: one class per `use` statement, alphabetical, no unused or duplicate imports; PSR-12 places `use`
-  declarations after the namespace.
-- PSR-12 sets a 120-character soft limit, 4-space indentation, LF endings, and one class per file; an overlong line is
-  a signal to extract, not to disable the limit.
-- Wire both tools into Composer scripts so a contributor runs locally the same command CI runs.
+- 用 PHP-CS-Fixer 基于 `@PSR12` 规则集加项目规则（`array_syntax: short`、`single_quote`、
+  `declare_strict_types`、`ordered_imports`、`no_unused_imports`）格式化；在 CI 中用 `--dry-run --diff` 检查。
+- 在项目已使用 PHPCS 的地方按 `PSR12` 做 lint。在 PHP-CS-Fixer 与 PHPCS 中选一个作为修正器，另一个保留为检查
+  器，因为两个修正器作用于同一棵树会互相冲突。
+- 导入顺序：每条 `use` 语句一个类，按字母顺序，没有未使用或重复的 import；PSR-12 把 `use` 声明放在命名空间
+  之后。
+- PSR-12 设定 120 字符软限制、4 空格缩进、LF 换行与每文件一个类；超长行是提取的信号，而不是关闭限制的理由。
+- 把两个工具接入 Composer 脚本，让贡献者在本地运行与 CI 相同的命令。
 
 ## Swift
 
-- Format with swift-format from `.swift-format` (`lineLength: 100`, `indentation: 2`) and check with
-  `swift-format lint --strict`; the tool does not sort imports.
-- Lint with SwiftLint from `.swiftlint.yml`: `line_length` warns at 120 and errors at 200 by default, and opt-in rules
-  such as `sorted_imports` supply the order checks that swift-format lacks.
-- Import order: one module per line, alphabetical, with `@testable import` next to its module; enable
-  `sorted_imports` when the project wants that enforced.
-- Keep one formatter authority: if the project uses 4-space indentation, set it in `.swift-format` instead of letting
-  swift-format and SwiftLint disagree.
-- Pin both tool versions in CI, because the default rule set and the formatting change between releases.
+- 用 `.swift-format`（`lineLength: 100`、`indentation: 2`）中的 swift-format 格式化，并用
+  `swift-format lint --strict` 检查；该工具不排序 import。
+- 用 `.swiftlint.yml` 中的 SwiftLint 做 lint：`line_length` 默认在 120 警告、在 200 报错，而
+  `sorted_imports` 等可选规则提供 swift-format 缺少的顺序检查。
+- 导入顺序：每行一个模块，按字母顺序，`@testable import` 紧邻其模块；项目希望强制时启用 `sorted_imports`。
+- 保持一个 formatter 权威：如果项目使用 4 空格缩进，就在 `.swift-format` 中设置它，而不是让 swift-format 与
+  SwiftLint 产生分歧。
+- 在 CI 中锁定两个工具的版本，因为默认规则集与格式化会随版本变化。
 
 ## Dart
 
-- Format with `dart format`; the default page width is 80 columns, and `--set-exit-if-changed` makes CI fail on
-  unformatted code.
-- Lint with `dart analyze` from `analysis_options.yaml`, inheriting `package:lints/recommended.yaml` or
-  `package:flutter_lints/flutter.yaml`; enable `directives_ordering`, `prefer_single_quotes`, and
-  `unnecessary_import`.
-- Import order: `dart:` libraries, then `package:` imports, then relative imports, with a blank line between groups;
-  `directives_ordering` sorts inside each group.
-- Trailing commas control the formatter's layout of argument and collection lists, so an intentional
-  one-item-per-line list keeps its trailing comma.
-- Generated files such as `*.g.dart` and `*.freezed.dart` are excluded in the analyzer configuration and regenerated,
-  never edited.
+- 用 `dart format` 格式化；默认页宽为 80 列，`--set-exit-if-changed` 让 CI 在代码未格式化时失败。
+- 用 `analysis_options.yaml` 中的 `dart analyze` 做 lint，继承 `package:lints/recommended.yaml` 或
+  `package:flutter_lints/flutter.yaml`；启用 `directives_ordering`、`prefer_single_quotes` 与
+  `unnecessary_import`。
+- 导入顺序：`dart:` 库，然后 `package:` import，然后相对 import，组间空一行；`directives_ordering` 在每个组
+  内排序。
+- 尾随逗号控制 formatter 对参数列表与集合列表的布局，因此有意保持每行一项的列表会保留其尾随逗号。
+- `*.g.dart` 与 `*.freezed.dart` 等生成文件在分析器配置中被排除，并且只重新生成，绝不编辑。
 
 ## SQL
 
-- Format with sqlfluff `format` from one `.sqlfluff` config: set `dialect` and `templater` (`jinja` or `dbt`), keyword
-  capitalisation, and indentation; a missing dialect is a configuration error, not a default.
-- Lint with sqlfluff rules for layout (`LT`), capitalisation (`CP`), and parsing errors, plus the reference and alias
-  rules the project enables; the parser catches invalid SQL before a database does.
-- The default line length is 80 (`LT05`); long string literals, DDL column lists, and generated `VALUES` lists carry a
-  `-- noqa: LT05` with a reason.
-- There is no import order; order CTEs top to bottom in dependency order, one clause per line, and one `SELECT` column
-  per line once the list is long enough to hide the source tables.
-- Exclude generated DDL and migration files with `.sqlfluffignore`; migrations and schema changes belong to the
-  api-and-data conventions skill.
+- 用一个 `.sqlfluff` 配置运行 sqlfluff `format`：设置 `dialect` 与 `templater`（`jinja` 或 `dbt`）、关键字
+  大小写与缩进；缺少 dialect 是配置错误，不是默认值。
+- 用 sqlfluff 规则做 lint，覆盖布局（`LT`）、大小写（`CP`）与解析错误，再加上项目启用的引用与别名规则；解析
+  器会在数据库之前捕获无效 SQL。
+- 默认行长为 80（`LT05`）；长字符串字面量、DDL 列清单与生成的 `VALUES` 列表带 `-- noqa: LT05` 并写明理由。
+- 没有导入顺序；CTE 按依赖顺序自上而下排列，每行一个子句，当列表长到足以遮住源表时，每行一个 `SELECT` 列。
+- 用 `.sqlfluffignore` 排除生成的 DDL 与迁移文件；迁移与 schema 变更属于 `api-and-data-conventions`。
 
 ## Shell
 
-- Format with shfmt (`-i 4` for spaces or the default tabs, `-ln bash` matching the shebang) and check with `shfmt -d`
-  in CI; leave heredoc bodies and embedded scripts alone.
-- Lint with ShellCheck at `--severity=warning`, or `style` for scripts under active change; fix every finding in the
-  code rather than suppressing it, and disable a code with `# shellcheck disable=SC2086` plus a reason.
-- There is no import order; source libraries at the top before first use, and start scripts with
-  `set -euo pipefail` so a failure stops the script.
-- shfmt formats indentation and spacing only and has no line-length rule; quote expansions and use `[[ ]]` in bash as
-  ShellCheck requires.
-- Run both tools on every script, including CI helpers, because a one-line pipeline step is where unquoted variables
-  usually hide.
+- 用 shfmt 格式化（`-i 4` 使用空格，或默认制表符；`-ln bash` 与 shebang 匹配），并在 CI 中用 `shfmt -d`
+  检查；heredoc 主体与内嵌脚本保持不动。
+- 用 ShellCheck 以 `--severity=warning` 做 lint，对正在积极变更的脚本用 `style`；在代码中修复每个发现而不是
+  抑制它，并且用 `# shellcheck disable=SC2086` 加理由来禁用特定检查。
+- 没有导入顺序；在第一次使用之前于顶部 source 库，并以 `set -euo pipefail` 开始脚本，让失败停止脚本。
+- shfmt 只格式化缩进与间距，没有行长规则；按 ShellCheck 的要求给展开加引号，并在 bash 中使用 `[[ ]]`。
+- 对每个脚本运行两个工具，包括 CI 辅助脚本，因为未加引号的变量通常就藏在一行流水线步骤里。
 
-## HTML and CSS
+## HTML 与 CSS
 
-- Format HTML, CSS, SCSS, and JSX with Prettier (`printWidth: 80`, `tabWidth: 2`, `singleQuote: false`,
-  `htmlWhitespaceSensitivity: "css"`) and check with `prettier --check`.
-- Lint with Stylelint and `stylelint-config-standard` (duplicate selectors, invalid hex colors, shorthand conflicts).
-  Stylistic rules moved out of Stylelint, so Prettier owns formatting and Stylelint owns correctness and convention.
-- Stylelint enforces neither line length nor property order by default; add `stylelint-order` with one ordering
-  (alphabetical or concentric) when the project wants it, and never mix the two.
-- `@import` rules precede other rules; selectors, custom properties, and design tokens follow the project's naming
-  convention rather than a tool default.
-- Exclude inline styles, generated email templates, and third-party embedded HTML from Prettier, because the
-  generator or the host owns their layout.
+- 用 Prettier（`printWidth: 80`、`tabWidth: 2`、`singleQuote: false`、
+  `htmlWhitespaceSensitivity: "css"`）格式化 HTML、CSS、SCSS 与 JSX，并用 `prettier --check` 检查。
+- 用 Stylelint 与 `stylelint-config-standard` 做 lint（重复选择器、无效十六进制颜色、简写冲突）。风格类规则
+  已移出 Stylelint，因此 Prettier 负责格式化，Stylelint 负责正确性与约定。
+- Stylelint 默认既不强制行长也不强制属性顺序；项目需要时加入 `stylelint-order` 并选定一种顺序（字母顺序或同
+  心顺序），绝不混用两者。
+- `@import` 规则位于其他规则之前；选择器、自定义属性与设计令牌遵循项目的命名约定，而不是工具默认值。
+- 把内联样式、生成的邮件模板与第三方内嵌 HTML 排除在 Prettier 之外，因为其布局归生成器或宿主所有。
 
-## YAML, JSON, and TOML
+## YAML、JSON 与 TOML
 
-- Format YAML and JSON with Prettier (`printWidth: 80`, `tabWidth: 2`) and TOML with tombi; use 80 as the common line
-  width, and confirm the tool's current default in its documentation instead of assuming it. JSON has no comments,
-  so a commented configuration file is YAML or TOML.
-- Lint YAML with yamllint (line length 80, 2-space indentation, truthy-value check) and TOML with tombi; keep one
-  configuration file per tool at the repository root.
-- There is no import order; YAML anchors are defined before use, JSON keys follow the schema order, and TOML keys stay
-  grouped under their table.
-- Prettier preserves YAML comments, but anchors and aliases can be rewritten by any tool that reparses the file; treat
-  a formatting diff on an anchor-heavy file as a review item.
-- Do not format lockfiles or generated manifests with the project formatter; the generating tool owns their byte
-  layout, and a reformat reopens a file that should only change when dependencies change.
+- 用 Prettier（`printWidth: 80`、`tabWidth: 2`）格式化 YAML 与 JSON，用 tombi 格式化 TOML；把 80 作为通用
+  行宽，并在工具文档中确认其当前默认值，而不是假定。JSON 没有注释，所以带注释的配置文件是 YAML 或 TOML。
+- 用 yamllint 对 YAML 做 lint（行长 80、2 空格缩进、真值检查），用 tombi 对 TOML 做 lint；每个工具在仓库根
+  保留一个配置文件。
+- 没有导入顺序；YAML 锚点先定义后使用，JSON 键遵循 schema 顺序，TOML 键保持分组在其表下。
+- Prettier 保留 YAML 注释，但任何重新解析文件的工具都可能重写锚点与别名；把锚点密集文件上的格式化 diff 当作
+  审查项。
+- 不要用项目 formatter 格式化锁文件或生成的 manifest；其字节布局归生成工具所有，重新格式化会重新打开一个只应
+  在依赖变化时变化的文件。
 
-## Cross-Language Rules
+## 跨语言规则
 
-- Run exactly one formatter per file type. When two tools overlap, disable formatting in the second one
-  (`eslint-config-prettier`, Stylelint stylistic rules off) instead of accepting whichever runs last.
-- Keep one width across tools in one repository: Black 88 with isort 88, Prettier 80 for JSON and HTML as well as
-  code, ktlint and detekt on the same maximum.
-- Pin formatter and linter versions in the build image, the pre-commit hook, and CI; a version bump is its own change,
-  and the formatting diff it produces is reviewed like code.
-- Prefer the tool's fix command for mechanical findings, review its diff, then commit; a hand fix for something the
-  tool can fix returns on the next run.
-- Keep the exclusions in one place per tool: generated, vendored, build output, and third-party trees. An exclusion
-  list spread across comments and CI flags cannot be audited.
-- Treat a mandatory formatter (gofmt, `cargo fmt`, `dart format`, a project-enforced Black or Prettier) as settled and
-  do not spend review time on a debate the tool already resolved.
-- Static type checkers, security scanners, and coverage are separate gates; this file lists formatters and linters,
-  not runtime analysis.
-- A repository with several languages repeats the pattern per language and shares only the editor and CI
-  configuration; do not force one language's defaults onto another.
+- 每种文件类型只运行一个 formatter。当两个工具重叠时，在第二个工具中关闭格式化（`eslint-config-prettier`、
+  关闭 Stylelint 风格规则），而不是接受最后运行的那一个。
+- 在一个仓库内让跨工具的行宽保持一致：Black 88 与 isort 88，Prettier 对 JSON、HTML 与代码都用 80，ktlint
+  与 detekt 使用相同上限。
+- 在构建镜像、pre-commit hook 与 CI 中锁定 formatter 与 linter 版本；版本升级是独立变更，其产生的格式化
+  diff 像代码一样审查。
+- 机械性发现优先使用工具的 fix 命令，审查其 diff 后再提交；工具能修复的东西若手工修复，下一次运行还会回来。
+- 每个工具的排除项集中在一处：生成树、第三方引入树、构建输出与第三方树。散落在注释与 CI 标志中的排除列表无法审
+  查。
+- 把强制 formatter（gofmt、`cargo fmt`、`dart format`、项目强制的 Black 或 Prettier）视为已定，不要花审查时
+  间争论工具已经解决的问题。
+- 静态类型检查器、安全扫描器与覆盖率是独立门禁；本文件列出 formatter 与 linter，不涉及运行时分析。
+- 多语言仓库为每种语言重复该模式，只共享编辑器与 CI 配置；不要把一个语言的默认值强加到另一个语言上。
