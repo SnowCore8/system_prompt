@@ -8,7 +8,7 @@
 | 约束正文 | constraint text | 该文件的内容 | 规则正文 |
 | 约束条款 | constraint clause | 正文中的单条编号要求（SP-1 等） | 规则条款 |
 | 约束文件 | constraints file | 承载用户全局约束的文件 | 规则文件 |
-| 规则 | rule | 宿主 rules 机制（规则目录、规则激活），以及 skill 的内容与格式规则（S1–S13、MD-*） | 指代约束正文 |
+| 规则 | rule | 宿主 rules 机制（规则目录、规则激活），以及 skill 的内容与格式规则（各 skill 的规则表与 MD-*） | 指代约束正文 |
 | 校验 | check | 运行 `check.py`、`check.sh` 或测试 | 机检、检查（指自动化工具时） |
 | 校验脚本 | checker | `check.py` | 检查器、检查脚本、机检脚本 |
 | 验证 | verification | 交付前运行命令、贴真实输出、人工核对 | 单次格式校验 |

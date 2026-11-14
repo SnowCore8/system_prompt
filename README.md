@@ -34,7 +34,7 @@ scripts/check.sh
 
 `scripts/check.sh` 校验全部未忽略的 Markdown，并运行 skill 与 hook 测试、shellcheck 与 JSON 解析；`qoderclicn` 存在时再跑插件校验。
 
-Markdown 校验只覆盖格式；内容规则 S1–S13 按 `SKILL.md` 人工核对。
+Markdown 校验只覆盖格式；各 skill 的内容规则按各自 `SKILL.md` 的人工核对清单检查，`MD-*` 规则只覆盖 `check.py` 的格式项。
 插件校验用 `qoderclicn` 而非入口脚本 `qodercn`：后者把首参当路径判断，仓库根有 `plugins/` 目录，会被当成 IDE 目标。
 
 本地安装 smoke test 用临时目录，避免污染当前项目；在仓库根目录运行：
