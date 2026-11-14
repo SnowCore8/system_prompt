@@ -6,7 +6,7 @@
 
 | 路径 | 作用 |
 |---|---|
-| `rules/` | 用户全局约束中文正文（规范源）与英文参考译本 |
+| `rules/` | 用户全局约束正文（唯一规范源） |
 | `.qoder-plugin/plugin.json` | 插件 manifest |
 | `skills/system-prompt-authoring/` | 起草与审查指令文件的 skill |
 | `skills/naming-conventions/` | 通用命名规范，覆盖代码、API、数据库、配置与提交等维度 |
@@ -31,10 +31,10 @@
 
 ```bash
 mkdir -p ~/.qoder-cn/rules
-cp <插件目录>/rules/global-user-constraints.zh-CN.md ~/.qoder-cn/rules/
+cp <插件目录>/rules/global-user-constraints.md ~/.qoder-cn/rules/
 ```
 
-中文正文 `rules/global-user-constraints.zh-CN.md` 是规范源，必须激活。英文版 `rules/global-user-constraints.md` 是参考译本，不要与中文正文同时复制，避免同一规则被加载两次。
+`rules/global-user-constraints.md` 是唯一规范正文，必须激活；仓库不再附带英文译本。
 
 宿主不从包内加载约束：`plugins validate` 只校验 skills/agents/commands/hooks，不处理 `rules/`。
 
