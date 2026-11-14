@@ -25,8 +25,8 @@ argument-hint: '[路径或场景]'
 
 - **API 契约内容属于 `api-and-data-conventions`。** 它拥有资源、错误、分页、幂等、版本化与 schema 演进；本 skill 拥有
   接口在架构中的位置：谁依赖谁、通过哪个接缝隔离、依赖方向是否向内。接口的形状在那里定义，接口的位置在这里定义。
-- **代码风格属于 `code-style-conventions`。** 它拥有目录布局、命名、格式化、依赖管理与错误/日志风格；本 skill 拥有这
-  些元素如何组成模块与分层，而不拥有单个文件的写法。
+- **代码风格属于 `code-style-conventions`。** 它拥有目录布局、格式化、依赖管理与错误/日志风格；命名属于
+  `naming-conventions`。本 skill 拥有这些元素如何组成模块与分层，而不拥有单个文件的写法。
 - **重构手法属于 `refactoring-conventions`。** 它拥有安全地改变代码结构的手法与步骤；本 skill 拥有重构要达成的目标结
   构（依赖方向、边界、接缝）。需要动手改结构时，把手法交给它，只在这里定目标。
 - **测试策略与门禁属于 `testing-and-quality-conventions`。** 本 skill 拥有可测试性设计：依赖注入点、接缝与可替换的
@@ -67,6 +67,8 @@ argument-hint: '[路径或场景]'
   `api-and-data-conventions` 裁定。
 
 ## 维度索引
+
+每个维度的详细规则、示例与边界情况见 `references/dimensions.md`；维度列中的编号就是该文件中的节号。
 
 | 维度 | 首条规则 | 详情 |
 |---|---|---|
@@ -124,7 +126,7 @@ argument-hint: '[路径或场景]'
 修复：在边界处把实体映射为契约（契约内容归 `api-and-data-conventions`），上层只依赖契约，不依赖存储形状。
 </example>
 
-## 参考文档
+## 参考资料
 
 阅读 [references/dimensions.md](references/dimensions.md)，了解六个维度背后的规则、边界情况与示例；在新增模块、划分
 分层或审查依赖方向之前阅读它。

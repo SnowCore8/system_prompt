@@ -1,6 +1,6 @@
 ---
 name: api-and-data-conventions
-description: 定义、审查并修复跨服务的 API 契约与数据库/数据生命周期实践，包括资源与错误设计、分页、幂等性、授权边界、版本化、迁移与保留。适用于新增或更改端点、事件、字段、表、索引、约束或删除路径，或计划破坏性变更与零停机 schema 发布。
+description: 定义、审查并修复跨服务的 API 契约与数据库/数据生命周期实践，包括资源与错误设计、分页、幂等性、授权边界、版本化、迁移与保留。适用于新增或更改端点、事件、字段、表、索引、约束或删除路径，或计划破坏性变更与零停机 schema 发布。不适用于命名与标识符（见 naming-conventions）、代码风格与配置（见 code-style-conventions）、索引的性能调优（见 performance-conventions）与删除的隐私策略（见 security-compliance-conventions）。
 argument-hint: '[路径或范围]'
 ---
 
@@ -113,6 +113,8 @@ API 契约与数据库 schema 是系统中生命周期最长的接口：外部�
 
 ## 维度索引
 
+每个维度的详细规则、示例与边界情况见 `references/dimensions.md`；维度列中的编号就是该文件中的节号。
+
 | 维度 | 首条规则 | 详情 |
 |---|---|---|
 | 1. API 设计 | 先定义契约再写代码；除非版本边界获批，否则以增量方式变更。 | `references/dimensions.md` 第 1 节 |
@@ -192,7 +194,7 @@ API 契约与数据库 schema 是系统中生命周期最长的接口：外部�
 版本写入相同记录；只有契约不同。
 </example>
 
-## 参考文档
+## 参考资料
 
 阅读 [references/dimensions.md](references/dimensions.md)，了解三个维度背后的规则、边界情况与示例；在设计新契
 约、规划 schema 变更，或审查保留与删除设计之前阅读它。

@@ -1,6 +1,6 @@
 ---
 name: prompt-authoring
-description: 定义、审查并重构面向语言模型的提示词，覆盖系统提示、任务指令、角色与人格、few-shot 示例、输出契约、工具与检索指令、分类/评审提示，以及评测集与回归。适用于编写或修改提示词、排查提示词退化、加固不可信输入、设计评测或把提示词版本化。常驻指令文件（AGENTS.md 等）见 system-prompt-authoring，代码注释见 comment-conventions。
+description: 定义、审查并重构面向语言模型的提示词，覆盖系统提示、任务指令、角色与人格、few-shot 示例、输出契约、工具与检索指令、分类/评审提示，以及评测集与回归。适用于编写或修改提示词、排查提示词退化、加固不可信输入、设计评测或把提示词版本化。不适用于常驻指令文件（见 system-prompt-authoring）、skill 包结构（见 skill-authoring）与代码注释（见 comment-conventions）。
 argument-hint: '[提示词文件或场景]'
 ---
 

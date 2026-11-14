@@ -1,6 +1,6 @@
 ---
 name: skill-authoring
-description: 定义、审查并重构可加载的 skill 包（SKILL.md 及其 references/scripts），覆盖 frontmatter、渐进披露、命名与触发词、适用边界、质量校验、打包与三端分发、反模式与审查清单。适用于创建新 skill、审查现有 skill 的结构与触发质量，或把分散的规范整理成 skill。常驻指令文件见 system-prompt-authoring，提示词见 prompt-authoring。
+description: 定义、审查并重构可加载的 skill 包（SKILL.md 及其 references/scripts），覆盖 frontmatter、渐进披露、命名与触发词、适用边界、质量校验、打包与三端分发、反模式与审查清单。适用于创建新 skill、审查现有 skill 的结构与触发质量，或把分散的规范整理成 skill。不适用于常驻指令文件（见 system-prompt-authoring）、运行时与产品提示词（见 prompt-authoring）与代码注释（见 comment-conventions）。
 argument-hint: '[skill 目录或名称]'
 ---
 
@@ -59,7 +59,7 @@ frontmatter 字段：
 
 - **目录名即名字。** `name` 必须等于目录名；改名要同时改目录、软链与所有引用。
 - **description 写触发条件与排除项，不写功能清单。** 让代理一眼判断“这次任务该不该加载”，而不是复述目录名。
-- **入口要短。** SKILL.md 是路由与默认值，不是全文；正文超过约一屏就拆 references。
+- **入口要短。** SKILL.md 是路由与默认值，不是全文；正文不超过 250 行（不含 frontmatter），超出的细节移入 references。
 - **一项事实一个权威来源。** 共享事实只在一处维护，其他 skill 链接过去并注明“由 X 裁定”，不复制。
 - **规则可判定。** 少用“合理”“合适”，多给可观察条件、阈值与正反例；改写示例见 `references/templates.md`。
 - **适用与不适用都写清。** description 与正文边界一致；边界含糊会让代理在不该加载时加载，或在重叠时选错。
@@ -134,6 +134,8 @@ description 是代理决定是否加载的触发词，两个失败方向都要�
 - [ ] description 触发质量合格：不宽泛、不窄、有排除项、可判定。
 - [ ] SKILL.md 第一屏说明用途、触发与边界。
 - [ ] 细节已拆到 references，正文只保留入口与默认值。
+- [ ] 正文不超过 250 行（不含 frontmatter）。
+- [ ] 正文与 references 之间没有逐字重复的段落，清单只有一处权威。
 - [ ] references 文件名 kebab-case、与正文链接一致、无互相重复。
 - [ ] 事实单一权威，交叉引用为链接而非复制。
 - [ ] 规则可判定，带阈值或示例。
@@ -147,8 +149,8 @@ description 是代理决定是否加载的触发词，两个失败方向都要�
 <example>
 场景：新增 `prompt-authoring`，正文写了 400 行提示词规则。
 问题：SKILL.md 过载，加载即消耗大量上下文。
-修复：正文保留适用范围、优先级、流程、核心规则与类型矩阵；把骨架与评测细节移到 `references/templates.md`
-与 `references/evaluation.md`，正文用相对路径链接。
+修复：正文保留适用范围、优先级、流程、核心规则与类型矩阵；把骨架与评测细节移到 `prompt-authoring` 的
+`references/templates.md` 与 `references/evaluation.md`（示例，文件属于另一 skill），正文用相对路径链接。
 </example>
 
 <example>

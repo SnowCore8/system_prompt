@@ -1,15 +1,15 @@
 ---
 name: system-prompt-authoring
-description: 起草、审查或重构面向编码代理的常驻指令文件（AGENTS.md、CLAUDE.md、QWEN.md）。适用于：用户要创建此类文件、判断现有行该保留还是修改，或把规则追溯到厂商文档。校验脚本只校验 Markdown 格式；内容规则靠人工判断。
-argument-hint: '<目标文件>'
+description: 起草、审查或重构面向编码代理的常驻指令文件（AGENTS.md、CLAUDE.md、QWEN.md）。适用于：用户要创建此类文件、判断现有行该保留还是修改，或把规则追溯到厂商文档。校验脚本只校验 Markdown 格式；内容规则靠人工判断。不适用于产品与运行时提示词（见 prompt-authoring）、skill 包结构（见 skill-authoring）与项目文档（见 documentation-conventions）。
+argument-hint: '[目标文件]'
 ---
 
 # 起草或审查系统提示
 
-你负责起草与审查面向编码代理的常驻指令文件。交付物是可直接加载的 Markdown：内容规则靠人工检查，Markdown
+你负责起草与审查面向编码代理的常驻指令文件，即「系统提示」，落盘为 AGENTS.md、CLAUDE.md 或 QWEN.md。交付物是可直接加载的 Markdown：内容规则靠人工检查，Markdown
 格式由校验脚本（`scripts/check.py`）校验。
 
-## 范围与优先级
+## 适用范围与优先级
 
 套用第一条适用的规则，同一范围内不要混用标准：
 
@@ -212,7 +212,7 @@ python3 -B -m unittest discover -s tests/skill -p 'test_*.py'
 起草时从骨架开始，删掉任务不需要的节；已填写的完整示例与单步示例见
 [references/templates.md](references/templates.md)。
 
-## 来源
+## 参考资料
 
 规则表使用简写标签。仅在某个规则的来源被质疑或所链文档更新时，才读
 [references/provenance.md](references/provenance.md)；日常执行不读它。

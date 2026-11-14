@@ -1,6 +1,6 @@
 ---
 name: naming-conventions
-description: 在任何编程项目中定义、审查或重构名称，覆盖文件、目录、包、类型、函数、变量、API、数据库、配置、测试、提交与资产。适用于启动项目或模块、命名新标识符、审查 diff 中的命名问题，或统一不一致的名称。提供与语言无关的默认值，并按语言给出覆盖规则。
+description: 在任何编程项目中定义、审查或重构名称，覆盖文件、目录、包、类型、函数、变量、API、数据库、配置、测试、提交与资产。适用于启动项目或模块、命名新标识符、审查 diff 中的命名问题，或统一不一致的名称。提供与语言无关的默认值，并按语言给出覆盖规则。不适用于提交与分支流程（见 vcs-collaboration-conventions）、契约与 schema 演进（见 api-and-data-conventions）与格式化配置（见 code-style-conventions）。
 argument-hint: '[路径或符号]'
 ---
 
@@ -9,7 +9,7 @@ argument-hint: '[路径或符号]'
 名称是代码库中阅读次数最多的接口。好的名称说明一个事物是什么或做什么，贴合语言，并在各层之间保持稳定；
 糟糕的名称则迫使每个读者从实现反推意图。本 skill 给出一套决策流程，以及项目命名的每个产物所需的完整规则集。
 
-## 范围与优先级
+## 适用范围与优先级
 
 应用第一条匹配的规则，不要在同一范围内混用约定：
 
@@ -125,46 +125,44 @@ argument-hint: '[路径或符号]'
 
 ## 维度索引
 
-每个维度的详细模式、示例与边界情况见 `references/dimensions.md`。
+每个维度的详细规则、示例与边界情况见 `references/dimensions.md`；维度列中的编号就是该文件中的节号。
 
-维度列中的数字是该文件中的节号。
-
-| 维度 | 第一条规则 |
-|---|---|
-| 1. 文件与目录 | 小写、不含空格，与主要导出或职责匹配。 |
-| 2. 包与命名空间 | 反向域名或简短小写，公开接口保持稳定。 |
-| 3. 模块与导入 | 能力名词，简短无歧义的别名，不出现循环名称。 |
-| 4. 类型与接口 | 单数名词；能力或角色，C# 之外不用 `I` 前缀。 |
-| 5. 枚举与联合类型 | 单数类型，成员稳定，不用数字名称。 |
-| 6. 函数与方法 | 动词短语；一个动作；谓词用谓词名。 |
-| 7. 变量、参数与字段 | 名词，长度随作用域，不加类型前缀。 |
-| 8. 常量 | UPPER_SNAKE，名称含单位，不用魔法值。 |
-| 9. 布尔值与谓词 | 肯定的 `is`/`has`/`can`/`should`；绝不出现非布尔的 `isX`。 |
-| 10. 集合、映射、Set 与元组 | 复数名词，`by` 映射，显式写出键与值。 |
-| 11. 数量、单位、时间、金额、比率、范围 | 单位后缀，ISO 货币，整数最小单位；时刻用 `_at`，时长用 `_ms`。 |
-| 12. 异步、并发、流、回调 | 遵循语言约定；不惯用时不加 `Async` 后缀。 |
-| 13. 错误与结果 | 具体的错误类与稳定错误码；绝不用兜底名称。 |
-| 14. 测试与测试替身 | 行为加条件；`Fake`、`Stub`、`Mock`、`Spy` 含义不同。 |
-| 15. HTTP、RPC 与 GraphQL | 复数资源，kebab 路径，每个 schema 一种 JSON 大小写。 |
-| 16. JSON 与序列化 | 每个 schema 一种键大小写；在边界映射为代码的大小写。 |
-| 17. 数据库与迁移 | 复数 snake 表名，单数列名，带前缀的索引与约束。 |
-| 18. 配置与环境 | UPPER_SNAKE 环境变量，带前缀的键，名称中不含机密。 |
-| 19. CLI | kebab 标志，动词命令，短标志保持一致。 |
-| 20. 日志、事件、指标与追踪 | 稳定的 snake 字段，`object.action` 事件，带单位后缀的指标。 |
-| 21. 资产、CSS、HTML 与 i18n | kebab 文件名，BEM 或工具类，点分隔键。 |
-| 22. 提交、分支与标签 | `type(scope): summary`，`type/slug`，SemVer。 |
-| 23. 功能开关与弃用 | 命名移除路径，而不是永久的 `legacy_` 前缀。 |
-| 24. 缩写、首字母缩略词与复数 | 允许清单，缩略词按单词处理，不吞元音。 |
-| 25. 对称与配对 | 处处使用同一组配对：`open/close`、`add/remove`。 |
-| 26. 长度、作用域与可搜索性 | 长度随作用域；名称要足够独特，便于搜索。 |
-| 27. 重命名与迁移 | 证据、引用、别名或弃用，范围受限的变更。 |
-| 28. 豁免 | 生成、引入与外部名称保持不变；在边界处映射。 |
-| 29. 基础设施与部署 | DNS 兼容的小写；环境与所有者写在资源标签中。 |
-| 30. 权限、角色、作用域与审计动作 | `domain.action`；单一分隔符；按能力而非职位命名。 |
-| 31. 已发布包与模块 | 遵循包仓库允许的字符与大小写。 |
-| 32. 组件、Hooks 与 UI 状态 | PascalCase 组件，`useX` hooks，肯定的状态名。 |
-| 33. 领域模型与领域事件 | 单数实体，过去时事件，祈使式命令。 |
-| 34. 文档、图表与决策 | kebab 文件名，稳定锚点，编号 ADR。 |
+| 维度 | 首条规则 | 详情 |
+|---|---|---|
+| 1. 文件与目录 | 小写、不含空格，与主要导出或职责匹配。 | `references/dimensions.md` 第 1 节 |
+| 2. 包与命名空间 | 反向域名或简短小写，公开接口保持稳定。 | `references/dimensions.md` 第 2 节 |
+| 3. 模块与导入 | 能力名词，简短无歧义的别名，不出现循环名称。 | `references/dimensions.md` 第 3 节 |
+| 4. 类型与接口 | 单数名词；能力或角色，C# 之外不用 `I` 前缀。 | `references/dimensions.md` 第 4 节 |
+| 5. 枚举与联合类型 | 单数类型，成员稳定，不用数字名称。 | `references/dimensions.md` 第 5 节 |
+| 6. 函数与方法 | 动词短语；一个动作；谓词用谓词名。 | `references/dimensions.md` 第 6 节 |
+| 7. 变量、参数与字段 | 名词，长度随作用域，不加类型前缀。 | `references/dimensions.md` 第 7 节 |
+| 8. 常量 | UPPER_SNAKE，名称含单位，不用魔法值。 | `references/dimensions.md` 第 8 节 |
+| 9. 布尔值与谓词 | 肯定的 `is`/`has`/`can`/`should`；绝不出现非布尔的 `isX`。 | `references/dimensions.md` 第 9 节 |
+| 10. 集合、映射、Set 与元组 | 复数名词，`by` 映射，显式写出键与值。 | `references/dimensions.md` 第 10 节 |
+| 11. 数量、单位、时间、金额、比率、范围 | 单位后缀，ISO 货币，整数最小单位；时刻用 `_at`，时长用 `_ms`。 | `references/dimensions.md` 第 11 节 |
+| 12. 异步、并发、流、回调 | 遵循语言约定；不惯用时不加 `Async` 后缀。 | `references/dimensions.md` 第 12 节 |
+| 13. 错误与结果 | 具体的错误类与稳定错误码；绝不用兜底名称。 | `references/dimensions.md` 第 13 节 |
+| 14. 测试与测试替身 | 行为加条件；`Fake`、`Stub`、`Mock`、`Spy` 含义不同。 | `references/dimensions.md` 第 14 节 |
+| 15. HTTP、RPC 与 GraphQL | 复数资源，kebab 路径，每个 schema 一种 JSON 大小写。 | `references/dimensions.md` 第 15 节 |
+| 16. JSON 与序列化 | 每个 schema 一种键大小写；在边界映射为代码的大小写。 | `references/dimensions.md` 第 16 节 |
+| 17. 数据库与迁移 | 复数 snake 表名，单数列名，带前缀的索引与约束。 | `references/dimensions.md` 第 17 节 |
+| 18. 配置与环境 | UPPER_SNAKE 环境变量，带前缀的键，名称中不含机密。 | `references/dimensions.md` 第 18 节 |
+| 19. CLI | kebab 标志，动词命令，短标志保持一致。 | `references/dimensions.md` 第 19 节 |
+| 20. 日志、事件、指标与追踪 | 稳定的 snake 字段，`object.action` 事件，带单位后缀的指标。 | `references/dimensions.md` 第 20 节 |
+| 21. 资产、CSS、HTML 与 i18n | kebab 文件名，BEM 或工具类，点分隔键。 | `references/dimensions.md` 第 21 节 |
+| 22. 提交、分支与标签 | `type(scope): summary`，`type/slug`，SemVer。 | `references/dimensions.md` 第 22 节 |
+| 23. 功能开关与弃用 | 命名移除路径，而不是永久的 `legacy_` 前缀。 | `references/dimensions.md` 第 23 节 |
+| 24. 缩写、首字母缩略词与复数 | 允许清单，缩略词按单词处理，不吞元音。 | `references/dimensions.md` 第 24 节 |
+| 25. 对称与配对 | 处处使用同一组配对：`open/close`、`add/remove`。 | `references/dimensions.md` 第 25 节 |
+| 26. 长度、作用域与可搜索性 | 长度随作用域；名称要足够独特，便于搜索。 | `references/dimensions.md` 第 26 节 |
+| 27. 重命名与迁移 | 证据、引用、别名或弃用，范围受限的变更。 | `references/dimensions.md` 第 27 节 |
+| 28. 豁免 | 生成、引入与外部名称保持不变；在边界处映射。 | `references/dimensions.md` 第 28 节 |
+| 29. 基础设施与部署 | DNS 兼容的小写；环境与所有者写在资源标签中。 | `references/dimensions.md` 第 29 节 |
+| 30. 权限、角色、作用域与审计动作 | `domain.action`；单一分隔符；按能力而非职位命名。 | `references/dimensions.md` 第 30 节 |
+| 31. 已发布包与模块 | 遵循包仓库允许的字符与大小写。 | `references/dimensions.md` 第 31 节 |
+| 32. 组件、Hooks 与 UI 状态 | PascalCase 组件，`useX` hooks，肯定的状态名。 | `references/dimensions.md` 第 32 节 |
+| 33. 领域模型与领域事件 | 单数实体，过去时事件，祈使式命令。 | `references/dimensions.md` 第 33 节 |
+| 34. 文档、图表与决策 | kebab 文件名，稳定锚点，编号 ADR。 | `references/dimensions.md` 第 34 节 |
 
 ## 反模式
 
@@ -209,7 +207,6 @@ argument-hint: '[路径或符号]'
 - [ ] 文件名与主要导出或职责匹配。
 - [ ] 数据库、API、配置与日志名称在各层之间一致。
 - [ ] 缩写都在允许清单中；首字母缩略词遵循语言规则。
-- [ ] 名称可读出声、可搜索。
 - [ ] 对称的配对使用相同的词。
 - [ ] 公开重命名有弃用或别名路径。
 - [ ] 重命名有回滚路径，回滚顺序与上线顺序相反。

@@ -1,6 +1,6 @@
 ---
 name: performance-conventions
-description: 定义、审查并优化软件系统的性能，覆盖先测量后优化、性能目标与预算、常见瓶颈、优化纪律、缓存与索引取舍以及复杂度分析。适用于设定性能目标、建立基准与剖析、定位并优化延迟/吞吐/内存瓶颈，或审查过早优化与无效优化；不适用于并发瓶颈、测试与门禁以及可观测性，这些分别归 concurrency-conventions、testing-and-quality-conventions 与 release-operations-conventions。
+description: 定义、审查并优化软件系统的性能，覆盖先测量后优化、性能目标与预算、常见瓶颈、优化纪律、缓存与索引取舍以及复杂度分析。适用于设定性能目标、建立基准与剖析、定位并优化延迟/吞吐/内存瓶颈，或审查过早优化与无效优化；不适用于并发正确性（归 concurrency-conventions）、测试与门禁（归 testing-and-quality-conventions）以及可观测性（归 release-operations-conventions）。
 argument-hint: '[路径或场景]'
 ---
 
@@ -23,8 +23,8 @@ argument-hint: '[路径或场景]'
 
 分工边界：
 
-- **并发瓶颈属于 `concurrency-conventions`。** 它拥有锁、并发控制与共享状态正确性；本 skill 只在剖析发现瓶颈是锁竞争
-  或并发争用时把它移交过去，不在此下并发结论。
+- **并发正确性属于 `concurrency-conventions`。** 锁语义、数据竞争、死锁与共享状态安全归它；锁竞争造成的吞吐
+  下降与延迟升高归本 skill 定位与优化，两处不互相移交同一主题。
 - **测试与门禁属于 `testing-and-quality-conventions`。** 它拥有把基准作为 CI 门禁的机制、阈值与告警策略；本 skill 拥有
   基准与剖析的方法论，不拥有运行它们的工具。
 - **可观测性属于 `release-operations-conventions`。** 它拥有生产遥测、指标采集与告警；本 skill 拥有开发期的基准与剖析，
@@ -38,7 +38,7 @@ argument-hint: '[路径或场景]'
    禁止动手优化。
 2. 定目标与预算。为延迟、吞吐、内存与启动时间写清阈值与测量口径；目标未达成的路径才优化，已达成的不动。阈值见
    `references/dimensions.md` 第 2 节。
-3. 定位瓶颈类别。按 N+1 查询、不必要 IO、锁竞争、内存分配、算法复杂度归类热点；锁竞争移交 `concurrency-conventions`。
+3. 定位瓶颈类别。按 N+1 查询、不必要 IO、锁竞争、内存分配、算法复杂度归类热点；锁竞争的性能诊断与优化归本 skill，并发正确性移交 `concurrency-conventions`。
 4. 一次只改一处，改后重新测量。保存优化前的基准作为对照，用同一套基准、同一环境对比前后数字；无法对比的优化不做。
 5. 审查：运行 `references/checklists.md` 中的清单，确认有基准、有目标、单一变更、前后可比，且没有优化已达标的路径。
 
@@ -55,6 +55,8 @@ argument-hint: '[路径或场景]'
 - **优化用证据归因，不用猜测。** 剖析结果指出热点，改动对应热点；没有剖析支持的重写是重写，不是优化。
 
 ## 维度索引
+
+每个维度的详细规则、示例与边界情况见 `references/dimensions.md`；维度列中的编号就是该文件中的节号。
 
 | 维度 | 首条规则 | 详情 |
 |---|---|---|
@@ -86,7 +88,7 @@ argument-hint: '[路径或场景]'
 - [ ] 优化前后用同一套基准对比，数字可比。
 - [ ] 一次只改一处，收益可归因。
 - [ ] 基准脚本与结果随代码提交，可复现。
-- [ ] 并发瓶颈已移交 `concurrency-conventions`。
+- [ ] 锁竞争已用基准定位到具体热点，并发正确性问题已移交 `concurrency-conventions`。
 - [ ] 缓存有失效与一致性策略，索引按查询且权衡了写入成本。
 - [ ] 没有优化已达标的路径，没有过早优化。
 - [ ] 复杂度分析用于判断伸缩性，热点用剖析定位。
@@ -111,7 +113,7 @@ argument-hint: '[路径或场景]'
 修复：拆成三次变更，每次改一处并重新测量；保留有据可查的改动，回滚无效的改动。
 </example>
 
-## 参考文档
+## 参考资料
 
 阅读 [references/dimensions.md](references/dimensions.md)，了解六个维度背后的规则、边界情况与示例；在建立基准、定目标
 或定位瓶颈之前阅读它。

@@ -22,8 +22,8 @@ argument-hint: '[路径或场景]'
 3. 本规范的默认值，在前两层未作规定时适用。
 4. 个人偏好，永远不能覆盖以上三层。
 
-- **并发相关的性能瓶颈归 `performance-conventions`。** 本 skill 管正确性：数据竞争、可见性、死锁与活锁；吞吐、延迟、
-  锁竞争热点与无锁优化归性能 skill。
+- **锁竞争的性能诊断与优化归 `performance-conventions`。** 本 skill 管并发正确性：数据竞争、可见性、死锁与活锁；
+  吞吐与延迟的瓶颈定位、基准与优化手法归性能 skill，两处不互相移交同一主题。
 - **通用测试策略归 `testing-and-quality-conventions`。** 本 skill 管并发正确性特有的验证：竞态检测器、压力测试与确定性
   的难处；测试层级、门禁与 CI 归测试 skill。
 - **API 幂等与重试归 `api-and-data-conventions`。** 本 skill 管进程内共享与同步，不重述跨服务重试、幂等键与退避。
@@ -136,7 +136,7 @@ argument-hint: '[路径或场景]'
 覆盖；仍然要说明：检测器只证明执行过的交错无竞争，不是全部交错。
 </example>
 
-## 参考文档
+## 参考资料
 
 阅读 [references/dimensions.md](references/dimensions.md)，了解七个维度背后的规则、边界情况与示例；在引入或修改
 共享状态、选择同步原语、设计异步模型或排查竞态与死锁之前读它。

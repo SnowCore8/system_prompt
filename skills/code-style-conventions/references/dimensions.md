@@ -132,9 +132,10 @@ formatter 无法拆分长字符串、URL、哈希或 base64 数据块；让该�
 - 通过仓库配置接入私有包仓库：在 `.npmrc` 中设置作用域与包仓库，在 `pip.conf` 或项目的包管理器配置中
   设置索引 URL，在 `settings.xml` 中设置镜像，在 `composer.json` 中设置仓库。凭据从环境或 CI 机密存储注入，
   绝不提交令牌，并在包仓库不可达时失败关闭，而不是回退到公共镜像。
-- 把许可证与漏洞决定交给安全团队。在 CI 中用 `pip-audit`、`npm audit`、`cargo audit`、`govulncheck`、
-  `bundle audit`，或 SBOM 与许可证扫描器运行扫描；记录允许的许可证集合；对被拒绝或未知的许可证上报审批，而
-  不是在代码审查中批准它。每次发布附一份 SBOM，为该交接提供稳定清单，并让已撤回的依赖在发布后仍可见。
+- 许可证策略、漏洞严重程度分级与豁免由 `security-compliance-conventions` 裁定；本 skill 只要求在 CI 中执行这些
+  扫描并记录证据。把许可证与漏洞决定交给安全团队。在 CI 中用 `pip-audit`、`npm audit`、`cargo audit`、
+  `govulncheck`、`bundle audit`，或 SBOM 与许可证扫描器运行扫描；记录允许的许可证集合；对被拒绝或未知的许可证
+  上报审批，而不是在代码审查中批准它。每次发布附一份 SBOM，为该交接提供稳定清单，并让已撤回的依赖在发布后仍可见。
 
 | 正例 | 反例 | 原因 |
 |---|---|---|
