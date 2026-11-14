@@ -2,6 +2,14 @@
 
 按版本从新到旧记录可观察变更。自 0.2.0 起版本采用 SemVer、发布点为 tag `v<version>`，每节记录一个发布版本；0.2.0 之前按日期记录。条目按主题合并，记录最终可观察状态；被后续提交推翻的中间状态只在修复项里说明。
 
+## 0.10.0（2026-11-14）
+
+**新增**
+
+- 新增第 13 个 skill `skill-authoring`：定义、审查并重构 skill 包的结构、frontmatter、渐进披露、命名与
+  触发词、质量校验、打包与三端分发，附 `references/templates.md` 与 `references/checklist.md`。
+- 三个包同时分发该 skill；DSH provider 测试与 `dist.sh` 结构校验从 12 个 skill 改为 13 个。
+
 ## 0.9.0（2026-11-14）
 
 **新增**

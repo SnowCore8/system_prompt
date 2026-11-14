@@ -10,7 +10,7 @@
 | `.qoder-plugin/plugin.json` | Qoder 插件清单 |
 | `hooks/hooks.json` | hook 配置，根目录用 `${QODER_PLUGIN_ROOT}` |
 | `rules/global-user-constraints.md` | 用户全局约束正文 |
-| `skills/` | 十二个通用规范 skill |
+| `skills/` | 十三个通用规范 skill |
 | `commands/` | 手动审查命令 |
 | `scripts/` | 约束与时间注入脚本 |
 

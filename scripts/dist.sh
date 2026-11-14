@@ -123,8 +123,8 @@ for item in required:
 if embedded_version != version:
     problems.append(f"包内版本 {embedded_version!r} 与 {version} 不一致")
 skills = [entry for entry in names if entry.count("/") == 2 and entry.endswith("/SKILL.md")]
-if len(skills) != 12:
-    problems.append(f"skill 数量为 {len(skills)}，期望 12")
+if len(skills) != 13:
+    problems.append(f"skill 数量为 {len(skills)}，期望 13")
 for info in infos:
     mode = (info.external_attr >> 16) & 0o170000
     if mode == 0o120000:

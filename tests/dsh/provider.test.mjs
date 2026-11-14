@@ -16,7 +16,7 @@ function createContext() {
   return factories[0]()
 }
 
-test('list returns the twelve bundled skills', async () => {
+test('list returns the thirteen bundled skills', async () => {
   const provider = createContext()
   const candidates = await provider.list()
   const directories = (await readdir(path.join(PACKAGE_ROOT, 'skills'))).filter((name) => !name.startsWith('.'))

@@ -1,6 +1,6 @@
 # AI 编码代理 system prompt
 
-本仓库维护用户全局约束、十二个通用规范 skill，以及分别面向 Qoder、Qwen Code 与
+本仓库维护用户全局约束、十三个通用规范 skill，以及分别面向 Qoder、Qwen Code 与
 DeepSeek Harness（DSH）的三个插件包。`rules/`、`skills/` 与 `shared/` 是唯一真源，
 三个包用相对软链引用它们，打包时物化成自包含目录。
 
@@ -12,7 +12,7 @@ DeepSeek Harness（DSH）的三个插件包。`rules/`、`skills/` 与 `shared/`
 | 路径 | 作用 |
 |---|---|
 | `rules/global-user-constraints.md` | 用户全局约束正文（唯一权威来源） |
-| `skills/` | 十二个 skill 的真源 |
+| `skills/` | 十三个 skill 的真源 |
 | `shared/commands/` | 手动审查命令 |
 | `shared/scripts/` | 约束注入、时间注入脚本 |
 | `tests/` | 开发测试：skill、hook 与 DSH provider |
@@ -72,7 +72,7 @@ DeepSeek Harness（DSH）的三个插件包。`rules/`、`skills/` 与 `shared/`
 - 项目级：`.dsh/skills/` 是 rank 100 的 skill 扫描根，软链到顶层 `skills/`；根 `AGENTS.md`
   由 `dsh-agent-instructions` 作为指令链加载。
 - bundle：仓库根 `package.json` 声明 `dsh.bundle.patch`，`plugins/dsh/src/index.js` 注册
-  `ctx.skills.registerProvider`，把十二个 skill 提供给任意 profile。
+  `ctx.skills.registerProvider`，把十三个 skill 提供给任意 profile。
 - 安装：发布流水线把根包发到 npm 公共 registry，直接
   `pnpm dsh plugin --profile web add @snowcore8/dsh-global-user-constraints@<版本>`，
   插件页能检测到更新。GitHub Packages 上的旧包已删除，0.8.0 起只发 npm。也可以从 GitHub 源安装（tag 方式不会检测更新）：
@@ -84,7 +84,7 @@ DeepSeek Harness（DSH）的三个插件包。`rules/`、`skills/` 与 `shared/`
 ## Qwen Code 适配
 
 - 项目级：`.qwen/rules/` 软链到 `rules/`（无 `paths:`，baseline，首请求生效）；`.qwen/skills/`
-  软链到十二个 skill；`.qwen/AGENTS.md` 不被 Qwen 读取，仓库不提供。
+  软链到十三个 skill；`.qwen/AGENTS.md` 不被 Qwen 读取，仓库不提供。
 - 扩展：`plugins/qwen` 的 `qwen-extension.json` 指向 `hooks/qwen-hooks.json`，安装后
   `SessionStart` 注入约束全文与时间，`UserPromptSubmit` 刷新时间；已有同内容规则或
   `AGENTS.md` 时跳过。
@@ -93,7 +93,7 @@ DeepSeek Harness（DSH）的三个插件包。`rules/`、`skills/` 与 `shared/`
 ## Qoder 适配
 
 - 项目级：`.qoder/rules` 软链到 `rules/`，Qoder 从当前目录向上查到 `.git` 逐层读取；
-  `.qoder/skills/` 软链到十二个 skill。
+  `.qoder/skills/` 软链到十三个 skill。
 - 插件：`plugins/qoder` 安装后 `SessionStart` 注入约束全文与时间，`UserPromptSubmit` 刷新时间；
   去重路径覆盖 `~/.qoder-cn/rules/`（国际版 `~/.qoder/rules/`）、`AGENTS.md`、`.qoder/rules/`。
 - 项目级不提供 `.qoder-cn` 与 `.qoder/plugins`：它们在项目级没有加载语义。
