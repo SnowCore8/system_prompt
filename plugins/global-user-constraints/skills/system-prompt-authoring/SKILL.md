@@ -1,329 +1,301 @@
 ---
 name: system-prompt-authoring
-description: Draft, audit, or refactor persistent instruction files for coding agents (AGENTS.md, CLAUDE.md, QWEN.md). Use when the user wants to create such a file, decide which existing lines to keep or change, or trace rules back to vendor documentation. The checker validates Markdown formatting only; content rules are judged manually.
-argument-hint: '<target-file>'
+description: 起草、审查或重构面向编码代理的常驻指令文件（AGENTS.md、CLAUDE.md、QWEN.md）。适用于：用户要创建此类文件、判断现有行该保留还是修改，或把规则追溯到厂商文档。校验脚本只校验 Markdown 格式；内容规则靠人工判断。
+argument-hint: '<目标文件>'
 ---
 
-# Draft or Audit a System Prompt
+# 起草或审查系统提示
 
-You draft and audit persistent instruction files for coding agents. The deliverable is directly loadable Markdown:
-content rules are checked manually, and Markdown formatting is validated by the checker (`scripts/check.py`).
+你负责起草与审查面向编码代理的常驻指令文件。交付物是可直接加载的 Markdown：内容规则靠人工检查，Markdown
+格式由校验脚本（`scripts/check.py`）校验。
 
-## Scope and Precedence
+## 范围与优先级
 
-Apply the first rule that fits, and do not mix standards inside one scope:
+套用第一条适用的规则，同一范围内不要混用标准：
 
-1. Mandatory platform or organizational policy. Host rules, security rules, and managed configuration are not
-   optional.
-2. Existing project convention. Read the repository's instruction files first and follow a stricter local rule.
-3. This skill's defaults, when the levels above are silent.
-4. Personal preference, which never overrides the three levels above.
+1. 平台或组织的强制策略。宿主规则、安全规则与受管配置都不是可选项。
+2. 现有项目约定。先读仓库的指令文件，遵循更严格的本地规则。
+3. 以上层级未规定时，采用本 skill 的默认值。
+4. 个人偏好，它永远不能覆盖以上三级。
 
-- Standalone project documentation (structure, templates, prose): `documentation-conventions`.
-- Identifiers and file names: `naming-conventions`.
-- Required-file presence and metadata: `repository-governance-conventions`.
-- Credentials and secrets: `security-compliance-conventions`.
-- Gates and CI: `testing-and-quality-conventions` and `release-operations-conventions`.
+- 独立项目文档（结构、模板、行文）：`documentation-conventions`。
+- 标识符与文件名：`naming-conventions`。
+- 必需文件的存在与元数据：`repository-governance-conventions`。
+- 凭据与机密：`security-compliance-conventions`。
+- 门禁与 CI：`testing-and-quality-conventions` 与 `release-operations-conventions`。
 
-## Process
+## 流程
 
-1. Confirm the target file, task type (new file or audit), and intent: answer, assess, or change files. A
-   question gets an answer only; an action request with a target gets the work; an ambiguous request gets
-   analysis and options first. If the path or intent is unclear, ask; do not guess. If the target is not an
-   instruction file, state that it is out of scope and stop.
-2. Collect information using the "Five Inputs". Do not ask for what the repository can answer; when something is
-   truly unavailable, use the default and state the assumption in the report.
-3. For a new file, fill in the "Template" and delete sections the task does not need. For an audit, apply the
-   "Deletion Criterion" line by line and keep each constraint in one place.
-4. Check content rules S1-S13 manually. The script does not judge these rules; a passing format check does not
-   mean the content is good.
-5. Run the format check and fix `[错误]` items. Outside `--strict`, write a conclusion for every `[警告]` item;
-   under `--strict`, every warning must be eliminated at the source, because a conclusion does not clear the gate.
-6. Report in a fixed order: file path; checker command and verbatim output; item-by-item S1-S13 conclusions;
-   unresolved items and assumptions. Keep the report concise and paste only key output. If an item is
-   unexplained, do not say the work is complete.
+1. 确认目标文件、任务类型（新建文件还是审查）与意图：回答、评估还是改文件。提问只给答案；带目标的动作请求
+   就去做；含糊的请求先给分析与选项。路径或意图不清楚时提问，不要猜。目标不是指令文件时，说明超出范围并
+   停止。
+2. 用「五项输入」收集信息。仓库能回答的不要问；确实拿不到时，采用默认值，并在报告中说明该假设。
+3. 新建文件时，填写「模板」并删掉任务不需要的节。审查时，逐行套用「删除标准」，并让每条约束只出现在一处。
+4. 人工检查内容规则 S1-S13。脚本不判断这些规则；格式校验通过不代表内容合格。
+5. 运行格式校验并修复 `[错误]` 项。非 `--strict` 模式下，为每个 `[警告]` 项写出结论；`--strict` 模式下，
+   每条警告都必须在源头消除，因为只写结论过不了门禁。
+6. 按固定顺序报告：文件路径；校验脚本命令与逐字输出；S1-S13 逐项结论；未解决项与假设。报告保持简洁，只
+   粘贴关键输出。若有项未解释清楚，不要说工作已完成。
 
-Apply the session's loaded user global constraints; this skill adds only instruction-file-specific rules.
+用本会话已加载的用户全局约束；本 skill 只补充指令文件特有的规则。
 
-## Five Inputs
+## 五项输入
 
-| Input | Used for | If unavailable |
+| 输入 | 用途 | 缺失时 |
 |---|---|---|
-| Role and scope | Role and Objective | Ask: what is this agent responsible for, and what counts as done? |
-| Tasks and tools | Instructions, Workflow | Ask; read repository configuration first if available |
-| Output requirements | Output Format | Ask: structure, length, whether to paste command output |
-| Safety boundaries | Red lines, Never | Ask: which actions need confirmation, which must never happen |
-| Target model | S13 granularity | Use the S13 default; do not relax red lines because the model is unknown |
+| 角色与范围 | 角色与目标 | 提问：该代理负责什么，什么算完成？ |
+| 任务与工具 | 指令、工作流 | 提问；有仓库配置时先读配置 |
+| 输出要求 | 输出格式 | 提问：结构、长度、是否粘贴命令输出 |
+| 安全边界 | 红线、Never | 提问：哪些操作需要确认，哪些绝不允许发生 |
+| 目标模型 | S13 粒度 | 采用 S13 默认值；不要因为模型未知就放松红线 |
 
-Read build and test commands, directory conventions, and language versions from `README`, `package.json`,
-`pyproject.toml`, `Makefile`, or CI configuration, and write them into `Context`.
+从 `README`、`package.json`、`pyproject.toml`、`Makefile` 或 CI 配置中读取构建与测试命令、目录约定与语言
+版本，写入 `Context`。
 
-## Content Rules S1-S13
+## 内容规则 S1-S13
 
-The "Checked by" column says who checks each rule: the checker covers only machine-checkable format items in S12;
-everything else is manual.
+「校验方式」列说明每条规则由谁检查：校验脚本只覆盖 S12 中可机器校验的格式项，其余全部人工检查。
 
-| # | Requirement | Checked by | Source |
+| # | 要求 | 校验方式 | 来源 |
 |---|---|---|---|
-| S1 | State role, scope, and completion definition | Manual | OAI-41 §Prompt Structure; ANT-PBP §Give Claude a role; MS §Design checklist 1; §Role and scope |
-| S2 | Every prohibition gets an alternative behavior or reason; red lines may stay prohibitive but must state why | Manual | ANT-PBP §Control the format of responses; §Add context |
-| S3 | Default to plain imperatives; reserve emphasis for red lines only. Current models follow plainly worded lines, and piling on emphasis causes over-application | Manual | OAI-41 §Recommended Workflow; CC-BP (2026-11-14); ANT-PBP §Tool usage |
-| S4 | Give one action for ambiguous, out-of-scope, and insufficient-information requests; a single-step task needs at least a "cannot process" branch | Manual | MS §Design checklist 4; §How system messages work |
-| S5 | Do not use numbering to declare priority; do not leave unconditional contradictory requirements | Manual | OAI-MS §Instructions and levels of authority |
-| S6 | Output format states structure, length, and format | Manual | MS §Output contract; §Design checklist 3; GOOG §Core prompting principles |
-| S7 | Use 3-5 examples for prompts that define nontrivial behavior rules; a short single-purpose prompt may omit examples. Each example shows behavior the rules do not cover; fold edge cases into examples | Manual | ANT-PBP §Use examples effectively; ANT-CE §The anatomy of effective context |
-| S8 | `Context` only holds information the model cannot derive from code | Manual | CC-BP (2026-11-14) |
-| S9 | Delete a line when removing it would not prevent a concrete mistake; move details used only in some tasks into a skill | Manual | CC-BP (2026-11-14) |
-| S10 | Do not write unconfirmed tools, commands, or configuration keys | Manual | Derived; supported by ANT-PBP §Minimizing hallucinations |
-| S11 | Keep long documents out of instruction files and link them; one line carries one requirement, never a compressed paragraph | Manual | ANT-CE §Context retrieval; CC-BP (2026-11-14); line limit is an engineering constraint |
-| S12 | No placeholders; no trailing whitespace or tabs; body lines at most 200 characters; fences paired; file ends with a newline | Manual + checker (placeholders manual) | Engineering constraint |
-| S13 | Give GPT models explicit instructions; reasoning models get goals and constraints only; when the model is unknown, use plain imperatives | Manual | OAI-PE §Choosing a model; §Prompting reasoning models |
+| S1 | 写明角色、范围与完成定义 | 人工 | OAI-41 §Prompt Structure；ANT-PBP §Give Claude a role；MS §Design checklist 1；§Role and scope |
+| S2 | 每条禁止项都给出替代行为或理由；红线可以保持禁止性，但必须说明理由 | 人工 | ANT-PBP §Control the format of responses；§Add context |
+| S3 | 默认使用平实的祈使句，强调只留给红线。当前模型能遵循平实表述，堆砌强调会导致过度套用 | 人工 | OAI-41 §Recommended Workflow；CC-BP (2026-11-14)；ANT-PBP §Tool usage |
+| S4 | 为含糊、超范围与信息不足的请求各给出一个动作；单步任务至少要有「无法处理」分支 | 人工 | MS §Design checklist 4；§How system messages work |
+| S5 | 不要用编号声明优先级；不要留下无条件的相互矛盾要求 | 人工 | OAI-MS §Instructions and levels of authority |
+| S6 | 输出格式写明结构、长度与格式 | 人工 | MS §Output contract；§Design checklist 3；GOOG §Core prompting principles |
+| S7 | 定义非平凡行为规则的提示词用 3-5 个示例；简短单一用途的提示词可以省略示例。每个示例展示规则未覆盖的行为；边界情况并入示例 | 人工 | ANT-PBP §Use examples effectively；ANT-CE §The anatomy of effective context |
+| S8 | `Context` 只放模型无法从代码推导的信息 | 人工 | CC-BP (2026-11-14) |
+| S9 | 删掉某行若不会阻止任何具体错误，就删掉它；只在部分任务用到的细节移入 skill | 人工 | CC-BP (2026-11-14) |
+| S10 | 不要写未确认的工具、命令或配置键 | 人工 | 推导；ANT-PBP §Minimizing hallucinations 支持 |
+| S11 | 长文档不要放进指令文件，改为链接；一行承载一条要求，禁止写成压缩的段落 | 人工 | ANT-CE §Context retrieval；CC-BP (2026-11-14)；行数限制是工程约束 |
+| S12 | 不使用占位符；行尾不留空白或制表符；正文行最多 200 个字符；围栏成对；文件以换行结尾 | 人工 + 校验脚本（占位符人工） | 工程约束 |
+| S13 | GPT 模型要给明确指令；推理模型只给目标与约束；模型未知时使用平实祈使句 | 人工 | OAI-PE §Choosing a model；§Prompting reasoning models |
 
-These are derived, not vendor quotes: completion definition (S1), the three output-format elements (S6), the
-example-merging rule (S7), the single-step exemption (S4), and S10.
+以下是推导内容，并非厂商原文：完成定义（S1）、输出格式三要素（S6）、示例合并规则（S7）、单步豁免（S4）
+与 S10。
 
-S2 and S3 combine: a red-line section may use "never," but it still needs a reason. Bold headings are navigation,
-not emphasis; S3's emphasis means strengthening the whole sentence. For S12, use the checker's result for
-machine-checkable format items and check placeholders and other content items manually.
+S2 与 S3 合起来看：红线一节可以用「绝不」，但仍需给出理由。加粗标题属于导航，不算强调；S3 说的强调指加强
+整句语气。对 S12，可机器校验的格式项以校验脚本结果为准，占位符等其余内容项人工检查。
 
-S5 opposes treating numbering as implicit priority. A file may explicitly declare same-section ordering (for
-example, "the earlier rule wins"); follow that declaration when present, and do not treat numbering as evidence
-when absent.
+S5 反对把编号当作隐含优先级。文件可以显式声明同节内的顺序（例如「靠前的规则优先」）；有声明时遵循声明，
+没有声明时不要把编号当依据。
 
-## Resolving Source Conflicts
+## 解决来源冲突
 
-- **Emphasis**: default to plain imperatives. OAI-41 says all-caps and bribe-like incentives are "generally not
-  necessary"; ANT-PBP says strong wording written for older models should be pulled back. Current guidance
-  (CC-BP, 2026-11-14) says current models follow plainly worded lines and that piling on emphasis mostly makes
-  them over-apply the rule; emphasize red lines only.
-- **Granularity**: write goals and constraints first. List steps only when order or completeness is critical, and
-  state what happens if a step is skipped (ANT-PBP: "Prefer general instructions over prescriptive steps."). For
-  non-reasoning models that need explicit planning, add `Reasoning Steps` per OAI-41.
-- **Length**: no total-length limit; per-line limit is S12.
-- **Prohibitions**: keep red lines and state why; for everything else, write the alternative behavior.
-- **Priority**: numbering itself does not create priority; do not write "the lower number wins." A file may
-  explicitly declare ordering; follow it. OAI-MS levels: root > system > developer > user > guideline; a later
-  message at the same level overrides an earlier one.
-- **Fallback**: state what to do when information is insufficient. Writing only "call a tool first" leaves that
-  branch undefined.
+- **强调**：默认使用平实祈使句。OAI-41 指出，全大写与贿赂式激励"generally not necessary"；ANT-PBP 指出，
+  为旧模型写的强硬措辞应当收回。当前指南（CC-BP，2026-11-14）指出，当前模型能遵循平实表述，堆砌强调多半
+  会让它们过度套用规则；只强调红线。
+- **粒度**：先写目标与约束。只有当顺序或完整性至关重要时才列出步骤，并说明跳过某步会怎样（ANT-PBP：
+  "Prefer general instructions over prescriptive steps."）。对需要显式规划的非推理模型，按 OAI-41 增加
+  `Reasoning Steps`。
+- **长度**：没有总长度限制；单行限制见 S12。
+- **禁止项**：保留红线并说明理由；其余都写出替代行为。
+- **优先级**：编号本身不产生优先级；不要写「编号小的优先」。文件可以显式声明顺序；有声明就遵循。OAI-MS
+  层级：root > system > developer > user > guideline；同层中较晚的消息覆盖较早的。
+- **兜底**：说明信息不足时怎么做。只写「先调用工具」会让该分支没有定义。
 
-## Deletion Criterion
+## 删除标准
 
-For each line, ask whether removing it would cause a concrete mistake.
+对每一行问：删掉它会不会导致一个具体错误。
 
-If the answer is "no," delete it. The current CC-BP page (2026-11-14) says a `CLAUDE.md` works best when it holds
-only what the model cannot work out from the code. The criterion is signal, not word count (ANT-CE: "minimal does
-not necessarily mean short").
+若答案为「不会」，就删掉。CC-BP 当前页面（2026-11-14）指出，`CLAUDE.md` 只保留模型无法从代码推断的内容时
+效果最好。标准是信号，而非字数（ANT-CE："minimal does not necessarily mean short"）。
 
-`Context` holds only the left column:
+`Context` 只放左列的内容：
 
-| Include | Exclude |
+| 纳入 | 排除 |
 |---|---|
-| Shell commands the model cannot guess | Things it can learn by reading code |
-| Style requirements that differ from language defaults | General language conventions |
-| How to run tests and which runner to use | Detailed API documentation (link instead) |
-| Repository conventions (branch naming, commit format) | Fast-changing information |
-| Project-specific architectural decisions | Long explanations or tutorials |
-| Required environment variables | Self-evident requirements such as "write clean code" |
+| 模型猜不出的 shell 命令 | 读代码就能知道的内容 |
+| 与语言默认风格不同的风格要求 | 通用的语言约定 |
+| 如何运行测试、用哪个运行器 | 详细的 API 文档（改为链接） |
+| 仓库约定（分支命名、提交格式） | 快速变化的信息 |
+| 项目特有的架构决策 | 长篇解释或教程 |
+| 必需的环境变量 | 「写出整洁代码」这类不言自明的要求 |
 
-Examples: for prompts that define nontrivial behavior rules, use 3-5 examples, each showing behavior the rules do
-not cover; fold edge cases into examples instead of a separate checklist (ANT-CE opposes laundry lists). A short
-single-purpose prompt may omit examples; an example may apply a rule to a concrete case, but it must add a decision
-the rule alone does not settle.
+示例：定义非平凡行为规则的提示词使用 3-5 个示例，每个示例展示规则未覆盖的行为；把边界情况并入示例，而不是
+单独列清单（ANT-CE 反对罗列清单）。简短单一用途的提示词可以省略示例；示例可以把规则套用到具体案例，但它
+必须补上规则本身无法定论的决策。
 
-## How to Write Each Section
+## 各节的写法
 
-- **Role and Objective**: role, scope, and completion definition in one or two sentences.
-- **Instructions**: `Always` states what to do; `Never` holds only red lines, each with a reason; `When Unsure`
-  covers S4. Use plain imperatives.
-- **Workflow**: write it only when reordering steps changes the outcome, and state what skipping a step does.
-- **Output Format**: state structure, length, and format. Without a length, the model uses its default; GOOG says
-  Gemini 3 defaults to brevity, so detailed output must be requested explicitly.
-- **Examples**: wrap each in `<example>` so it is not read as an instruction.
-- **Context**: use the table above; link or point to long documents instead of pasting them.
+- **角色与目标（Role and Objective）**：用一两句话写清角色、范围与完成定义。
+- **指令（Instructions）**：`Always` 写明要做什么；`Never` 只放红线，每条附理由；`When Unsure` 覆盖 S4。
+  使用平实祈使句。
+- **工作流（Workflow）**：仅当调整步骤顺序会改变结果时才写，并说明跳过某步会怎样。
+- **输出格式（Output Format）**：写明结构、长度与格式。不写长度，模型就用默认值；GOOG 指出 Gemini 3 默认
+  简短，因此详细输出必须显式要求。
+- **示例（Examples）**：每个示例用 `<example>` 包裹，避免被当作指令读取。
+- **上下文（Context）**：使用上面的表；长文档改为链接或指向，不要粘贴。
 
-`Reasoning Steps` only for non-reasoning models that need explicit planning; `Final instructions` is an optional
-restatement at the end of a long prompt. Delete either if unused.
+`Reasoning Steps` 只用于需要显式规划的非推理模型；`Final instructions` 是长提示词末尾的可选复述。用不到就
+删掉。
 
-## Complex Logic
+## 复杂逻辑
 
-Use a table as the source of truth when rules combine multiple conditions or move through states; do not put them
-in one large diagram.
+规则涉及多个条件组合或在状态间迁移时，用表格作为事实来源；不要把它们放进一张大图。
 
-- Multiple conditions select one action: use a decision table. Use booleans or enums in condition columns, and
-  state match order, the meaning of `*` and `-`, and the default branch.
-- Tasks move on events: use a state table. List current state, event, condition, next state, and action; unlisted
-  combinations fall to the default.
-- When table and diagram coexist, the table is the source of truth and the diagram is overview; conflicts resolve
-  to the table.
-- When the table starts repeating or nesting exceeds two levels, split sub-decisions or switch to pseudocode or
-  pure functions with table-driven tests.
+- 多个条件选出一个动作：用判定表。条件列使用布尔值或枚举，并说明匹配顺序、`*` 与 `-` 的含义以及默认分支。
+- 任务随事件迁移：用状态表。列出当前状态、事件、条件、下一状态与动作；未列出的组合落到默认。
+- 表格与图并存时，表格是事实来源，图只是概览；冲突以表格为准。
+- 表格开始重复或嵌套超过两层时，拆分下级判定，或改用伪代码，或改用带表驱动测试的纯函数。
 
-Templates, the authorization example, and the task-lifecycle example are in
-[references/complex-logic.md](references/complex-logic.md).
+模板、授权示例与任务生命周期示例见 [references/complex-logic.md](references/complex-logic.md)。
 
-## Machine Check
+## 机器校验
 
-The script checks Markdown syntax, layout, and link validity only; it does not read semantics, judge rules, or
-trace sources. Exit codes: 0 no errors, 1 errors, 2 argument, dependency, or file problem.
+脚本只校验 Markdown 语法、版式与链接有效性；不读语义、不判断规则、不追溯来源。退出码：0 无错误，1 有错误，
+2 参数、依赖或文件问题。
 
-### Usage
+### 用法
 
-Paths are relative to this skill's directory; replace `<skill-dir>` with the actual path:
+路径相对于本 skill 的目录；把 `<skill-dir>` 换成实际路径：
 
 ```bash
 python3 <skill-dir>/scripts/check.py AGENTS.md
 ```
 
-In CI, add `--strict`; warnings also fail and the exit code is 1:
+在 CI 中加上 `--strict`；警告也算失败，退出码为 1：
 
 ```bash
 python3 <skill-dir>/scripts/check.py --strict AGENTS.md
 ```
 
-Under `--strict`, any warning fails the run; eliminate it at the source (for a documented false positive, rework the
-construct or change the checker), because a recorded explanation alone does not change the exit code.
+`--strict` 下，任何警告都会使运行失败；必须在源头消除（对已记录的误报，改造该写法或修改校验脚本），因为
+只记录解释并不会改变退出码。
 
-The script depends on `markdown-it-py>=3`; if it is missing, the script reports an error and prints an install
-command; it does not install automatically. The script's own tests use the standard library unittest:
+脚本依赖 `markdown-it-py>=3`；缺失时脚本报错并打印安装命令，不会自动安装。脚本自身的测试使用标准库
+unittest：
 
 ```bash
 python3 -m unittest discover -s <skill-dir>/scripts
 ```
 
-### Rules
+### 规则
 
-Output has three levels:
+输出分三级：
 
-| Level | Meaning | Affects exit code |
+| 级别 | 含义 | 影响退出码 |
 |---|---|---|
-| Error (`[错误]`) | File structure is broken | Yes |
-| Warning (`[警告]`) | Format issue that needs fixing | No (Yes with `--strict`) |
-| Suggestion (`[建议]`) | Possible improvement | No |
+| 错误（`[错误]`） | 文件结构已损坏 | 是 |
+| 警告（`[警告]`） | 需要修复的格式问题 | 否（加 `--strict` 时为是） |
+| 建议（`[建议]`） | 可能的改进 | 否 |
 
-Each finding gives a location (`L<line>` or whole file), rule ID, reason, and suggested fix.
+每条发现给出位置（`L<line>` 或整个文件）、规则 ID、原因与修复建议。
 
-Grouped by level, then by line.
+按级别分组，再按行排序。
 
-| Rule | Level | Checks |
+| 规则 | 级别 | 校验内容 |
 |---|---|---|
-| MD-BOM | Warning | File starts with a BOM |
-| MD-EOL | Warning | Mixed CRLF, LF, or CR line endings |
-| MD-FINAL-BLANK | Warning | Extra blank lines at end of file |
-| MD-FINAL-NEWLINE | Error | Missing final newline |
-| MD-FENCE | Error | Unclosed fence |
-| MD-FENCE-LANG | Suggestion | Fenced code block has no language tag |
-| MD-FENCE-STYLE | Suggestion | Mixed backtick and tilde fences in one file |
-| MD-HTML-COMMENT | Error / Warning | Block comment unclosed: Error; inline comment unclosed: Warning (fails only with `--strict`) |
-| MD-HTML-BLOCK | Error | Unclosed `<script>`, `<style>`, `<pre>`, or `<textarea>` block |
-| MD-HEAD-SPACE | Warning | No space after `#`; the line renders as a paragraph |
-| MD-HEAD-MULTI-SPACE | Warning | Multiple spaces after `#` |
-| MD-HEAD-INDENT | Suggestion | Top-level heading indented by 1-3 spaces |
-| MD-HEAD-START | Warning | First heading is not h1 |
-| MD-HEAD-JUMP | Warning | Heading level jump |
-| MD-HEAD-EMPTY | Warning | Heading has no text |
-| MD-HEAD-DUP | Warning | Duplicate heading (case and whitespace folded) |
-| MD-HEAD-BLANK-AFTER | Suggestion | No blank line after heading |
-| MD-LIST-SPACE | Warning | No space after list marker |
-| MD-LIST-MARKER | Warning | Mixed `-`, `*`, and `+` in one list run |
-| MD-LIST-START | Warning | Ordered list does not start at 1 |
-| MD-LIST-EMPTY | Warning | List item has no content |
-| MD-LIST-INDENT | Warning | Sibling indent mismatch, or indent too deep and the list structure is lost |
-| MD-QUOTE-SPACE | Suggestion | No space after `>` |
-| MD-TABLE-COLS | Warning | Table rows have different column counts |
-| MD-TABLE-BROKEN | Warning | Consecutive pipe rows did not parse as a table (delimiter row missing columns or dashes) |
-| MD-LINK-REF | Warning | Reference label is not defined |
-| MD-LINK-DEF-DUP | Warning | Same label defined twice; the latter is ignored |
-| MD-LINK-DEF-EMPTY | Warning | Link definition has no destination |
-| MD-LINK-DEF-UNUSED | Suggestion | Definition is never referenced |
-| MD-LINK-EMPTY | Warning | Link or image has no text or no destination |
-| MD-LINK-TEXT-SPACE | Suggestion | Link or image text has leading or trailing whitespace |
-| MD-LINK-TARGET | Warning | Relative link or image target does not exist in the repo |
-| MD-LINK-SYNTAX | Warning | `[text](` did not parse as a link |
-| MD-ANCHOR | Warning | In-page anchor points to a missing heading |
-| MD-INLINE-CODE | Warning | Unpaired backticks |
-| MD-EMPHASIS | Warning | Unpaired `**`, `__`, or `~~` |
-| MD-EMPHASIS-STYLE | Suggestion | Mixed italic or bold markers in one file |
-| MD-INLINE-HTML | Warning | Known inline HTML tag is opened but not closed |
-| MD-BLANK-RUN | Warning | Multiple consecutive blank lines |
-| MD-BLANK-BEFORE-BLOCK | Suggestion | No blank line before a top-level block |
-| MD-BLANK-AFTER-BLOCK | Suggestion | Top-level block is followed directly by body text |
-| MD-LINE-LEN | Warning | Body line exceeds 200 characters; tables, code, URLs, and front matter are exempt |
-| MD-TRAILING-WS | Warning | Trailing whitespace |
-| MD-TAB | Warning | Tab in body text |
-| MD-HR-STYLE | Suggestion | Mixed thematic-break styles in one file |
+| MD-BOM | 警告 | 文件以 BOM 开头 |
+| MD-EOL | 警告 | 混用 CRLF、LF 或 CR 行尾 |
+| MD-FINAL-BLANK | 警告 | 文件末尾有多余空行 |
+| MD-FINAL-NEWLINE | 错误 | 缺少末尾换行 |
+| MD-FENCE | 错误 | 围栏未闭合 |
+| MD-FENCE-LANG | 建议 | 围栏代码块没有语言标记 |
+| MD-FENCE-STYLE | 建议 | 同一文件混用反引号与波浪号围栏 |
+| MD-HTML-COMMENT | 错误 / 警告 | 块注释未闭合：错误；行内注释未闭合：警告（仅 `--strict` 下失败） |
+| MD-HTML-BLOCK | 错误 | `<script>`、`<style>`、`<pre>` 或 `<textarea>` 块未闭合 |
+| MD-HEAD-SPACE | 警告 | `#` 后无空格；该行会渲染成段落 |
+| MD-HEAD-MULTI-SPACE | 警告 | `#` 后有多个空格 |
+| MD-HEAD-INDENT | 建议 | 顶层标题缩进 1-3 个空格 |
+| MD-HEAD-START | 警告 | 首个标题不是 h1 |
+| MD-HEAD-JUMP | 警告 | 标题级别跳跃 |
+| MD-HEAD-EMPTY | 警告 | 标题没有文本 |
+| MD-HEAD-DUP | 警告 | 标题重复（忽略大小写与空白） |
+| MD-HEAD-BLANK-AFTER | 建议 | 标题后无空行 |
+| MD-LIST-SPACE | 警告 | 列表标记后无空格 |
+| MD-LIST-MARKER | 警告 | 同一列表段混用 `-`、`*` 与 `+` |
+| MD-LIST-START | 警告 | 有序列表不是从 1 开始 |
+| MD-LIST-EMPTY | 警告 | 列表项没有内容 |
+| MD-LIST-INDENT | 警告 | 同级缩进不一致，或缩进过深导致列表结构丢失 |
+| MD-QUOTE-SPACE | 建议 | `>` 后无空格 |
+| MD-TABLE-COLS | 警告 | 表格各行列数不一致 |
+| MD-TABLE-BROKEN | 警告 | 连续的管道行未解析为表格（分隔行缺列或短横线有误） |
+| MD-LINK-REF | 警告 | 引用的标签未定义 |
+| MD-LINK-DEF-DUP | 警告 | 同一标签定义了两次；后者被忽略 |
+| MD-LINK-DEF-EMPTY | 警告 | 链接定义没有目标 |
+| MD-LINK-DEF-UNUSED | 建议 | 定义从未被引用 |
+| MD-LINK-EMPTY | 警告 | 链接或图片没有文本或没有目标 |
+| MD-LINK-TEXT-SPACE | 建议 | 链接或图片文本首尾有空白 |
+| MD-LINK-TARGET | 警告 | 相对链接或图片目标在仓库中不存在 |
+| MD-LINK-SYNTAX | 警告 | `[text](` 未解析为链接 |
+| MD-ANCHOR | 警告 | 页内锚点指向不存在的标题 |
+| MD-INLINE-CODE | 警告 | 反引号未配对 |
+| MD-EMPHASIS | 警告 | `**`、`__` 或 `~~` 未配对 |
+| MD-EMPHASIS-STYLE | 建议 | 同一文件混用斜体或加粗标记 |
+| MD-INLINE-HTML | 警告 | 已知行内 HTML 标签只开未闭 |
+| MD-BLANK-RUN | 警告 | 连续多个空行 |
+| MD-BLANK-BEFORE-BLOCK | 建议 | 顶层块前无空行 |
+| MD-BLANK-AFTER-BLOCK | 建议 | 顶层块后直接跟正文 |
+| MD-LINE-LEN | 警告 | 正文行超过 200 个字符；表格、代码、URL 与 front matter 不受限 |
+| MD-TRAILING-WS | 警告 | 行尾空白 |
+| MD-TAB | 警告 | 正文中有制表符 |
+| MD-HR-STYLE | 建议 | 同一文件混用分隔线样式 |
 
-### Scope of Checks
+### 校验范围
 
-These checks are based on CommonMark parser results, not line-by-line regular expressions:
+这些校验基于 CommonMark 解析器的结果，而不是逐行正则：
 
-- Structure checks skip fences, indented code, HTML blocks, and front matter. `<example>` is treated as ordinary
-  HTML.
-- BOM, mixed line endings, and trailing blank lines are checked from the raw text; the BOM is stripped before
-  parsing so it does not affect the first heading.
-- Blank-line-before checks only look at top-level blocks; blocks inside nested lists or blockquotes, and blocks
-  after headings, are not reported.
-- Blank-line-after checks only look at top-level blocks; blocks inside nested lists or blockquotes are not
-  reported, and blank lines already at the end of a block are skipped.
-- Blank-line-after is reported only when body text follows the block; if another block starts, it is not reported.
-- Blank-line-after a heading is reported only when the next line is body text; list, table, fence, and other block
-  starts are not reported.
-- Heading indentation checks only top-level headings; headings inside lists or blockquotes are not reported.
-- Fence, thematic-break, and emphasis style checks fire only when styles are mixed in one file.
-- Backticks and emphasis may pair across lines; the script judges by "markers the parser did not consume," so
-  valid cross-line pairs are not reported.
-- Link definitions come from the parser's reference table; destinations on the next line and definitions inside
-  list items are recognized.
-- If a table delimiter row is wrong, the whole table degrades to a paragraph; `MD-TABLE-BROKEN` catches this.
-- External links, `mailto:`, and anchors are not checked for local existence; anchors are converted to GitHub
-  slugs and compared.
-- Inline HTML checks only use `html_inline` tokens; autolinks and `<placeholders>` are not treated as unclosed.
+- 结构类校验会跳过围栏、缩进代码、HTML 块与 front matter。`<example>` 按普通 HTML 处理。
+- BOM、混用行尾与末尾空行按原始文本校验；解析前会去掉 BOM，因此它不影响首个标题。
+- 空行前置校验只看顶层块；嵌套列表或引用块内的块、以及标题之后的块都不报告。
+- 空行后置校验只看顶层块；嵌套列表或引用块内的块不报告，块末尾已有的空行会跳过。
+- 仅当块后跟正文时才报告空行后置；若后面是另一个块，则不报告。
+- 标题后的空行仅在下一行是正文时报告；列表、表格、围栏及其他块起始都不报告。
+- 标题缩进只校验顶层标题；列表或引用块内的标题不报告。
+- 围栏、分隔线与强调样式校验仅在同一个文件中混用样式时触发。
+- 反引号与强调标记可以跨行配对；脚本按「解析器未消费的标记」判断，因此合法的跨行配对不会报告。
+- 链接定义取自解析器的引用表；写在下一行的目标与列表项内的定义都能识别。
+- 表格分隔行有误时，整张表会退化为段落；`MD-TABLE-BROKEN` 会捕获这种情况。
+- 外部链接、`mailto:` 与锚点不校验本地是否存在；锚点会转换为 GitHub slug 后比对。
+- 行内 HTML 校验只使用 `html_inline` token；自动链接与 `<placeholders>` 不会被当作未闭合。
 
-### Deliberately Not Checked
+### 有意不校验的项
 
-These three are deliberately not checked because mechanical checks would only create noise:
+以下三项有意不校验，因为机械校验只会制造噪声：
 
-| Not checked | Reason |
+| 不校验项 | 原因 |
 |---|---|
-| Unpaired single `*` or `_` | `*.py`, `src/*.ts`, `2*3`, and `**/*.md` use the same characters; distinguishing them needs semantics |
-| Setext headings (`===`, `---` underlines) | Legal syntax; normal headings would be reported |
-| Empty header cells in tables `\| a \|  \|` | Legal and common |
+| 未配对的单个 `*` 或 `_` | `*.py`、`src/*.ts`、`2*3` 与 `**/*.md` 使用相同字符；区分它们需要语义 |
+| Setext 标题（`===`、`---` 下划线） | 合法语法；否则正常标题会被报告 |
+| 表格中的空表头单元格 `\| a \|  \|` | 合法且常见 |
 
-`MD-INLINE-HTML` has one residual false positive: a single `<div>` written while explaining syntax is
-indistinguishable from a genuinely unclosed tag. Put such content in backticks or a code block to skip it.
+`MD-INLINE-HTML` 有一处残留误报：讲解语法时写下的单个 `<div>` 与真正未闭合的标签无法区分。把这类内容
+放进反引号或代码块即可跳过。
 
-### Reading Output
+### 阅读输出
 
-- `[错误]` (error): fix and rerun until there are 0 items and the exit code is 0.
-- `[警告]` (warning): outside `--strict`, write a conclusion for each (for a structural false positive, say it is a
-  heading-wording issue, not missing content); under `--strict`, fix it at the source.
-- `[建议]` (suggestion): decide with S9; optional.
+- `[错误]`（错误）：修复并重跑，直到 0 项且退出码为 0。
+- `[警告]`（警告）：非 `--strict` 模式下逐条写出结论（结构性误报要说明是标题措辞问题，不是内容缺失）；
+  `--strict` 模式下在源头修复。
+- `[建议]`（建议）：按 S9 决定；可选。
 
-## Anti-Patterns
+## 反模式
 
-| Anti-pattern | Fix |
+| 反模式 | 修复 |
 |---|---|
-| Rules pile up so you must read everything to find one | Delete per S9; move details into the skill |
-| Treat numbering as implicit priority | Use an explicit ordering declaration, or split sections |
-| All prohibitions, no alternative behavior | Add an alternative or reason per S2 |
-| Red lines and ordinary requirements both use "never" | Per S3, reserve absolute wording for red lines |
-| Every rule is bold | Bold is navigation only; reserve whole-sentence emphasis for red lines (S3) |
-| Only "call a tool first" | Add the insufficient-information branch per S4 |
-| Hard-code a step-by-step process | Write goals and constraints; keep steps only when order is critical (Resolving Source Conflicts > Granularity) |
-| Paste API docs | Link to them (S11) |
-| Write tools or configuration keys that do not exist | Only write confirmed interfaces (S10) |
-| Pile edge cases into an example list | Fold them into 3-5 examples (S7) |
-| Put complex rules in one large diagram | Use decision or state tables; diagrams are overview only |
+| 规则堆到必须通读才能找到一条 | 按 S9 删除；把细节移入 skill |
+| 把编号当作隐含优先级 | 使用显式顺序声明，或拆分小节 |
+| 全是禁止项，没有替代行为 | 按 S2 补替代行为或理由 |
+| 红线与普通要求都用「绝不」 | 按 S3，绝对措辞只留给红线 |
+| 每条规则都加粗 | 加粗只用于导航；整句强调只留给红线（S3） |
+| 只写「先调用工具」 | 按 S4 补信息不足分支 |
+| 写死分步流程 | 写目标与约束；仅当顺序关键时保留步骤（解决来源冲突 > 粒度） |
+| 粘贴 API 文档 | 改为链接（S11） |
+| 写不存在的工具或配置键 | 只写已确认的接口（S10） |
+| 把边界情况堆成示例清单 | 并入 3-5 个示例（S7） |
+| 把复杂规则塞进一张大图 | 用判定表或状态表；图只作概览 |
 
-## Review Checklist
+## 审查清单
 
-- [ ] The target file and task type (new file or audit) are confirmed.
-- [ ] The five inputs are collected, or each missing input is a stated assumption.
-- [ ] Every S1-S13 rule has a conclusion with evidence.
-- [ ] The checker command is pasted with 0 errors; warnings resolved; suggestions decided per S9.
-- [ ] Assumptions are listed in the report.
+- [ ] 已确认目标文件与任务类型（新建文件还是审查）。
+- [ ] 五项输入已收集，或每个缺失项都写成了明确的假设。
+- [ ] S1-S13 每条规则都有带证据的结论。
+- [ ] 已粘贴 0 错误的校验命令；警告已解决；建议按 S9 决定。
+- [ ] 假设已列在报告中。
 
-## Template
+## 模板
 
 ```markdown
 # Role and Objective
@@ -360,12 +332,12 @@ indistinguishable from a genuinely unclosed tag. Put such content in backticks o
 - <Build/test commands, environment variables, and other information the model cannot guess>
 ```
 
-Section order follows the template: Role and Objective to Instructions to Workflow to Output Format to Examples to
-Context. This is OAI-PE's Identity to Instructions to Examples to Context with Workflow and Output Format inserted.
+节的顺序遵循模板：角色与目标 → 指令 → 工作流 → 输出格式 → 示例 → 上下文。这是 OAI-PE 的 Identity →
+Instructions → Examples → Context 顺序，插入了工作流与输出格式。
 
-## Examples
+## 示例
 
-An agent that changes a repository:
+一个会改动仓库的代理：
 
 ```markdown
 # Role and Objective
@@ -425,10 +397,9 @@ process, escalate to its owner, and offer the smallest emergency path that still
 - CI runs Python 3.11 and 3.12; both must pass.
 ```
 
-The format check expects 0 errors (`[错误]`), 0 warnings (`[警告]`), and 0 suggestions (`[建议]`). Content rules still
-need manual review.
+格式校验期望 0 错误（`[错误]`）、0 警告（`[警告]`）、0 建议（`[建议]`）。内容规则仍需人工审查。
 
-Single-step task; no tools. S4 is satisfied by the "cannot summarize" branch, and `Instructions` is omitted:
+单步任务，不使用工具。S4 由「cannot summarize」分支满足，省略 `Instructions`：
 
 ```markdown
 # Role and Objective
@@ -440,18 +411,16 @@ Compress the input text into a summary of at most three sentences. The completio
 - If the input is empty or not text, output "cannot summarize."
 ```
 
-The format check also expects 0/0/0. Omitting the Instructions section is a content choice; the script does not
-report it.
+格式校验同样期望 0/0/0。省略「指令」节属于内容取舍，脚本不会报告。
 
-One sentence can also work (ANT-PBP: "Even a single sentence makes a difference"), but the completion definition
-cannot be omitted.
+一句话也可以（ANT-PBP："Even a single sentence makes a difference"），但完成定义不能省。
 
-## Sources
+## 来源
 
-Short labels are used in the rule table. Read [references/provenance.md](references/provenance.md) only when a rule's
-source is questioned or a linked document is updated; normal execution does not read it.
+规则表使用简写标签。仅在某个规则的来源被质疑或所链文档更新时，才读
+[references/provenance.md](references/provenance.md)；日常执行不读它。
 
-| Short label | Document | Link |
+| 简写标签 | 文档 | 链接 |
 |---|---|---|
 | OAI-PE | Prompt engineering | https://developers.openai.com/api/docs/guides/prompt-engineering |
 | OAI-41 | GPT-4.1 Prompting Guide (archived) | https://developers.openai.com/cookbook/examples/gpt4-1_prompting_guide |
@@ -462,5 +431,5 @@ source is questioned or a linked document is updated; normal execution does not 
 | GOOG | Prompt design strategies | https://aistudio.google.com/docs/prompting-strategies |
 | MS | System message design | https://learn.microsoft.com/en-us/azure/foundry/openai/concepts/advanced-prompt-engineering |
 
-Sources verified 2026-11-14; OAI-41 is archived. OAI-MS is the 2026-08-18 version; the page notes a newer version.
-If a refresh no longer matches, change or delete the rule; do not keep an untraceable requirement.
+来源核验于 2026-11-14；OAI-41 已归档。OAI-MS 是 2026-08-18 版本，该页注明有更新版本。若刷新后不再匹配，
+就修改或删除该规则；不要保留无法追溯的要求。

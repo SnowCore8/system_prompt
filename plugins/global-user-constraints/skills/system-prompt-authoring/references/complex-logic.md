@@ -1,96 +1,92 @@
-# Complex Logic: Decision Tables and State Tables
+# 复杂逻辑：判定表与状态表
 
-When rules involve multiple condition combinations or state transitions, do not put them in one large diagram. Use a
-table as the source of truth; diagrams are overview only.
+当规则涉及多个条件组合或状态迁移时，不要把它们放进一张大图。以表格为事实来源，图只作概览。
 
-## When to Use
+## 何时使用
 
-| Situation | Use |
+| 情形 | 采用 |
 |---|---|
-| Multiple conditions select one action | Decision table |
-| A task moves between states on events | State table |
-| Both states and condition branches | State table; condition column references a decision table |
-| Computation, loops, or data structures | Pseudocode or pure functions with table-driven tests |
+| 多个条件选出一个动作 | 判定表 |
+| 任务随事件在状态间迁移 | 状态表 |
+| 既有状态又有条件分支 | 状态表；条件列引用判定表 |
+| 计算、循环或数据结构 | 伪代码，或带表驱动测试的纯函数 |
 
-## Decision Tables
+## 判定表
 
-### Decision Table Template
+### 判定表模板
 
-| Order | Condition A | Condition B | Condition C | Action |
+| 顺序 | 条件 A | 条件 B | 条件 C | 动作 |
 |---|---|---|---|---|
-| 1 | No | * | * | Report only |
-| 2 | Yes | Yes | None | Refuse |
-| 3 | Yes | Yes | Has plan | Execute |
-| 4 | Yes | No | * | Execute |
+| 1 | 否 | * | * | 仅报告 |
+| 2 | 是 | 是 | 无 | 拒绝 |
+| 3 | 是 | 是 | 有方案 | 执行 |
+| 4 | 是 | 否 | * | 执行 |
 
-- Order: first match wins, top to bottom; if you use "last match wins," say so.
-- `*` means any value, and `-` means not applicable; define both symbols.
-- Action: one observable result per row.
-- Default: state which branch applies when no row matches.
+- 顺序：自上而下，首个匹配者生效；若采用「最后匹配者生效」，要明确写出。
+- `*` 表示任意值，`-` 表示不适用；两个符号都要定义。
+- 动作：每行只给一个可观察的结果。
+- 默认：说明没有行匹配时走哪个分支。
 
-### Decision Table Example: Authorization
+### 判定表示例：授权
 
-| Order | Explicit consent | Production | Rollback plan | Action |
+| 顺序 | 显式同意 | 生产环境 | 回滚方案 | 动作 |
 |---|---|---|---|---|
-| 1 | No | * | * | Report only; do not execute |
-| 2 | Yes | Yes | None | Refuse; require a rollback plan first |
-| 3 | Yes | Yes | Has plan | Execute; keep the rollback path |
-| 4 | Yes | No | * | Execute |
+| 1 | 否 | * | * | 仅报告；不执行 |
+| 2 | 是 | 是 | 无 | 拒绝；先要求给出回滚方案 |
+| 3 | 是 | 是 | 有方案 | 执行；保留回滚路径 |
+| 4 | 是 | 否 | * | 执行 |
 
-"Explicit consent" means direct, explicit approval for that operation; a vague "let's leave it like this" does not
-count. If no row matches, reject and report by default.
+「显式同意」指对该操作直接、明确的批准；含糊的「先这样吧」不算。若没有行匹配，默认拒绝并报告。
 
-## State Tables
+## 状态表
 
-### State Table Template
+### 状态表模板
 
-| Current state | Event | Condition | Next state | Action |
+| 当前状态 | 事件 | 条件 | 下一状态 | 动作 |
 |---|---|---|---|---|
-| Awaiting authorization | User consents | Non-production | Executing | Start changes |
-| Awaiting authorization | User refuses | - | Rejected | Stop; do not work around it |
+| 等待授权 | 用户同意 | 非生产环境 | 执行中 | 开始改动 |
+| 等待授权 | 用户拒绝 | - | 已拒绝 | 停止；不要绕过它做事 |
 
-- Every state/event combination must be defined explicitly or fall to a default row.
-- Mark terminal states; never silently return from a terminal state to executing.
-- The condition column may reference a decision table's conclusion; do not repeat it.
+- 每个状态/事件组合都必须显式定义，或落到默认行。
+- 标出终态；禁止从终态静默回到执行中。
+- 条件列可以引用判定表的结论；不要重复展开。
 
-### State Table Example: Inventory to Plan to Evaluate to Implement to Verify to Commit to Deliver to Done
+### 状态表示例：清点 → 计划 → 评估 → 实施 → 验证 → 提交 → 交付 → 完成
 
-| Current state | Event | Condition | Next state | Action |
+| 当前状态 | 事件 | 条件 | 下一状态 | 动作 |
 |---|---|---|---|---|
-| Inventory | Task accepted | Scope and authorization are clear | Plan | Record scope, current state, dependencies, and constraints |
-| Inventory | Task accepted | Scope or authorization is unclear | Blocked | Ask for clarification or report; do not plan |
-| Plan | Inventory complete | Splittable, or more than four steps | Evaluate | Define steps, owners, and acceptance; delegate or create a todo list |
-| Plan | Inventory complete | Single linear path | Evaluate | Define a one-step-at-a-time plan; do not delegate |
-| Evaluate | Plan approved | Risk is acceptable and reversible | Implement | Start the change with the chosen approach, rollback path, and platform tools |
-| Evaluate | Plan approved | High risk or no rollback | Blocked | Ask for confirmation or propose an alternative |
-| Blocked | Risk accepted | User accepts the residual risk | Implement | Apply the approved change |
-| Implement | Change complete | Change stays within scope | Verify | Confirm the diff and freeze the change |
-| Implement | Change in progress | Root cause is structural | Implement | Refactor; do not stack another patch |
-| Implement | Blocker found | - | Blocked | Report the blocker and what is already done |
-| Verify | Implementation complete | Relevant and full tests pass | Commit | Collect evidence and real output |
-| Verify | Implementation complete | Tests fail or were not run | Implement | Fix; do not commit; if not run, say "not run" |
-| Commit | Verification passed | Diff is clean and contains no secrets or build artifacts | Deliver | Review the diff, split commits, and write the message |
-| Commit | Verification passed | Secret, build artifact, or scope creep found | Implement | Remove or repair the issue; do not commit |
-| Deliver | Delivery sent | - | Done | Report delivery; close the task |
-| Deliver | Feedback received | - | Inventory | Start a new cycle with the feedback |
+| 清点 | 任务已接受 | 范围与授权明确 | 计划 | 记录范围、当前状态、依赖与约束 |
+| 清点 | 任务已接受 | 范围或授权不明确 | 阻塞 | 请求澄清或报告；不要进入计划 |
+| 计划 | 清点完成 | 可拆分，或步骤超过四步 | 评估 | 定义步骤、负责人与验收；委派或创建待办清单 |
+| 计划 | 清点完成 | 单条线性路径 | 评估 | 定义一次一步的计划；不要委派 |
+| 评估 | 计划已批准 | 风险可接受且可回滚 | 实施 | 按选定方案、回滚路径与平台工具开始改动 |
+| 评估 | 计划已批准 | 高风险或无回滚 | 阻塞 | 请求确认或提出替代方案 |
+| 阻塞 | 风险已接受 | 用户接受剩余风险 | 实施 | 执行已批准的改动 |
+| 实施 | 改动完成 | 改动未超出范围 | 验证 | 确认 diff 并冻结改动 |
+| 实施 | 改动进行中 | 根因是结构性的 | 实施 | 重构；不要再叠加补丁 |
+| 实施 | 发现阻塞 | - | 阻塞 | 报告阻塞点与已完成的部分 |
+| 验证 | 实施完成 | 相关测试与全量测试通过 | 提交 | 收集证据与真实输出 |
+| 验证 | 实施完成 | 测试失败或未运行 | 实施 | 修复；不要提交；未运行就写「未运行」 |
+| 提交 | 验证通过 | diff 干净，不含机密或构建产物 | 交付 | 审查 diff，拆分提交并撰写提交信息 |
+| 提交 | 验证通过 | 发现机密、构建产物或范围蔓延 | 实施 | 移除或修复问题；不要提交 |
+| 交付 | 交付已发出 | - | 完成 | 报告交付；关闭任务 |
+| 交付 | 收到反馈 | - | 清点 | 带着反馈开始新一轮 |
 
-For small tasks, collapse Inventory, Plan, and Evaluate into one pass; never skip Verify, Commit, or Deliver checks.
-Any unlisted combination stays in the current state and reports; do not guess.
+小任务可把清点、计划、评估合并为一遍；禁止跳过验证、提交或交付的检查。任何未列出的组合都停留在当前状态
+并报告；不要猜测。
 
-## Model-Friendly Writing
+## 便于模型理解的写法
 
-- Use booleans or enums in condition columns, not long sentences.
-- Put one result in the action column; never write "handle as appropriate."
-- Keep the table near the rule; do not put it only in an appendix.
-- Add 3-5 boundary cases after the table: default, exception, conflict, insufficient information.
-- When a diagram is needed, it is overview only; if diagram and table conflict, the table wins.
-- When nesting exceeds two levels or the table starts repeating, split sub-decisions or switch to pseudocode or
-  pure functions.
+- 条件列用布尔值或枚举，不要写长句。
+- 动作列只放一个结果；禁止写「视情况处理」。
+- 表格放在规则附近；不要只放在附录里。
+- 表格之后补 3-5 个边界用例：默认、异常、冲突、信息不足。
+- 需要配图时，图只作概览；图与表冲突时以表为准。
+- 嵌套超过两层，或表格开始重复时，拆分下级判定，或改用伪代码，或改用带表驱动测试的纯函数。
 
-## Maintenance and Acceptance
+## 维护与验收
 
-- Change the table first, then the diagram; never hand-edit the diagram without syncing the table.
-- Update boundary cases when rules change.
-- When the logic is too complex for a table, write a pure function with table-driven tests; do not make the prompt
-  carry an algorithm.
-- Diagrams are overview only; the source of truth is always the table or code.
+- 先改表，再改图；禁止不同步表格就手改图。
+- 规则变化时同步更新边界用例。
+- 逻辑复杂到表格无法承载时，写带表驱动测试的纯函数；不要让提示词承载算法。
+- 图只作概览；事实来源始终是表格或代码。
