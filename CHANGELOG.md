@@ -2,6 +2,33 @@
 
 按版本从新到旧记录可观察变更。自 0.2.0 起版本采用 SemVer、发布点为 tag `v<version>`，每节记录一个发布版本；0.2.0 之前按日期记录。条目按主题合并，记录最终可观察状态；被后续提交推翻的中间状态只在修复项里说明。
 
+## 0.13.0（2026-11-14）
+
+**修复**
+
+- 消除跨 skill 的归属冲突：命名改由 `naming-conventions` 独占（原先 `architecture-and-design-conventions`
+  把它判给 `code-style-conventions`）；锁竞争拆成「正确性归 `concurrency-conventions`、性能归
+  `performance-conventions`」，两处不再互相移交同一主题；必需门禁集合由 `testing-and-quality-conventions`
+  定义，`vcs-collaboration-conventions` 只决定按分支类别启用哪些项；依赖漏洞豁免、发布标签权限、
+  CODEOWNERS 复核节奏与第三方声明文件名各自指定唯一 owner。
+- `testing-and-quality-conventions` 的单元测试预算改以测试层级矩阵为唯一口径，删除与矩阵冲突的
+  「10 秒规则」与项目类型表的 PR 预算列。
+
+**变更**
+
+- 18 个 skill 的维度索引统一为「维度｜首条规则｜详情」三列，详情指向 `references/dimensions.md` 的节号；
+  首节统一为「适用范围与优先级」、末节统一为「参考资料」；`references/` 内部引用改用同目录相对名。
+- 13 个 skill 的 description 补写「不适用于…」，触发面同时给出适用与排除。
+- `release-operations-conventions`、`repository-governance-conventions`、`security-compliance-conventions`、
+  `testing-and-quality-conventions` 与 `vcs-collaboration-conventions` 补单人维护、无部署仓库与无 PR 的
+  降级路径；`skill-authoring` 的正文上限从「约一屏」改为 250 行。
+- 三包版本升到 `0.13.0`。
+
+**新增**
+
+- `tests/skill/test_skills_meta.py`：校验 frontmatter、首末节标题、索引三列与节号一致性、正文行数、
+  references 内自引用与正文逐字重复段落，已纳入 `scripts/check.sh`。
+
 ## 0.12.0（2026-11-14）
 
 **新增**
