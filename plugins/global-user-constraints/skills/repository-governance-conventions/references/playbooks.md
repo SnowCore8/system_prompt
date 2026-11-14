@@ -1,194 +1,177 @@
-# Repository Governance Playbooks
+# 仓库治理操作手册
 
-Use this file with `SKILL.md` and `dimensions.md`. Each playbook is an ordered check for one governance task; the
-dimensions file states the rule and this file turns it into steps. Apply the playbook for the repository's project
-type, record the evidence for every item, and keep the exceptions in `GOVERNANCE.md`. A playbook item that does not
-apply is recorded as "not applicable" with the reason, not silently skipped.
+将本文件与 `SKILL.md` 和 `dimensions.md` 配合使用。每份操作手册对应一项治理任务的有序检查；`dimensions.md`
+陈述规则，本文件把它变成步骤。应用与仓库项目类型匹配的操作手册，为每一项记录证据，并把例外保留在
+`GOVERNANCE.md`。不适用的操作手册项要记录为“不适用”及原因，而不是静默跳过。
 
-## New Repository Checklist
+## 新仓库清单
 
-Create the repository in this order so the first push starts compliant; retrofitting these items later costs history
-and a migration.
+按以下顺序创建仓库，让首次推送即合规；事后补上这些项会付出历史记录与一次迁移的代价。
 
-- Confirm the owning team, the purpose in one sentence, the project type, and the visibility before creating anything.
-- Create under the organization that will outlive the project, not a personal account, and record the repository and
-  package names approved by the naming skill.
-- Set the description, topics, and homepage in the host settings; leave no field at a default value.
-- Record the license decision from the owner and legal reviewer, then add the approved text at `LICENSE`.
-- Add the README entry file at the recognized root path; the documentation role owns its content and structure.
-- Add `.gitignore`, `.editorconfig`, and `.gitattributes` before the first commit, with the language and platform
-  categories the project needs.
-- Protect the default branch through the VCS collaboration skill's protection rules and reviewer counts; record the
-  governance consequence that every merge resolves to an accountable role.
-- Add `CODEOWNERS` for every mergeable path and let the VCS collaboration skill own its syntax, fallback, and
-  validation mechanics.
-- Add `SECURITY.md` at the recognized path before the repository becomes public; the security role owns its content and
-  response commitments.
-- Add `CONTRIBUTING.md` and `CODE_OF_CONDUCT.md` where the project-type inventory requires them; add `SUPPORT.md` when
-  the issue tracker is the support route.
-- Add issue forms and a pull request template where the project-type inventory requires them.
-- Reserve the package name and the registry coordinates before the first release; the naming skill owns the name
-  itself.
-- Enable dependency alerts, secret scanning, and required status checks on the default branch.
-- Schedule the first access review and inventory review, and record both dates.
+- 在创建任何东西之前，确认负责团队、用一句话表述的用途、项目类型与可见性。
+- 在会比项目存续更久的组织下创建，而不是个人账号，并记录 `naming-conventions` 批准的仓库名与包名。
+- 在托管设置中设定描述、主题与主页；不要留下任何默认值字段。
+- 记录所有者与法务审查者做出的许可证决定，然后把批准的文本添加为 `LICENSE`。
+- 在被认可的根路径添加 README 入口文件；文档角色负责其内容与结构。
+- 在首次提交前添加 `.gitignore`、`.editorconfig` 与 `.gitattributes`，包含项目所需的语言与平台类别。
+- 通过 `vcs-collaboration-conventions` 的保护规则与审查者数量保护默认分支；记录治理后果：每次合并都指向可问责角色。
+- 为每条可合并路径添加 `CODEOWNERS`，让 `vcs-collaboration-conventions` 负责其语法、回退与校验机制。
+- 在仓库公开之前，于被认可的路径添加 `SECURITY.md`；安全角色负责其内容与响应承诺。
+- 在项目类型清单要求处添加 `CONTRIBUTING.md` 与 `CODE_OF_CONDUCT.md`；当 issue 跟踪器是支持路径时，
+  添加 `SUPPORT.md`。
+- 在项目类型清单要求处添加 issue 表单与 PR 模板。
+- 在首次发布前预留包名与包仓库坐标；`naming-conventions` 负责名称本身。
+- 在默认分支上启用依赖告警、机密扫描与必需状态校验。
+- 安排首次权限审查与清单审查，并记录两个日期。
 
-## Required-File Inventory by Project Type
+## 按项目类型的必需文件清单
 
-Use the project type column that matches the repository; "Required" means the file exists with the fields its purpose
-needs, not merely that a filename exists. "Recommended" means add it when the condition applies, "Optional" is a
-deliberate choice, and the archived column uses "Keep" to preserve, "Frozen" for no further edits, "Banner" for the
-archive notice, and "Steward" for the named owner. A library is consumed by others, an application is deployed or
-distributed, an internal service is used inside the organization, a docs-only repository publishes documentation, and
-an archived repository is read-only.
+使用与仓库匹配的项目类型列；“必需”指文件存在并带有其用途所需字段，而不只是文件名存在。“推荐”指
+条件适用时添加，“可选”是有意选择，归档列用“保留”表示保留、用“冻结”表示不再编辑、用“横幅”表示
+归档通知、用“管理员”表示指定负责人。库供他人消费，应用被部署或分发，内部服务在组织内部使用，仅
+文档仓库发布文档，归档仓库只读。
 
-| File or setting | Library | Application | Internal service | Docs-only | Archived |
+| 文件或设置 | 库 | 应用 | 内部服务 | 仅文档 | 归档 |
 |---|---|---|---|---|---|
-| `README.md` | Required | Required | Required | Required | Banner |
-| `LICENSE` | Required | Required | Required if shipped outside | Required | Keep |
-| `CONTRIBUTING.md` | Required | Required | Recommended | Required | Not required |
-| `CODE_OF_CONDUCT.md` | Required | Required | Not required | Recommended | Not required |
-| `SECURITY.md` | Required | Required | Required | Required | Keep |
-| `SUPPORT.md` | Required | Required | Optional | Optional | Not required |
-| `CHANGELOG.md` | Required | Required | Recommended | Optional | Keep last entry |
-| `CODEOWNERS` | Required | Required | Required | Recommended | Frozen |
-| Issue templates | Required | Required | Optional | Optional | Not required |
-| Pull request template | Required | Required | Recommended | Required | Not required |
-| `.editorconfig` | Required | Required | Required | Required | Frozen |
-| `.gitignore` | Required | Required | Required | Required | Frozen |
-| `.gitattributes` | Required | Required | Required | Recommended | Frozen |
-| `CITATION.cff` | Optional, research | Optional | Not required | Optional | Keep |
-| `GOVERNANCE.md`, `MAINTAINERS.md` | Recommended | Recommended | Recommended | Optional | Steward |
-| `.github/FUNDING.yml` | Optional | Optional | Not required | Optional | Not required |
-| Docs index | Required with docs tree | Required with docs tree | Recommended | Required | Keep |
-| Repository metadata | Required | Required | Required | Required | Description and homepage |
+| `README.md` | 必需 | 必需 | 必需 | 必需 | 横幅 |
+| `LICENSE` | 必需 | 必需 | 对外交付时必需 | 必需 | 保留 |
+| `CONTRIBUTING.md` | 必需 | 必需 | 推荐 | 必需 | 不需要 |
+| `CODE_OF_CONDUCT.md` | 必需 | 必需 | 不需要 | 推荐 | 不需要 |
+| `SECURITY.md` | 必需 | 必需 | 必需 | 必需 | 保留 |
+| `SUPPORT.md` | 必需 | 必需 | 可选 | 可选 | 不需要 |
+| `CHANGELOG.md` | 必需 | 必需 | 推荐 | 可选 | 保留最后一条 |
+| `CODEOWNERS` | 必需 | 必需 | 必需 | 推荐 | 冻结 |
+| issue 模板 | 必需 | 必需 | 可选 | 可选 | 不需要 |
+| PR 模板 | 必需 | 必需 | 推荐 | 必需 | 不需要 |
+| `.editorconfig` | 必需 | 必需 | 必需 | 必需 | 冻结 |
+| `.gitignore` | 必需 | 必需 | 必需 | 必需 | 冻结 |
+| `.gitattributes` | 必需 | 必需 | 必需 | 推荐 | 冻结 |
+| `CITATION.cff` | 可选，研究 | 可选 | 不需要 | 可选 | 保留 |
+| `GOVERNANCE.md`、`MAINTAINERS.md` | 推荐 | 推荐 | 推荐 | 可选 | 管理员 |
+| `.github/FUNDING.yml` | 可选 | 可选 | 不需要 | 可选 | 不需要 |
+| 文档索引 | 有文档树时必需 | 有文档树时必需 | 推荐 | 必需 | 保留 |
+| 仓库元数据 | 必需 | 必需 | 必需 | 必需 | 描述与主页 |
 
-## Repository Metadata Settings
+## 仓库元数据设置
 
-Set each field once, validate it from outside the repository, and change it only as part of a reviewed change.
+每个字段设置一次，从仓库外部校验它，并且只在经过审查的变更中修改。
 
-| Setting | Required value | Checked in |
+| 设置 | 必需值 | 校验位置 |
 |---|---|---|
-| Description | One sentence that names the job; no slogan, no empty value. | Host settings and package manifest. |
-| Topics | Search terms users actually type; no more than ten. | Host settings. |
-| Homepage | The docs or product entry point, and it resolves. | Host settings and manifest. |
-| Default branch | The protected branch that CI and branch protection target. | Branch protection. |
-| Visibility | Public only when license, security, and conduct files are ready. | Access audit. |
-| License detection | Matches the `LICENSE` file and the manifest SPDX identifier. | Host license detection and manifest. |
-| Releases | Enabled; versioning, timing, and tags follow the release-operations skill. | Release list. |
-| Discussions | Enabled only with an owner and a response expectation. | Host settings. |
-| Issue tracker | Enabled with templates, or redirected to the support route. | Host settings. |
-| Merge strategy | One allowed method that matches the branch model. | Branch protection. |
-| Security features | Dependency alerts, secret scanning, and code scanning enabled where available. | Security settings. |
-| Archived flag | Set only after the archive checklist completes. | Host settings. |
+| 描述 | 一句说明工作的句子；不要口号，不要空值。 | 托管设置与包 manifest。 |
+| 主题 | 用户实际输入的搜索词；不超过十个。 | 托管设置。 |
+| 主页 | 文档或产品入口，且可解析。 | 托管设置与 manifest。 |
+| 默认分支 | CI 与分支保护所指向的受保护分支。 | 分支保护。 |
+| 可见性 | 只在许可证、安全与行为准则文件就绪时才公开。 | 权限审查。 |
+| 许可证识别 | 与 `LICENSE` 文件及 manifest 的 SPDX 标识符一致。 | 托管平台许可证识别与 manifest。 |
+| 发布 | 启用；版本管理、时机与标签遵循 `release-operations-conventions`。 | 发布列表。 |
+| 讨论 | 只在有负责人与响应预期时启用。 | 托管设置。 |
+| issue 跟踪器 | 启用并配置模板，或重定向到支持路径。 | 托管设置。 |
+| 合并策略 | 与分支模型匹配的单一允许方法。 | 分支保护。 |
+| 安全功能 | 在可用处启用依赖告警、机密扫描与代码扫描。 | 安全设置。 |
+| 归档标志 | 只在归档清单完成后设置。 | 托管设置。 |
 
-## Hygiene Audit Checklist
+## 卫生审查清单
 
-Run this audit on schedule and before a transfer, a major release, or a repository split; record each result with the
-command that produced it and the owner of any exception.
+按计划并在转移、重大发布或仓库拆分之前运行此审查；为每项结果记录产生它的命令，以及任何例外的
+负责人。
 
-- [ ] A fresh clone plus the documented build leaves the working tree clean.
-- [ ] `.gitignore` covers local configuration, credentials, build output, caches, and editor state.
-- [ ] No tracked file matches an ignore rule and no ignored file is required to run the project.
-- [ ] Every tracked file over the size threshold is in LFS or an artifact store.
-- [ ] LFS is installed before checkout in every CI job that needs it.
-- [ ] No generated file is tracked without a generator marker, and regeneration produces no diff.
-- [ ] No vendored directory lacks upstream version, license, and patch list.
-- [ ] Every submodule points at a reachable commit and states its purpose.
-- [ ] Merged branches older than the retention window are deleted.
-- [ ] Long-lived branches carry an owner and an exit date.
-- [ ] Unpublished tags are removed and published tags are immutable.
-- [ ] Monorepo packages build and test independently and CI selects them from changed paths.
-- [ ] The default branch applies the VCS collaboration skill's protection rules.
-- [ ] Secret scanning findings are reported and owned; no history rewrite starts without the owner's decision.
-- [ ] The archival or active state matches the README, support page, and metadata.
+- [ ] 全新克隆加文档化的构建后，工作树干净。
+- [ ] `.gitignore` 覆盖本地配置、凭据、构建输出、缓存与编辑器状态。
+- [ ] 没有已跟踪文件匹配忽略规则，也没有运行项目所需的被忽略文件。
+- [ ] 每个超过大小阈值的已跟踪文件都在 LFS 或产物库中。
+- [ ] 每个需要它的 CI 任务都在检出前安装 LFS。
+- [ ] 没有生成文件在没有生成器标记的情况下被跟踪，且重新生成不产生 diff。
+- [ ] 没有第三方引入目录缺少上游版本、许可证与补丁列表。
+- [ ] 每个子模块都指向可达提交，并说明其用途。
+- [ ] 超过保留窗口的已合并分支已删除。
+- [ ] 长期分支带有负责人与退出日期。
+- [ ] 未发布标签已移除，已发布标签不可变。
+- [ ] monorepo 各包能独立构建与测试，CI 从变更路径选择它们。
+- [ ] 默认分支应用 `vcs-collaboration-conventions` 的保护规则。
+- [ ] 机密扫描发现被报告且有负责人；未经负责人决定，不开始重写历史。
+- [ ] 归档或活跃状态与 README、支持页与元数据一致。
 
-## Maintainer Ladder and Permissions
+## 维护者阶梯与权限
 
-Grant capability through host teams, not personal accounts, and review the grants on the access-review schedule.
+通过托管平台团队而不是个人账号授予能力，并按权限审查计划审查授予。
 
-| Role | Can | Cannot | Granted by |
+| 角色 | 可以 | 不可以 | 授予方式 |
 |---|---|---|---|
-| Contributor | Report issues, open pull requests, comment on proposals. | Merge, publish, change settings or access. | Platform account. |
-| Reviewer | Approve a scoped change, request changes, triage a labeled area. | Merge the default branch, publish, manage access. | Maintainer nomination. |
-| Committer | Merge non-default branches, label and assign issues, close stale issues. | Publish a release, change protection, add members. | Maintainer vote. |
-| Maintainer | Merge default branch, publish and yank releases, manage teams and settings, appoint roles. | Change governance alone; delete or transfer alone. | Maintainer decision plus organization owner. |
-| Organization owner | Transfer, archive, delete, and set organization-wide policy. | Override day-to-day code decisions without the maintainers. | Organizational appointment. |
-| Emeritus maintainer | Retain credit and an advisory voice. | Approve, publish, or hold any access. | Maintainer decision after inactivity notice. |
+| 贡献者 | 报告 issue、打开 PR、对提案发表评论。 | 合并、发布、更改设置或权限。 | 平台账号。 |
+| 审查者 | 批准范围明确的变更、请求修改、分诊已标注区域。 | 合并默认分支、发布、管理权限。 | 维护者提名。 |
+| 提交者 | 合并非默认分支、给 issue 加标签并分配、关闭过时 issue。 | 发布版本、更改保护、添加成员。 | 维护者投票。 |
+| 维护者 | 合并默认分支、发布与撤回版本、管理团队与设置、任命角色。 | 单独更改治理；单独删除或转移。 | 维护者决定加组织所有者。 |
+| 组织所有者 | 转移、归档、删除并设定组织级政策。 | 未经维护者同意覆盖日常代码决策。 | 组织任命。 |
+| 荣休维护者 | 保留荣誉与顾问发言权。 | 批准、发布或持有任何权限。 | 不活跃通知后的维护者决定。 |
 
-## RFC Process Steps
+## RFC 流程步骤
 
-Use a proposal for a public interface change, a breaking change, a new external dependency with wide impact, a
-repository split or merge, a governance change, a license change, or a release-model change.
+对公开接口变更、破坏性变更、影响广泛的新外部依赖、仓库拆分或合并、治理变更、许可证变更或发布模型
+变更使用提案。
 
-1. Check whether the change needs a proposal; if it does not, record the decision in the pull request instead.
-2. Copy the proposal template and assign the next number; never reuse a number.
-3. Fill problem, goals and non-goals, proposal, alternatives, risks, rollout, and open questions; name the affected
-   project types and users.
-4. Open the proposal where contributors can read and comment, and announce it on the stated channel.
-5. Hold the comment window and answer objections in the document, not only in comment threads.
-6. Move to a final comment period with a stated end; a proposal with an unresolved blocking objection does not advance.
-7. Decide under the recorded decision model with the named approvers, and record accepted, rejected, or withdrawn with
-   the rationale.
-8. Link the implementation pull requests and the release that carries the change, and update the docs index.
-9. Keep rejected proposals in the record with their reasons; reopen one only with new evidence.
+1. 检查变更是否需要提案；如果不需要，把决定记录在 PR 中。
+2. 复制提案模板并分配下一个编号；绝不重用编号。
+3. 填写问题、目标与非目标、提案、备选方案、风险、上线与未决问题；写明受影响的项目类型与用户。
+4. 在贡献者能阅读和评论的地方打开提案，并在声明的渠道上公告。
+5. 举行评论窗口，并在文档中回应反对意见，而不只是在评论线程中。
+6. 进入有明确结束时间的最终评论期；仍有未解决阻塞性反对的提案不得推进。
+7. 按记录的决策模型与指定的批准者决定，并记录接受、拒绝或撤回及其理由。
+8. 链接实现该变更的 PR 与发布，并更新文档索引。
+9. 把被拒绝的提案连同原因保留在记录中；只有出现新证据时才重新打开。
 
-## Archive and Transfer Checklist
+## 归档与转移清单
 
-Archive when the project stops; transfer when ownership moves. Both are irreversible enough to need the owner's
-approval and a written record.
+项目停止时归档；归属转移时转移。两者都足够不可逆，需要所有者批准与书面记录。
 
-### Archive
+### 归档
 
-- Announce the archive on the project channel and in the README banner with the last supported version and date.
-- Set the archived flag and confirm issues, pull requests, and discussions accept no new entries.
-- Close open issues and pull requests with a stated reason and point to the maintained fork or support route when one
-  exists.
-- Keep releases, tags, and the license available, and state that pinned versions remain installable.
-- Ask the security role whether reports are still accepted, record the answer and its end date, and date the archive
-  notice.
-- Remove or rotate CI secrets, webhooks, deploy keys, and publishing tokens.
-- Name the steward who owns the archived repository and its annual review.
-- Keep the description, homepage, and topics accurate; an archived repository is still found by search.
+- 在项目渠道与 README 横幅中公告归档，写明最后支持版本与日期。
+- 设置归档标志，并确认 issue、PR 与讨论不接受新条目。
+- 以声明的原因关闭未关闭的 issue 与 PR，并在存在时指向维护中的 fork 或支持路径。
+- 保持发布、标签与许可证可用，并说明固定版本仍可安装。
+- 询问安全角色是否仍接受报告，记录答案及其截止日期，并为归档通知标注日期。
+- 移除或轮换 CI 机密、webhook、部署密钥与发布 token。
+- 指定负责归档仓库及其年度审查的管理员。
+- 保持描述、主页与主题准确；归档仓库仍会被搜索找到。
 
-### Transfer
+### 转移
 
-- Confirm the receiving organization owns the name and accepts the maintenance obligations.
-- Audit access, applications, webhooks, deploy keys, and package publish rights before the move.
-- Transfer with redirects enabled and verify that old clone and web URLs still resolve.
-- Update the manifest repository and homepage fields, package metadata, CODEOWNERS, and documentation links.
-- Re-run CI in the new location, re-add secrets, and rotate every token that touched the old organization.
-- Verify publishing under the new owner and confirm the registry shows the new repository URL.
-- Announce the transfer and keep the old name claimed or redirecting for as long as the host allows.
-- Remove the old organization's access after the redirect and publishing checks pass.
+- 确认接收组织拥有该名称并接受维护义务。
+- 迁移前审查权限、应用、webhook、部署密钥与包发布权。
+- 启用重定向进行转移，并验证旧克隆与 Web URL 仍能解析。
+- 更新 manifest 的 repository 与 homepage 字段、包元数据、CODEOWNERS 与文档链接。
+- 在新位置重新运行 CI，重新添加机密，并轮换所有接触过旧组织的 token。
+- 在新所有者下验证发布，并确认包仓库显示新的仓库 URL。
+- 公告转移，并在托管平台允许的范围内保持旧名称被占用或重定向。
+- 在重定向与发布检查通过后，移除旧组织的权限。
 
-## Packaging and Release Publication Checklist
+## 打包与发布清单
 
-Publish only the artifact CI built from the approved tag after every gate passes; every item below is evidence that the
-artifact is the one intended.
+只发布 CI 从已批准标签构建、并通过全部门禁的产物；下面每一项都是证据，证明产物就是预期的那一个。
 
-- [ ] The version is bumped in its single source and no other copy disagrees.
-- [ ] The changelog entry states user-visible changes and upgrade actions.
-- [ ] The manifest metadata is complete and valid for the registry.
-- [ ] The tag is created on the approved release commit.
-- [ ] The artifact is built in CI from that tag in a clean checkout.
-- [ ] The full test suite passes against the built artifact.
-- [ ] The install test passes in an empty environment from the staging registry.
-- [ ] Every gate passes before publication; a failing gate deletes the tag before any publication.
-- [ ] The artifact contents are inspected; no local paths, test data, or development dependencies are inside.
-- [ ] The license, README, and required files are present in the artifact.
-- [ ] Checksums, signature, and provenance are generated.
-- [ ] The staged artifact digest matches the published artifact digest.
-- [ ] Publishing runs with a package-scoped token from the protected release environment.
-- [ ] The release-note document, owned by documentation, links the changelog and the artifact digest.
-- [ ] Registry metadata is re-checked from a consumer account after publishing.
-- [ ] Documentation, support pages, and the announcement reflect the release.
-- [ ] A failed release is yanked or patched, never overwritten or rebuilt under the same version.
+- [ ] 版本在唯一来源中提升，且没有其他副本不一致。
+- [ ] 变更日志条目说明用户可见变更与升级动作。
+- [ ] manifest 元数据完整且对包仓库有效。
+- [ ] 标签在已批准的发布提交上创建。
+- [ ] 产物在 CI 中从该标签、在干净检出中构建。
+- [ ] 完整测试套件针对构建出的产物通过。
+- [ ] 安装测试在空环境中从预发包仓库通过。
+- [ ] 发布前每个门禁都通过；失败的门禁会在任何发布之前删除标签。
+- [ ] 检查产物内容；里面没有本地路径、测试数据或开发依赖。
+- [ ] 许可证、README 与必需文件存在于产物中。
+- [ ] 生成校验和、签名与来源证明。
+- [ ] 暂存产物的摘要与已发布产物摘要一致。
+- [ ] 发布使用来自受保护发布环境的包作用域 token 运行。
+- [ ] 文档负责的发布说明文档链接变更日志与产物摘要。
+- [ ] 发布后从消费者账号重新核对包仓库元数据。
+- [ ] 文档、支持页与公告反映该发布。
+- [ ] 失败的发布被撤回或打补丁，绝不在同一版本下覆盖或重建。
 
-## Install Verification Script Outline
+## 安装验证脚本大纲
 
-Run this outline in a disposable container or virtual environment after publication; Python is shown as one concrete
-toolchain, so substitute the ecosystem's install and smoke commands. The exit code and the printed version are the
-evidence to record with the tested runtime matrix.
+发布后在一次性容器或虚拟环境中运行此大纲；这里以 Python 作为具体工具链示例，请替换为所在生态的
+安装与冒烟命令。退出码与打印的版本是要与已测试运行时矩阵一起记录的证据。
 
 ```bash
 #!/usr/bin/env bash
@@ -213,7 +196,6 @@ python3 -m venv "$work/venv"
 "$work/venv/bin/python" -m pip freeze
 ```
 
-- Repeat the outline on every runtime and operating system in the supported matrix.
-- For a command-line package, replace the import check with the help command and one documented example invocation.
-- Compare the installed artifact digest with the published digest; a mismatch stops the announcement and starts an
-  incident.
+- 在受支持矩阵中的每个运行时与操作系统上重复该大纲。
+- 对于命令行包，把导入检查替换为帮助命令与一次文档化的示例调用。
+- 把安装后的产物摘要与已发布摘要比对；不一致会停止公告并启动事故处理。

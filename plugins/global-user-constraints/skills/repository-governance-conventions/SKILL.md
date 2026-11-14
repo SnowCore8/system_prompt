@@ -1,236 +1,206 @@
 ---
 name: repository-governance-conventions
-description: Defines, reviews, and repairs the required files, hygiene, governance, and packaging practice of any repository, from community documents and metadata to branch, artifact, role, and publication policy. Use when creating a repository, auditing a public or internal repository, assigning maintainer roles and routing approval authority, or preparing and verifying a package release.
-argument-hint: '[path or scope]'
+description: 定义、审查并修复任意仓库的必需文件、卫生、治理与打包实践，覆盖社区文档与元数据，以及分支、产物、角色与发布政策。适用于创建仓库、审查公开或内部仓库、分配维护者角色与路由审批权，或准备并验证一次包发布。
+argument-hint: '[路径或范围]'
 ---
 
-# Repository Governance Conventions
+# 仓库治理规范
 
-Repository governance fails silently. A repository without a license looks complete until someone cannot legally use
-it; an unowned directory merges unreviewed changes for months; a package builds on one maintainer's machine and then
-fails in a clean environment; a dead project stays public with open issues and a green release badge. None of these
-failures shows up in a diff, and each one is expensive when it is discovered. This skill gives one procedure and a
-complete rule set for the required files and metadata of a repository, its hygiene, its decision process, and the
-packaging and distribution it publishes. Governance is cheap at creation and expensive to retrofit: a missing license
-costs a legal review once the project is popular, while adding it on day one costs one file and one decision.
+仓库治理会静默失败。没有许可证的仓库看起来完整，直到有人无法合法使用它；无人负责的目录会连续数月
+合并未经审查的变更；某个包只在一位维护者的机器上构建成功，到了干净环境就失败；一个已死的项目仍然
+公开，开着 issue，挂着绿色的发布徽章。这些失败都不会出现在 diff 里，而且每一种在被发现时都很昂贵。
+本 skill 给出一套流程与完整规则集，覆盖仓库的必需文件与元数据、仓库卫生、决策流程，以及它发布时的
+打包与分发。治理在创建时便宜，事后补救昂贵：缺少许可证会在项目流行后招来一次法务审查，而在第一天
+补上只需一个文件与一个决定。
 
-## Scope and Precedence
+## 适用范围与优先级
 
-Apply the first rule that fits, and do not mix standards inside one scope:
+适用第一条匹配的规则，不要在同一范围内混用标准：
 
-1. Organization-wide policy. A hosting platform setting, legal template, registry rule, or company policy that applies
-   to every repository is not optional, and it wins over this skill and over a repository's local preference. A
-   repository-level file that contradicts it is a defect, not a local exception.
-2. Existing repository convention. Read the current file inventory, metadata, branch model, and manifest before
-   inventing policy; follow a stricter local rule over this one, and record a local rule that relaxes this skill in
-   `GOVERNANCE.md`.
-3. This standard's defaults, when the two levels above are silent.
-4. Personal preference, which never overrides the three levels above; a preference never justifies a missing required
-   file.
+1. 组织级政策。适用于每个仓库的托管平台设置、法律模板、包仓库规则或公司政策都不是可选项，其效力
+   高于本 skill 与仓库的本地偏好。与之矛盾的仓库级文件是缺陷，不是本地例外。
+2. 既有仓库约定。在发明政策前，先读当前文件清单、元数据、分支模型与 manifest；本地规则更严格时优先于
+   本标准，并在 `GOVERNANCE.md` 中记录放宽本 skill 的本地规则。
+3. 上述两级未规定时，采用本标准的默认值。
+4. 个人偏好，永远不能覆盖上述三级；偏好绝不能为缺失的必需文件开脱。
 
-- Required files and their metadata are this skill's ownership: which files must exist, where they sit, and which
-  metadata fields they carry. The content and templates of the README, CONTRIBUTING guide, decision records, and other
-  documents belong to the documentation skill, which also decides structure and voice; this skill requires the file at
-  the recognized path and reachable from the repository entry points. License policy and the security file's content
-  belong to the security and compliance skill; this skill owns the files' presence and their required metadata fields.
-- Repository-level hygiene and layout are this skill's ownership; repository, package, and file names belong to the
-  naming skill. Branch, pull request, review, reviewer counts, and CODEOWNERS mechanics belong to the VCS collaboration
-  skill; this skill owns the roles and the governance decisions those mechanics enforce. Version numbers, release
-  timing, and per-release-type approvals belong to the release-operations skill; release-note documents belong to the
-  documentation skill; this skill owns manifest metadata, distribution channels, and archive or transfer.
-- Repository settings and templates that support CI gates are this skill's ownership; the gate definitions and pass
-  criteria belong to the testing and quality skill. A repository that cannot run its own required checks has a
-  governance defect in addition to a test defect, so report the gap here and fix the gate with its owner.
-- A repository is a product surface. The README, license, templates, package metadata, and default branch are read by
-  users and by tools, so review a governance change like a product change rather than as housekeeping.
-- Organization-wide policy wins on conflict. When a hosted setting or a company rule disagrees with a repository file
-  here, state the difference, follow the organization policy, and fix the repository file so the next reader sees one
-  rule.
-- Generated metadata is exempt from hand-editing: a generated manifest field, a synced template, and a lock file are
-  changed at their source of truth, regenerated, and verified.
-- When two rules conflict, state the conflict and the chosen rule, and record the decision in `GOVERNANCE.md` or a
-  decision record so the next change follows it.
+- 必需文件及其元数据归本 skill 所有：哪些文件必须存在、放在哪里，以及携带哪些元数据字段。README、
+  CONTRIBUTING 指南、决策记录与其他文档的内容与模板归 `documentation-conventions`，结构、语气也由它决定；本 skill 要求
+  文件位于被认可的路径，并可从仓库入口到达。许可证政策与安全文件的内容归 `security-compliance-conventions`；本 skill
+  负责文件是否存在及其必需的元数据字段。
+- 仓库级卫生与布局归本 skill 所有；仓库、包与文件命名归 `naming-conventions`。分支、PR、审查、审查者数量
+  与 CODEOWNERS 机制归 `vcs-collaboration-conventions`；本 skill 负责这些机制所执行的角色与治理决策。版本号、
+  发布时机与按发布类型的审批归 `release-operations-conventions`；发布说明文档归 `documentation-conventions`；
+  本 skill 负责 manifest 元数据、分发渠道，以及归档或转移。
+- 支撑 CI 门禁的仓库设置与模板归本 skill 所有；门禁定义与通过标准归 `testing-and-quality-conventions`。无法运行自身
+  必需校验的仓库，除了测试缺陷外还有治理缺陷，因此要在这里报告缺口，并与门禁所有者一起修复。
+- 仓库是产品界面。README、许可证、模板、包元数据与默认分支会被用户与工具阅读，因此要把治理变更当作
+  产品变更来审查，而不是杂务。
+- 冲突时组织级政策优先。当托管设置或公司规则与这里的仓库文件不一致时，说明差异，遵循组织政策，并修复
+  仓库文件，让下一位读者只看到一条规则。
+- 生成的元数据不适用手工编辑：生成的 manifest 字段、同步的模板与 lock 文件都在其真源修改、重新生成并
+  验证。
+- 两条规则冲突时，说明冲突与所选择的规则，并把决定记录在 `GOVERNANCE.md` 或决策记录中，让下一次变更
+  遵循它。
 
-## Process
+## 流程
 
-1. Classify the repository as a public library, application, internal service, documentation-only project, or archived
-   project. Record the type: it selects the required inventory, the metadata, and the review depth. Reclassify at every
-   review, because a project that gains external users or stops shipping changes type.
-2. Read the current state before changing anything: root files, hosting settings, protected branch rules, environment
-   secrets, manifest, registry links, and archive status. Write down what exists and what is missing.
-3. Compare the repository against the required inventory for its type. List missing, misplaced, stale, and invalid files
-   and metadata, and name an owner and a due action for each. A present file with empty required fields counts as
-   missing.
-4. Repair hygiene first: tracked versus ignored files, large and generated artifacts, stale branches and tags,
-   submodules, vendored code, and workspace layout. Hygiene decides what every later review sees, so record every
-   deletion and its reason.
-5. Establish the governance: roles and the permission ladder, the decision model, the approval rules it routes to the
-   owning skills, the proposal path, the code of conduct enforcement route, and release authority. Record it in
-   `GOVERNANCE.md`, confirm every mergeable path resolves to an accountable role, and check that the roles match the
-   permissions the host actually grants.
-6. Repair packaging and distribution: manifest metadata, registry channels, signing and provenance, install
-   verification, and the yank and deprecation path for published versions. Test the install from the registry, not from
-   the workspace.
-7. Verify the result: run the inventory and metadata checks, install from a clean environment, confirm the archive or
-   transfer state, and record the evidence and the next review date. If an item cannot be fixed now, record an owner
-   and a due date, mark the repository out of compliance, and report every open item.
+1. 把仓库分类为公开库、应用、内部服务、仅文档项目或归档项目。记录类型：它决定必需清单、元数据与审查深度。
+   每次审查都重新分类，因为获得外部用户或停止交付的项目会改变类型。
+2. 变更前先读当前状态：根文件、托管设置、受保护分支规则、环境机密、manifest、包仓库链接与归档状态。
+   写下已有什么、缺少什么。
+3. 把仓库与其类型对应的必需清单比对。列出缺失、放错位置、过时与无效的文件及元数据，并为每一项指定
+   负责人与到期动作。存在但必需字段为空的文件按缺失处理。
+4. 先修复卫生：被跟踪与被忽略的文件、大型与生成产物、过时分支与标签、子模块、第三方引入代码与工作区布局。
+   卫生决定之后每次审查看到什么，所以要记录每次删除及其原因。
+5. 建立治理：角色与权限阶梯、决策模型、它路由到各所有者 skill 的审批规则、提案路径、行为准则执行途径
+   与发布权。记录在 `GOVERNANCE.md`，确认每条可合并路径都指向可问责角色，并核对角色与托管平台实际
+   授予的权限一致。
+6. 修复打包与分发：manifest 元数据、包仓库渠道、签名与来源证明、安装验证，以及已发布版本的撤回与
+   弃用路径。从包仓库测试安装，而不是从工作区测试。
+7. 验证结果：运行清单与元数据校验，从干净环境安装，确认归档或转移状态，并记录证据与下一次审查日期。
+   如果某项现在无法修复，记录负责人与到期日，把仓库标为不合规，并报告每个未关闭项。
 
-## Core Rules
+## 核心规则
 
-- **Required means valid, not merely present.** Put every required file at the path the host and the tooling recognize
-  and fill the metadata fields it carries; a `SECURITY.md` outside the recognized path is missing for every tool, and a
-  required file that names no owner is a stub in the right location.
-- **License before the first public push.** Add the full license text under the exact `LICENSE` name, confirm the host
-  detects the same license, and mirror the identifier into the package manifest; treat a license change as a legal
-  decision for the owner, because a repository without a license grants no reuse rights.
-- **Every mergeable path has an accountable role.** Ensure each top-level directory and release-critical file resolves
-  to an active role; the VCS collaboration skill owns the CODEOWNERS mapping and validation mechanics, while an
-  unassigned path is a governance failure because it merges without a responsible reviewer.
-- **Name the decision model in writing.** State in `GOVERNANCE.md` whether decisions are maintainer-led, lazy
-  consensus, or a vote, how long the comment window lasts, and what counts as approval; a model kept in memory blocks
-  every new contributor and produces a dispute on the first contested change.
-- **Route approvals; do not redefine them.** Take reviewer counts for code changes from the VCS collaboration skill and
-  per-release-type approvals from the release-operations skill, adding only this skill's rule that a governance or
-  ownership change needs two approvers; a local threshold that contradicts the owning skill is a defect.
-- **Treat protection failures as governance failures.** An unprotected default branch, an unreviewed merge, or a
-  rewritten history is a governance defect; the VCS collaboration skill defines the protection and history-repair
-  mechanics.
-- **Tracked and ignored are disjoint.** A fresh clone plus build leaves no tracked file modified and no ignored file
-  needed to run; local configuration, credentials, build output, and editor state stay ignored.
-- **Do not commit what the build produces.** Track generated code, compiled artifacts, vendored dependencies, and
-  generated manifests only with a recorded source, command, and version; otherwise generate them in CI and ignore
-  them. A lock file is an input when the tool requires it, so commit it under that rule and nowhere else.
-- **Assets carry a size policy.** Set a size threshold, put files above it and per-build binaries in Git LFS or an
-  artifact store, track them by pattern in `.gitattributes`, and do not rely on history rewriting to fix a slow clone.
-- **Clean branches and tags on a schedule.** Delete merged branches within the stated window, give abandoned branches
-  and long-lived branches an owner and an exit date, delete tags that never became a release, and never delete or move
-  a published tag.
-- **Tag, gate, then publish.** Create the tag on the approved release commit, build the artifact from that tag in a
-  clean checkout, run the gates, and publish only after they pass; a failing gate deletes the tag before publication,
-  and the tag becomes immutable once an artifact is published. Verify the installed artifact from an empty
-  environment, and never rebuild a published version.
-- **Published versions are immutable.** Never reuse, re-tag, or overwrite a version; deprecate a version with a
-  replacement or yank it with a stated reason, then publish a new patch. A yanked version stays resolvable for pinned
-  users and stops installing for new ones.
-- **Record succession before it is needed.** Give at least two maintainers administrative access, name an inheritor in
-  `MAINTAINERS.md`, remove access when a maintainer leaves, and move a long-inactive maintainer to emeritus with
-  notice. Review access on a schedule and after every departure.
-- **Archive, do not abandon.** When a project stops, set the archived flag, add a banner to the README, close or
-  redirect the issue and support paths, keep releases and the license available, name the steward, and remove CI
-  secrets and webhooks that no longer serve the project.
+- **必需意味着有效，而不只是存在。** 把每个必需文件放在托管平台与工具认可的路径，并填写它携带的
+  元数据字段；`SECURITY.md` 放在未被认可的路径上，对每个工具来说都等于缺失；未写明负责人的必需文件
+  只是位置正确的占位。
+- **首次公开推送之前就要有许可证。** 把完整许可证文本放在名称精确为 `LICENSE` 的文件中，确认托管平台
+  识别到同一许可证，并把标识符镜像到包 manifest；把许可证变更当作所有者的法律决定，因为没有许可证的
+  仓库不授予任何复用权利。
+- **每条可合并路径都有可问责角色。** 确保每个顶层目录与发布关键文件都指向活跃角色；`vcs-collaboration-conventions` 负责
+  CODEOWNERS 的映射与校验机制，而未分配的路径是治理失败，因为它会在没有负责审查者的情况下合并。
+- **把决策模型写下来。** 在 `GOVERNANCE.md` 中说明决策是维护者主导、惰性共识还是投票，评论窗口持续
+  多久，以及什么算批准；只留在记忆里的模型会挡住每位新贡献者，并在第一次有争议的变更上引发争执。
+- **路由审批，不要重新定义审批。** 代码变更的审查者数量取自 `vcs-collaboration-conventions`，
+  按发布类型的审批取自 `release-operations-conventions`，只补充本 skill 的规则：治理或归属变更需要两名
+  批准者；与所有者 skill 矛盾的本地阈值是缺陷。
+- **把保护失效当作治理失效。** 未受保护的默认分支、未经审查的合并或被重写的历史都是治理缺陷；`vcs-collaboration-conventions` 定义保护与历史修复机制。
+- **被跟踪与被忽略的文件互不相交。** 全新克隆加构建之后，没有已跟踪文件被修改，也没有运行所需的被忽略
+  文件；本地配置、凭据、构建输出与编辑器状态保持被忽略。
+- **不要提交构建产生的东西。** 只有当产物记录了来源、命令与版本时，才跟踪生成代码、编译产物、第三方引入
+  依赖与生成的 manifest；否则在 CI 中生成并忽略它们。工具要求时 lock 文件是输入，因此只按该规则提交它，
+  别处不提交。
+- **资产带有大小策略。** 设定大小阈值，把超过阈值的文件与逐构建二进制放入 Git LFS 或制品库，在
+  `.gitattributes` 中按模式跟踪它们，不要依赖重写历史来修复缓慢的克隆。
+- **按计划清理分支与标签。** 在声明窗口内删除已合并分支，为被放弃的分支与长期分支指定负责人和退出
+  日期，删除从未成为发布的标签，绝不删除或移动已发布的标签。
+- **打标签、过门禁、再发布。** 在已批准的发布提交上创建标签，在干净检出中从该标签构建产物，运行门禁，
+  只有通过后才发布；门禁失败会在发布前删除标签，产物一旦发布，标签就不可变。从空环境验证安装后的
+  产物，绝不重新构建已发布的版本。
+- **已发布版本不可变。** 绝不重用、重打标签或覆盖版本；用替代方案弃用某版本，或说明原因撤回它，然后
+  发布新的补丁版本。被撤回的版本对固定版本的用户仍可解析，但停止对新用户安装。
+- **在需要之前记录继任。** 至少给两名维护者管理权限，在 `MAINTAINERS.md` 中指定继任者，维护者离开时
+  移除权限，并把长期不活跃的维护者经通知转为荣休。按计划并在每次离开后审查权限。
+- **归档，不要抛弃。** 项目停止时，设置归档标志，在 README 加横幅，关闭或重定向 issue 与支持路径，
+  保留发布与许可证可用，指定管理员，并移除不再服务该项目的 CI 机密与 webhook。
 
-## File Inventory Matrix
+## 文件清单矩阵
 
-The per-type inventory in `references/playbooks.md` is the authority for these conditions. "Owner" names the role
-accountable for presence and metadata; document content and templates follow the documentation role, and security
-policy content follows the security and compliance role.
+`references/playbooks.md` 中按类型划分的清单是这些条件的权威来源。“负责人”指对存在性与元数据负责的
+角色；文档内容与模板遵循文档角色，安全策略内容遵循安全与合规角色。
 
-| File or setting | Purpose | Required for | Owner |
+| 文件或设置 | 用途 | 适用于 | 负责人 |
 |---|---|---|---|
-| `README.md` | Be the recognized entry point for users and tools. | All active types; archived keeps a banner. | Repository owner |
-| `LICENSE` | Grant reuse terms with the license text. | Libraries, applications, and docs-only; internal projects that ship outside; archived keeps it. | Repository owner with legal review |
-| `CONTRIBUTING.md` | Open the contributor path. | Libraries, applications, and docs-only; recommended for internal services. | Maintainer |
-| `CODE_OF_CONDUCT.md` | State the expected behavior and enforcement route. | Libraries and applications; recommended for docs-only. | Community manager |
-| `SECURITY.md` | Make the security reporting path discoverable; content owned by security. | All active types; archived keeps it. | Security owner |
-| `SUPPORT.md` | Publish the support route. | Libraries and applications; optional for internal services and docs-only. | Maintainer |
-| `CHANGELOG.md` | Record what users must know per release. | Libraries and applications; recommended for internal services. | Release manager |
-| `CODEOWNERS` | Make every mergeable path resolve to an accountable role; mechanics owned by VCS. | Libraries, applications, and internal services; recommended for docs-only. | Maintainer |
-| `.github/ISSUE_TEMPLATE/` | Structure report intake. | Libraries and applications; optional for internal services and docs-only. | Maintainer |
-| `.github/PULL_REQUEST_TEMPLATE.md` | Ask for the evidence a reviewer needs. | Libraries, applications, and docs-only; recommended for internal services. | Maintainer |
-| `.editorconfig` | Fix editor defaults across the repository. | All active types; archived frozen. | Maintainer |
-| `.gitignore` and `.gitattributes` | Keep local artifacts untracked and set line-ending and LFS behavior. | `.gitignore` all active types; `.gitattributes` for code repositories, recommended for docs-only. | Maintainer |
-| `.github/FUNDING.yml`, `GOVERNANCE.md`, `MAINTAINERS.md`, `CITATION.cff` | Record sponsorship, roles, succession, and citation. | `GOVERNANCE.md` and `MAINTAINERS.md` recommended for code repositories, optional for docs-only; FUNDING optional; CITATION for research output. | Maintainer |
-| Repository metadata | Set description, topics, homepage, default branch, visibility, releases, and discussions. | All active types; archived keeps description and homepage. | Repository owner |
+| `README.md` | 成为用户与工具认可的入口。 | 所有活跃类型；归档类型保留横幅。 | 仓库所有者 |
+| `LICENSE` | 用许可证文本授予复用条款。 | 库、应用与仅文档项目；对外交付的内部项目；归档类型保留。 | 仓库所有者，经法务审查 |
+| `CONTRIBUTING.md` | 打开贡献者路径。 | 库、应用与仅文档项目；内部服务推荐。 | 维护者 |
+| `CODE_OF_CONDUCT.md` | 说明预期行为与执行途径。 | 库与应用；仅文档项目推荐。 | 社区管理者 |
+| `SECURITY.md` | 让安全报告路径可被发现；内容归安全角色。 | 所有活跃类型；归档类型保留。 | 安全负责人 |
+| `SUPPORT.md` | 发布支持路径。 | 库与应用；内部服务与仅文档项目可选。 | 维护者 |
+| `CHANGELOG.md` | 记录每次发布中用户必须知道的内容。 | 库与应用；内部服务推荐。 | 发布管理者 |
+| `CODEOWNERS` | 让每条可合并路径指向可问责角色；机制归 VCS 角色。 | 库、应用与内部服务；仅文档项目推荐。 | 维护者 |
+| `.github/ISSUE_TEMPLATE/` | 规范报告收集。 | 库与应用；内部服务与仅文档项目可选。 | 维护者 |
+| `.github/PULL_REQUEST_TEMPLATE.md` | 要求审查者需要的证据。 | 库、应用与仅文档项目；内部服务推荐。 | 维护者 |
+| `.editorconfig` | 统一仓库内编辑器默认值。 | 所有活跃类型；归档类型冻结。 | 维护者 |
+| `.gitignore` 与 `.gitattributes` | 让本地产物不被跟踪，并设定行尾与 LFS 行为。 | `.gitignore` 适用于所有活跃类型；`.gitattributes` 适用于代码仓库，仅文档项目推荐。 | 维护者 |
+| `.github/FUNDING.yml`、`GOVERNANCE.md`、`MAINTAINERS.md`、`CITATION.cff` | 记录赞助、角色、继任与引用。 | `GOVERNANCE.md` 与 `MAINTAINERS.md` 在代码仓库中推荐，仅文档项目可选；FUNDING 可选；CITATION 用于研究产出。 | 维护者 |
+| 仓库元数据 | 设置描述、主题、主页、默认分支、可见性、发布与讨论。 | 所有活跃类型；归档类型保留描述与主页。 | 仓库所有者 |
 
-## Dimension Index
+## 维度索引
 
-Each dimension has detailed rules, examples, and edge cases in `references/dimensions.md`.
+每个维度在 `references/dimensions.md` 中都有详细规则、示例与边缘情况。
 
-| Dimension | First rule |
+| 维度 | 第一条规则 |
 |---|---|
-| 1. Required community files and metadata | Every required file sits at the recognized path and carries the fields its purpose needs. |
-| 2. Repository hygiene | Nothing tracked is generated, oversized, or locally configured, and stale branches have an owner. |
-| 3. Governance and decision process | The decision model, routed approval rules, and successor are named in writing. |
-| 4. Packaging and distribution | Publish a signed artifact from CI and prove it installs in an empty environment. |
+| 1. 必需的社区文件与元数据 | 每个必需文件都在被认可的路径上，并携带其用途所需的字段。 |
+| 2. 仓库卫生 | 被跟踪的内容都不是生成的、超大的或本地配置，过时分支都有负责人。 |
+| 3. 治理与决策流程 | 决策模型、路由的审批规则与继任者都以书面形式写明。 |
+| 4. 打包与分发 | 从 CI 发布已签名的产物，并证明它能在空环境中安装。 |
 
-## Anti-Patterns
+## 反模式
 
-| Anti-pattern | Why it fails | Fix |
+| 反模式 | 为什么失败 | 修复 |
 |---|---|---|
-| A license name in `LICENSE.md` with no license text | Host detection and legal review both fail, so consumers cannot rely on the terms. | Put the full text in `LICENSE` and confirm host detection. |
-| `CODEOWNERS` names a role that no longer exists | The affected paths have no accountable reviewer and merge unowned. | Re-validate assignments each quarter against active roles. |
-| Empty README on a public repository | Users file issues and wait for a product that does not exist. | Keep the repository private or archive it until the first working release. |
-| Committing build output | History grows, clones slow down, and stale binaries ship from the tree. | Ignore outputs, build in CI, and attach artifacts to releases. |
-| A large binary committed "just once" | Every clone and mirror carries it forever. | Move it to LFS or an artifact store before the first push. |
-| Merged branches kept indefinitely | The branch list hides active work and invites cherry-picks from stale heads. | Delete after merge and keep a naming rule for long-lived branches. |
-| Default-branch protection is absent | History rewrites and unreviewed merges can destroy reviewed work. | Enforce the VCS protection rules and treat the merge as unreviewed. |
-| One maintainer with all access | The repository stalls or is lost when that person leaves. | Add a second administrator and name an inheritor. |
-| `SECURITY.md` missing or off the recognized path | Reporters do not find the reporting route and may file a public issue. | Put the file at the recognized path and record its owner; security owns its content. |
-| Publishing without a tagged, gated build | The artifact's inputs are unknown and cannot be rebuilt. | Publish only the CI artifact built from the approved tag after every gate passes. |
-| Re-publishing a version after a bad release | Caches and lock files keep serving different content under one version. | Yank with a reason, then publish a patch version. |
-| Archived repository left fully writable | Users assume it is maintained and open issues nobody answers. | Archive it, banner the README, and redirect support. |
-| Transfer without redirects and metadata updates | Old links, clones, and package pages break. | Use host redirects and update manifest, docs, and package metadata. |
-| Description differs between host and manifest | Search results and the package page describe different projects. | Keep one source and validate the mirror in CI. |
+| `LICENSE.md` 中只有许可证名称而没有许可证文本 | 托管平台识别与法务审查都会失败，消费者无法依赖这些条款。 | 把完整文本放进 `LICENSE` 并确认托管平台识别。 |
+| `CODEOWNERS` 指称一个已不存在的角色 | 受影响的路径没有可问责审查者，会在无主状态下合并。 | 每季度对照活跃角色重新校验分配。 |
+| 公开仓库的 README 为空 | 用户会提交 issue，等待一个不存在的产品。 | 在首个可用发布之前保持仓库私有或归档。 |
+| 提交构建输出 | 历史膨胀、克隆变慢，过时的二进制会从树中发布。 | 忽略输出，在 CI 中构建，把产物附加到发布。 |
+| 大型二进制“只提交一次” | 每次克隆与镜像都会永远携带它。 | 在首次推送前移到 LFS 或制品库。 |
+| 已合并分支无限保留 | 分支列表掩盖活跃工作，并招来从过时分支头的 cherry-pick。 | 合并后删除，并为长期分支保留命名规则。 |
+| 缺少默认分支保护 | 历史重写与未经审查的合并会摧毁已审查的工作。 | 强制执行 VCS 保护规则，并把该合并视为未审查。 |
+| 一名维护者拥有全部权限 | 此人离开时仓库会停摆或丢失。 | 增加第二名管理员并指定继任者。 |
+| `SECURITY.md` 缺失或不在被认可的路径 | 报告者找不到报告路径，可能提交公开 issue。 | 把文件放在被认可的路径并记录负责人；内容归安全角色。 |
+| 没有打标签、未经门禁的构建就发布 | 产物的输入未知且无法重建。 | 只发布从已批准标签构建、通过全部门禁的 CI 产物。 |
+| 坏发布后重新发布同一版本 | 缓存与 lock 文件会继续在同一版本下提供不同内容。 | 说明原因撤回，然后发布补丁版本。 |
+| 归档仓库仍完全可写 | 用户以为它仍在维护，并提交没人回答的 issue。 | 归档它、给 README 加横幅，并重定向支持。 |
+| 转移不更新重定向与元数据 | 旧链接、克隆与包页面都会失效。 | 使用托管平台重定向，并更新 manifest、文档与包元数据。 |
+| 托管平台与 manifest 的描述不一致 | 搜索结果与包页面描述不同的项目。 | 保持单一来源，并在 CI 中校验镜像。 |
 
-## Review Checklist
+## 审查清单
 
-- [ ] The project type is recorded and matches a row in the required-file inventory.
-- [ ] `README.md`, `LICENSE`, and `SECURITY.md` are present at recognized paths for the required project type.
-- [ ] `LICENSE` holds the full text and the host detects the same license.
-- [ ] `CONTRIBUTING.md` covers setup, tests, and the submission path from a fresh clone.
-- [ ] `CODE_OF_CONDUCT.md` names the enforcement contact and the escalation route.
-- [ ] `SECURITY.md` is present at the recognized path and records its owner.
-- [ ] Every mergeable path resolves to an accountable role, and assignments name only active roles.
-- [ ] Issue and pull request templates ask for the fields a triager and a reviewer need.
-- [ ] `.gitignore` covers local configuration, credentials, and build output.
-- [ ] `.gitattributes` sets line endings, LFS patterns, and generated-file markers where needed.
-- [ ] No tracked file exceeds the size policy; large assets use LFS or an artifact store.
-- [ ] Generated and vendored files carry a marker and their source or version.
-- [ ] Stale branches and unpublished tags are removed or carry an owner and a date.
-- [ ] `GOVERNANCE.md` or `MAINTAINERS.md` states roles, decision model, routed approval rules, and succession.
-- [ ] Manifest metadata matches repository metadata and the current version.
-- [ ] The package installs and runs from a clean environment using only published artifacts.
-- [ ] Release artifacts are signed and published only after every gate passes on the approved tag.
-- [ ] Archived repositories are read-only, bannered, and unlinked from active documentation.
-- [ ] Access is reviewed on schedule, and departed maintainers hold no permissions.
-- [ ] The inventory review and the metadata review have an owner and a scheduled date.
+- [ ] 记录了项目类型，并与必需文件清单中的某一行匹配。
+- [ ] 对于所需项目类型，`README.md`、`LICENSE` 与 `SECURITY.md` 位于被认可的路径。
+- [ ] `LICENSE` 包含完整文本，且托管平台识别到同一许可证。
+- [ ] `CONTRIBUTING.md` 覆盖从全新克隆开始的环境搭建、测试与提交路径。
+- [ ] `CODE_OF_CONDUCT.md` 写明执行联系人及升级途径。
+- [ ] `SECURITY.md` 位于被认可的路径并记录负责人。
+- [ ] 每条可合并路径都指向可问责角色，分配只写活跃角色。
+- [ ] issue 与 PR 模板要求分诊者和审查者需要的字段。
+- [ ] `.gitignore` 覆盖本地配置、凭据与构建输出。
+- [ ] `.gitattributes` 在需要处设定行尾、LFS 模式与生成文件标记。
+- [ ] 没有被跟踪文件超过大小策略；大型资产使用 LFS 或制品库。
+- [ ] 生成文件与第三方引入文件带有标记及其来源或版本。
+- [ ] 过时分支与未发布标签已删除，或带有负责人与日期。
+- [ ] `GOVERNANCE.md` 或 `MAINTAINERS.md` 写明角色、决策模型、路由的审批规则与继任。
+- [ ] manifest 元数据与仓库元数据及当前版本一致。
+- [ ] 包只使用已发布产物，在干净环境中安装并运行。
+- [ ] 发布产物已签名，且只在已批准标签通过全部门禁后发布。
+- [ ] 归档仓库只读、带横幅，并从活跃文档中取消链接。
+- [ ] 按计划审查权限，已离开的维护者不持有任何权限。
+- [ ] 清单审查与元数据审查都有负责人和计划日期。
 
-## Examples
+## 示例
 
 <example>
-A public repository has no license. Add the full license text as `LICENSE`, confirm the host detection matches,
-mirror the identifier into the package manifest, link the license from the README, and give that section an owner who
-reviews it with each release.
+公开仓库没有许可证。把完整许可证文本添加为 `LICENSE`，确认托管平台识别一致，把标识符镜像到包
+manifest，从 README 链接许可证，并为该节指定负责人，在每次发布时审查。
 </example>
 
 <example>
-`CODEOWNERS` has a catch-all fallback, but `infra/` has no accountable role. Assign an accountable role for `infra/`
-and have the VCS owner validate the mapping and its fallback on a test pull request, then re-check every top-level
-directory.
+`CODEOWNERS` 有兜底回退，但 `infra/` 没有可问责角色。为 `infra/` 指定可问责角色，让 VCS 负责人在一次
+测试 PR 上校验映射及回退，然后重新检查每个顶层目录。
 </example>
 
 <example>
-A release built on a laptop fails to import in a clean container because one dependency is undeclared. Add the
-dependency, build in CI, install the produced artifact in an empty environment, then publish a patch version and
-state the fix in the changelog; do not reuse the failed version.
+在笔记本上构建的发布在干净容器中导入失败，因为有一个依赖未声明。添加该依赖，在 CI 中构建，在空环境中
+安装生成的产物，然后发布补丁版本并在变更日志中说明修复；不要重用失败的版本。
 </example>
 
 <example>
-A project stops. Set the archived flag, put a banner and the last supported version in the README, disable issues and
-discussions, keep releases and the license available, and name the steward who answers security reports.
+项目停止。设置归档标志，在 README 中放横幅与最后支持版本，关闭 issue 与讨论，保持发布与许可证可用，
+并指定负责回答安全报告的管理员。
 </example>
 
 <example>
-A repository moves to a new organization. Use the host redirect, update the manifest repository and homepage fields,
-package metadata, CODEOWNERS, CI secrets, and documentation links, verify that an old clone URL still redirects, then
-publish from the new location.
+仓库迁移到新组织。使用托管平台重定向，更新 manifest 的 repository 与 homepage 字段、包元数据、
+CODEOWNERS、CI 机密与文档链接，验证旧克隆 URL 仍会重定向，然后从新位置发布。
 </example>
 
-## References
+## 参考资料
 
-Read [references/dimensions.md](references/dimensions.md) for the detailed rules, good and bad examples, and edge
-cases of the four dimensions. Read [references/playbooks.md](references/playbooks.md) for the checklists: new
-repository setup, required-file inventory by project type, metadata settings, hygiene audit, maintainer ladder, RFC
-process, archive and transfer, packaging, and install verification. Read both when establishing governance from
-scratch; during routine work, read the dimension that applies and the playbook for the task at hand, because the
-dimension states the rule and the playbook turns it into ordered checks.
+阅读 [references/dimensions.md](references/dimensions.md) 获取四个维度的详细规则、好坏示例与边缘情况。
+阅读 [references/playbooks.md](references/playbooks.md) 获取清单：新仓库设置、按项目类型的必需文件
+清单、元数据设置、卫生审查、维护者阶梯、RFC 流程、归档与转移、打包与安装验证。从零建立治理时两者都要
+读；日常工作中，阅读适用的维度与当前任务的操作手册，因为维度陈述规则，操作手册把它转化为有序校验。

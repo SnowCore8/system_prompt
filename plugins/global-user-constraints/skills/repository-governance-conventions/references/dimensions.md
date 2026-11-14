@@ -1,243 +1,206 @@
-# Repository Governance Dimensions
+# 仓库治理维度
 
-Use this file with `SKILL.md`. Each section gives the rules, good and bad examples, and edge cases for one governance
-dimension. When an organization policy or an existing repository convention already covers a point, read it first and
-apply the higher-precedence rule; this file supplies the default and the reason. Section numbers match the dimension
-index in `SKILL.md`, and `playbooks.md` turns each dimension into ordered checks. Read the section that matches the
-repository decision in front of you. The dimensions run from what a reader sees first to what a consumer installs, so
-repair an earlier dimension before trusting a later one: a missing owner or a wrong ignore rule hides the rest of the
-audit.
+将本文件与 `SKILL.md` 配合使用。每一节给出一个治理维度的规则、好坏示例与边缘情况。组织政策或既有
+仓库约定已覆盖某一点时，先读它并采用优先级更高的规则；本文件提供默认值与理由。章节编号与 `SKILL.md`
+中的维度索引一致，`playbooks.md` 把每个维度转化为有序校验。阅读与眼前仓库决策相匹配的那一节。维度
+从读者最先看到的内容延伸到消费者安装的内容，因此先修复靠前的维度，再信任后面的维度：缺失负责人或
+错误的忽略规则会掩盖审查的其余部分。
 
-## 1. Required Community Files and Metadata
+## 1. 必需的社区文件与元数据
 
-A required file works only when it sits at a recognized path and carries the fields its purpose needs; presence alone
-is a filename, not governance. The project type selects which rows apply, and the inventory in `playbooks.md` settles a
-conflict between types.
+必需文件只有在位于被认可的路径并携带其用途所需字段时才有效；仅存在只是一个文件名，不是治理。项目
+类型决定哪些行适用，`playbooks.md` 中的清单解决类型冲突。
 
-- Place each required file where the host and the tools look for it: `README.md`, `LICENSE`, `SECURITY.md`,
-  `CONTRIBUTING.md`, `CHANGELOG.md`, and `CODEOWNERS` at the root or the host's documented alternate location; issue
-  and pull request templates under `.github/`; the docs index at `docs/README.md` or the docs root. A correctly named
-  file in a different directory is missing for every tool that consumes it. The README exists at the recognized path
-  and is reachable from the repository entry points; its content, structure, and prose follow the documentation role.
-- Ship the full license text under the exact name `LICENSE`, with no `.md` or `.txt` suffix, and mirror the SPDX
-  identifier into the package manifest. A name without terms, or a README line that says "MIT" with no file, leaves
-  consumers and license scanners without terms; a license change is an owner decision, not an edit.
-- Treat CONTRIBUTING, CODE_OF_CONDUCT, and SUPPORT as one contributor contract: CONTRIBUTING gives setup, test, and
-  submission steps; CODE_OF_CONDUCT states expected behavior and a private enforcement contact; SUPPORT states what is
-  in scope and sends security reports to the security file. A copied code of conduct with a blank contact line is
-  worse than none, because it promises a route that does not exist.
-- Own only the presence, location, and basic metadata of SECURITY.md: the file exists at the recognized path, is
-  reachable, names its owner, and carries a review date. The security and compliance skill owns its required content,
-  reporting commitments, and response window; the documentation skill owns its structure and prose. An internal
-  service still needs the file, because its reports must not become public issues either.
-- Route review and intake by consequence: every mergeable path resolves to an accountable role, with the CODEOWNERS
-  mapping and validation mechanics owned by the VCS collaboration skill, which also owns the required fields of the
-  issue and pull request templates. Require only fields a triager or reviewer uses, because an unused field teaches
-  contributors to skip every field.
-- Keep the remaining project records, with the fields their purpose needs: CHANGELOG lists user-visible changes by
-  version and the upgrade action each one needs; GOVERNANCE states the decision model and thresholds; MAINTAINERS names
-  active maintainers and an inheritor; CITATION.cff carries title, authors, version, date, license, and repository;
-  `.github/FUNDING.yml` lists the sponsorship channels; the docs index maps reader tasks to core pages.
-- Fix repository-wide file behavior in the root dotfiles: `.editorconfig` sets UTF-8, LF, final newline, trimmed
-  trailing whitespace, and indentation; `.gitignore` covers local configuration, credentials, build output, caches, and
-  editor state; `.gitattributes` sets end-of-line normalization, LFS patterns, and generated-file or export markers.
-- Treat repository metadata as required fields: the description is one sentence that names the job, topics are the
-  terms users search, the homepage is the product or docs entry point, the default branch is what protection and CI
-  target, and visibility, releases, and discussions are deliberate settings. Mirror description and homepage in the
-  package manifest so the repository page and the package page cannot disagree.
+- 把每个必需文件放在托管平台与工具查找的位置：`README.md`、`LICENSE`、`SECURITY.md`、
+  `CONTRIBUTING.md`、`CHANGELOG.md` 与 `CODEOWNERS` 放在根目录或托管平台文档化的替代位置；issue 与
+  PR 模板放在 `.github/` 下；文档索引放在 `docs/README.md` 或文档根目录。命名正确但放在其他目录的
+  文件，对每个使用它的工具来说都等于缺失。README 存在于被认可的路径，并可从仓库入口到达；其内容、
+  结构与文笔遵循文档角色。
+- 把完整许可证文本放在名称精确为 `LICENSE` 的文件中，不带 `.md` 或 `.txt` 后缀，并把 SPDX 标识符
+  镜像到包 manifest。只有名称没有条款，或 README 中一句“MIT”却没有文件，会让消费者与许可证扫描器
+  拿不到条款；许可证变更属于所有者的决定，不是一次编辑。
+- 把 CONTRIBUTING、CODE_OF_CONDUCT 与 SUPPORT 当作一份贡献者契约：CONTRIBUTING 给出环境搭建、测试
+  与提交步骤；CODE_OF_CONDUCT 说明预期行为与私下执行联系人；SUPPORT 说明支持范围，并把安全报告引向
+  安全文件。复制的行为准则留下空白联系人行，比没有更糟，因为它承诺了一条不存在的途径。
+- 本 skill 只负责 SECURITY.md 的存在、位置与基本元数据：文件位于被认可的路径、可到达、写明负责人，
+  并带有审查日期。`security-compliance-conventions` 负责其必需内容、报告承诺与响应窗口；`documentation-conventions` 负责其结构与文笔。
+  内部服务仍然需要该文件，因为它的报告也不能变成公开 issue。
+- 按后果路由审查与收集：每条可合并路径都指向可问责角色，CODEOWNERS 映射与校验机制归 `vcs-collaboration-conventions`，
+  它还负责 issue 与 PR 模板的必需字段。只要求分诊者或审查者会用到的字段，因为未使用的字段会教贡献者
+  跳过所有字段。
+- 保留其余项目记录，并带上其用途所需的字段：CHANGELOG 按版本列出用户可见变更及每项所需的升级动作；
+  GOVERNANCE 说明决策模型与阈值；MAINTAINERS 写明活跃维护者与继任者；CITATION.cff 携带标题、作者、
+  版本、日期、许可证与仓库；`.github/FUNDING.yml` 列出赞助渠道；文档索引把读者任务映射到核心页面。
+- 在根目录点文件中统一仓库级文件行为：`.editorconfig` 设定 UTF-8、LF、末尾换行、去除行尾空白与
+  缩进；`.gitignore` 覆盖本地配置、凭据、构建输出、缓存与编辑器状态；`.gitattributes` 设定行尾规范化、
+  LFS 模式，以及生成文件或导出标记。
+- 把仓库元数据当作必需字段：描述是一句说明工作的句子，主题是用户搜索的术语，主页是产品或文档入口，
+  默认分支是保护与 CI 的目标，可见性、发布与讨论都是有意设置。把描述与主页镜像到包 manifest，让仓库
+  页面与包页面无法不一致。
 
-| Good | Bad | Why |
+| 好 | 坏 | 为什么 |
 |---|---|---|
-| `LICENSE` holds the full text and the manifest its SPDX identifier. | `LICENSE.md` contains only the license name. | Detection, legal review, and scanners need the terms and identifier. |
-| `SECURITY.md` sits at the recognized path and records its owner. | The security route exists only in a README paragraph. | Tools and reporters look for the file; security owns the commitments. |
-| `README.md` exists at the recognized path and links the entry points. | The entry documentation lives only in a wiki. | Tools and readers start at the recognized file; documentation owns its content. |
-| Every mergeable path resolves to an accountable role. | Paths with no assigned role merge without a reviewer. | An unowned path is the governance failure; the VCS skill owns the mapping mechanics. |
-| Issue forms require version, environment, reproduction, and logs. | Blank issues are enabled with no template. | Triagers spend the first reply collecting basics. |
-| `.editorconfig` sets UTF-8, LF, and a final newline. | Editors write mixed CRLF and LF. | Diffs churn and scripts see carriage returns as data. |
-| `.gitattributes` marks LFS patterns, generated files, and export filters. | `.gitignore` is used to hide tracked binaries. | Ignore rules never apply to files already tracked. |
-| CHANGELOG groups entries by impact and states the required upgrade action. | The changelog is a dump of the commit log. | Readers cannot find the change that needs an upgrade step. |
-| CITATION.cff carries title, authors, version, date, license, and repository. | A README sentence asks readers to "cite this project". | Citation tools need structured fields. |
-| GOVERNANCE.md names the decision model, the comment window, and the tie-breaker. | "Maintainers decide." | A contested change stalls because no rule says how it ends. |
-| CONTRIBUTING goes from a fresh clone to a passing test in one path. | CONTRIBUTING lists style rules only. | A new contributor cannot reproduce the build. |
-| The code of conduct names a private enforcement contact. | A copied template leaves the contact blank. | Reports have nowhere to go and enforcement is theater. |
-| Host description and manifest description are the same sentence. | The repository and package pages describe different projects. | Users and search results see two projects. |
-| The default branch is the protected branch that CI and hosting settings target. | The default branch is unprotected and renamed in one tool. | Unreviewed changes reach what consumers install. |
-| The docs index maps reader tasks to the core pages. | `docs/` holds dozens of unlinked files. | Readers cannot reach the page that would help them. |
-| MAINTAINERS.md names current maintainers and an inheritor. | Admin access is the only record of who maintains. | Access is not a roster, so succession is unknown. |
+| `LICENSE` 包含完整文本，manifest 包含其 SPDX 标识符。 | `LICENSE.md` 只包含许可证名称。 | 识别、法务审查与扫描器需要条款与标识符。 |
+| `SECURITY.md` 位于被认可的路径并记录负责人。 | 安全路径只存在于 README 的一段文字中。 | 工具与报告者会找该文件；安全角色拥有承诺。 |
+| `README.md` 位于被认可的路径并链接入口。 | 入口文档只存在于 wiki。 | 工具与读者从被认可的文件开始；文档角色拥有其内容。 |
+| 每条可合并路径都指向可问责角色。 | 未分配角色的路径在没有审查者的情况下合并。 | 无主路径就是治理失败；`vcs-collaboration-conventions` 负责映射机制。 |
+| issue 表单要求版本、环境、复现与日志。 | 启用了空白 issue，没有模板。 | 分诊者要在第一次回复中收集基本信息。 |
+| `.editorconfig` 设定 UTF-8、LF 与末尾换行。 | 编辑器混写 CRLF 与 LF。 | diff 噪声大，脚本会把回车当作数据。 |
+| `.gitattributes` 标记 LFS 模式、生成文件与导出过滤器。 | 用 `.gitignore` 隐藏已跟踪的二进制。 | 忽略规则从不作用于已跟踪文件。 |
+| CHANGELOG 按影响分组并说明必需的升级动作。 | 变更日志是提交日志的堆砌。 | 读者找不到需要升级步骤的变更。 |
+| CITATION.cff 携带标题、作者、版本、日期、许可证与仓库。 | README 一句话请读者“引用本项目”。 | 引用工具需要结构化字段。 |
+| GOVERNANCE.md 写明决策模型、评论窗口与打破平局者。 | “维护者决定。” | 有争议的变更会停滞，因为没有规则说明如何收尾。 |
+| CONTRIBUTING 从全新克隆到测试通过只有一条路径。 | CONTRIBUTING 只列风格规则。 | 新贡献者无法复现构建。 |
+| 行为准则写明私下执行联系人。 | 复制的模板留下空白联系人。 | 报告无处可去，执行成了摆设。 |
+| 托管平台描述与 manifest 描述是同一句话。 | 仓库页面与包页面描述不同项目。 | 用户与搜索结果看到两个项目。 |
+| 默认分支是 CI 与托管设置所指向的受保护分支。 | 默认分支未受保护，且在一个工具中被重命名。 | 未经审查的变更会到达消费者安装的内容。 |
+| 文档索引把读者任务映射到核心页面。 | `docs/` 下有几十个未链接的文件。 | 读者无法到达本可帮助他们的页面。 |
+| MAINTAINERS.md 写明当前维护者与继任者。 | 管理权限是“谁在维护”的唯一记录。 | 权限不是名册，继任因此未知。 |
 
-## 2. Repository Hygiene
+## 2. 仓库卫生
 
-Hygiene is what every later review sees: the file tree, the history, and the branch list either support review or hide
-the truth. Audit it on a schedule and before any transfer, because these facts are cheap to inspect early and
-expensive to repair once users depend on them.
+卫生是之后每次审查看到的东西：文件树、历史与分支列表要么支持审查，要么掩盖真相。按计划并在任何
+转移之前审查它，因为这些事实早检查很便宜，等用户依赖后再修复则很昂贵。
 
-- Keep tracked and ignored files disjoint: a fresh clone plus build leaves no tracked file modified and no ignored file
-  needed to run. Ignore local configuration, credentials, build output, caches, and editor state, and verify the result
-  with a clean checkout instead of trusting the pattern list.
-- Do not commit what the build produces. Generated code, compiled artifacts, and generated manifests are tracked only
-  when consumers need them without the build tool, and then the file carries the generator name and version in its
-  header, a CI check regenerates and diffs it, and nobody hand-edits it. A lock file is an input when the tool requires
-  it; state that rule and follow it in every package.
-- Set the size and asset policy before history grows: a default threshold near 10 MB, a required `.gitattributes`
-  pattern for files above it, LFS available in every clone and CI job, release binaries attached to the release rather
-  than the tree, runtime media optimized before commit, design sources kept in the design tool or in LFS, license and
-  origin recorded for every asset, and `export-ignore` excluding source assets from packages. Migrating existing large
-  objects rewrites history, so propose it as a coordinated change with a clone freeze instead of running it
-  unilaterally, and treat an asset with no provenance as unshippable.
-- Clean branches and tags on a schedule: delete merged branches within the stated window, give a long-lived branch an
-  owner and an exit date in its description, remove branches with no commits for the stated stale period, tag releases
-  on the release commit with annotated tags, delete tags that never became a release, and never move or delete a
-  published release tag.
-- Pin submodules and vendored code: a submodule points at a commit, names its purpose in the parent repository, and is
-  reachable from CI; a vendored directory carries the upstream version, license, and patch list, so a future update is
-  a repeatable procedure. Prefer a package dependency over a copy, and never track a moving branch or silently edit a
-  vendored file.
-- Structure a monorepo as a workspace: one root manifest and lock file, one package manifest per package directory,
-  shared tooling configuration at the root, explicit package boundaries instead of deep relative imports, ownership
-  per package in CODEOWNERS, and CI that selects affected packages from the changed paths. A monorepo without
-  boundaries is a single project with many directories.
-- Apply an archive policy to dead projects: set the archived flag, make the repository read-only, banner the README
-  with the last supported version and the reason, close or redirect issues and discussions, keep releases and the
-  license available, state whether security reports are still accepted, and name the steward. Review the archive
-  annually and link a maintained fork only when it is a separate, clearly identified project.
-- Handle transfer, rename, mirrors, and forks as coordinated changes: transfer to the receiving organization with host
-  redirects, then update the manifest, package metadata, CODEOWNERS, CI secrets, webhooks, and documentation links and
-  verify that an old clone URL still redirects. Declare the canonical repository in a mirror and its sync direction,
-  and treat a fork as a copy that is not a backup and not a distribution channel unless the project says so.
+- 保持被跟踪与被忽略文件互不相交：全新克隆加构建之后，没有已跟踪文件被修改，也没有运行所需的被
+  忽略文件。忽略本地配置、凭据、构建输出、缓存与编辑器状态，并用干净检出验证结果，而不是相信模式
+  列表。
+- 不要提交构建产生的东西。生成代码、编译产物与生成的 manifest 只在消费者没有构建工具也需要它们时
+  才跟踪，而且文件头要带生成器名称与版本，CI 校验会重新生成并比对，没人手工编辑它。工具要求时 lock
+  文件是输入；说明该规则并在每个包中遵循。
+- 在历史增长前设定大小与资产策略：默认阈值约 10 MB，超过它的文件需要 `.gitattributes` 模式，每个
+  克隆与 CI 任务都能用 LFS，发布二进制附加到发布而不是树，运行时媒体在提交前优化，设计源文件保留在
+  设计工具或 LFS 中，每个资产记录许可证与来源，并用 `export-ignore` 把源资产排除出包。迁移已有大对象
+  会重写历史，因此要把它作为需要克隆冻结的协同变更提出，而不是单方面执行；没有来源的资产视为不可
+  发布。
+- 按计划清理分支与标签：在声明窗口内删除已合并分支，在描述中为长期分支指定负责人与退出日期，移除
+  在声明的过时期间内没有提交的分支，在发布提交上用附注标签标记发布，删除从未成为发布的标签，绝不
+  移动或删除已发布的标签。
+- 固定子模块与第三方引入代码：子模块指向一个提交，在父仓库中说明用途，并从 CI 可达；第三方引入目录携带上游
+  版本、许可证与补丁列表，让未来更新成为可重复流程。优先使用包依赖而不是复制，绝不跟踪移动分支或
+  静默编辑第三方引入文件。
+- 把 monorepo 组织成工作区：一个根 manifest 与 lock 文件，每个包目录一个包 manifest，共享工具配置放在
+  根，使用显式包边界而不是深层相对导入，在 CODEOWNERS 中按包归属，CI 从变更路径选择受影响的包。
+  没有边界的 monorepo 只是有许多目录的单一项目。
+- 对已死项目应用归档策略：设置归档标志，让仓库只读，在 README 横幅中写明最后支持版本与原因，关闭或
+  重定向 issue 与讨论，保持发布与许可证可用，说明是否仍接受安全报告，并指定管理员。每年审查归档，
+  只在维护中的 fork 是独立且清楚标识的项目时才链接它。
+- 把转移、重命名、镜像与 fork 当作协同变更：转移到接收组织并使用托管平台重定向，然后更新 manifest、
+  包元数据、CODEOWNERS、CI 机密、webhook 与文档链接，并验证旧克隆 URL 仍会重定向。在镜像中声明权威
+  仓库与同步方向，把 fork 当作副本，除非项目明确说明，否则它不是备份，也不是分发渠道。
 
-| Good | Bad | Why |
+| 好 | 坏 | 为什么 |
 |---|---|---|
-| `.gitignore` lists `.env`, `dist/`, `.cache/`, and editor directories. | A broad `*.json` ignore hides tracked configuration. | Broad patterns make required files invisible to the whole team. |
-| A fresh clone plus build leaves the working tree clean. | The build rewrites a tracked generated manifest. | A tracked output produces constant unrelated changes. |
-| A 200 MB media file lives in LFS or on the release page. | The video is committed to history once. | Every clone and mirror pays the cost forever. |
-| Generated code carries the generator and version in its header. | A generated client is hand-edited in place. | The next regeneration silently removes the edit. |
-| Merged branches are deleted within the stated window. | Hundreds of merged branches remain. | The branch list hides active work and invites stale cherry-picks. |
-| An annotated tag marks the release commit. | The tag points at a later unrelated commit. | Installers build from a tree nobody tested. |
-| A submodule is pinned to a commit and its purpose is recorded. | A submodule tracks a moving branch. | Builds differ by day and cannot be reproduced. |
-| A vendored directory has upstream version, license, and patches. | A copy of upstream `main` carries local edits. | Provenance and the update path are unknown. |
-| A monorepo has a root workspace manifest and package manifests. | Packages import through deep relative paths. | Boundaries break and CI cannot select affected packages. |
-| An archived repository is read-only with a banner and last version. | Only the archive flag is set and issues stay open. | Users assume maintenance and get no answer. |
-| A transfer keeps redirects and updates metadata and links. | Old links, clones, and package pages stop working. | Users cannot find the project after the move. |
-| A fork documents the canonical repository and sync direction. | The fork carries unique fixes and is passed around. | Users install a stale or diverging copy. |
-| CI installs LFS before checkout. | CI checks out LFS pointers as text. | Builds fail or ship broken files. |
-| Release binaries are attached to the release. | Binaries are committed under `dist/`. | History bloats and stale artifacts ship from the tree. |
-| `.gitattributes` normalizes text and excludes source assets from packages. | Mixed line endings and design sources ship in the package. | Diffs and package behavior differ per platform. |
-| Dead code is removed with references checked first. | A bulk deletion runs without a reference check. | Broken links and imports surface after the cleanup. |
+| `.gitignore` 列出 `.env`、`dist/`、`.cache/` 与编辑器目录。 | 宽泛的 `*.json` 忽略隐藏了已跟踪配置。 | 宽泛模式会让必需文件对整个团队不可见。 |
+| 全新克隆加构建后工作树干净。 | 构建重写了已跟踪的生成 manifest。 | 已跟踪输出会制造持续的不相关变更。 |
+| 200 MB 的媒体文件放在 LFS 或发布页。 | 视频曾被提交进历史一次。 | 每次克隆与镜像都要永远承担代价。 |
+| 生成代码在文件头带生成器与版本。 | 生成的客户端被就地手工编辑。 | 下次重新生成会静默移除编辑。 |
+| 已合并分支在声明窗口内删除。 | 数百个已合并分支留着。 | 分支列表掩盖活跃工作，并招来过时 cherry-pick。 |
+| 附注标签标记发布提交。 | 标签指向之后一个不相关的提交。 | 安装者从没人测试过的树构建。 |
+| 子模块固定到提交并记录用途。 | 子模块跟踪移动分支。 | 构建每天不同，无法复现。 |
+|第三方引入目录有上游版本、许可证与补丁。 | 上游 `main` 的副本带有本地编辑。 | 来源与更新路径未知。 |
+| monorepo 有根工作区 manifest 与包 manifest。 | 包通过深层相对路径导入。 | 边界被破坏，CI 无法选择受影响的包。 |
+| 归档仓库只读，带横幅与最后版本。 | 只设置了归档标志，issue 仍然开放。 | 用户以为仍在维护，却得不到回答。 |
+| 转移保留重定向并更新元数据与链接。 | 旧链接、克隆与包页面停止工作。 | 迁移后用户找不到项目。 |
+| fork 记录权威仓库与同步方向。 | fork 带有独有修复并被四处传递。 | 用户安装到过时或分叉的副本。 |
+| CI 在检出前安装 LFS。 | CI 把 LFS 指针当作文本检出。 | 构建失败或发布损坏文件。 |
+| 发布二进制附加到发布。 | 二进制被提交在 `dist/` 下。 | 历史膨胀，过时产物从树中发布。 |
+| `.gitattributes` 规范化文本，并把源资产排除出包。 | 混合行尾与设计源文件被打进包。 | diff 与包行为因平台而异。 |
+| 死代码在检查引用后删除。 | 批量删除未检查引用就运行。 | 清理之后才暴露出坏链与坏导入。 |
 
-## 3. Governance and Decision Process
+## 3. 治理与决策流程
 
-Governance is the written answer to who decides, how a decision is made, and who inherits the repository when the
-current maintainers leave. Write it down before it is contested, because a rule invented during a dispute reads as an
-interest rather than a policy.
+治理是对谁做决定、如何做决定，以及当前维护者离开后谁继承仓库的书面回答。在有争议之前写下来，因为
+在争执中发明的规则读起来像利益，而不是政策。
 
-- Define the ladder by capability, not by title: a contributor proposes changes, a reviewer approves a scoped change, a
-  committer merges non-default branches and triages issues, and a maintainer merges the default branch, publishes
-  releases, manages access, and appoints the other roles. Record each capability in `GOVERNANCE.md` and grant it
-  through a host team rather than a personal account.
-- Declare the decision model: maintainer-led for a single-team project, lazy consensus with a stated window for a
-  community project, or a formal vote with quorum, majority, and tie-break for shared governance. Write down which
-  model applies to which class of change, and record every decision with its rationale and the alternatives considered.
-- Run proposals through a stated path: number the proposal, use a fixed template with problem, goals and non-goals,
-  proposal, alternatives, risks, rollout, and open questions, keep a comment window, close with a final comment period,
-  and record the accepted or rejected outcome. A design decided in a chat thread loses its rationale once the thread
-  scrolls away.
-- Route approval instead of setting it: reviewer counts for code changes come from the VCS collaboration skill,
-  per-release-type approvals come from the release-operations skill, and this dimension adds only its own governance
-  rule that a governance or ownership change needs two approvers and that an author never approves their own governance
-  or ownership change. Record the routed rules in `GOVERNANCE.md` so readers see one policy.
-- Plan for succession and bus factor: at least two maintainers hold administrative access, an inheritor is named in
-  `MAINTAINERS.md`, hosting access is escrowed or recoverable by the organization, an inactive maintainer moves to
-  emeritus after notice, and access is reviewed quarterly and after every departure. A repository with one
-  administrator is one absence away from being lost.
-- Resolve conflict with a rule: discuss in the proposal, escalate to the maintainers, then to the named tie-breaker,
-  and record the decision and dissenting view. Keep the status quo until a decision is recorded, do not merge a change
-  that is still contested, and route personal-conduct matters to the code of conduct process rather than the technical
-  thread.
-- Make the code of conduct enforceable: reports go to a private channel, at least two responders handle them, a
-  responder with a conflict of interest recuses, confidentiality is stated, outcomes range from a warning to a
-  temporary or permanent ban, the outcome is recorded without personal data, and an appeal route exists. Publishing
-  incident details to demonstrate enforcement harms the person the process protects.
-- Set release authority explicitly: name who can tag, publish, and yank, defer the per-release-type approval rule to
-  the release-operations skill, separate the author role from the publisher role for major releases, keep signing keys
-  offline and rotated, and give the emergency release path a named authority and a mandatory retrospective. A package
-  token on every maintainer's laptop makes every compromised account a release risk.
+- 按能力而非头衔定义阶梯：贡献者提出变更，审查者批准范围明确的变更，提交者合并非默认分支并分诊
+  issue，维护者合并默认分支、发布版本、管理权限并任命其他角色。在 `GOVERNANCE.md` 中记录每项能力，
+  并通过托管平台团队而不是个人账号授予。
+- 声明决策模型：单团队项目用维护者主导，社区项目用带明确窗口的惰性共识，共享治理用带法定人数、多数
+  与平局裁决的正式投票。写明哪种模型适用于哪类变更，并记录每个决策及其理由与考虑过的备选方案。
+- 让提案走明确路径：给提案编号，使用固定模板（问题、目标与非目标、提案、备选方案、风险、上线与
+  未决问题），保留评论窗口，以最终评论期收尾，并记录接受或拒绝的结果。在聊天线程中决定的设计，一旦
+  线程滚走就丢失了理由。
+- 路由审批，而不是自行设定：代码变更的审查者数量来自 `vcs-collaboration-conventions`，按发布类型的审批来自
+  `release-operations-conventions`，本维度只补充自己的治理规则：治理或归属变更需要两名批准者，作者绝不能批准
+  自己的治理或归属变更。在 `GOVERNANCE.md` 中记录路由后的规则，让读者看到一套政策。
+- 为继任与巴士因子做计划：至少两名维护者持有管理权限，在 `MAINTAINERS.md` 中指定继任者，托管访问
+  权限由组织托管或可由组织恢复，不活跃维护者经通知转为荣休，权限每季度及每次离开后审查。只有一名
+  管理员的仓库距离丢失只差一次缺席。
+- 用规则解决冲突：在提案中讨论，升级到维护者，再升级到指定的平局裁决者，并记录决定与反对意见。在
+  决定被记录前保持现状，不要合并仍有争议的变更，并把个人行为问题路由到行为准则流程，而不是技术线程。
+- 让行为准则可执行：报告进入私下渠道，至少两名响应者处理，与事件有利益冲突的响应者回避，说明保密性，
+  结果从警告到临时或永久封禁，结果在不含个人数据的情况下记录，并存在申诉途径。为展示执行而公开事件
+  细节，会伤害流程本应保护的人。
+- 明确发布权：写明谁能打标签、发布与撤回，把按发布类型的审批规则交给 `release-operations-conventions`，重大发布把作者
+  角色与发布者角色分开，签名密钥离线保存并轮换，并给紧急发布路径指定权限与强制复盘。每名维护者
+  笔记本上都有一个包 token，会让每个被攻陷的账号都成为发布风险。
 
-| Good | Bad | Why |
+| 好 | 坏 | 为什么 |
 |---|---|---|
-| The role ladder lists capabilities and the host team that grants each. | Roles are job titles with no permission mapping. | Expectations and permissions are both undefined. |
-| Lazy consensus states a window and requires explicit objections. | "Silence means approval" for every change. | A contested change passes because nobody watched the thread. |
-| A numbered RFC records the decision, rationale, and rejected options. | The design is decided in a chat thread. | The rationale is lost and the same debate returns. |
-| Approval rules are routed to the owning skills; governance and ownership changes need two approvers. | One local threshold covers every change. | A local count contradicts the owning skills and slows or under-reviews changes. |
-| Two administrators and a named inheritor exist. | One owner holds all access. | The project is lost when that person leaves. |
-| A long-inactive maintainer moves to emeritus after notice. | Inactive accounts keep administrative access. | Dormant credentials remain exploitable. |
-| A conflict escalates to maintainers and then a named tie-breaker. | An endless thread has no decision rule. | The project stalls and contributors leave. |
-| Code of conduct reports go to a private response group. | Reports are handled in the public issue tracker. | The reporter and the report are exposed. |
-| Enforcement outcomes are recorded without personal data. | Full incident details are copied into a public log. | The record harms the person it should protect. |
-| Per-release-type approval comes from the release-operations skill. | Any maintainer approves their own release. | A locally invented approval rule conflicts with the release playbook. |
-| An author cannot approve their own governance or ownership change. | The author approves their own governance change. | Independent approval protects the rules from self-serving edits. |
-| Governance or ownership changes need two maintainers to approve. | One maintainer edits the governance file in a commit. | Two independent approvers keep the rules from being edited unilaterally. |
-| A declined proposal is recorded with its reason. | Rejected proposals disappear without a decision. | The same proposal returns every quarter. |
-| Access is reviewed quarterly and after each departure. | Access is granted at onboarding and never removed. | Permissions accumulate and outlive their justification. |
-| The emergency release path has a named authority and a review. | The emergency path silently bypasses every gate. | Speed is preserved but the bypass is never audited. |
-| Release authority is a role, not a person. | Only one person's token can publish. | A vacation or departure blocks every release. |
+| 角色阶梯列出能力与授予它的托管平台团队。 | 角色是没有权限映射的职位名称。 | 期望与权限都未定义。 |
+| 惰性共识声明窗口，并要求明确反对。 | 对每个变更都“沉默即批准”。 | 没人看线程的有争议变更会被通过。 |
+| 编号 RFC 记录决策、理由与被否决的选项。 | 设计在聊天线程中决定。 | 理由丢失，同一争论会回来。 |
+| 审批规则路由到所有者 skill；治理与归属变更需要两名批准者。 | 一个本地阈值覆盖所有变更。 | 本地数量与所有者 skill 矛盾，拖慢或审查不足。 |
+| 存在两名管理员与指定继任者。 | 一名所有者持有全部权限。 | 此人离开时项目会丢失。 |
+| 长期不活跃维护者经通知转为荣休。 | 不活跃账号继续持有管理权限。 | 休眠凭据仍可被利用。 |
+| 冲突升级到维护者，再到指定平局裁决者。 | 无休止的线程没有决策规则。 | 项目停滞，贡献者离开。 |
+| 行为准则报告进入私下响应小组。 | 报告在公开 issue 跟踪器中处理。 | 报告者与报告都被暴露。 |
+| 执行结果在不含个人数据的情况下记录。 | 完整事件细节被复制到公开日志。 | 记录会伤害它本应保护的人。 |
+| 按发布类型的审批来自 `release-operations-conventions`。 | 任何维护者都批准自己的发布。 | 本地发明的审批规则与发布操作手册冲突。 |
+| 作者不能批准自己的治理或归属变更。 | 作者批准自己的治理变更。 | 独立批准保护规则不被自私编辑。 |
+| 治理或归属变更需要两名维护者批准。 | 一名维护者在一个提交中编辑治理文件。 | 两名独立批准者防止规则被单方面编辑。 |
+| 被拒绝的提案连同原因记录。 | 被拒绝的提案没有决定就消失。 | 同一提案每季度回来。 |
+| 权限每季度及每次离开后审查。 | 权限在入职时授予，永不移除。 | 权限累积并超出其正当理由。 |
+| 紧急发布路径有指定权限与审查。 | 紧急路径静默绕过所有门禁。 | 速度保住了，但绕过从未被审查。 |
+| 发布权是角色，不是个人。 | 只有一个人的 token 能发布。 | 一次休假或离开会阻塞所有发布。 |
 
-## 4. Packaging and Distribution
+## 4. 打包与分发
 
-Packaging is the last mile of governance: a correct repository that publishes an unverifiable or uninstallable
-artifact has still failed its users. Judge every rule from the consumer's side, because it is satisfied only when a
-stranger can install and inspect the artifact.
+打包是治理的最后一英里：正确的仓库若发布不可验证或不可安装的产物，仍然辜负了用户。从消费者一侧
+判断每条规则，因为只有陌生人能安装并检查产物时，它才算满足。
 
-- Reserve the package name and scope before the first release and keep one artifact per name; package and repository
-  naming itself belongs to the naming skill. Publish rights belong to an organization team, not a personal account, and
-  a rename publishes under the new name with a deprecation pointer from the old one.
-- Make the manifest exact: name, version, description, SPDX license, repository URL, homepage, keywords, author or
-  maintainer, supported runtime range, and a files allowlist. Validate it with the registry's own tooling before
-  publish, derive the version from one source, and keep local paths, credentials, and development dependencies out of
-  the published artifact.
-- Declare the distribution channels: one primary registry is the canonical channel for the versions the
-  release-operations skill defines, a private or staging registry serves internal promotion, mirrors state their sync
-  direction, and package visibility is a deliberate public or private setting. Credentials live only in the CI
-  environment, and promotion from staging to production repeats the same install test rather than copying trust.
-- Sign and attest every artifact: publish checksums, sign the artifact or the tag with a key stored outside the
-  repository, and attach build provenance that names the source commit, the build platform, and the dependency set.
-  Consumers and automated installers can then verify what they receive, and a compromised build host is detectable
-  after the fact.
-- Verify the install from an empty environment: a fresh container or virtual environment with no project checkout, no
-  local path overrides, and no cache; install the exact published version from the registry, confirm the resolved
-  version, run one smoke test through the public entry point, confirm the license and required files ship in the
-  artifact, and record the output with the runtime versions tested.
-- Publish in the order the release-operations skill defines: the tag is created on the approved release commit, the
-  artifact is built from that tag in a clean checkout, the gates run, and publication happens only after they pass;
-  a failing gate deletes the tag before publication and the tag becomes immutable once the artifact is published.
-  Sign, stage, and inspect the artifact before publishing, link the
-  release-note document owned by documentation to the artifact digest, never move the tag after publishing, and never
-  rebuild a published version.
-- Define the yank and deprecation path: yank or deprecate only for a security defect, an uninstallable artifact, or a
-  legal problem; publish the reason, keep a yanked version resolvable for already-pinned users while blocking new
-  installs where the registry supports it, name the replacement and its removal date for deprecations, and never delete
-  a published version. A deleted version destroys reproducibility for everyone who pinned it.
-- Apply the same discipline to container images when the project ships one: a registry namespace owned by the
-  organization, an immutable digest plus a version tag, no `latest` reference in production, multi-architecture builds
-  from CI with source and revision labels, a scheduled base-image rebuild, a vulnerability scan before publish, and a
-  signature checked by the deployment platform. The security and compliance skill owns the SBOM content; this
-  dimension requires the pipeline to produce it and the release record to reference it.
+- 在首次发布前预留包名与作用域，每个名称只保留一个产物；包与仓库的命名本身归 `naming-conventions`。发布权归
+  组织团队，不归个人账号，重命名时以新名称发布，并从旧名称给出一条弃用指针。
+- 让 manifest 精确：名称、版本、描述、SPDX 许可证、仓库 URL、主页、关键词、作者或维护者、支持的
+  运行时范围与文件允许列表。发布前用包仓库自己的工具校验，从一个来源推导版本，并把本地路径、
+  凭据与开发依赖排除出发布产物。
+- 声明分发渠道：一个主包仓库是 `release-operations-conventions` 所定义版本的权威渠道，私有或预发包仓库服务内部
+  晋升，镜像说明同步方向，包可见性是有意的公开或私有设置。凭据只存放在 CI 环境中，从预发晋升到生产
+  要重复同一安装测试，而不是复制信任。
+- 为每个产物签名并出具证明：发布校验和，用存放在仓库之外的密钥为产物或标签签名，并附加构建来源
+  证明，写明源提交、构建平台与依赖集合。消费者与自动安装器因此能验证收到的东西，被攻陷的构建主机
+  也能在事后被发现。
+- 从空环境验证安装：一个不含项目检出、本地路径覆盖与缓存的全新容器或虚拟环境；从包仓库安装精确
+  的已发布版本，确认解析出的版本，通过公共入口运行一次冒烟测试，确认许可证与必需文件随产物发布，
+  并记录输出与测试过的运行时版本。
+- 按 `release-operations-conventions` 定义的顺序发布：在已批准的发布提交上创建标签，在干净检出中从该标签构建产物，运行
+  门禁，只有通过后才发布；门禁失败会在发布前删除标签，产物一旦发布，标签就不可变。发布前签名、暂存
+  并检查产物，把文档负责的发布说明文档链接到产物摘要，发布后绝不移动标签，也绝不重新构建已发布的
+  版本。
+- 定义撤回与弃用路径：只针对安全缺陷、不可安装的产物或法律问题撤回或弃用；发布原因，让被撤回版本对
+  已固定版本的用户仍可解析，同时在包仓库支持时阻止新安装；弃用要写明替代方案与移除日期，绝不
+  删除已发布的版本。删除版本会摧毁每个固定过它的用户的可复现性。
+- 项目发布容器镜像时采用同样纪律：由组织拥有的包仓库命名空间，不可变摘要加版本标签，生产不引用
+  `latest`，从 CI 做多架构构建并带源与修订标签，定期重建基础镜像，发布前做漏洞扫描，并由部署平台
+  校验签名。`security-compliance-conventions` 负责 SBOM 内容；本维度要求流水线生成它，并要求发布记录引用它。
 
-| Good | Bad | Why |
+| 好 | 坏 | 为什么 |
 |---|---|---|
-| The package name is reserved before the first release. | The first release picks a name that is already taken. | Publishing blocks at the worst possible moment. |
-| Publish rights belong to an organization team. | One person's account holds the only publish token. | The package cannot be released while that person is away. |
-| The manifest carries SPDX license, repository, runtime range, and files. | Manifest fields are guessed or left empty. | Registries and scanners cannot classify or verify the package. |
-| The version has one source and is copied by the build. | The version is bumped in three files. | A release ships inconsistent versions. |
-| The primary registry is declared and promotion is recorded. | Artifacts are uploaded to several registries by hand. | One channel can serve a different build. |
-| The artifact is signed and carries provenance. | Checksums appear only on the release page. | Consumers cannot verify what they install. |
-| The install test starts from an empty environment and the registry. | The install is checked in the project checkout. | Undeclared dependencies and local paths go unnoticed. |
-| Publication happens only after every gate passes; a failing gate deletes the tag. | The artifact is published before the gates finish. | A failed gate must not leave a published version behind. |
-| The tag is created on the approved release commit and the artifact is built from it. | The tag is moved after publishing. | The tag no longer identifies the shipped tree. |
-| The release-note document, owned by documentation, links the artifact digest. | The release body is a generated commit list. | Users need documented upgrade actions, not a commit list. |
-| The smoke test covers the declared runtime and OS matrix. | One runtime on one OS is tested. | Installation fails on a supported platform. |
-| A yanked version states the reason and the replacement. | The broken version is deleted from the registry. | Pinned users cannot reproduce a build. |
-| A deprecation names a successor and a removal date. | The deprecation note has no replacement. | Users cannot plan the upgrade. |
-| Production containers pin an immutable digest. | Production references the `latest` tag. | A new push silently changes what runs. |
-| Multi-architecture images are built in CI with source labels. | The image is hand-built on a laptop. | The image is not reproducible and has no provenance. |
-| The base image is rebuilt and scanned on a schedule. | An old base image is kept for convenience. | Known vulnerabilities ship with every new image. |
-| Internal packages are promoted from staging after the install test. | The internal build is installed from the development registry. | Unverified artifacts reach production. |
+| 首次发布前预留包名。 | 首次发布选了一个已被占用的名称。 | 会在最糟的时刻卡住发布。 |
+| 发布权归组织团队。 | 一个人的账号持有唯一的发布 token。 | 此人不在时包无法发布。 |
+| manifest 携带 SPDX 许可证、仓库、运行时范围与文件。 | manifest 字段靠猜或留空。 | 包仓库与扫描器无法分类或验证包。 |
+| 版本只有一个来源，并由构建复制。 | 版本在三个文件里分别提升。 | 发布出的版本不一致。 |
+| 声明主包仓库并记录晋升。 | 产物被手工上传到多个包仓库。 | 一个渠道可能提供不同的构建。 |
+| 产物已签名并带来源证明。 | 校验和只出现在发布页。 | 消费者无法验证自己安装的东西。 |
+| 安装测试从空环境与包仓库开始。 | 在项目检出中检查安装。 | 未声明依赖与本地路径会被漏掉。 |
+| 只在全部门禁通过后发布；门禁失败会删除标签。 | 门禁还没结束就发布产物。 | 失败的门禁不能留下已发布版本。 |
+| 在已批准的发布提交上创建标签，并从它构建产物。 | 发布后移动标签。 | 标签不再标识已交付的树。 |
+| 文档负责的发布说明文档链接产物摘要。 | 发布正文是生成的提交列表。 | 用户需要文档化的升级动作，不是提交列表。 |
+| 冒烟测试覆盖声明的运行时与操作系统矩阵。 | 只测试一个运行时、一个操作系统。 | 安装会在受支持平台上失败。 |
+| 被撤回的版本说明原因与替代方案。 | 从包仓库删除损坏版本。 | 固定版本的用户无法复现构建。 |
+| 弃用写明继任者与移除日期。 | 弃用说明没有替代方案。 | 用户无法规划升级。 |
+| 生产容器固定不可变摘要。 | 生产引用 `latest` 标签。 | 新推送会静默改变运行内容。 |
+| 多架构镜像在 CI 中构建并带源标签。 | 镜像在笔记本上手工构建。 | 镜像不可复现且没有来源证明。 |
+| 基础镜像按计划重建并扫描。 | 为方便保留旧基础镜像。 | 已知漏洞会随每个新镜像发布。 |
+| 内部包在安装测试后从预发晋升。 | 从开发包仓库安装内部构建。 | 未验证产物到达生产。 |
