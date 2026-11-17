@@ -6,7 +6,8 @@
 用户级安装插件后由 hook 自动注入，均不作为本仓库的贡献规则。
 
 何时阅读：在本仓库改约束、skill、插件或脚本之前；维护者：SnowCore8（仓库所有者）。完成定义：
-变更在范围内、`scripts/check.sh` 通过并粘贴真实输出。
+变更在范围内、内容可用并遵守用户全局约束，`scripts/check.sh` 通过并粘贴真实输出；
+`check.sh` 只是本仓库附加门禁。
 
 ## 范围与优先级
 
@@ -20,7 +21,8 @@
 
 1. 改约束、skill 或插件前先读 `README.md` 与对应目录说明。
 2. 真源位置：约束正文 `rules/global-user-constraints.md`；skill 真源 `skills/`；命令与注入脚本
-   `shared/`；三个包在 `plugins/qoder|qwen|dsh`，包内只放清单、hook 与指向真源的软链。
+   `shared/`；Qoder/Qwen 包在 `plugins/qoder|qwen`，包内放清单、hook 与指向真源的软链；
+   DSH bundle 的清单是仓库根 `package.json`，`plugins/dsh` 放源码与 patch，构建时复制 `skills/` 与 `rules/`。
 3. 新增或调整入口时保持软链约定：相对路径、目标在仓库内、不复制第二份、不指向另一软链。
 4. 提交前运行 `scripts/check.sh`，失败先修；交付时贴真实输出与退出码。
 5. 分支模型为 trunk-based：单人维护，直接提交 `master`，不强制 PR；接入远端后启用 `master` 保护与必需 CI。
