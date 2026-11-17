@@ -22,6 +22,10 @@ INDEX_SENTENCE = (
     "每个维度的详细规则、示例与边界情况见 `references/dimensions.md`；"
     "维度列中的编号就是该文件中的节号。"
 )
+INDEX_SENTENCE_SPLIT = (
+    "每个维度的详细规则、示例与边界情况见 `references/` 中对应的维度文件；"
+    "维度列中的编号就是该文件中的节号。"
+)
 MAX_LINES = 250
 MIN_DUPLICATE = 24
 
@@ -30,7 +34,10 @@ FIELD = re.compile(r"^(name|description|argument-hint):[ \t]*(.+)$", re.M)
 H2 = re.compile(r"^## (.+)$", re.M)
 HINT = re.compile(r"^'\[[^\[\]<>]+\]'$")
 INDEX_SECTION = re.compile(r"^## 维度索引\n(.*?)(?=^## )", re.M | re.S)
-INDEX_ROW = re.compile(r"^\| (\d+)\. [^|]+ \| [^|]+ \| `references/dimensions\.md` 第 (\d+) 节 \|$", re.M)
+INDEX_ROW = re.compile(
+    r"^\| (\d+)\. [^|]+ \| [^|]+ \| `(references/[a-z0-9-]+\.md)` 第 (\d+) 节 \|$",
+    re.M,
+)
 DIM_SECTION = re.compile(r"^## (\d+)\. ", re.M)
 SELF_REFERENCE = re.compile(r"references/[a-z0-9-]+\.md")
 CJK = re.compile(r"[\u4e00-\u9fff]")
@@ -101,8 +108,8 @@ class StructureTest(unittest.TestCase):
 
     def test_dimension_index(self) -> None:
         for path in skill_files():
-            reference = path.parent / "references" / "dimensions.md"
-            if not reference.is_file():
+            references = list((path.parent / "references").glob("dimensions*.md"))
+            if not references:
                 continue  # 元规范 skill 的 references 不按维度切分
             _, body = parse(path)
             section = INDEX_SECTION.search(body)
@@ -110,12 +117,24 @@ class StructureTest(unittest.TestCase):
                 self.assertIsNotNone(section, "缺少 维度索引 节")
                 assert section is not None
                 block = section.group(1)
-                self.assertIn(INDEX_SENTENCE, block)
+                self.assertTrue(
+                    INDEX_SENTENCE in block or INDEX_SENTENCE_SPLIT in block,
+                    "缺少维度索引说明句",
+                )
                 self.assertIn(INDEX_HEADER, block)
                 rows = INDEX_ROW.findall(block)
-                self.assertEqual([n for n, _ in rows], [m for m, _ in rows], "详情列节号与维度编号不一致")
-                numbers = DIM_SECTION.findall(reference.read_text(encoding="utf-8"))
-                self.assertEqual([n for n, _ in rows], numbers)
+                self.assertTrue(rows, "维度索引没有可解析的行")
+                numbers = [int(number) for number, _, _ in rows]
+                self.assertEqual(numbers, list(range(1, len(rows) + 1)), "维度编号不连续")
+                by_file: dict[str, list[int]] = {}
+                for number, reference, section_number in rows:
+                    self.assertEqual(int(number), int(section_number), "详情列节号与维度编号不一致")
+                    by_file.setdefault(reference, []).append(int(number))
+                for reference, expected in by_file.items():
+                    target = path.parent / reference
+                    self.assertTrue(target.is_file(), f"缺少 {reference}")
+                    found = [int(n) for n in DIM_SECTION.findall(target.read_text(encoding="utf-8"))]
+                    self.assertEqual(found, expected, f"{reference} 的节号与索引不一致")
                 for line in block.splitlines():
                     if line.startswith("|---"):
                         continue
@@ -125,7 +144,8 @@ class StructureTest(unittest.TestCase):
                     self.assertNotIn("references/", cells[1], "首条规则列混入了详情内容")
                     self.assertFalse(cells[0].endswith("。"), "维度名列写成了规则句")
                     self.assertTrue(cells[1].endswith("。"), "首条规则列应是一句规则")
-                    self.assertEqual(cells[2], f"`references/dimensions.md` 第 {cells[0].split('.')[0]} 节")
+                    self.assertTrue(cells[2].startswith("`references/"), "详情列缺少文件")
+                    self.assertTrue(cells[2].endswith(" 节"), "详情列缺少节号")
 
 
 class ReferenceTest(unittest.TestCase):
