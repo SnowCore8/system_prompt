@@ -130,8 +130,8 @@ qoderclicn --cwd /tmp plugins list --json
 
 本地出包运行 `scripts/dist.sh`：默认要求工作区干净（`--allow-dirty` 放行），浅克隆直接拒绝，
 `--require-tag` 要求 HEAD 正好带有 `v<version>` tag。每个包物化后归一 mtime 与权限、按名称排序、
-用 `zip -X` 构建，输出可复现 zip 与 SHA256，各保留最近三个制品。zip 与 `*.sha256` 被 `.gitignore`
-忽略，不提交。
+用 `zip -X` 构建，输出可复现 zip 与 SHA256；每个包只保留最新制品，构建新版本时删除旧 zip 与
+`.sha256`。zip 与 `*.sha256` 被 `.gitignore` 忽略，不提交。
 
 ## CI
 

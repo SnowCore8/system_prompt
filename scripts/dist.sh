@@ -19,7 +19,7 @@ validate 也会拒绝包外路径。
 每个包会附上双许可证、归一 mtime 与权限、按名称排序并用 zip -X 构建，产物可复现；
 默认还用 qoderclicn 校验物化后的 Qoder 包，缺失时失败，可用 --no-validate 跳过
 （CI 发布流水线没有 qoderclicn，用跳过换取可重复构建，发布前须在本地校验）。
-每个包保留最近三个制品。
+每个包只保留最新一个制品；构建新版本时删除同包的旧 zip 与 .sha256。
 EOF
 }
 
@@ -155,8 +155,8 @@ PY
 retain() {
   local name="$1" old
   mapfile -t zips < <(ls -1t "$REPO_ROOT"/global-user-constraints-"$name"-*.zip 2>/dev/null || true)
-  if [ "${#zips[@]}" -gt 3 ]; then
-    for old in "${zips[@]:3}"; do
+  if [ "${#zips[@]}" -gt 1 ]; then
+    for old in "${zips[@]:1}"; do
       rm -f "$old" "${old%.zip}.sha256"
       echo "已删除较旧制品: $(basename "$old")" >&2
     done
