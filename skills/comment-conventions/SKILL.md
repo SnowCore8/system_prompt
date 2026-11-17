@@ -108,34 +108,34 @@ argument-hint: '[路径或符号]'
 
 ## 维度索引
 
-每个维度的详细规则、示例与边界情况见 `references/dimensions.md`；维度列中的编号就是该文件中的节号。
+每个维度的详细规则、示例与边界情况见 `references/` 中对应的维度文件；维度列中的编号就是该文件中的节号。
 
 | 维度 | 首条规则 | 详情 |
 |---|---|---|
-| 1. 文档注释与公开契约 | 记录可见契约，而不是签名。 | `references/dimensions.md` 第 1 节 |
-| 2. 模块、文件与取值头 | 说明单元的用途与不变量，绝不写历史。 | `references/dimensions.md` 第 2 节 |
-| 3. 函数与方法 | 在边界处记录参数、返回值、错误与副作用。 | `references/dimensions.md` 第 3 节 |
-| 4. 类型、字段、枚举、常量 | 记录不变量与成员含义，而不是字段名。 | `references/dimensions.md` 第 4 节 |
-| 5. 单位、范围、可空性、所有权 | 说明类型无法承载的内容。 | `references/dimensions.md` 第 5 节 |
-| 6. 副作用、变更、并发 | 说明效果、隐患与必需动作。 | `references/dimensions.md` 第 6 节 |
-| 7. 弃用声明 | 写明替代项与移除触发条件。 | `references/dimensions.md` 第 7 节 |
-| 8. TODO 与计划说明 | TODO/FIXME/HACK 带负责人与移除触发条件。 | `references/dimensions.md` 第 8 节 |
-| 9. 被注释掉的代码 | 删除它；历史由版本控制保留。 | `references/dimensions.md` 第 9 节 |
-| 10. 变更历史与日志式注释 | 变更日志在版本控制里。 | `references/dimensions.md` 第 10 节 |
-| 11. 文档注释中的代码示例 | 文档示例是可执行的文档。 | `references/dimensions.md` 第 11 节 |
-| 12. 生成代码与第三方引入代码的标记 | 重新生成或重新引入；绝不手工编辑。 | `references/dimensions.md` 第 12 节 |
-| 13. 法律与许可证头 | 在工具要求的位置保持字节级一致。 | `references/dimensions.md` 第 13 节 |
-| 14. 工具指令 | 最窄范围；每条指令都有理由；文件级抑制还要清理工单。 | `references/dimensions.md` 第 14 节 |
-| 15. 测试与 fixture | 解释场景，而不是调用顺序。 | `references/dimensions.md` 第 15 节 |
-| 16. 配置与基础设施 | 使用该格式的注释语法，并说明约束。 | `references/dimensions.md` 第 16 节 |
-| 17. Shell 脚本 | 记录用途、参数与不显而易见的引号处理。 | `references/dimensions.md` 第 17 节 |
-| 18. 标记语言、CSS、模板注释 | 遵守格式，绝不随代码发布机密。 | `references/dimensions.md` 第 18 节 |
-| 19. i18n 与本地化注释 | 每个仓库只用一种声明的语言。 | `references/dimensions.md` 第 19 节 |
-| 20. 注释中的机密与隐私 | 注释是公开的；绝不存放凭据。 | `references/dimensions.md` 第 20 节 |
-| 21. 密度、行宽、标点、大小写 | 完整句子，项目行宽，无装饰。 | `references/dimensions.md` 第 21 节 |
-| 22. 过时与说谎的注释 | 错误注释是有修复期限的缺陷。 | `references/dimensions.md` 第 22 节 |
-| 23. 重构与移动注释 | 注释随代码一起移动。 | `references/dimensions.md` 第 23 节 |
-| 24. 注释审查流程 | 对照代码阅读 diff 中的每条注释。 | `references/dimensions.md` 第 24 节 |
+| 1. 文档注释与公开契约 | 记录可见契约，而不是签名。 | `references/dimensions-api.md` 第 1 节 |
+| 2. 模块、文件与取值头 | 说明单元的用途与不变量，绝不写历史。 | `references/dimensions-inline.md` 第 2 节 |
+| 3. 函数与方法 | 在边界处记录参数、返回值、错误与副作用。 | `references/dimensions-api.md` 第 3 节 |
+| 4. 类型、字段、枚举、常量 | 记录不变量与成员含义，而不是字段名。 | `references/dimensions-api.md` 第 4 节 |
+| 5. 单位、范围、可空性、所有权 | 说明类型无法承载的内容。 | `references/dimensions-api.md` 第 5 节 |
+| 6. 副作用、变更、并发 | 说明效果、隐患与必需动作。 | `references/dimensions-api.md` 第 6 节 |
+| 7. 弃用声明 | 写明替代项与移除触发条件。 | `references/dimensions-api.md` 第 7 节 |
+| 8. TODO 与计划说明 | TODO/FIXME/HACK 带负责人与移除触发条件。 | `references/dimensions-inline.md` 第 8 节 |
+| 9. 被注释掉的代码 | 删除它；历史由版本控制保留。 | `references/dimensions-inline.md` 第 9 节 |
+| 10. 变更历史与日志式注释 | 变更日志在版本控制里。 | `references/dimensions-inline.md` 第 10 节 |
+| 11. 文档注释中的代码示例 | 文档示例是可执行的文档。 | `references/dimensions-api.md` 第 11 节 |
+| 12. 生成代码与第三方引入代码的标记 | 重新生成或重新引入；绝不手工编辑。 | `references/dimensions-inline.md` 第 12 节 |
+| 13. 法律与许可证头 | 在工具要求的位置保持字节级一致。 | `references/dimensions-policy.md` 第 13 节 |
+| 14. 工具指令 | 最窄范围；每条指令都有理由；文件级抑制还要清理工单。 | `references/dimensions-policy.md` 第 14 节 |
+| 15. 测试与 fixture | 解释场景，而不是调用顺序。 | `references/dimensions-inline.md` 第 15 节 |
+| 16. 配置与基础设施 | 使用该格式的注释语法，并说明约束。 | `references/dimensions-inline.md` 第 16 节 |
+| 17. Shell 脚本 | 记录用途、参数与不显而易见的引号处理。 | `references/dimensions-inline.md` 第 17 节 |
+| 18. 标记语言、CSS、模板注释 | 遵守格式，绝不随代码发布机密。 | `references/dimensions-inline.md` 第 18 节 |
+| 19. i18n 与本地化注释 | 每个仓库只用一种声明的语言。 | `references/dimensions-inline.md` 第 19 节 |
+| 20. 注释中的机密与隐私 | 注释是公开的；绝不存放凭据。 | `references/dimensions-policy.md` 第 20 节 |
+| 21. 密度、行宽、标点、大小写 | 完整句子，项目行宽，无装饰。 | `references/dimensions-policy.md` 第 21 节 |
+| 22. 过时与说谎的注释 | 错误注释是有修复期限的缺陷。 | `references/dimensions-policy.md` 第 22 节 |
+| 23. 重构与移动注释 | 注释随代码一起移动。 | `references/dimensions-policy.md` 第 23 节 |
+| 24. 注释审查流程 | 对照代码阅读 diff 中的每条注释。 | `references/dimensions-policy.md` 第 24 节 |
 
 ## 反模式
 
@@ -229,7 +229,9 @@ issue 编号与版本让不是作者的人也能移除该标记。
 
 ## 参考资料
 
-按注释类型与隐患分类的完整规则集见 [references/dimensions.md](references/dimensions.md)，每种语言的精确
-语法、文档工具与标记约定见 [references/languages.md](references/languages.md)。制定项目的注释策略之前
-先读这两份文件；注释 linter 在 code-style-conventions 下配置。日常工作中，读适用的维度与适用的语言行。
-参考文件与本文件不一致时，语法以语言文件为准，规则以维度文件为准；报告冲突，而不是把两者混在一起。
+按注释类型与隐患分类的完整规则集见 [references/dimensions-api.md](references/dimensions-api.md)、
+[references/dimensions-inline.md](references/dimensions-inline.md) 与
+[references/dimensions-policy.md](references/dimensions-policy.md)；每种语言的精确语法、文档工具与标记
+约定见 [references/languages.md](references/languages.md)。制定项目的注释策略之前先读这些文件；注释
+linter 在 code-style-conventions 下配置。日常工作中，读适用的维度与适用的语言行。参考文件与本文件
+不一致时，语法以语言文件为准，规则以维度文件为准；报告冲突，而不是把两者混在一起。
