@@ -364,11 +364,12 @@ DSH 里「插件」是 TypeScript 模块，导出 `apply(ctx)`；可分发的安
 - DeepSeek Harness：`.dsh/skills` 是 rank 100 的 skill 扫描根；根 `AGENTS.md` 是项目指令入口；
   约束正文由 bundle 经 `ctx.systemPrompt.section()` 自动注入，`~/.dsh/AGENTS.md` 已含同内容时按
   sha256 去重跳过。
-- skills：`.qwen/skills`、`.qoder/skills`、`.dsh/skills` 各自软链到插件内十八个 skill；Qoder 与
-  Qwen Code 只扫描一层，DSH 也不递归发现嵌套 `SKILL.md`。
+- skills：`.qwen/skills`、`.qoder/skills`、`.dsh/skills` 都是普通目录，目录内每个 skill 是指向顶层
+  `skills/<name>` 的相对软链；Qoder 与 Qwen Code 只扫描一层，DSH 也不递归发现嵌套 `SKILL.md`。
 - 三包分发：Qoder 插件在 `plugins/qoder`（`command` + `args`，`${QODER_PLUGIN_ROOT}`），
   Qwen 扩展在 `plugins/qwen`（单条 `command`，`${CLAUDE_PLUGIN_ROOT}`），DSH bundle 在
-  `plugins/dsh`（`ctx.skills.registerProvider`）；三者共用 `rules/`、`skills/` 与 `shared/`。
+  `plugins/dsh`（`ctx.skills.registerProvider`）；Qoder/Qwen 共用 `rules/`、`skills/` 与 `shared/`，
+  DSH bundle 只带 `rules/` 与 `skills/`。
 - 时间：两者都没有内建时间感知，插件在 `SessionStart` 与 `UserPromptSubmit` 注入一行当前时间，
   见 `docs/time-awareness.md`。
 - 根 `AGENTS.md` 也会被 Qwen Code 当作项目级 `AGENTS.md` 读取，所以它只承载本仓库维护约定，

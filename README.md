@@ -1,8 +1,9 @@
 # AI 编码代理 system prompt
 
 本仓库维护用户全局约束、十八个通用规范 skill，以及分别面向 Qoder、Qwen Code 与
-DeepSeek Harness（DSH）的三个插件包。`rules/`、`skills/` 与 `shared/` 是唯一真源，
-三个包用相对软链引用它们，打包时物化成自包含目录。
+DeepSeek Harness（DSH）的三个插件包。`rules/`、`skills/` 与 `shared/` 是唯一真源。
+Qoder/Qwen 包在 `plugins/` 下用相对软链引用真源；DSH bundle 从仓库根 `package.json` 打包，
+构建时复制 `skills/` 与 `rules/`；三者打包时物化成自包含目录。
 
 维护者：SnowCore8，职责与决策规则见 [GOVERNANCE.md](GOVERNANCE.md)。
 项目维护约定见 [CONTRIBUTING.md](CONTRIBUTING.md)（根 `AGENTS.md` 是它的软链入口）。
@@ -49,7 +50,9 @@ DeepSeek Harness（DSH）的三个插件包。`rules/`、`skills/` 与 `shared/`
 
 - 软链只做入口，不承载内容：目标必须在仓库内、用相对路径、指向真实文件或目录，且不指向另一软链。
 - 每个入口只指向唯一真源（`rules/`、`skills/` 或 `shared/`），不复制第二份文件。
-- 三个包内部的 `skills/`、`rules/`、`commands/`、`scripts/` 都是指向顶层真源的软链；
+- Qoder 与 Qwen 包内部的共享入口（Qoder 的 `skills/`、`rules/`、`commands/`、`scripts/`；
+  Qwen 的 `skills/`、`constraints/`、`commands/`、`scripts/`）都是指向顶层真源的软链；
+  DSH 没有包内软链，构建时由 `scripts/materialize.sh` 复制 `skills/` 与 `rules/`。
   Qoder 的 `plugins validate` 会拒绝解析到包外的路径，所以安装或校验前用
   `scripts/materialize.sh` 物化，或直接用 Release 里的 zip。
 - `scripts/check.sh` 的「软链」「插件清单」段校验未入库、缺失、绝对路径、目标出仓、指向 `.git`、

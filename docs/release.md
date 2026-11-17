@@ -26,7 +26,8 @@
 6. GitHub Actions 的 `release` 工作流会重跑校验、构建 zip 与 SHA256，把 DSH bundle 发布到
    npm 公共 registry，生成 SBOM（SPDX JSON）并把三个 zip、SHA256、`THIRD-PARTY-NOTICES.md` 与
    SBOM 挂到 Release；需要仓库 secret `NPM_TOKEN`，包版本必须新。
-7. 用 `sha256sum -c global-user-constraints-<version>.sha256` 核对下载的制品。
+7. 下载三个 zip 与对应的 `.sha256` 后，用
+   `for p in qoder qwen dsh; do sha256sum -c "global-user-constraints-$p-<version>.sha256"; done` 核对。
 8. GitHub Packages 不再发布，旧包已删除；npm 是唯一发布通道。
 
 本地出包可用 `scripts/dist.sh --require-tag`，要求 HEAD 正好带有 `v<version>` tag。

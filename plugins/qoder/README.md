@@ -26,13 +26,13 @@ qoderclicn plugins install global-user-constraints-qoder-<版本>.zip --scope us
 
 ## 行为
 
-- `SessionStart`：读取 `rules/global-user-constraints.md` 注入全文（约 32 KB），注入前比对
+- `SessionStart`：读取 `rules/global-user-constraints.md` 注入全文（约 35 KB），注入前比对
   用户级 `~/.qoder-cn/rules/`（国际版 `~/.qoder/rules/`）、`AGENTS.md`、项目 `.qoder/rules/`
   与 `AGENTS.local.md`，同内容则跳过；`source` 为 `resume` 时也跳过，`startup`/`new`/`clear`/`compact`
   才注入；同一事件还会注入当前本地时间、UTC 偏移、时区与星期。
 - `UserPromptSubmit`：只注入时间，保证长会话与压缩后仍然准确。
 - 规则缺失、payload 非法、事件不在范围内时静默退出 0。
-- 解释器用 `python`（PATH 上需有 3.7+），`-X utf8` 固定 stdio 编码；`timeout` 为 10 秒。
+- 解释器用 `python`（PATH 上需有 3.9+），`-X utf8` 固定 stdio 编码；`timeout` 为 10 秒。
 
 ## 安全边界
 

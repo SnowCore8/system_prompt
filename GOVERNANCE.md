@@ -28,8 +28,9 @@
 
 ## 发布
 
-- 版本采用 SemVer，`plugins/qoder`、`plugins/qwen`、`plugins/dsh` 三份清单的 `version` 必须一致；
-  发布点是注释 tag `v<version>`，tag 与三份清单版本必须一致。
+- 版本采用 SemVer，`plugins/qoder/.qoder-plugin/plugin.json`、`plugins/qwen/qwen-extension.json`
+  与仓库根 `package.json`（DSH bundle）的 `version` 必须一致；
+  发布点是注释 tag `v<version>`，tag 与三个包的版本必须一致。
 - 发布流程见 [docs/release.md](docs/release.md)：改版本与 CHANGELOG → 校验 → 提交 → 打 tag → 推送，
   由 `release` 工作流构建 zip 与 SHA256 并挂到 Release。
 - `scripts/dist.sh` 只出包，不改写版本；构建归一 mtime、按名称排序并使用 `zip -X`，

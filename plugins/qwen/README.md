@@ -29,10 +29,10 @@ qwen extensions install global-user-constraints-qwen-<版本>.zip
 
 - `SessionStart`：读取 `constraints/global-user-constraints.md` 注入全文，并注入当前时间；去重路径包含 `~/.qwen/rules/`、`~/.qwen/AGENTS.md`、
   项目 `.qwen/rules/`、`AGENTS.md`、`QWEN.md`（从 cwd 向上查到 `.git`）。`source` 为 `resume`
-  时跳过约束，`startup`/`clear`/`compact` 才注入。
+  时跳过约束，`startup`/`new`/`clear`/`compact` 才注入。
 - `UserPromptSubmit`：当前时间；Qwen 会把这段上下文包进 `<qwen:user-prompt-submit-context>` 标签。
 - 规则缺失、payload 非法、事件不在范围内时静默退出 0。
-- 解释器用 `python`（PATH 上需有 3.7+），`-X utf8` 固定 stdio 编码；`timeout` 为 10 秒。
+- 解释器用 `python`（PATH 上需有 3.9+），`-X utf8` 固定 stdio 编码；`timeout` 为 10 秒。
 
 ## 安全边界
 

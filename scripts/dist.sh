@@ -10,8 +10,9 @@ usage() {
 `.qoder-plugin/plugin.json`、`qwen-extension.json`、`package.json` 的 version 必须一致
 （SemVer），输出 global-user-constraints-<包名>-<版本>.zip 与对应 .sha256。
 
-仓库里三个包用相对软链引用共享的 skills/、rules/ 与 shared/；打包时通过
-scripts/materialize.sh 物化成自包含目录，Qoder 的 plugins validate 也会拒绝包外路径。
+Qoder/Qwen 用相对软链引用共享的 skills/、rules/ 与 shared/；DSH 从仓库根清单构建并复制
+skills/ 与 rules/；打包时通过 scripts/materialize.sh 物化成自包含目录，Qoder 的 plugins
+validate 也会拒绝包外路径。
 
 默认要求工作区干净；--allow-dirty 放行并在文件名加 -dirty。浅克隆直接拒绝。
 --require-tag 要求 HEAD 正好带有 v<version> 注释 tag，发布流水线用它出包。

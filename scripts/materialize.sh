@@ -6,7 +6,8 @@ usage() {
   cat <<'EOF'
 用法: scripts/materialize.sh <qoder|qwen|dsh> <目标目录>
 
-仓库里的三个包都用相对软链引用共享的 skills/、rules/ 与 shared/，这样真源只有一份。
+Qoder/Qwen 用相对软链引用共享的 skills/、rules/ 与 shared/；DSH 从仓库根清单构建并复制
+skills/ 与 rules/，这样真源只有一份。
 Qoder 的 plugins validate 会拒绝解析到包外的路径，所以本地安装或校验前先物化：
 目标目录必须是新路径，脚本会解引用所有软链并把 LICENSE* 复制进去。
 EOF

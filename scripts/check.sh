@@ -256,6 +256,14 @@ if not (packages["qwen"] / str(qwen.get("hooks", ""))).is_file():
 for key in ("skills", "commands"):
     if not (packages["qwen"] / str(qwen.get(key, ""))).is_dir():
         problems.append(f"Qwen extension 的 {key} 路径不存在")
+if not (packages["qoder"] / str(qoder.get("hooks", ""))).is_file():
+    problems.append("Qoder 插件的 hooks 路径不存在")
+if not (packages["qoder"] / str(qoder.get("skills", ""))).is_dir():
+    problems.append("Qoder 插件的 skills 路径不存在")
+for command_name, command in (qoder.get("commands") or {}).items():
+    source = command.get("source") if isinstance(command, dict) else None
+    if not source or not (packages["qoder"] / str(source)).is_file():
+        problems.append(f"Qoder 命令 {command_name} 的 source 路径不存在")
 bundle = (dsh.get("dsh") or {}).get("bundle") or {}
 patch_path = bundle.get("patch")
 if not patch_path or not (root / patch_path).is_file():

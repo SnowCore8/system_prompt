@@ -55,7 +55,7 @@
 
 **变更**
 
-- 18 个 skill 的维度索引统一为「维度｜首条规则｜详情」三列，详情指向 `references/dimensions.md` 的节号；
+- 18 个 skill 中的 16 个（两个元规范 skill 除外）的维度索引统一为「维度｜首条规则｜详情」三列，详情指向 `references/dimensions.md` 的节号；
   首节统一为「适用范围与优先级」、末节统一为「参考资料」；`references/` 内部引用改用同目录相对名。
 - 13 个 skill 的 description 补写「不适用于…」，触发面同时给出适用与排除。
 - `release-operations-conventions`、`repository-governance-conventions`、`security-compliance-conventions`、
