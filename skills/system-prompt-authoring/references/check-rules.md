@@ -60,7 +60,7 @@
 | MD-BLANK-RUN | 警告 | 连续多个空行 |
 | MD-BLANK-BEFORE-BLOCK | 建议 | 顶层块前无空行 |
 | MD-BLANK-AFTER-BLOCK | 建议 | 顶层块后直接跟正文 |
-| MD-LINE-LEN | 警告 | 正文行超过 200 个字符；表格、代码、URL 与 front matter 不受限 |
+| MD-LINE-LEN | 警告 | 正文行超过 200 个字符；以 `\|` 开头的表格行、代码、含 URL 的行与 front matter 不受限 |
 | MD-TRAILING-WS | 警告 | 行尾空白 |
 | MD-TAB | 警告 | 正文中有制表符 |
 | MD-HR-STYLE | 建议 | 同一文件混用分隔线样式 |

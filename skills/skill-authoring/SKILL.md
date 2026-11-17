@@ -43,7 +43,10 @@ frontmatter 字段：
 |---|---|---|
 | `name` | 是 | 与目录名完全一致；代理按它发现与匹配 |
 | `description` | 是 | 一段话说明适用场景与触发条件，让代理判断何时加载 |
-| `argument-hint` | 否 | 调用时可补充的上下文，如 `[路径或名称]` |
+| `argument-hint` | 是 | 调用时可补充的上下文；单引号包裹方括号，如 `'[路径或名称]'` |
+
+正文链接了 `references/dimensions*.md` 时，必须有「维度索引」一节；说明句、表头与行格式见
+`references/templates.md`；不含维度文件的 skill 删掉该节。
 
 ## 流程
 
@@ -60,7 +63,10 @@ frontmatter 字段：
 - **目录名即名字。** `name` 必须等于目录名；改名要同时改目录、软链与所有引用。
 - **description 写触发条件与排除项，不写功能清单。** 让代理一眼判断“这次任务该不该加载”，而不是复述目录名。
 - **入口要短。** SKILL.md 是路由与默认值，不是全文；正文不超过 250 行（不含 frontmatter），超出的细节移入 references。
-- **references 单文件按主题管理。** 单个文件超过 300 行或 20 节时，按主题拆成 `dimensions-<主题>.md`（模板为 `templates-<主题>.md`）；索引详情列写文件名与节号，节号沿用原编号。
+- **references 单文件按主题管理。** 文件名按内容命名，下列是示例而非闭集：`dimensions.md`、`templates.md`、
+  `languages.md`、`playbooks.md`、`gates.md`、`evaluation.md`、`checklist.md`、`checklists.md`。单个维度文件
+  超过 300 行或 20 节时按主题拆成 `dimensions-<主题>.md`，拆分规则只针对维度文件；清单只有一份时用
+  `checklist.md`，多份时用 `checklists.md`；索引详情列写文件名与节号，节号沿用原编号。
 - **一项事实一个权威来源。** 共享事实只在一处维护，其他 skill 链接过去并注明“由 X 裁定”，不复制。
 - **规则可判定。** 少用“合理”“合适”，多给可观察条件、阈值与正反例；改写示例见 `references/templates.md`。
 - **适用与不适用都写清。** description 与正文边界一致；边界含糊会让代理在不该加载时加载，或在重叠时选错。
@@ -101,16 +107,20 @@ description 是代理决定是否加载的触发词，两个失败方向都要�
 
 ## references 组织
 
-- 一个文件一类内容：按维度（`dimensions.md` 或按主题拆成的 `dimensions-<主题>.md`）、按模板（`templates.md` 或 `templates-<主题>.md`）、按检查清单（`checklist.md`）分别拆，不堆在一个文件里。
+- 一个文件一类内容：按维度（`dimensions.md` 或拆成的 `dimensions-<主题>.md`）、按模板（`templates.md`）、
+  按技术栈（`languages.md`）、按操作手册（`playbooks.md`）、按门禁（`gates.md`）、按评测（`evaluation.md`）、
+  按检查清单（`checklist.md` 或 `checklists.md`）分别拆，不堆在一个文件里；这些文件名是示例，不构成闭集。
 - 文件命名用 kebab-case，名字描述内容，并与正文链接里的文件名完全一致。
 - 一条事实只在一处：正文与各 references 之间、references 之间都不互相复制，其余用链接引用。
 
 ## 打包与分发
 
-本仓库的三个包各自引用同一套真源：
+本仓库的三个包各自引用同一套真源，分两层：
 
-- 软链：`.dsh/skills/`、`.qoder/skills/`、`.qwen/skills/` 各自指向顶层 `skills/<name>`；
-- Qoder/Qwen 的 zip 与 DSH 的 npm 包在打包时解引用为真实目录；
+- 项目级入口：`.dsh/skills/`、`.qoder/skills/`、`.qwen/skills/` 是普通目录，内含每个 skill 指向顶层
+  `skills/<name>` 的相对软链。
+- 包内布局：`plugins/qoder/skills` 与 `plugins/qwen/skills` 是指向顶层 `skills/` 的包级软链，打包时解引用；
+  DSH 由 `scripts/materialize.sh` 把 `skills/` 与 `rules/` 复制成真实目录，清单在仓库根 `package.json`。
 - 每个包都必须包含全部 skill，计数一致；`dist.sh` 的 allowlist 拒绝测试与跨包文件。
 
 ## 反模式

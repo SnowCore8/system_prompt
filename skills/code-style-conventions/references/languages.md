@@ -129,7 +129,7 @@
 - 没有默认的 require 顺序 cop；把 require 按标准库、gem、项目文件排序作为团队规则，并在顺序反复被破坏时启用
   检查。
 - 在配置中设置 `TargetRubyVersion`；缺少它时，针对较新语法的 cop 会静默禁用，lint 结果取决于安装的 Ruby。
-- 把生成代码、第三方引入包 与 schema 转储排除在运行之外，并把排除列表保留在 `.rubocop.yml` 中。
+- 把生成代码、第三方引入包与 schema 转储排除在运行之外，并把排除列表保留在 `.rubocop.yml` 中。
 
 ## PHP
 
@@ -198,7 +198,8 @@
 ## YAML、JSON 与 TOML
 
 - 用 Prettier（`printWidth: 80`、`tabWidth: 2`）格式化 YAML 与 JSON，用 tombi 格式化 TOML；把 80 作为通用
-  行宽，并在工具文档中确认其当前默认值，而不是假定。JSON 没有注释，所以带注释的配置文件是 YAML 或 TOML。
+  行宽，并在工具文档中确认其当前默认值，而不是假定。严格 JSON 无注释；JSONC 与 JSON5 只用于工具明确支持时，
+  其余带注释的配置用 YAML 或 TOML。
 - 用 yamllint 对 YAML 做 lint（行长 80、2 空格缩进、真值检查），用 tombi 对 TOML 做 lint；每个工具在仓库根
   保留一个配置文件。
 - 没有导入顺序；YAML 锚点先定义后使用，JSON 键遵循 schema 顺序，TOML 键保持分组在其表下。

@@ -84,7 +84,7 @@ argument-hint: '[路径或符号]'
 | 常量 | UPPER_SNAKE_CASE | `MAX_RETRY_COUNT` |
 | 布尔值 | `is`/`has`/`can`/`should`/`needs` + 形容词 | `isEnabled`, `hasChildren`, `canRetry` |
 | 测试函数 | 行为加条件 | `test_list_orders_returns_empty_for_new_user` |
-| 测试文件 | `<unit>_test` 或 `<unit>.test` | `user_service_test.py`, `UserServiceTest.java` |
+| 测试文件 | 被测单元名 + 语言测试标记 | `<unit>_test.py`, `<Unit>Test.java`, `<unit>.test.ts` |
 | 数据库表 | 复数 snake_case | `order_items` |
 | 数据库列 | 单数 snake_case | `created_at`, `customer_id` |
 | 索引、约束 | 带前缀的 snake_case | `idx_orders_customer_id`, `uq_users_email` |

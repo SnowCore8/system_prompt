@@ -35,10 +35,11 @@ argument-hint: '[路径或范围]'
   那个 skill 决定。
 - CI/CD 流水线、发布、可观测性字段 schema、事故响应与备份属于 `release-operations-conventions`。日志级别与日志内容策略留
   在本 skill；日志存储在哪里、如何索引与告警则由那个 skill 负责。
-- 指令文件与提示文件属于 `system-prompt-authoring`；它们不是应用代码，不遵循本 skill 的 formatter 或 lint 规则。按
-  风格审查提示文件时，要依据它所属 skill 的规则。
+- 常驻指令文件（`AGENTS.md`、`CLAUDE.md`、`QWEN.md`）属于 `system-prompt-authoring`；运行时与产品提示词属于
+  `prompt-authoring`。它们不是应用代码，不遵循本 skill 的 formatter 或 lint 规则；按风格审查它们时，依据所属
+  skill 的规则。
 - 生成代码与第三方引入代码不受编辑要求约束，但仍受下列规则约束：保留生成标记，保持第三方引入文件不被改动，将两者
-  排除在 formatter 与 linter 之外，并用重新生成或重新引入 代替编辑。
+  排除在 formatter 与 linter 之外，并用重新生成或重新引入代替编辑。
 - 强制手段留在仓库内。没有 formatter、linter、测试或审查检查点的规则会在一个季度内失效；把校验放在变更发生
   处，让它在 CI 中可见，并在指南中写明命令。
 - 风格变更就是代码变更。用一次范围明确的变更实施它，不要把它混进行为变更的 diff，更新强制该风格的 formatter
@@ -67,8 +68,8 @@ argument-hint: '[路径或范围]'
 
 - **空白由 formatter 负责。** 运行已配置的 formatter，而不是手工折行、对齐或重新缩进；手工编辑会被下一次运行
   撤销，其间只是审查噪声。
-- **行宽只有一个，且在配置中设定。** 从 formatter 配置中读取行宽，并按它折行；字符串字面量、URL、哈希与
-  数据表保持不拆断，因为拆分它们会改变含义。
+- **行宽只有一个，且在配置或审查规则中设定。** 从 formatter 配置或项目审查规则中读取行宽，并按它折行；
+  字符串字面量、URL、哈希与数据表保持不拆断，因为拆分它们会改变含义。
 - **机械变更靠工具输出审查，而不是靠肉眼。** 纯格式化变更在其描述中只带 formatter 命令，不带其他内容；行为变
   更绝不夹带重排。
 - **导入顺序表达依赖结构。** 按标准库、第三方、项目分组排列 import，组内排序，并禁止通配符导入；这种顺序让边
@@ -100,7 +101,7 @@ argument-hint: '[路径或范围]'
 | 关注点 | 默认规则 | 规则所在位置 | 示例 |
 |---|---|---|---|
 | 格式化 | 已配置的 formatter 重写文件；审查者从不争论空白 | formatter 配置与 pre-commit hook | `ruff format`, `prettier --write`, `gofmt -w` |
-| 行宽 | 每种语言从配置读取一个值；按它折行 | formatter 配置 | `line-length = 100`, `"printWidth": 100` |
+| 行宽 | 按 formatter 配置或审查规则确定一个值；无行宽规则的语言按审查规则 | formatter 配置或审查规则 | `line-length = 100`, `"printWidth": 100` |
 | 导入顺序 | 标准库、第三方、项目；组内排序 | linter 规则或 formatter | Ruff `I001`, `import/order`, goimports |
 | 块结构 | 可选花括号处都写花括号；超过三层嵌套就提取 | linter 规则与审查 | `curly`, `max-depth`, 提前返回 |
 | 模块接口面 | 命名公开导出；跨边界时内部内容不可导入 | 包配置与 lint 规则 | `__all__`, `internal/`, `pub(crate)` |
@@ -120,7 +121,7 @@ argument-hint: '[路径或范围]'
 
 | 维度 | 首条规则 | 详情 |
 |---|---|---|
-| 1. 代码风格与格式化 | 一个已配置的 formatter 负责空白；行宽、引号与导入顺序都是配置值。 | `references/dimensions.md` 第 1 节 |
+| 1. 代码风格与格式化 | 一个已配置的 formatter 负责空白；行宽、引号与导入顺序是配置值或审查规则。 | `references/dimensions.md` 第 1 节 |
 | 2. 布局、模块与边界 | 只选一个组织轴；模块接口面与依赖方向的判据由 `architecture-and-design-conventions` 裁定，本 skill 只用 lint 与 CI 强制。 | `references/dimensions.md` 第 2 节 |
 | 3. 依赖管理 | 只声明直接依赖，提交一个锁文件，并依据书面标准准入依赖。 | `references/dimensions.md` 第 3 节 |
 | 4. 配置管理 | 固定优先级顺序，启动时校验合并后的结果，并让机密远离一切来源。 | `references/dimensions.md` 第 4 节 |
@@ -152,7 +153,7 @@ argument-hint: '[路径或范围]'
 
 - [ ] formatter 校验通过，且没有重写任何文件。
 - [ ] 已配置的 linter 按项目规则集通过。
-- [ ] 没有代码行超过配置宽度，也没有手工折行的行会被重新合并。
+- [ ] 没有代码行超过配置宽度，也没有手工折行的行会被重新合并；规则允许的长字面量、URL、哈希、数据表，以及无行宽规则的语言是例外。
 - [ ] import 已分组并排序；没有通配符导入，也没有未使用的 import。
 - [ ] 模块接口面与依赖方向符合 `architecture-and-design-conventions` 的判据，并已由 lint/CI 强制。
 - [ ] 不存在导入循环；依赖从基础设施指向领域。

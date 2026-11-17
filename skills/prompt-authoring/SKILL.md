@@ -1,6 +1,6 @@
 ---
 name: prompt-authoring
-description: 定义、审查并重构面向语言模型的提示词，覆盖系统提示、任务指令、角色与人格、few-shot 示例、输出契约、工具与检索指令、分类/评审提示，以及评测集与回归。适用于编写或修改提示词、排查提示词退化、加固不可信输入、设计评测或把提示词版本化。不适用于常驻指令文件（见 system-prompt-authoring）、skill 包结构（见 skill-authoring）与代码注释（见 comment-conventions）。
+description: 定义、审查并重构面向语言模型的提示词，覆盖系统提示、任务指令、角色与人格、few-shot 示例、输出契约、工具与检索指令、分类/评审提示，以及评测集与回归。适用于编写或修改提示词、排查提示词退化、加固不可信输入、设计评测或把提示词版本化。不适用于常驻指令文件（见 system-prompt-authoring）、skill 包结构与分发（见 skill-authoring）与代码注释（见 comment-conventions）。
 argument-hint: '[提示词文件或场景]'
 ---
 
@@ -22,6 +22,7 @@ argument-hint: '[提示词文件或场景]'
 分工边界：
 
 - 写进仓库、每个会话常驻的指令文件（AGENTS.md、CLAUDE.md、QWEN.md）归 `system-prompt-authoring`；
+- skill 包的结构、frontmatter、渐进披露与分发归 `skill-authoring`；本 skill 只负责提示词正文的写法；
 - 本 skill 管运行时的一次性提示词、产品里的系统提示、few-shot、输出契约、工具与检索指令、评测；
 - 代码注释与文档注释归 `comment-conventions`；API 契约字段归 `api-and-data-conventions`；
 - 用户可见文档的写法归 `documentation-conventions`；评测作为发布门禁的阈值归
@@ -72,8 +73,9 @@ argument-hint: '[提示词文件或场景]'
 - **推理模型**（o 系列、Gemini thinking、Claude extended thinking 等）：给目标、约束与判定标准，
   少给分步；不要写 “think step by step” 这类逐步思考指令，它自己会展开推理，逐步指令反而干扰。
 - **指令遵循模型**：给明确步骤与顺序；步骤必须可观察，不能只说“合理处理”。
-- **温度**：解析、抽取、分类等确定性任务调低或 0，创意生成调高；推理模型常推荐低温度，因为采样
-  随机性会污染它的推理链。
+- **温度按平台设置，不要一概调低**：推理模型（o 系列、Claude extended thinking、Gemini thinking）通常
+  省略温度或固定为 1.0，推理深度用 `reasoning_effort` 或 thinking budget 控制；DeepSeek、Qwen 按厂商
+  建议设置；解析、抽取、分类等确定性任务可调低或 0，创意生成调高，并记录选择依据。
 - 模板标注适用模型；换模型类型与换模型一样视为行为变更，重跑评测。
 
 ## 提示词类型矩阵
@@ -113,11 +115,6 @@ argument-hint: '[提示词文件或场景]'
 # 示例
 正例、边界例、反例，各配预期输出。
 ```
-
-## 维度索引
-
-- 提示词类型与可复制骨架：见 [references/templates.md](references/templates.md)。
-- 评测集、断言、回归、成本与对抗输入：见 [references/evaluation.md](references/evaluation.md)。
 
 ## 反模式
 

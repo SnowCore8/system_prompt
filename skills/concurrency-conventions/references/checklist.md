@@ -31,8 +31,8 @@
 | Go | `go test -race` | 数据竞争 |
 | C/C++ | ThreadSanitizer（`-fsanitize=thread`） | 数据竞争 |
 | Rust | `loom` 或 `cargo miri test` | 数据竞争与交错枚举 |
-| Java | 无内置检测器；用并发压力测试与静态工具 | 人工与压力 |
-| Python | 无内置检测器；用 `threading` 压力测试与代码审查 | 人工与压力 |
+| Java | 无运行期检测器；用并发压力测试、静态工具与审查 | 人工与压力；记录覆盖缺口 |
+| Python | 无运行期检测器；用 `threading` 压力测试、静态工具与审查 | 人工与压力；记录覆盖缺口 |
 
 ## 各语言原语对照
 

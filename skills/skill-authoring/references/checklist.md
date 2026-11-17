@@ -9,7 +9,7 @@
 - [ ] 入口文件是 `SKILL.md`，位于 `<skill-name>/` 下。
 - [ ] frontmatter `name` 与目录名完全一致。
 - [ ] `description` 写明适用与不适用场景。
-- [ ] `argument-hint` 只在需要补充上下文时出现。
+- [ ] `argument-hint` 存在，且为单引号包裹的方括号格式，如 `'[路径或范围]'`。
 - [ ] references/scripts 只在需要时存在，目录内无空占位文件。
 - [ ] references 之间无互相重复的事实。
 

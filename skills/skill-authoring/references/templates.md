@@ -27,10 +27,20 @@ argument-hint: '[可选上下文]'
 
 <可判定的默认规则>
 
+## 维度索引
+
+每个维度的详细规则、示例与边界情况见 `references/dimensions.md`；维度列中的编号就是该文件中的节号。
+
+| 维度 | 首条规则 | 详情 |
+|---|---|---|
+| 1. 维度 | 规则。 | `references/dimensions.md` 第 1 节 |
+
 ## 参考资料
 
 - <模板或维度>：`references/<文件>.md`
 ```
+
+含 `references/dimensions*.md` 的 skill 必须保留「维度索引」一节；不含维度文件的 skill 删掉该节。
 
 ## description 写法
 
@@ -57,8 +67,10 @@ argument-hint: '[可选上下文]'
 
 ## 拆分判断
 
-- 正文超过 250 行，把逐条展开移到 `references/` 下的维度文件。
-- references 单文件超过 300 行或 20 节，按主题拆成 `dimensions-<主题>.md`（模板为 `templates-<主题>.md`）；正文索引说明句指向 `references/` 中对应文件，详情列写 `references/<文件>.md` 第 N 节，节号沿用原编号。
+- 正文超过 250 行（不含 frontmatter），把逐条展开移到 `references/` 下的维度文件。
+- 单个维度文件超过 300 行或 20 节时按主题拆成 `dimensions-<主题>.md`；其余 references 文件按内容命名，不受此
+  拆分规则约束。正文索引说明句指向 `references/` 中对应文件，详情列写 `references/<文件>.md` 第 N 节，节号沿用
+  原编号。
 - 需要给读者复制粘贴的骨架，放 `references/` 下的模板文件。
 - 需要机器执行的校验或生成，放 `scripts/`，正文说明调用方式。
 
@@ -77,6 +89,8 @@ argument-hint: '[可选上下文]'
 
 ## references 命名与去重
 
-- 文件按内容维度命名，kebab-case：`dimensions.md`、`dimensions-<主题>.md`、`templates.md`、`templates-<主题>.md`、`checklist.md`。
+- 文件按内容维度命名，kebab-case。下列是示例而非闭集：`dimensions.md`、`dimensions-<主题>.md`、`templates.md`、
+  `languages.md`、`playbooks.md`、`gates.md`、`evaluation.md`、`checklist.md`、`checklists.md`；清单只有一份时用
+  `checklist.md`，多份时用 `checklists.md`。
 - 文件名与正文链接一致，改文件名时同步改链接；不用无意义名（`ref1.md`、`extra.md`）。
 - 一条事实只在一处：正文、各 references 之间不互相复制，其余用链接引用。

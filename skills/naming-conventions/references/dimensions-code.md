@@ -170,7 +170,7 @@
 
 - 测试名称说明行为与条件：`test_list_orders_returns_empty_for_new_user`、
   `should_reject_expired_card`；使用项目的测试运行器约定。
-- 测试文件与被测单元同名：`user_service_test.py`、`UserServiceTest.java`、`user-service.test.ts`。
+- 测试文件按被测单元名加语言测试标记命名：`user_service_test.py`、`UserServiceTest.java`、`user-service.test.ts`。
 - fixture 与工厂要显式：`user_fixture`、`make_user`、`UserFactory`；避免 `data1`、`sample2`。
 - 测试替身有精确含义：`Fake` 是可用的轻量实现，`Stub` 返回预设值，`Mock` 记录或验证交互，
   `Spy` 包装真实对象。不要把 stub 叫作 `Mock`。

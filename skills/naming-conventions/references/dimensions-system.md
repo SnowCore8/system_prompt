@@ -17,7 +17,9 @@
 
 - 异常类要具体，并按语言以 `Error` 或 `Exception` 结尾：`InvoiceNotFoundError`、
   `PaymentDeclinedError`；避免用兜底的 `AppError` 表示所有失败。
-- 错误码稳定且有结构：`ERR_BILLING_INVOICE_NOT_FOUND`；不要用一个错误码表示两种原因。
+- 内部错误码稳定且有结构：`ERR_BILLING_INVOICE_NOT_FOUND`，由本 skill 规定前缀与结构；公开 API 的错误码按
+  `api-and-data-conventions` 的 dot 格式（`resource.not_found`）。不要用一个错误码表示两种原因，也不要把
+  内部错误码直接暴露为公开 API 错误码。
 - 结果类型说明成功与失败：`Result<T, E>`、`Outcome<T>`、`PaymentResult`；字段为 `ok`、`value`、
   `error`。
 - 局部错误变量为 `err` 或 `error`；短 catch 块里 `e` 可以接受；绝不用模块级的 `e`。
@@ -116,7 +118,8 @@
 
 ## 34. 文档、图表与决策
 
-- 文档文件用 kebab-case；ADR 编号且稳定（`0001-use-postgres.md` 或
+- 文档文件用 kebab-case，固定文件名例外：`README.md`、`CONTRIBUTING.md`、`CHANGELOG.md`、
+  `SECURITY.md`、`SUPPORT.md`、`LICENSE`；ADR 编号且稳定（`0001-use-postgres.md` 或
   `ADR-0001-use-postgres.md`）；绝不为已接受的 ADR 重新编号。
 - 标题是稳定的锚点；不要重命名被链接的标题，除非同时提供重定向或更新链接。遵循项目的标题大小写
   （句首大写或词首大写），不要两者混用。

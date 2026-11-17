@@ -93,8 +93,8 @@ the [migration guide](docs/migrations/orders-v2.md) maps every `v1` field.
 ## 安全、法律与支持
 
 用途：说明支持什么、如何报告问题，以及谁负责该页面。
-必需章节：策略章节及各自链接的负责人；披露内容与响应承诺由
-`security-compliance-conventions` 规定。
+必需章节：策略章节及各自链接的负责人；披露与响应承诺的细节按
+`security-compliance-conventions` 执行。
 
 ```markdown
 # Security and Support Policy

@@ -104,7 +104,8 @@ class StructureTest(unittest.TestCase):
     def test_body_length(self) -> None:
         for path in skill_files():
             with self.subTest(skill=path.parent.name):
-                self.assertLessEqual(len(path.read_text(encoding="utf-8").splitlines()), MAX_LINES)
+                _, body = parse(path)
+                self.assertLessEqual(len(body.splitlines()), MAX_LINES)
 
     def test_dimension_index(self) -> None:
         for path in skill_files():
@@ -153,8 +154,9 @@ class ReferenceTest(unittest.TestCase):
         for path in skill_files():
             for reference in sorted((path.parent / "references").glob("*.md")):
                 text = reference.read_text(encoding="utf-8")
+                without_fences = re.sub(r"```.*?```|~~~.*?~~~", "", text, flags=re.S)
                 with self.subTest(file=reference.relative_to(SKILLS)):
-                    self.assertIsNone(SELF_REFERENCE.search(text), "references 内应使用同目录相对名")
+                    self.assertIsNone(SELF_REFERENCE.search(without_fences), "references 内应使用同目录相对名")
 
     def test_no_verbatim_duplication(self) -> None:
         for path in skill_files():
@@ -164,6 +166,19 @@ class ReferenceTest(unittest.TestCase):
                 shared = own & set(paragraphs(reference.read_text(encoding="utf-8")))
                 with self.subTest(file=reference.relative_to(SKILLS)):
                     self.assertEqual(sorted(shared), [], "正文与 references 存在逐字重复段落")
+
+    def test_no_cross_reference_duplication(self) -> None:
+        for path in skill_files():
+            seen: dict[str, Path] = {}
+            for reference in sorted((path.parent / "references").glob("*.md")):
+                for paragraph in paragraphs(reference.read_text(encoding="utf-8")):
+                    previous = seen.get(paragraph)
+                    if previous is not None and previous != reference:
+                        self.fail(
+                            f"{reference.relative_to(SKILLS)} 与 {previous.relative_to(SKILLS)} "
+                            "存在逐字重复段落"
+                        )
+                    seen[paragraph] = reference
 
 
 if __name__ == "__main__":

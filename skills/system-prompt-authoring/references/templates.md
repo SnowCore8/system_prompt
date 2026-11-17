@@ -116,6 +116,6 @@ Compress the input text into a summary of at most three sentences. The completio
 - If the input is empty or not text, output "cannot summarize."
 ```
 
-格式校验期望 0 错误、0 警告、0 建议。省略「指令」节属于内容取舍，脚本不会报告。
+格式校验期望 0 错误、0 警告；建议逐条按 S9 判断。省略「指令」节属于内容取舍，脚本不会报告。
 
 一句话也可以（ANT-PBP："Even a single sentence makes a difference"），但完成定义不能省。
