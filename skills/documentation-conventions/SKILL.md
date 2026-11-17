@@ -51,7 +51,7 @@ argument-hint: '[路径或文档类型]'
 2. 用文档类型矩阵对文档分类。教程、操作指南、参考与解释回答不同的问题；不要把两种类型合并成一个页面。
 3. 定位权威归属。在仓库与文档站中搜索这项事实；如果已存在，更新该页面并链接过去，而不是再写一份副本。
 4. 阅读项目既有结构与模板。起草前，先匹配相邻页面的目录、文件名、标题风格、语气与 front matter 约定。
-5. 从 `references/templates.md` 取该类型的必需章节。把范围、前提与结果放在首屏，删掉不为指定读者服务的
+5. 按文档类型选择 `references/` 中对应的主题模板文件，取该类型的必需章节。把范围、前提与结果放在首屏，删掉不为指定读者服务的
    段落。
 6. 把页面接入导航与归属，删除或重定向它替代的内容，并更新文档索引。
 7. 校验链接、示例与文档构建。运行每条命令，执行每个代码示例，打开每个链接与锚点，核对版本与路径，
@@ -131,36 +131,36 @@ argument-hint: '[路径或文档类型]'
 
 ## 维度索引
 
-每个维度的详细规则、示例与边界情况见 `references/dimensions.md`；维度列中的编号就是该文件中的节号。
+每个维度的详细规则、示例与边界情况见 `references/` 中对应的维度文件；维度列中的编号就是该文件中的节号。
 
 | 维度 | 首条规则 | 详情 |
 |---|---|---|
-| 1. README | 说明项目是什么，并给出第一条可工作的命令。 | `references/dimensions.md` 第 1 节 |
-| 2. 上手与 CONTRIBUTING | 从全新克隆到测试通过，只有一条环境搭建路径。 | `references/dimensions.md` 第 2 节 |
-| 3. 架构与设计文档 | 组件、边界、数据流，以及决策的链接。 | `references/dimensions.md` 第 3 节 |
-| 4. ADR 与决策记录 | 一条不可变的决策，带状态与后果。 | `references/dimensions.md` 第 4 节 |
-| 5. 教程与操作指南 | 通往一个结果的已测试路径，而不是功能巡览。 | `references/dimensions.md` 第 5 节 |
-| 6. 参考与 API 参考页 | 穷尽、精确、带版本，尽可能生成。 | `references/dimensions.md` 第 6 节 |
-| 7. 解释与概念文档 | 行为背后的模型与词汇。 | `references/dimensions.md` 第 7 节 |
-| 8. 变更日志与发布说明 | 按版本与影响列出的用户可见变更。 | `references/dimensions.md` 第 8 节 |
-| 9. 运行手册、运维与事故复盘 | 触发条件、命令、验证、回滚与事故教训。 | `references/dimensions.md` 第 9 节 |
-| 10. 安全、法律与支持文档 | 当前策略、报告渠道、支持范围。 | `references/dimensions.md` 第 10 节 |
-| 11. 故障排查与常见问题 | 按读者能搜索到的症状组织。 | `references/dimensions.md` 第 11 节 |
-| 12. 迁移与弃用指南 | 替代方案、时间线、映射与回滚。 | `references/dimensions.md` 第 12 节 |
-| 13. 图表与截图 | 可 diff 的源文件、标注范围、随 UI 重新生成。 | `references/dimensions.md` 第 13 节 |
-| 14. 链接与交叉引用 | 每个链接只指向一个权威页面，并在构建中校验。 | `references/dimensions.md` 第 14 节 |
-| 15. 导航与文档索引 | 按读者任务，三次点击内到达每个核心页面。 | `references/dimensions.md` 第 15 节 |
-| 16. 术语与术语表 | 一个概念一个术语，定义一次并复用。 | `references/dimensions.md` 第 16 节 |
-| 17. 本地化与翻译 | 源文档句子要短，译文带版本。 | `references/dimensions.md` 第 17 节 |
-| 18. 版本管理与适用性 | 说明版本，并让旧文档仍可访问。 | `references/dimensions.md` 第 18 节 |
-| 19. 归属、维护与新鲜度 | 每个页面都有负责人与审查触发条件。 | `references/dimensions.md` 第 19 节 |
-| 20. 模板与脚手架 | 从文档类型模板开始，再做删减。 | `references/dimensions.md` 第 20 节 |
-| 21. 文档测试与示例校验 | 在 CI 中运行示例、链接与构建。 | `references/dimensions.md` 第 21 节 |
-| 22. 文档站与工具 | 一个锁定版本的生成器，内容为可移植的 Markdown。 | `references/dimensions.md` 第 22 节 |
-| 23. 公开与内部边界 | 分开受众，绝不发布内部笔记。 | `references/dimensions.md` 第 23 节 |
-| 24. 生成文档 | 编辑源文件、重新生成，绝不手工编辑产物。 | `references/dimensions.md` 第 24 节 |
-| 25. 文档审查 | 审查读者的任务、事实与构建，然后才是文笔。 | `references/dimensions.md` 第 25 节 |
-| 26. 归档与删除 | 重定向或留墓碑页，再移除过时副本。 | `references/dimensions.md` 第 26 节 |
+| 1. README | 说明项目是什么，并给出第一条可工作的命令。 | `references/dimensions-project.md` 第 1 节 |
+| 2. 上手与 CONTRIBUTING | 从全新克隆到测试通过，只有一条环境搭建路径。 | `references/dimensions-project.md` 第 2 节 |
+| 3. 架构与设计文档 | 组件、边界、数据流，以及决策的链接。 | `references/dimensions-project.md` 第 3 节 |
+| 4. ADR 与决策记录 | 一条不可变的决策，带状态与后果。 | `references/dimensions-project.md` 第 4 节 |
+| 5. 教程与操作指南 | 通往一个结果的已测试路径，而不是功能巡览。 | `references/dimensions-usage.md` 第 5 节 |
+| 6. 参考与 API 参考页 | 穷尽、精确、带版本，尽可能生成。 | `references/dimensions-usage.md` 第 6 节 |
+| 7. 解释与概念文档 | 行为背后的模型与词汇。 | `references/dimensions-project.md` 第 7 节 |
+| 8. 变更日志与发布说明 | 按版本与影响列出的用户可见变更。 | `references/dimensions-delivery.md` 第 8 节 |
+| 9. 运行手册、运维与事故复盘 | 触发条件、命令、验证、回滚与事故教训。 | `references/dimensions-delivery.md` 第 9 节 |
+| 10. 安全、法律与支持文档 | 当前策略、报告渠道、支持范围。 | `references/dimensions-delivery.md` 第 10 节 |
+| 11. 故障排查与常见问题 | 按读者能搜索到的症状组织。 | `references/dimensions-usage.md` 第 11 节 |
+| 12. 迁移与弃用指南 | 替代方案、时间线、映射与回滚。 | `references/dimensions-delivery.md` 第 12 节 |
+| 13. 图表与截图 | 可 diff 的源文件、标注范围、随 UI 重新生成。 | `references/dimensions-usage.md` 第 13 节 |
+| 14. 链接与交叉引用 | 每个链接只指向一个权威页面，并在构建中校验。 | `references/dimensions-usage.md` 第 14 节 |
+| 15. 导航与文档索引 | 按读者任务，三次点击内到达每个核心页面。 | `references/dimensions-usage.md` 第 15 节 |
+| 16. 术语与术语表 | 一个概念一个术语，定义一次并复用。 | `references/dimensions-project.md` 第 16 节 |
+| 17. 本地化与翻译 | 源文档句子要短，译文带版本。 | `references/dimensions-usage.md` 第 17 节 |
+| 18. 版本管理与适用性 | 说明版本，并让旧文档仍可访问。 | `references/dimensions-delivery.md` 第 18 节 |
+| 19. 归属、维护与新鲜度 | 每个页面都有负责人与审查触发条件。 | `references/dimensions-project.md` 第 19 节 |
+| 20. 模板与脚手架 | 从文档类型模板开始，再做删减。 | `references/dimensions-project.md` 第 20 节 |
+| 21. 文档测试与示例校验 | 在 CI 中运行示例、链接与构建。 | `references/dimensions-usage.md` 第 21 节 |
+| 22. 文档站与工具 | 一个锁定版本的生成器，内容为可移植的 Markdown。 | `references/dimensions-delivery.md` 第 22 节 |
+| 23. 公开与内部边界 | 分开受众，绝不发布内部笔记。 | `references/dimensions-project.md` 第 23 节 |
+| 24. 生成文档 | 编辑源文件、重新生成，绝不手工编辑产物。 | `references/dimensions-delivery.md` 第 24 节 |
+| 25. 文档审查 | 审查读者的任务、事实与构建，然后才是文笔。 | `references/dimensions-delivery.md` 第 25 节 |
+| 26. 归档与删除 | 重定向或留墓碑页，再移除过时副本。 | `references/dimensions-delivery.md` 第 26 节 |
 
 ## 反模式
 
@@ -232,6 +232,11 @@ ADR-0007：记录状态 `Accepted`、背景（超时后的重试会重复扣款�
 
 ## 参考资料
 
-阅读 [references/dimensions.md](references/dimensions.md) 获取按文档维度划分的完整规则集，阅读
-[references/templates.md](references/templates.md) 获取文档类型矩阵中每种文档类型的可复制骨架。编写或
-审查页面之前，先阅读匹配的维度；创建该类型的新页面之前，先阅读模板。从零建立项目文档标准时，两者都要读。
+完整规则集按主题分为三个维度文件：
+[references/dimensions-project.md](references/dimensions-project.md)、
+[references/dimensions-usage.md](references/dimensions-usage.md) 与
+[references/dimensions-delivery.md](references/dimensions-delivery.md)。可复制骨架按主题分为三个模板文件：
+[references/templates-project.md](references/templates-project.md)、
+[references/templates-usage.md](references/templates-usage.md) 与
+[references/templates-delivery.md](references/templates-delivery.md)。编写或审查页面之前，先阅读匹配的维度；
+创建该类型的新页面之前，先阅读对应的模板。从零建立项目文档标准时，六个文件都要读。
