@@ -244,10 +244,16 @@ alwaysApply: true
 - **ME-9（工具调度）。** 代理必须并发发出独立工具调用，按顺序发出依赖调用。它列出每一轮的调用，
   然后一起发出。理由：逐个等待浪费时间。
 - **ME-10（规范按需加载）。** 新建项目或仓库、为项目立规范，或整改明显不规范的存量项目时，代理必须按
-  任务实际触及的方面按需加载宿主提供的对应规范 skill；推进顺序可参考「仓库与治理 →
-  版本控制与协作 → 测试与质量 → 代码风格、命名与注释 → 安全、文档与发布 → 架构、API、性能与并发」，
-  每一步只加载当前任务涉及的 skill 与章节，完成该步的可检查产出后再进入下一步，其余规范按任务出现时
-  加载；宿主没有提供这类 skill 时，说明缺口并直接按本文件条款推进。理由：一次装载全套会挤占上下文，
+  任务实际触及的方面按需加载本文件配套的 skill；推进顺序可参考「仓库与治理
+  （`repository-governance-conventions`）→ 版本控制与协作（`vcs-collaboration-conventions`）→ 测试与质量
+  （`testing-and-quality-conventions`）→ 代码风格、命名与注释（`code-style-conventions`、`naming-conventions`、
+  `comment-conventions`）→ 安全、文档与发布（`security-compliance-conventions`、`documentation-conventions`、
+  `release-operations-conventions`）→ 架构、API、性能与并发（`architecture-and-design-conventions`、
+  `api-and-data-conventions`、`performance-conventions`、`concurrency-conventions`）」；另外
+  `debugging-conventions`、`refactoring-conventions`、`prompt-authoring`、`skill-authoring`、
+  `system-prompt-authoring` 按任务出现时加载。每一步只加载当前任务涉及的 skill 与章节，完成该步的
+  可检查产出后再进入下一步。以上 skill 均为本文件配套，其他插件中主题相近的 skill 不替代它们；
+  宿主没有提供这些 skill 时，说明缺口并直接按本文件条款推进。理由：一次装载全套会挤占上下文，
   不相关规则还会稀释当前判断；加载 skill 不等于授权变更，变更仍按 4.2 取得同意。
 - **ME-11（复用优先）。** 实现任何功能之前，代理必须按顺序检查标准库、现有依赖与维护
   良好的第三方库；其中任一项能胜任时，禁止手写替代实现。引入依赖仍须按项目的依赖准入标准
