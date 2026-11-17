@@ -60,6 +60,7 @@ frontmatter 字段：
 - **目录名即名字。** `name` 必须等于目录名；改名要同时改目录、软链与所有引用。
 - **description 写触发条件与排除项，不写功能清单。** 让代理一眼判断“这次任务该不该加载”，而不是复述目录名。
 - **入口要短。** SKILL.md 是路由与默认值，不是全文；正文不超过 250 行（不含 frontmatter），超出的细节移入 references。
+- **references 单文件按主题管理。** 单个文件超过 300 行或 20 节时，按主题拆成 `dimensions-<主题>.md`（模板为 `templates-<主题>.md`）；索引详情列写文件名与节号，节号沿用原编号。
 - **一项事实一个权威来源。** 共享事实只在一处维护，其他 skill 链接过去并注明“由 X 裁定”，不复制。
 - **规则可判定。** 少用“合理”“合适”，多给可观察条件、阈值与正反例；改写示例见 `references/templates.md`。
 - **适用与不适用都写清。** description 与正文边界一致；边界含糊会让代理在不该加载时加载，或在重叠时选错。
@@ -100,7 +101,7 @@ description 是代理决定是否加载的触发词，两个失败方向都要�
 
 ## references 组织
 
-- 一个文件一类内容：按维度（`dimensions.md`）、按模板（`templates.md`）、按检查清单（`checklist.md`）分别拆，不堆在一个文件里。
+- 一个文件一类内容：按维度（`dimensions.md` 或按主题拆成的 `dimensions-<主题>.md`）、按模板（`templates.md` 或 `templates-<主题>.md`）、按检查清单（`checklist.md`）分别拆，不堆在一个文件里。
 - 文件命名用 kebab-case，名字描述内容，并与正文链接里的文件名完全一致。
 - 一条事实只在一处：正文与各 references 之间、references 之间都不互相复制，其余用链接引用。
 

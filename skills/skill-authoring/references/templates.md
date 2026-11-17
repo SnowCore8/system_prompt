@@ -50,14 +50,15 @@ argument-hint: '[可选上下文]'
 <skill-name>/
 ├── SKILL.md
 ├── references/
-│   ├── dimensions.md   # 按维度展开的规则与边缘情况
-│   └── templates.md    # 可复制骨架
+│   ├── dimensions.md   # 按维度展开的规则；或按主题拆成 dimensions-<主题>.md
+│   └── templates.md    # 可复制骨架；或按主题拆成 templates-<主题>.md
 └── scripts/            # 可选；运行时脚本，不含测试
 ```
 
 ## 拆分判断
 
 - 正文超过 250 行，把逐条展开移到 `references/` 下的维度文件。
+- references 单文件超过 300 行或 20 节，按主题拆成 `dimensions-<主题>.md`（模板为 `templates-<主题>.md`）；正文索引说明句指向 `references/` 中对应文件，详情列写 `references/<文件>.md` 第 N 节，节号沿用原编号。
 - 需要给读者复制粘贴的骨架，放 `references/` 下的模板文件。
 - 需要机器执行的校验或生成，放 `scripts/`，正文说明调用方式。
 
@@ -76,6 +77,6 @@ argument-hint: '[可选上下文]'
 
 ## references 命名与去重
 
-- 文件按内容维度命名，kebab-case：`dimensions.md`、`templates.md`、`checklist.md`。
+- 文件按内容维度命名，kebab-case：`dimensions.md`、`dimensions-<主题>.md`、`templates.md`、`templates-<主题>.md`、`checklist.md`。
 - 文件名与正文链接一致，改文件名时同步改链接；不用无意义名（`ref1.md`、`extra.md`）。
 - 一条事实只在一处：正文、各 references 之间不互相复制，其余用链接引用。

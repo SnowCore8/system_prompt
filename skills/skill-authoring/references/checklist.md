@@ -27,6 +27,7 @@
 |---|---|
 | Markdown 严格格式（200 字符行、列表空格、标题层级） | `scripts/check.sh` 的 Markdown 段 |
 | `name` 与目录名一致 | `scripts/check.sh` 的 `check_skill_root` |
+| 维度索引的文件名与节号一致 | `tests/skill/test_skills_meta.py` 的 `test_dimension_index` |
 | 三端软链数量一致且可解析 | `scripts/check.sh` 的软链与 skill 入口段 |
 | 三包版本一致、清单路径存在 | `scripts/check.sh` 的插件清单段 |
 | 分发包不含测试、缓存、跨包文件 | `scripts/dist.sh` 的 allowlist 与黑名单 |
