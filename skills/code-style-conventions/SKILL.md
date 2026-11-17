@@ -1,6 +1,6 @@
 ---
 name: code-style-conventions
-description: 定义、审查并修复任意编程项目的代码风格、仓库布局、依赖管理、配置处理以及错误与日志策略。适用于选择 formatter 与 linter 规则、增删依赖、分离环境并校验配置、审查错误处理与日志、隔离生成代码或第三方引入代码，或统一不一致的项目布局。不适用于命名（见 naming-conventions）、模块边界与依赖方向的判据（见 architecture-and-design-conventions）、提交与协作流程（见 vcs-collaboration-conventions）与许可证/漏洞策略（见 security-compliance-conventions）。
+description: 定义、审查并修复任意编程项目的代码风格、代码与资源目录布局、依赖管理、配置处理以及错误与日志策略。适用于选择 formatter 与 linter 规则、增删依赖、分离环境并校验配置、审查错误处理与日志、隔离生成代码或第三方引入代码，或统一不一致的代码与资源目录布局。不适用于命名（见 naming-conventions）、模块边界与依赖方向的判据（见 architecture-and-design-conventions）、提交与协作流程（见 vcs-collaboration-conventions）与许可证/漏洞策略（见 security-compliance-conventions）。
 argument-hint: '[路径或范围]'
 ---
 
