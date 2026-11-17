@@ -137,7 +137,7 @@
 
 ## SQL
 
-- 表用复数 `snake_case`；列用单数 `snake_case`；键与约束遵循 `dimensions.md` 中的数据库规则。
+- 表用复数 `snake_case`；列用单数 `snake_case`；键与约束遵循 `dimensions-interface.md` 第 17 节。
 - 审计列与软删除列用 `created_at`、`updated_at`、`deleted_at`；布尔值用 `is_`。
 - 迁移文件为 `YYYYMMDDHHMMSS_description.sql`；每个文件只含一次逻辑变更。
 - 避免带引号的混合大小写标识符；它们让每个查询都区分大小写并且容易出错。
