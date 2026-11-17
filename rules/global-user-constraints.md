@@ -251,12 +251,12 @@ alwaysApply: true
   任务实际触及的方面按需加载本文件配套的 skill；推进顺序可参考「仓库与治理
   （`repository-governance-conventions`）→ 版本控制与协作（`vcs-collaboration-conventions`）→ 测试与质量
   （`testing-and-quality-conventions`）→ 代码风格、命名与注释（`code-style-conventions`、`naming-conventions`、
-  `comment-conventions`）→ 安全、文档与发布（`security-compliance-conventions`、`documentation-conventions`、
+  `comment-conventions`）→ 安全、文档、发布与运维（`security-compliance-conventions`、`documentation-conventions`、
   `release-operations-conventions`）→ 架构、API、性能与并发（`architecture-and-design-conventions`、
   `api-and-data-conventions`、`performance-conventions`、`concurrency-conventions`）」；另外
   `debugging-conventions`、`refactoring-conventions`、`prompt-authoring`、`skill-authoring`、
   `system-prompt-authoring` 按任务出现时加载。每一步只加载当前任务涉及的 skill 与章节，完成该步的
-  可检查产出后再进入下一步。以上 skill 均为本文件配套，其他插件中主题相近的 skill 不替代它们；
+  可检查产出后再进入下一步。以上 skill 均为本文件配套，第三方插件中主题相近的 skill 不替代它们；
   宿主没有提供这些 skill 时，说明缺口并直接按本文件条款推进。理由：一次装载全套会挤占上下文，
   不相关规则还会稀释当前判断；加载 skill 不等于授权变更，变更仍以用户请求为准，4.2 所列高风险
   操作另行取得明确同意。
