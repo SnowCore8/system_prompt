@@ -1,6 +1,7 @@
 # 用户全局约束：DeepSeek Harness bundle
 
-维护者：SnowCore8；何时阅读：安装或排查本 bundle 时。
+维护者：SnowCore8；何时阅读：安装或排查本 bundle 时。本文是插件描述，只说明安装与运行行为，
+不定义规则；规则以包内 `rules/global-user-constraints.md` 为准。
 
 安装到 profile 后，以 skill 提供者形式提供十八个通用规范 skill。
 

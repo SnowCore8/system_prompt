@@ -61,6 +61,8 @@ Qoder/Qwen 包在 `plugins/` 下用相对软链引用真源；DSH bundle 从仓�
 
 ## 三个包
 
+以下三个包的描述只说明用途、安装与行为，不构成规范；规范以 `rules/` 与 `skills/` 为准。
+
 | 包 | 清单 | hook 形式 | 安装 |
 |---|---|---|---|
 | `plugins/qoder` | `.qoder-plugin/plugin.json` | `command` + `args`，`${QODER_PLUGIN_ROOT}` | `qoderclicn plugins install <zip> --scope user` |

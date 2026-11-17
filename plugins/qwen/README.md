@@ -1,6 +1,7 @@
 # 用户全局约束：Qwen Code 扩展
 
-维护者：SnowCore8；何时阅读：安装或排查本扩展时。
+维护者：SnowCore8；何时阅读：安装或排查本扩展时。本文是插件描述，只说明安装与运行行为，
+不定义规则；规则以包内 `constraints/global-user-constraints.md` 为准。
 
 安装后 `SessionStart` 注入约束全文与当前时间，`UserPromptSubmit` 每次刷新时间；已经通过
 `.qwen/rules`、`AGENTS.md` 或 `QWEN.md` 加载同一份约束时跳过。
