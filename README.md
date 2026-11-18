@@ -77,30 +77,30 @@ Qoder/Qwen 包在 `plugins/` 下用相对软链引用真源；DSH bundle 从仓�
 - 项目级：`.dsh/skills/` 是 rank 100 的 skill 扫描根，软链到顶层 `skills/`；根 `AGENTS.md`
   由 `dsh-agent-instructions` 作为指令链加载。
 - bundle：仓库根 `package.json` 声明 `dsh.bundle.patch`，`plugins/dsh/src/index.js` 注册
-  `ctx.skills.registerProvider` 提供十八个 skill，并注册 `ctx.systemPrompt.section()` 注入约束全文。
+  `ctx.skills.registerProvider` 提供十八个 skill，并注册 `ctx.systemPrompt.section()` 注入约束全文与随包人格。
 - 安装：发布流水线把根包发到 npm 公共 registry，直接
   `pnpm dsh plugin --profile web add @snowcore8/dsh-global-user-constraints@<版本>`，
   插件页能检测到更新。GitHub Packages 上的旧包已删除，0.8.0 起只发 npm。也可以从 GitHub 源安装（tag 方式不会检测更新）：
   `pnpm dsh plugin --profile web add "github:SnowCore8/system_prompt#v<版本>"`。
   细节见 [plugins/dsh/README.md](plugins/dsh/README.md)。
-- 约束：装完即自动注入，无需手动复制；若 `~/.dsh/AGENTS.md` 已加载同内容则按 sha256 去重跳过。
-  时间由 DSH 自身注入，不需要额外 hook。
+- 约束与人格：装完即自动注入，无需手动复制；人格排在约束之前，冲突时以约束为准。若 `~/.dsh/AGENTS.md`
+  已加载同内容则按 sha256 去重跳过对应 section。时间由 DSH 自身注入，不需要额外 hook。
 
 ## Qwen Code 适配
 
 - 项目级：`.qwen/rules/` 软链到 `rules/`（无 `paths:`，baseline，首请求生效）；`.qwen/skills/`
   软链到十八个 skill；`.qwen/AGENTS.md` 不被 Qwen 读取，仓库不提供。
 - 扩展：`plugins/qwen` 的 `qwen-extension.json` 指向 `hooks/qwen-hooks.json`，安装后
-  `SessionStart` 注入约束全文与时间，`UserPromptSubmit` 刷新时间；已有同内容规则或
-  `AGENTS.md` 时跳过。
+  `SessionStart` 注入约束全文、随包人格与时间，`UserPromptSubmit` 刷新时间；已有同内容规则或
+  `AGENTS.md` 时跳过对应文件。
 - 时间：Qwen 没有内建时间感知，注入格式与设计见 [docs/time-awareness.md](docs/time-awareness.md)。
 
 ## Qoder 适配
 
 - 项目级：`.qoder/rules` 软链到 `rules/`，Qoder 从当前目录向上查到 `.git` 逐层读取；
   `.qoder/skills/` 软链到十八个 skill。
-- 插件：`plugins/qoder` 安装后 `SessionStart` 注入约束全文与时间，`UserPromptSubmit` 刷新时间；
-  去重路径覆盖 `~/.qoder-cn/rules/`（国际版 `~/.qoder/rules/`）、`AGENTS.md`、`.qoder/rules/`。
+- 插件：`plugins/qoder` 安装后 `SessionStart` 注入约束全文、随包人格与时间，`UserPromptSubmit`
+  刷新时间；去重路径覆盖 `~/.qoder-cn/rules/`（国际版 `~/.qoder/rules/`）、`AGENTS.md`、`.qoder/rules/`。
 - 项目级不提供 `.qoder-cn` 与 `.qoder/plugins`：它们在项目级没有加载语义。
 
 ## 验证

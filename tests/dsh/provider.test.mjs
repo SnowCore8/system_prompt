@@ -5,7 +5,7 @@ import path from 'node:path'
 import test from 'node:test'
 import { fileURLToPath } from 'node:url'
 
-import { apply, constraintsSection } from '../../plugins/dsh/src/index.js'
+import { apply, constraintsSection, personaSection } from '../../plugins/dsh/src/index.js'
 
 const PACKAGE_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..')
 
@@ -73,6 +73,59 @@ test('constraintsSection dedupes against a matching user AGENTS.md', async () =>
 test('constraintsSection returns undefined when the rules file is missing', () => {
   const tmp = path.join(os.tmpdir(), 'dsh-constraints-missing-dir')
   assert.equal(constraintsSection(tmp), undefined)
+})
+
+test('personaSection returns undefined when the persona file is missing', () => {
+  const tmp = path.join(os.tmpdir(), 'dsh-persona-missing-dir')
+  assert.equal(personaSection(tmp), undefined)
+})
+
+test('personaSection preserves text and places it before constraints', async () => {
+  const tmp = await mkdtemp(path.join(os.tmpdir(), 'dsh-persona-'))
+  const rulesDir = path.join(tmp, 'rules')
+  await mkdir(rulesDir)
+  const body = '# 测试人格\n\nMARKER-persona-9c2f\n'
+  await writeFile(path.join(rulesDir, 'persona.md'), body, 'utf8')
+
+  const previousHome = process.env.DSH_HOME
+  const previousAgents = process.env.DSH_AGENTS_HOME
+  process.env.DSH_HOME = path.join(tmp, 'dsh-home')
+  process.env.DSH_AGENTS_HOME = path.join(tmp, 'agents-home')
+  await mkdir(process.env.DSH_HOME, { recursive: true })
+  await mkdir(process.env.DSH_AGENTS_HOME, { recursive: true })
+  try {
+    const section = personaSection(tmp)
+    assert.ok(section)
+    assert.equal(section.name, 'global-user-constraints-persona')
+    assert.equal(section.order, 390)
+    assert.equal(section.interpolate, false)
+    assert.equal(section.text, body.trim())
+  } finally {
+    if (previousHome === undefined) delete process.env.DSH_HOME
+    else process.env.DSH_HOME = previousHome
+    if (previousAgents === undefined) delete process.env.DSH_AGENTS_HOME
+    else process.env.DSH_AGENTS_HOME = previousAgents
+  }
+})
+
+test('apply registers persona before constraints', async () => {
+  const tmp = await mkdtemp(path.join(os.tmpdir(), 'dsh-sections-'))
+  const previousHome = process.env.DSH_HOME
+  const previousAgents = process.env.DSH_AGENTS_HOME
+  process.env.DSH_HOME = tmp
+  process.env.DSH_AGENTS_HOME = tmp
+  try {
+    const { sections } = createContext()
+    assert.deepEqual(sections.map((item) => item.name), [
+      'global-user-constraints-persona',
+      'global-user-constraints',
+    ])
+  } finally {
+    if (previousHome === undefined) delete process.env.DSH_HOME
+    else process.env.DSH_HOME = previousHome
+    if (previousAgents === undefined) delete process.env.DSH_AGENTS_HOME
+    else process.env.DSH_AGENTS_HOME = previousAgents
+  }
 })
 
 test('constraintsSection preserves literal text including frontmatter and placeholders', async () => {
