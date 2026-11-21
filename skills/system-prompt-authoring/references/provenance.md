@@ -1,11 +1,10 @@
 # 来源引文
 
-`SKILL.md` 中 S1-S13 规则表的证据。仅在某个规则的来源被质疑或某个来源已更新时阅读。链接与版本见
-`SKILL.md` 的「参考资料」一节。
+本文件为 `SKILL.md` 中 S1-S13 规则表的证据。仅在某一规则的来源受到质疑或某一来源已更新时阅读。链接与版本见
+`SKILL.md` 的“参考资料”一节。
 
-引文保留英文原文；省略处用「...」标出。来源核验于 2026-11-14。CC-BP 引用版本冻结于 2026-11-12
-（不再跟随外部页面更新）；若 2026-11-14 核验时引文措辞已不存在，则由下面的转述替代，删除日期未知。
-引文标点统一为 ASCII。
+引文保留英文原文；省略处使用“...”标出。来源核验于 2026-11-14。CC-BP 引用版本冻结于 2026-11-12（不再跟随
+外部页面更新）；2026-11-14 核验时引文措辞已不存在的，以下列转述替代，删除日期未知。引文标点统一为 ASCII。
 
 ## S1 角色、范围与完成定义
 
@@ -19,7 +18,7 @@
 - MS §Key concepts > Role and scope:
   "Define what the assistant is (role) and what it is and isn't allowed to do
   (scope)."
-- 「完成定义」把预期结果转化为可验证的标准；这是推导内容。
+- “完成定义”将预期结果转化为可验证的标准；此系推导内容。
 
 ## S2 为禁止性规则补充替代行为或理由
 
@@ -38,11 +37,11 @@
   We recommend starting without these, and only reaching for these if necessary for your
   particular prompt."
 - CC-BP (2026-11-14)：引用版本冻结于 2026-11-12；2026-11-14 核验时引文措辞已不存在，删除日期未知。该规则作为
-  推导性指导保留。当前指南指出：旧模型有时需要这种强调，当前模型能遵循平实表述，堆砌强调多半会让它们过度
+  推导性指导保留。当前指南指出：旧模型有时需要此种强调，当前模型能够遵循平实表述，堆砌强调多半将使其过度
   套用规则。
 - ANT-PBP §Tool use > Tool usage:
   "The fix is to dial back any aggressive language."
-- 红线的效力高于普通要求；这是推导内容。
+- 红线的效力高于普通要求；此系推导内容。
 
 ## S4 三种情形的兜底
 
@@ -52,7 +51,7 @@
 - MS §How system messages work:
   "Make the 'fallback behavior' explicit (what the assistant does when it lacks
   information or the request is out of scope)."
-- 单步任务只需要一个「cannot process」分支；这是推导内容。
+- 单步任务仅需要一个“cannot process”分支；此系推导内容。
 
 ## S5 编号不产生优先级
 
@@ -71,7 +70,7 @@
   "By default, Gemini 3 models provide direct and efficient answers.
   If you need a more conversational or detailed response, you must explicitly request it in your
   instructions."
-- 「结构、长度与格式」合并了输出契约与冗长度要求；这是推导内容。
+- “结构、长度与格式”合并了输出契约与冗长度要求；此系推导内容。
 
 ## S7 三到五个示例，并并入边界情况
 
@@ -83,25 +82,25 @@
   "teams will often stuff a laundry list of edge cases into a prompt...
   We do not recommend this. Instead, we recommend working to curate a set of diverse, canonical
   examples..."
-- 简短单一用途的提示词可以省略示例；这是推导内容。
+- 简短、单一用途的提示词可以省略示例；此系推导内容。
 
 ## S8 上下文准入
 
-- CC-BP (2026-11-14)：引用版本冻结于 2026-11-12；2026-11-14 核验时所引的 Include/Exclude 各行已不存在，
-  删除日期未知。该规则作为推导性指导保留。当前指南指出：`CLAUDE.md` 只保留 Claude 无法从代码推断的内容时
-  效果最好：准确的校验命令、有误导性的代码模式、不在仓库中的决策，以及已经纠正过两次的内容。
-- `SKILL.md` 表中的第 2、4、6 行（风格、仓库约定、环境变量）是推导出的工程指导，并非 CC-BP 的引文。
+- CC-BP (2026-11-14)：引用版本冻结于 2026-11-12；2026-11-14 核验时所引的 Include/Exclude 各行已不存在，删除
+  日期未知。该规则作为推导性指导保留。当前指南指出：`CLAUDE.md` 仅保留 Claude 无法自代码推断的内容时效果最
+  好：准确的校验命令、有误导性的代码模式、不在仓库中的决策，以及已经纠正过两次的内容。
+- `SKILL.md` 表中的第 2、4、6 行（风格、仓库约定、环境变量）属于推导出的工程指导，并非 CC-BP 的引文。
 
 ## S9 逐行删除
 
-- CC-BP (2026-11-14)：引用版本冻结于 2026-11-12；2026-11-14 核验时所引的删除检验与文件臃肿警告已不存在，
-  删除日期未知。该规则作为推导性指导保留。当前指南指出：`CLAUDE.md` 每个会话都会加载，每一行都会在每个
-  任务上占用注意力，团队流程与知识应放在 skill 中。
-- 逐行检验由此推导：删掉某行若不会阻止具体错误，就删除该行。
+- CC-BP (2026-11-14)：引用版本冻结于 2026-11-12；2026-11-14 核验时所引的删除检验与文件臃肿警告已不存在，删
+  除日期未知。该规则作为推导性指导保留。当前指南指出：`CLAUDE.md` 每个会话均加载，每一行均会在每个任务上占
+  用注意力，团队流程与知识应当放置于 skill 中。
+- 逐行检验由此推导：删除某行若不会阻止具体错误，即删除该行。
 
 ## S10 不写未确认的接口
 
-- 推导内容，基于 S4。
+- 属于推导内容，基于 S4。
 - 支持性引文：ANT-PBP §Agentic systems > Minimizing hallucinations in agentic coding:
   "Never speculate about code you have not opened."
 
@@ -111,12 +110,12 @@
   "agents built with the 'just in time' approach maintain lightweight
   identifiers (file paths, stored queries, web links, etc.)"
 - CC-BP (2026-11-14)：引用版本冻结于 2026-11-12；2026-11-14 核验时所引的 Include/Exclude 措辞已不存在，删除
-  日期未知。该规则作为推导性指导保留。当前指南指出：只写 Claude 无法通过阅读仓库找到的内容。
-- 「一行不应承载整块材料」是工程约束。
+  日期未知。该规则作为推导性指导保留。当前指南指出：仅写 Claude 无法通过阅读仓库找到的内容。
+- “一行不应承载整块材料”属于工程约束。
 
 ## S12 格式校验
 
-- 工程约束；没有外部来源。Markdown 可解析性与可维护性要求。
+- 属于工程约束，无外部来源。系 Markdown 可解析性与可维护性要求。
 
 ## S13 按模型分支
 

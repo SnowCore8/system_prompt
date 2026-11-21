@@ -1,73 +1,77 @@
 ---
 name: naming-conventions
-description: 在任何编程项目中定义、审查或重构名称，覆盖文件、目录、包、类型、函数、变量、API、数据库、配置、测试、提交与资产。适用于启动项目或模块、命名新标识符、审查 diff 中的命名问题，或统一不一致的名称。提供与语言无关的默认值，并按语言给出覆盖规则。不适用于提交与分支流程（见 vcs-collaboration-conventions）、契约与 schema 演进（见 api-and-data-conventions）与格式化配置（见 code-style-conventions）。
+description: 定义、审查并重构任意编程项目的名称，覆盖文件、目录、包、类型、函数、变量、API、数据库、配置、测试、提交与资产。适用于以下情形：启动项目或模块、命名新标识符、审查 diff 中的命名问题，或统一不一致的名称。提供与语言无关的默认值，并按语言给出覆盖规则。不适用于提交与分支流程（见 vcs-collaboration-conventions）、契约与 schema 演进（见 api-and-data-conventions）与格式化配置（见 code-style-conventions）。
 argument-hint: '[路径或符号]'
 ---
 
 # 命名规范
 
-名称是代码库中阅读次数最多的接口。好的名称说明一个事物是什么或做什么，贴合语言，并在各层之间保持稳定；
-糟糕的名称则迫使每个读者从实现反推意图。本 skill 给出一套决策流程，以及项目命名的每个产物所需的完整规则集。
+名称是代码库中阅读次数最多的接口。良好的名称说明一个事物是什么或做什么，贴合语言，并在各层之间保持稳定；
+不良的名称迫使每位读者从实现反推意图。本 skill 规定命名的决策流程，以及项目各类命名产物所需的完整规则集。
 
 ## 适用范围与优先级
 
-按以下层级判断效力，高层覆盖低层，低层只在高层未规定时补充：
+效力依下列层级判断：高层覆盖低层，低层仅在高层未规定时补充。
 
-1. 强制的平台、语言、宿主与全局用户约束。Go 导出标识符、C# 的 `I` 接口与 PEP 8 都不是可选项。
+1. 强制性的平台、语言、宿主与用户全局约束。Go 导出标识符、C# 的 `I` 接口与 PEP 8 均非可选事项。
 2. 本 skill 的规则与默认值。
-3. 既有项目约定与事实。项目约定只在本 skill 未规定时补充；现有代码、命名表、lint 配置与语言版本作为输入，按本 skill 的规则处理；不能覆盖本 skill。
-4. 个人偏好，它永远不能覆盖上面三层。
+3. 既有项目约定与事实。项目约定仅在本 skill 未规定时补充；现有代码、命名表、lint 配置与语言版本作为输入，
+   依本 skill 的规则处理，不得覆盖本 skill。
+4. 个人偏好，不得覆盖上述三层。
 
-- 生成代码、第三方引入代码、外部协议字段与第三方 schema 不受约束。保留它们的名称，在边界处隔离，
-  并把映射记录到项目命名表中。
-- 重命名是一次变更，而不是清理。先读完所有引用，待在授权范围内，更新测试、文档与 fixture，
-  并把任何公开名称当作 API。
-- 两条规则冲突时，说明冲突与选定的规则；记录该决定，让后续变更遵循它。
+- 生成代码、第三方引入代码、外部协议字段与第三方 schema 不受本规范约束。上述名称应当保留，在边界处隔离，
+  并将映射记录于项目命名表。
+- 重命名属于一次变更，不属于清理。代理应当先阅读全部引用，在授权范围内更新测试、文档与 fixture，并将任何
+  公开名称视为 API。
+- 两项规则冲突的，代理应当说明冲突与所选规则，记录该决定，使后续变更遵循该决定。
 
-本 skill 负责名称选择、命名表与重命名机制；其他产物类别的策略与流程按职责归属：
+本 skill 规定名称选择、命名表与重命名机制；其他产物类别的策略与流程，依下列职责归属：
 
-- vcs-collaboration-conventions 负责提交与 pull request 流程、合并与审查策略、历史记录与审查深度。
-- api-and-data-conventions 负责 API 版本化、分页风格、CRUD 语义、错误模型，以及数据库 schema 变更流程
-  与迁移安全性。
-- code-style-conventions 负责格式化工具与 linter 配置、行宽、配置的优先级与语义，以及错误与日志内容策略。
-- testing-and-quality-conventions 负责测试策略、门禁、测试处置，以及跳过、隔离与豁免策略。
-- release-operations-conventions 负责遥测设计、功能开关生命周期、CI/CD、发布时机，以及弃用声明的时间
-  与位置。
-- security-compliance-conventions 负责访问控制与权限策略，以及机密扫描、轮换与披露。
-- repository-governance-conventions 负责包与分发元数据以及发布策略。
-- documentation-conventions 负责变更日志与文档更新、发布说明文档以及文档站点。
-- system-prompt-authoring 负责指令文件。
+- 提交与 pull request 流程、合并与审查策略、历史记录与审查深度，由 vcs-collaboration-conventions 负责。
+- API 版本化、分页风格、CRUD 语义、错误模型，以及数据库 schema 变更流程与迁移安全性，由
+  api-and-data-conventions 负责。
+- 格式化工具与 linter 配置、行宽、配置的优先级与语义，以及错误与日志内容策略，由 code-style-conventions
+  负责。
+- 测试策略、门禁、测试处置，以及跳过、隔离与豁免策略，由 testing-and-quality-conventions 负责。
+- 遥测设计、功能开关生命周期、CI/CD、发布时机，以及弃用声明的时间与位置，由
+  release-operations-conventions 负责。
+- 访问控制与权限策略，以及机密扫描、轮换与披露，由 security-compliance-conventions 负责。
+- 包与分发元数据以及发布策略，由 repository-governance-conventions 负责。
+- 变更日志与文档更新、发布说明文档以及文档站点，由 documentation-conventions 负责。
+- 指令文件，由 system-prompt-authoring 负责。
 
 ## 流程
 
 1. 对产物分类：文件、目录、包、类型、函数、变量、常量、API 字段、数据库对象、配置键、测试、提交或资产。
-2. 用项目领域语言为该概念命名。先查命名表与术语表是否已有现成术语。
-3. 从下面的形式表中选择语法形式（名词、动词、形容词、复数）。
+2. 以项目领域语言为该概念命名。代理应当先核查命名表与术语表是否已有现成术语。
+3. 从形式表中选择语法形式（名词、动词、形容词、复数）。
 4. 为产物与语言选择大小写风格；覆盖规则见 `references/languages.md`。
 5. 检查冲突、对称性、长度、可读性（能否读出声）、可搜索性，以及有误导性的编码。
-6. 在超过一处使用新领域术语之前，先把它记录到项目命名表。
-7. 重命名时，列出全部引用，选择别名或弃用路径，并核对完整 diff。
+6. 新领域术语在超过一处使用前，应当先行记录于项目命名表。
+7. 重命名的，代理应当列出全部引用，选择别名或弃用路径，并核对完整 diff。
 
 ## 核心规则
 
-- **一个概念，一个名称。** 一个名称对应一个概念。同一事物有多种叫法是缺陷；同一名称指两件事是冲突。
+- **一个概念，一个名称。** 一个名称对应一个概念。同一事物有多种叫法，属于缺陷；同一名称指两件事，属于
+  冲突。
 - **命名意图，而不是实现。** `activeUsers` 优于 `filteredList2`；`retryCount` 优于 `loopCounter`。
-- **使用领域语言。** 优先采用用户与产品使用的词；记录被禁用的同义词。
-- **遵循语言。** 不要从别的语言引入大小写或前缀；Python 里的 `IUserStore` 或 Go 里的
-  `user_repository` 即使概念正确也是错的。
-- **可搜索、可读出声。** 除循环索引外，避免单字母与双字母名称、吞掉元音的写法以及辅音连缀；
-  审查时总得有人能把名称念出来。
-- **不要编码类型。** 不用匈牙利命名法，也不加 `obj`、`str`、`arr`、`list` 后缀；只有当类型无法表达时
-  才编码单位、范围或含义（`timeout_ms`、`amount_cents`）。
-- **优先肯定式。** `isEnabled` 优于 `isNotDisabled`；不要构造双重否定。
-- **集合用复数。** `users` 包含多个用户；`user` 是一个用户。映射写成 `usersById`，不要写 `userMap`。
-- **按作用域控制名称长度。** 局部变量用一到两个词，公开 API 用两到四个词；长名称胜于含糊名称，
-  但前提是每个词都承载含义。
-- **不要在请求之外重命名。** 一致性有价值，但批量重命名是另一次需要审查的变更。
+- **使用领域语言。** 应当优先采用用户与产品使用的词；记录被禁用的同义词。
+- **遵循语言。** 不得从其他语言引入大小写或前缀；Python 中的 `IUserStore` 或 Go 中的 `user_repository`，
+  即使概念正确，亦属错误。
+- **可搜索、可读出声。** 除循环索引外，应当避免单字母与双字母名称、省略元音的写法以及辅音连缀；审查时
+  应当有人能够将名称读出声。
+- **不得编码类型。** 不得采用匈牙利命名法，不得添加 `obj`、`str`、`arr`、`list` 后缀；仅当类型无法表达
+  时，方得编码单位、范围或含义（`timeout_ms`、`amount_cents`）。
+- **优先肯定式。** `isEnabled` 优于 `isNotDisabled`；不得构造双重否定。
+- **集合用复数。** `users` 包含多个用户；`user` 表示一个用户。映射应当写作 `usersById`，不得写作
+  `userMap`。
+- **按作用域控制名称长度。** 局部变量使用一到两个词，公开 API 使用两到四个词；长名称胜于含糊名称，但以
+  每个词均承载含义为前提。
+- **不得在请求之外重命名。** 一致性具有价值，但批量重命名属于另一次需要审查的变更。
 
 ## 大小写矩阵
 
-以下是语言无关的默认值。`references/languages.md` 会按语言与框架覆盖它们。
+下列默认值与语言无关。`references/languages.md` 按语言与框架覆盖上述默认值。
 
 | 产物 | 默认大小写 | 示例 |
 |---|---|---|
@@ -129,63 +133,63 @@ argument-hint: '[路径或符号]'
 
 | 维度 | 首条规则 | 详情 |
 |---|---|---|
-| 1. 文件与目录 | 小写、不含空格，与主要导出或职责匹配。 | `references/dimensions-code.md` 第 1 节 |
-| 2. 包与命名空间 | 反向域名或简短小写，公开接口保持稳定。 | `references/dimensions-code.md` 第 2 节 |
-| 3. 模块与导入 | 能力名词，简短无歧义的别名，不出现循环名称。 | `references/dimensions-code.md` 第 3 节 |
-| 4. 类型与接口 | 单数名词；能力或角色，C# 之外不用 `I` 前缀。 | `references/dimensions-code.md` 第 4 节 |
-| 5. 枚举与联合类型 | 单数类型，成员稳定，不用数字名称。 | `references/dimensions-code.md` 第 5 节 |
-| 6. 函数与方法 | 动词短语；一个动作；谓词用谓词名。 | `references/dimensions-code.md` 第 6 节 |
-| 7. 变量、参数与字段 | 名词，长度随作用域，不加类型前缀。 | `references/dimensions-code.md` 第 7 节 |
-| 8. 常量 | UPPER_SNAKE，名称含单位，不用魔法值。 | `references/dimensions-code.md` 第 8 节 |
-| 9. 布尔值与谓词 | 肯定的 `is`/`has`/`can`/`should`；绝不出现非布尔的 `isX`。 | `references/dimensions-code.md` 第 9 节 |
-| 10. 集合、映射、Set 与元组 | 复数名词，`by` 映射，显式写出键与值。 | `references/dimensions-code.md` 第 10 节 |
-| 11. 数量、单位、时间、金额、比率、范围 | 单位后缀，ISO 货币，整数最小单位；时刻用 `_at`，时长用 `_ms`。 | `references/dimensions-code.md` 第 11 节 |
-| 12. 异步、并发、流、回调 | 遵循语言约定；不惯用时不加 `Async` 后缀。 | `references/dimensions-system.md` 第 12 节 |
-| 13. 错误与结果 | 具体的错误类与稳定错误码；绝不用兜底名称。 | `references/dimensions-system.md` 第 13 节 |
-| 14. 测试与测试替身 | 行为加条件；`Fake`、`Stub`、`Mock`、`Spy` 含义不同。 | `references/dimensions-code.md` 第 14 节 |
-| 15. HTTP、RPC 与 GraphQL | 复数资源，kebab 路径，每个 schema 一种 JSON 大小写。 | `references/dimensions-interface.md` 第 15 节 |
-| 16. JSON 与序列化 | 每个 schema 一种键大小写；在边界映射为代码的大小写。 | `references/dimensions-interface.md` 第 16 节 |
-| 17. 数据库与迁移 | 复数 snake 表名，单数列名，带前缀的索引与约束。 | `references/dimensions-interface.md` 第 17 节 |
-| 18. 配置与环境 | UPPER_SNAKE 环境变量，带前缀的键，名称中不含机密。 | `references/dimensions-interface.md` 第 18 节 |
-| 19. CLI | kebab 标志，动词命令，短标志保持一致。 | `references/dimensions-interface.md` 第 19 节 |
-| 20. 日志、事件、指标与追踪 | 稳定的 snake 字段，`object.action` 事件，带单位后缀的指标。 | `references/dimensions-interface.md` 第 20 节 |
-| 21. 资产、CSS、HTML 与 i18n | kebab 文件名，BEM 或工具类，点分隔键。 | `references/dimensions-interface.md` 第 21 节 |
-| 22. 提交、分支与标签 | `type(scope): summary`，`type/slug`，SemVer。 | `references/dimensions-interface.md` 第 22 节 |
-| 23. 功能开关与弃用 | 命名移除路径，而不是永久的 `legacy_` 前缀。 | `references/dimensions-interface.md` 第 23 节 |
-| 24. 缩写、首字母缩略词与复数 | 允许清单，缩略词按单词处理，不吞元音。 | `references/dimensions-code.md` 第 24 节 |
-| 25. 对称与配对 | 处处使用同一组配对：`open/close`、`add/remove`。 | `references/dimensions-code.md` 第 25 节 |
-| 26. 长度、作用域与可搜索性 | 长度随作用域；名称要足够独特，便于搜索。 | `references/dimensions-code.md` 第 26 节 |
-| 27. 重命名与迁移 | 证据、引用、别名或弃用，范围受限的变更。 | `references/dimensions-system.md` 第 27 节 |
+| 1. 文件与目录 | 名称小写、不含空格，并与主要导出或职责匹配。 | `references/dimensions-code.md` 第 1 节 |
+| 2. 包与命名空间 | 采用反向域名或简短小写名称，公开接口保持稳定。 | `references/dimensions-code.md` 第 2 节 |
+| 3. 模块与导入 | 以能力名词命名，别名简短且无歧义，不得出现循环名称。 | `references/dimensions-code.md` 第 3 节 |
+| 4. 类型与接口 | 使用单数名词；体现能力或角色，C# 之外不得使用 `I` 前缀。 | `references/dimensions-code.md` 第 4 节 |
+| 5. 枚举与联合类型 | 类型名用单数，成员保持稳定，不得使用数字名称。 | `references/dimensions-code.md` 第 5 节 |
+| 6. 函数与方法 | 使用动词短语；一个名称对应一个动作；谓词使用谓词名。 | `references/dimensions-code.md` 第 6 节 |
+| 7. 变量、参数与字段 | 使用名词，长度随作用域变化，不得添加类型前缀。 | `references/dimensions-code.md` 第 7 节 |
+| 8. 常量 | 使用 UPPER_SNAKE，名称含单位，不得使用魔法值。 | `references/dimensions-code.md` 第 8 节 |
+| 9. 布尔值与谓词 | 采用肯定的 `is`/`has`/`can`/`should`；不得出现非布尔的 `isX`。 | `references/dimensions-code.md` 第 9 节 |
+| 10. 集合、映射、Set 与元组 | 使用复数名词；映射以 `by` 表示，显式写出键与值。 | `references/dimensions-code.md` 第 10 节 |
+| 11. 数量、单位、时间、金额、比率、范围 | 使用单位后缀、ISO 货币与整数最小单位；时刻用 `_at`，时长用 `_ms`。 | `references/dimensions-code.md` 第 11 节 |
+| 12. 异步、并发、流、回调 | 遵循语言约定；语言不惯用时，不得添加 `Async` 后缀。 | `references/dimensions-system.md` 第 12 节 |
+| 13. 错误与结果 | 使用具体的错误类与稳定的错误码；不得使用兜底名称。 | `references/dimensions-system.md` 第 13 节 |
+| 14. 测试与测试替身 | 名称包含行为与条件；`Fake`、`Stub`、`Mock`、`Spy` 含义不同。 | `references/dimensions-code.md` 第 14 节 |
+| 15. HTTP、RPC 与 GraphQL | 资源用复数，路径用 kebab 风格，每个 schema 仅用一种 JSON 大小写。 | `references/dimensions-interface.md` 第 15 节 |
+| 16. JSON 与序列化 | 每个 schema 仅用一种键大小写；在边界处映射为代码的大小写。 | `references/dimensions-interface.md` 第 16 节 |
+| 17. 数据库与迁移 | 表名用复数 snake 风格，列名用单数，索引与约束带前缀。 | `references/dimensions-interface.md` 第 17 节 |
+| 18. 配置与环境 | 环境变量用 UPPER_SNAKE，键带前缀，名称中不得含机密。 | `references/dimensions-interface.md` 第 18 节 |
+| 19. CLI | 标志用 kebab 风格，命令用动词，短标志保持一致。 | `references/dimensions-interface.md` 第 19 节 |
+| 20. 日志、事件、指标与追踪 | 字段用稳定的 snake 风格，事件用 `object.action`，指标带单位后缀。 | `references/dimensions-interface.md` 第 20 节 |
+| 21. 资产、CSS、HTML 与 i18n | 文件名用 kebab 风格，类用 BEM 或工具类，键用点分隔。 | `references/dimensions-interface.md` 第 21 节 |
+| 22. 提交、分支与标签 | 提交用 `type(scope): summary`，分支用 `type/slug`，标签用 SemVer。 | `references/dimensions-interface.md` 第 22 节 |
+| 23. 功能开关与弃用 | 命名移除路径，不得使用永久的 `legacy_` 前缀。 | `references/dimensions-interface.md` 第 23 节 |
+| 24. 缩写、首字母缩略词与复数 | 维护允许清单，缩略词按单词处理，不得省略元音。 | `references/dimensions-code.md` 第 24 节 |
+| 25. 对称与配对 | 各处使用同一组配对：`open/close`、`add/remove`。 | `references/dimensions-code.md` 第 25 节 |
+| 26. 长度、作用域与可搜索性 | 长度随作用域变化；名称应当足够独特，便于搜索。 | `references/dimensions-code.md` 第 26 节 |
+| 27. 重命名与迁移 | 以证据为前提，列出引用，提供别名或弃用路径，变更范围受限。 | `references/dimensions-system.md` 第 27 节 |
 | 28. 豁免 | 生成、引入与外部名称保持不变；在边界处映射。 | `references/dimensions-system.md` 第 28 节 |
-| 29. 基础设施与部署 | DNS 兼容的小写；环境与所有者写在资源标签中。 | `references/dimensions-system.md` 第 29 节 |
-| 30. 权限、角色、作用域与审计动作 | `domain.action`；单一分隔符；按能力而非职位命名。 | `references/dimensions-system.md` 第 30 节 |
+| 29. 基础设施与部署 | 名称与小写 DNS 兼容；环境与所有者写入资源标签。 | `references/dimensions-system.md` 第 29 节 |
+| 30. 权限、角色、作用域与审计动作 | 使用 `domain.action`；采用单一分隔符；按能力而非职位命名。 | `references/dimensions-system.md` 第 30 节 |
 | 31. 已发布包与模块 | 遵循包仓库允许的字符与大小写。 | `references/dimensions-system.md` 第 31 节 |
-| 32. 组件、Hooks 与 UI 状态 | PascalCase 组件，`useX` hooks，肯定的状态名。 | `references/dimensions-system.md` 第 32 节 |
-| 33. 领域模型与领域事件 | 单数实体，过去时事件，祈使式命令。 | `references/dimensions-system.md` 第 33 节 |
-| 34. 文档、图表与决策 | kebab 文件名，稳定锚点，编号 ADR。 | `references/dimensions-system.md` 第 34 节 |
+| 32. 组件、Hooks 与 UI 状态 | 组件用 PascalCase，hooks 用 `useX`，状态名用肯定式。 | `references/dimensions-system.md` 第 32 节 |
+| 33. 领域模型与领域事件 | 实体用单数，事件用过去时，命令用祈使式。 | `references/dimensions-system.md` 第 33 节 |
+| 34. 文档、图表与决策 | 文件名用 kebab 风格，锚点保持稳定，ADR 编号。 | `references/dimensions-system.md` 第 34 节 |
 
 ## 反模式
 
 | 反模式 | 为什么失败 | 修复 |
 |---|---|---|
-| `data`、`info`、`item`、`obj`、`temp`、`foo`、`bar` | 什么也没说，迫使读者去读函数体。 | 命名概念本身：`invoice`、`parseResult`、`pendingJobs`。 |
-| `Manager`、`Helper`、`Util`、`Common`、`Base` | 隐藏职责，并吸引不相关的代码。 | 命名角色：`BillingService`、`RetryPolicy`、`PathFormatter`。 |
-| `userObj`、`strName`、`arrItems` | 编码了类型，重构后立刻过时。 | `user`、`name`、`items`。 |
-| `notReady`、`disableCache`、`isNotUnavailable` | 否定式名称让每个读取点都要反向理解。 | `isReady`、`cacheEnabled`、`isAvailable`。 |
-| `usr`、`cfg`、`mgr`、`btn`、`msg` | 省了三个字符，多了一次查找。 | `user`、`config`、`manager`、`button`、`message`。 |
-| 同一概念用 `client` / `customer` / `buyer` | 读者分不清它们是否有区别。 | 选定一个领域术语，禁用其余说法。 |
-| 同一层里同时出现 `userId` 与 `user_id` | 破坏搜索与机械化重构。 | 每层一种大小写；只在边界处映射。 |
-| 名为 `isActive` 却返回计数 | 名称表达的类型是错的。 | `activeCount`。 |
-| 在 `getX` 暗示 I/O 的地方，纯读取器却用 `getUser` | 暗示了一次并不发生的读取。 | 用 `user` 属性；I/O 用 `fetchUser`；其余情况名词或 `get` 访问器都可以。 |
-| `UserServiceImpl` | 泄露实现，还增加噪音。 | `SqlUserRepository`、`StripePaymentGateway`。 |
-| Python 或 Go 里的 `IUserStore` | 把 C# 约定带进拒绝它的语言。 | `UserStore` 或 `UserDirectory`。 |
-| `user2`、`newUser`、`tempUser` | 带编号或时间性的名称会立刻腐化。 | `importedUser`、`pendingUser`、`user`。 |
-| 布尔值命名为 `flag`、`status`、`check` | 含糊，而且类型常常就是错的。 | `hasExported`、`isReady`、`isValid`。 |
-| 只有 `do`、`handle`、`process`、`run` | 隐藏了处理了什么或产出了什么。 | `handlePaymentFailure`、`processRefund`、`runMigration`。 |
+| `data`、`info`、`item`、`obj`、`temp`、`foo`、`bar` | 未表达任何信息，迫使读者阅读函数体。 | 命名概念本身：`invoice`、`parseResult`、`pendingJobs`。 |
+| `Manager`、`Helper`、`Util`、`Common`、`Base` | 掩盖职责，并吸引不相关的代码。 | 命名角色：`BillingService`、`RetryPolicy`、`PathFormatter`。 |
+| `userObj`、`strName`、`arrItems` | 编码了类型，重构后立即过时。 | `user`、`name`、`items`。 |
+| `notReady`、`disableCache`、`isNotUnavailable` | 否定式名称迫使每个读取点反向理解。 | `isReady`、`cacheEnabled`、`isAvailable`。 |
+| `usr`、`cfg`、`mgr`、`btn`、`msg` | 节省三个字符，增加一次查找。 | `user`、`config`、`manager`、`button`、`message`。 |
+| 同一概念使用 `client` / `customer` / `buyer` | 读者无法判断三者是否存在区别。 | 选定一个领域术语，禁用其余说法。 |
+| 同一层同时出现 `userId` 与 `user_id` | 破坏搜索与机械化重构。 | 每层仅用一种大小写；仅在边界处映射。 |
+| 名为 `isActive` 却返回计数 | 名称表达的类型错误。 | `activeCount`。 |
+| 在 `getX` 暗示 I/O 处，纯读取器使用 `getUser` | 暗示一次并不发生的读取。 | 使用 `user` 属性；I/O 使用 `fetchUser`；其余情形名词或 `get` 访问器均可。 |
+| `UserServiceImpl` | 泄露实现，并增加噪声。 | `SqlUserRepository`、`StripePaymentGateway`。 |
+| Python 或 Go 中的 `IUserStore` | 将 C# 约定带入拒绝该约定的语言。 | `UserStore` 或 `UserDirectory`。 |
+| `user2`、`newUser`、`tempUser` | 带编号或时间性的名称立即过时。 | `importedUser`、`pendingUser`、`user`。 |
+| 布尔值命名为 `flag`、`status`、`check` | 含义含糊，类型亦常常错误。 | `hasExported`、`isReady`、`isValid`。 |
+| 仅使用 `do`、`handle`、`process`、`run` | 未说明处理何种对象或产出何种结果。 | `handlePaymentFailure`、`processRefund`、`runMigration`。 |
 
 ## 项目命名表
 
-项目启动时创建此表，保存在仓库中，并在术语扩散前先加一行：
+项目启动时应当创建此表，保存于仓库中，并在术语扩散前先行增加一行：
 
 | 术语 | 定义 | 规范名称 | 避免 | 大小写 | 负责人 |
 |---|---|---|---|---|---|
@@ -196,54 +200,56 @@ argument-hint: '[路径或符号]'
 ## 审查清单
 
 - [ ] 术语与项目命名表或术语表一致。
-- [ ] 大小写与语言和产物匹配。
+- [ ] 大小写与语言及产物匹配。
 - [ ] 语法形式与产物种类匹配。
-- [ ] 没有同义词、冲突或容易混淆的近似名称。
-- [ ] 没有未加限定的泛化词。
-- [ ] 布尔值是肯定式的，而且确实是布尔类型。
-- [ ] 集合是复数；映射写明其键。
-- [ ] 单位、时间、金额、比率与范围都是显式的。
+- [ ] 不存在同义词、冲突或容易混淆的近似名称。
+- [ ] 不存在未加限定的泛化词。
+- [ ] 布尔值为肯定式，且确为布尔类型。
+- [ ] 集合为复数；映射写明其键。
+- [ ] 单位、时间、金额、比率与范围均显式。
 - [ ] 异步、错误、测试与 API 约定与所用技术栈匹配。
 - [ ] 文件名与主要导出或职责匹配。
 - [ ] 数据库、API、配置与日志名称在各层之间一致。
-- [ ] 缩写都在允许清单中；首字母缩略词遵循语言规则。
-- [ ] 对称的配对使用相同的词。
-- [ ] 公开重命名有弃用或别名路径。
-- [ ] 重命名有回滚路径，回滚顺序与上线顺序相反。
-- [ ] 引用、测试、文档、fixture 与快照都已更新。
-- [ ] 没有在授权范围之外重命名。
+- [ ] 缩写均在允许清单中；首字母缩略词遵循语言规则。
+- [ ] 对称配对使用相同的词。
+- [ ] 公开重命名具有弃用或别名路径。
+- [ ] 重命名具有回滚路径，且回滚顺序与上线顺序相反。
+- [ ] 引用、测试、文档、fixture 与快照均已更新。
+- [ ] 未在授权范围之外重命名。
 - [ ] 命名表已更新。
-- [ ] 项目若配置了命名 lint 规则，该规则通过。
+- [ ] 项目配置命名 lint 规则的，该规则通过。
 
 ## 示例
 
 <example>
-跨层命名一个新的 HTTP 资源：
-数据库表 `orders`，列 `customer_id`，主键 `id`，索引 `idx_orders_customer_id`；
-API 路径 `/v1/orders`，查询参数 `created_after`；JSON `created_at`、`is_paid`；TypeScript 类型 `Order`，
-函数 `listOrders`，布尔值 `isPaid`；测试 `list_orders_test` 或 `listOrders.test.ts`。
+场景：跨层命名一个新的 HTTP 资源。
+做法：数据库表为 `orders`，列为 `customer_id`，主键为 `id`，索引为 `idx_orders_customer_id`；API 路径为
+`/v1/orders`，查询参数为 `created_after`；JSON 字段为 `created_at`、`is_paid`；TypeScript 类型为 `Order`，
+函数为 `listOrders`，布尔值为 `isPaid`；测试为 `list_orders_test` 或 `listOrders.test.ts`。
 </example>
 
 <example>
-重命名一个布尔值：
-`notDisabled` 改为 `isEnabled`；`flag` 改为 `hasExported`；可空布尔值改为三态枚举
-（`Visibility.PUBLIC`、`Visibility.PRIVATE`、`Visibility.UNLISTED`），而不是 `isPublic: boolean | null`。
+场景：重命名一个布尔值。
+做法：将 `notDisabled` 改为 `isEnabled`；将 `flag` 改为 `hasExported`；可空布尔值改为三态枚举
+（`Visibility.PUBLIC`、`Visibility.PRIVATE`、`Visibility.UNLISTED`），不得保留 `isPublic: boolean | null`。
 </example>
 
 <example>
-重命名一个含糊的服务：
-`UserManager` 同时处理查找与存储。这个名称掩盖了两项职责；把它拆成负责查找的 `UserDirectory`
-和负责持久化的 `UserRepository`，并在一次受限的变更中更新所有调用点。
+场景：重命名一个含糊的服务。
+做法：`UserManager` 同时处理查找与存储，该名称掩盖两项职责；应当将其拆分为负责查找的 `UserDirectory` 与
+负责持久化的 `UserRepository`，并在一次受限的变更中更新全部调用点。
 </example>
 
 <example>
-命名数量值：
-`timeout` 改为 `timeout_ms`；`amount` 改为 `amount_cents` 加 `currency`；`discount` 改为
+场景：命名数量值。
+做法：将 `timeout` 改为 `timeout_ms`；将 `amount` 改为 `amount_cents` 加 `currency`；将 `discount` 改为
 `discount_pct`（0-100）或 `discount_ratio`（0-1），并在命名表中记录该范围。
 </example>
 
 ## 参考资料
 
-按产物分类的完整规则集见 [references/dimensions-code.md](references/dimensions-code.md)、[references/dimensions-interface.md](references/dimensions-interface.md)、
-[references/dimensions-system.md](references/dimensions-system.md)，按语言的大小写矩阵见 [references/languages.md](references/languages.md)。
-建立新项目的命名表之前先读这些文件；日常工作中，读适用的维度与适用的语言行。
+按产物分类的完整规则集见 [references/dimensions-code.md](references/dimensions-code.md)、
+[references/dimensions-interface.md](references/dimensions-interface.md)、
+[references/dimensions-system.md](references/dimensions-system.md)，按语言的大小写矩阵见
+[references/languages.md](references/languages.md)。建立新项目的命名表之前，应当先阅读上述文件；日常工作
+中，仅阅读适用的维度与适用的语言行。

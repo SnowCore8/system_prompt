@@ -1,7 +1,7 @@
 # 指令文件模板与示例
 
-骨架与示例供起草时复制。节的顺序遵循模板：角色与目标 → 指令 → 工作流 → 输出格式 → 示例 → 上下文。
-这是 OAI-PE 的 Identity → Instructions → Examples → Context 顺序，插入了工作流与输出格式。
+骨架与示例供起草时复制。节的顺序遵循模板：角色与目标 → 指令 → 工作流 → 输出格式 → 示例 → 上下文。该顺序为
+OAI-PE 的 Identity → Instructions → Examples → Context 顺序，并插入工作流与输出格式。
 
 ## 模板
 
@@ -104,7 +104,7 @@ process, escalate to its owner, and offer the smallest emergency path that still
 
 ## 单步任务示例
 
-单步任务，不使用工具。S4 由「cannot summarize」分支满足，省略 `Instructions`：
+单步任务，不使用工具。S4 由“cannot summarize”分支满足，省略 `Instructions`：
 
 ```markdown
 # Role and Objective
@@ -116,6 +116,6 @@ Compress the input text into a summary of at most three sentences. The completio
 - If the input is empty or not text, output "cannot summarize."
 ```
 
-格式校验期望 0 错误、0 警告；建议逐条按 S9 判断。省略「指令」节属于内容取舍，脚本不会报告。
+格式校验应当得到 0 错误、0 警告；`[建议]` 项逐条依 S9 判断。省略“指令”节属于内容取舍，脚本不予报告。
 
-一句话也可以（ANT-PBP："Even a single sentence makes a difference"），但完成定义不能省。
+一句话亦可（ANT-PBP：“Even a single sentence makes a difference”），但完成定义不得省略。

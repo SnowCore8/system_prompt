@@ -1,6 +1,7 @@
 # skill 模板
 
-本文件给出可复制的 SKILL.md 骨架与 references/scripts 布局。复制后删掉不适用的段落，不保留空占位。
+本文件提供可复制的 `SKILL.md` 骨架与 `references/`、`scripts/` 布局。复制后应当删除不适用段落，不得保留空占
+位。
 
 ## frontmatter 模板
 
@@ -47,17 +48,17 @@ argument-hint: '[可选上下文]'
 - <模板或维度>：`references/<文件>.md`
 ```
 
-含 `references/dimensions*.md` 的 skill 必须保留「维度索引」一节；不含维度文件的 skill 删掉该节。
+含 `references/dimensions*.md` 的 skill 必须保留“维度索引”一节；不含维度文件的 skill，应当删除该节。
 
 ## description 写法
 
-写成“适用于…，不适用于…”，让代理据任务判断是否加载。三种失败写法：
+`description` 应当写成“适用于……，不适用于……”，使代理依任务判断是否加载。下列三类写法不合格：
 
-- 太宽泛：`适用于一切编程任务。` → 无关任务也触发，浪费加载上下文。
-- 太窄：`只用于修复 Python 3.11 的 asyncio 超时。` → 该触发的相邻任务从不加载。
-- 复述名字：`文档规范 skill，帮助写文档。` → 没有触发信息，代理无从判断。
+- 太宽泛：`适用于一切编程任务。` 将导致无关任务亦触发，浪费加载上下文。
+- 太窄：`只用于修复 Python 3.11 的 asyncio 超时。` 将导致应当触发的相邻任务从不加载。
+- 复述名称：`文档规范 skill，帮助写文档。` 未提供触发信息，代理无从判断。
 
-合格写法同时给适用范围与排除项：
+合格写法应当同时给出适用范围与排除项，例如：
 
 `定义、审查并重构项目的 README、指南与参考页。适用于启动文档集、审查过时与重复，或判断事实归属；不适用于代码注释与 API 文档。`
 
@@ -74,30 +75,30 @@ argument-hint: '[可选上下文]'
 
 ## 拆分判断
 
-- 正文超过 250 行（不含 frontmatter），把逐条展开移到 `references/` 下的维度文件。
-- 单个维度文件超过 300 行或 20 节时按主题拆成 `dimensions-<主题>.md`；其余 references 文件按内容命名，不受此
-  拆分规则约束。正文索引说明句指向 `references/` 中对应文件，详情列写 `references/<文件>.md` 第 N 节，节号沿用
-  原编号。
-- 需要给读者复制粘贴的骨架，放 `references/` 下的模板文件。
-- 需要机器执行的校验或生成，放 `scripts/`，正文说明调用方式。
+- 正文超过 250 行（不含 frontmatter）的，应当将逐条展开移至 `references/` 下的维度文件。
+- 单个维度文件超过 300 行或 20 节的，应当按主题拆分为 `dimensions-<主题>.md`；其余 `references` 文件按
+  内容命名，不受该拆分规则约束。正文索引说明句指向 `references/` 中的对应文件，详情列写明
+  `references/<文件>.md` 第 N 节，节号沿用原编号。
+- 需要供读者复制粘贴的骨架，放置于 `references/` 下的模板文件。
+- 需要机器执行的校验或生成，放置于 `scripts/`，正文说明调用方式。
 
 ## 可判定改写
 
-把形容词换成可观察条件、阈值与正反例：
+应当将形容词替换为可观察条件、阈值与正反例：
 
 - 不可判定：`正文要合理拆分。`
 - 可判定：`正文超过 250 行（不含 frontmatter），就把逐条展开、示例与边缘情况移到 references/，正文只留规则与默认值。`
 
 ## 引用与链接
 
-- 相对路径以 SKILL.md 所在目录为基准，用 Markdown 相对链接。
-- 跨 skill 引用写清“由哪个 skill 裁定”，不复制内容。
-- 打包后引用仍可解析；不要用仓库外绝对路径。
+- 相对路径以 `SKILL.md` 所在目录为基准，使用 Markdown 相对链接。
+- 跨 skill 引用应当写明“由哪个 skill 裁定”，不得复制内容。
+- 打包后引用仍应可以解析；不得使用仓库外绝对路径。
 
 ## references 命名与去重
 
-- 文件按内容维度命名，kebab-case。下列是示例而非闭集：`dimensions.md`、`dimensions-<主题>.md`、`templates.md`、
-  `languages.md`、`playbooks.md`、`gates.md`、`evaluation.md`、`checklist.md`、`checklists.md`；清单只有一份时用
-  `checklist.md`，多份时用 `checklists.md`。
-- 文件名与正文链接一致，改文件名时同步改链接；不用无意义名（`ref1.md`、`extra.md`）。
-- 一条事实只在一处：正文、各 references 之间不互相复制，其余用链接引用。
+- 文件按内容维度命名，使用 kebab-case。下列为示例而非闭集：`dimensions.md`、`dimensions-<主题>.md`、
+  `templates.md`、`languages.md`、`playbooks.md`、`gates.md`、`evaluation.md`、`checklist.md`、
+  `checklists.md`；清单只有一份时使用 `checklist.md`，多份时使用 `checklists.md`。
+- 文件名与正文链接一致；修改文件名的，应当同步修改链接；不得使用无意义名称（`ref1.md`、`extra.md`）。
+- 一项事实仅在一处：正文与各 `references` 之间不得互相复制，其余以链接引用。

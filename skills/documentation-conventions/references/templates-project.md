@@ -1,10 +1,11 @@
 # 文档模板：项目与内容
 
-本文件是项目与内容类文档的可复制骨架；复制后替换示例内容并删减页面不需要的部分，各章节背后的规则见 `dimensions-project.md`。
+本文件为项目与内容类文档的可复制骨架；复制后应当替换示例内容，并删减页面不需要的部分；各章节所依据的规则
+见 `dimensions-project.md`。
 
 ## README
 
-用途：用一页让新读者建立方向，并把他们引导到下一步。
+用途：以单页为新读者建立方向，并引导其进入下一步。
 必需章节：名称与范围、安装、快速开始、配置、文档链接、许可证。
 
 ```markdown
@@ -20,11 +21,11 @@ The health check is `GET /healthz`. See the [tutorial](docs/tutorials/first-invo
 [configuration reference](docs/reference/configuration.md). License: Apache-2.0.
 ```
 
-常见错误：把 README 变成功能巡览，让第一条可运行命令落在首屏之下。
+常见错误：将 README 变为功能巡览，使首条可运行命令位于首屏之下。
 
 ## CONTRIBUTING
 
-用途：带新贡献者从全新克隆走到一次经过审查的变更。
+用途：引导新贡献者自全新克隆进入一次经过审查的变更。
 必需章节：工具链、环境搭建、运行与测试、约定、审查预期。
 
 ```markdown
@@ -39,11 +40,11 @@ Branch as `feat/short-description` and commit as `type(scope): summary`.
 Behavior changes need tests and docs; review takes two business days.
 ```
 
-常见错误：只记录顺利路径的测试命令，贡献者无法复现 CI 失败。
+常见错误：仅记录顺利路径的测试命令，贡献者无法复现 CI 失败。
 
 ## 架构概览
 
-用途：向维护者展示系统如何组装，以及接下来该读哪里。
+用途：向维护者说明系统的组装方式，以及接下来应当阅读的内容。
 必需章节：背景、组件、边界、数据流、决策、已知限制。
 
 ```markdown
@@ -60,11 +61,11 @@ The API commits an invoice and an outbox row together; the worker publishes
 and retries with backoff (ADR-0003, ADR-0007). Known limit: one primary database.
 ```
 
-常见错误：复述代码拥有的接口签名，而不是写明边界。
+常见错误：复述代码所拥有的接口签名，未写明边界。
 
 ## ADR
 
-用途：为未来的维护者保留一个决策、其背景与后果。
+用途：为后续维护者保留一项决策及其背景与后果。
 必需章节：状态、日期、背景、决策、后果、备选方案。
 
 ```markdown
@@ -80,11 +81,11 @@ Consequences: the key store adds one table; retries within 24 hours are safe.
 Alternative: client-side deduplication, rejected because a crashed client retries.
 ```
 
-常见错误：事后编辑已接受的决策，而不是写一条取代它的新 ADR。
+常见错误：事后编辑已接受的决策，未编写取代该决策的新 ADR。
 
 ## 设计文档或 RFC
 
-用途：让审查者在动手构建之前评判一项提议的变更。
+用途：使审查者在着手构建之前评判一项提议的变更。
 必需章节：问题、目标与非目标、提案、备选方案、风险、上线、未决问题。
 
 ```markdown
@@ -100,7 +101,7 @@ Risks: duplicate renders during the migration, deduped by invoice ID.
 Rollout: shadow renders for two weeks, then switch. Open question: template owner.
 ```
 
-常见错误：只提设计而不写非目标，审查者会重新打开 RFC 已经解决的范围问题。
+常见错误：仅提出设计而未写非目标，审查者将重新提出 RFC 已经解决的范围问题。
 
 ## 概念或解释
 
@@ -118,11 +119,11 @@ charge never changes the total. Tradeoff: the balance needs a reconciliation job
 Example: [retry guide](docs/guides/retry-charge.md).
 ```
 
-常见错误：把概念写成步骤，读者照抄步骤却没有学到模型。
+常见错误：将概念写成步骤，读者照抄步骤而未掌握模型。
 
 ## 术语表
 
-用途：为每个项目术语固定一个含义与一种拼写。
+用途：为每个项目术语固定一种含义与一种拼写。
 必需章节：按字母顺序的术语表、定义、被禁用的同义词、负责人。
 
 ```markdown
@@ -137,4 +138,4 @@ Example: [retry guide](docs/guides/retry-charge.md).
 Owner: billing team. Add a term when it appears in a second document.
 ```
 
-常见错误：让每个团队保留自己的术语表，同一术语出现两个定义。
+常见错误：允许每个团队保留各自的术语表，使同一术语出现两种定义。
