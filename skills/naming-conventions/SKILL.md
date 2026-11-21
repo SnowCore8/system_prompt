@@ -1,6 +1,6 @@
 ---
 name: naming-conventions
-description: 定义、审查并重构任意编程项目的名称，覆盖文件、目录、包、类型、函数、变量、API、数据库、配置、测试、提交与资产。适用于以下情形：启动项目或模块、命名新标识符、审查 diff 中的命名问题，或统一不一致的名称。提供与语言无关的默认值，并按语言给出覆盖规则。不适用于提交与分支流程（见 vcs-collaboration-conventions）、契约与 schema 演进（见 api-and-data-conventions）与格式化配置（见 code-style-conventions）。
+description: 定义、审查并重构任意编程项目的名称，覆盖文件、目录、包、类型、函数、变量、API、数据库、配置、测试、提交与资产。适用于启动项目或模块、命名新标识符、审查 diff 中的命名问题，或统一不一致的名称。提供与语言无关的默认值，并按语言给出覆盖规则。不适用于提交与分支流程（见 vcs-collaboration-conventions）、契约与 schema 演进（见 api-and-data-conventions）与格式化配置（见 code-style-conventions）。
 argument-hint: '[路径或符号]'
 ---
 
@@ -11,7 +11,7 @@ argument-hint: '[路径或符号]'
 
 ## 适用范围与优先级
 
-效力依下列层级判断：高层覆盖低层，低层仅在高层未规定时补充。
+效力依下列层级判断：高层覆盖低层，低层仅在高层未规定时补充：
 
 1. 强制性的平台、语言、宿主与用户全局约束。Go 导出标识符、C# 的 `I` 接口与 PEP 8 均非可选事项。
 2. 本 skill 的规则与默认值。

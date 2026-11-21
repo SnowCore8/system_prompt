@@ -23,7 +23,7 @@ argument-hint: '[路径或符号]'
    述内容属于事实输入，依本 skill 的规则处理。项目约定仅在本 skill 未规定时补充，不得覆盖本 skill。
 4. 个人偏好，不得覆盖上述三层。
 
-- 注释与文档之分。本 skill 调整嵌入源码的注释、由文档注释生成的 API 文档、标记、指令与法律声明头。独立
+- 注释与文档之分。本 skill 管辖嵌入源码的注释、由文档注释生成的 API 文档、标记、指令与法律声明头。独立
   文档（README、文档站点、ADR、变更日志、发布说明、API 参考页面）不在范围内；其由 `documentation-conventions` skill 管辖。注释长成文档时，应当移动它并链接，不得复制。
 - 弃用时机、移除窗口与公告位置由 `release-operations-conventions` 裁定。
 - 生成代码、第三方引入代码与第三方代码不受风格修改约束。应当保留生成标记与上游注释；重新生成或重新引
@@ -62,7 +62,7 @@ argument-hint: '[路径或符号]'
   码本身能够表达的，应当重写代码。
 - **文档注释是契约。** 应当在每个公开边界上记录参数、返回值、错误、副作用与不变量。调用方先读契约再读
   函数体，改变契约即改变 API。
-- **代码是事实来源。** 与当前代码矛盾的注释属于缺陷；应当于同一次变更中修复或删除它。不得因「代码很明显」而留下错误注释。
+- **代码是事实来源。** 与当前代码矛盾的注释属于缺陷；应当于同一次变更中修复或删除它。不得因“代码很明显”而留下错误注释。
 - **无注释胜于错误注释。** 缺少解释仅需看一眼实现；错误的解释将带来缺陷。应当删除不确定的注释，自代码或
   作者处恢复事实。
 - **删除代码，不得将其注释掉。** 版本控制保留历史；被注释掉的代码块会腐化、掩盖废弃 API，并干扰搜索。禁
@@ -97,7 +97,7 @@ argument-hint: '[路径或符号]'
 | 块说明 | 多行理由、算法、外部约束 | 项目的块注释语法，折行，无装饰边框 | `/* The vendor caps a batch at 500 items. */` |
 | API 文档标签 | 供生成的参考文档使用的机器可读字段 | 工具要求的语言标签语法与顺序 | `@throws InvoiceNotFoundError when the id is unknown` |
 | TODO | 有负责人的计划内工作 | 标记加负责人、动作、issue 或移除触发条件 | `// TODO(maria): drop the shim after v2 ships (#512).` |
-| FIXME/HACK/NOTE/WARNING | 缺陷、捷径、上下文或隐患 | FIXME/HACK：错误行为、负责人、移除条件；NOTE/WARNING：条件、后果、动作 | `// WARNING: without the caller's lock, the balance read races writers; acquire the lock first (#318).` |
+| FIXME/HACK/NOTE/WARNING | 缺陷、捷径、上下文或隐患 | FIXME/HACK：错误行为、负责人、移除触发条件；NOTE/WARNING：条件、后果、动作 | `// WARNING: without the caller's lock, the balance read races writers; acquire the lock first (#318).` |
 | 弃用标记 | 迁移路径与移除版本 | 语言机制加替代项与版本 | `@deprecated Use create_invoice; removed in v3.0.` |
 | 法律声明头 | 许可证与版权义务 | 位于要求位置的精确 SPDX 与版权行 | `// SPDX-License-Identifier: Apache-2.0` |
 | 工具指令 | 给 linter、格式化工具或生成器的指令 | 最窄范围内的精确工具语法，并给出理由 | `// eslint-disable-next-line no-console -- CLI output.` |
@@ -110,10 +110,10 @@ argument-hint: '[路径或符号]'
 
 | 维度 | 首条规则 | 详情 |
 |---|---|---|
-| 1. 文档注释与公开契约 | 记录可见契约，不得记录签名。 | `references/dimensions-api.md` 第 1 节 |
+| 1. 文档注释与公开契约 | 记录可见契约，不得仅复述签名。 | `references/dimensions-api.md` 第 1 节 |
 | 2. 模块、文件与取值头 | 说明单元的用途与不变量，不得写历史。 | `references/dimensions-inline.md` 第 2 节 |
 | 3. 函数与方法 | 于边界处记录参数、返回值、错误与副作用。 | `references/dimensions-api.md` 第 3 节 |
-| 4. 类型、字段、枚举、常量 | 记录不变量与成员含义，不得记录字段名。 | `references/dimensions-api.md` 第 4 节 |
+| 4. 类型、字段、枚举、常量 | 记录不变量与成员含义，不得仅重复字段名。 | `references/dimensions-api.md` 第 4 节 |
 | 5. 单位、范围、可空性、所有权 | 说明类型无法承载的内容。 | `references/dimensions-api.md` 第 5 节 |
 | 6. 副作用、变更、并发 | 说明效果、隐患与必需动作。 | `references/dimensions-api.md` 第 6 节 |
 | 7. 弃用声明 | 写明替代项与移除触发条件。 | `references/dimensions-api.md` 第 7 节 |

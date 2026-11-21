@@ -26,12 +26,12 @@ argument-hint: '[路径或缺陷描述]'
 4. 个人偏好，不得覆盖上述三层。
 
 - 测试策略，包括测试类型、分层方式与门禁阈值，由 `testing-and-quality-conventions` skill 管辖。本 skill 仅
-  调整“修复必须附一条能够证明缺陷的回归测试或可复现步骤”这一纪律，不重复规定测试层级与门禁。
-- 性能剖析，包括定位延迟、内存、CPU 与吞吐瓶颈，由 `performance-conventions` skill 管辖。本 skill 调整正确
+  管辖“修复必须附一条能够证明缺陷的回归测试或可复现步骤”这一纪律，不重复规定测试层级与门禁。
+- 性能剖析，包括定位延迟、内存、CPU 与吞吐瓶颈，由 `performance-conventions` skill 管辖。本 skill 管辖正确
   性缺陷；性能缺陷应当先依本 skill 复现，再交由性能规范处理瓶颈。
 - 并发竞态，包括数据竞争、死锁、时序与原子性，由 `concurrency-conventions` skill 管辖。本 skill 提供复现与
   二分的通用方法；竞态特有的推理与工具由该 skill 规定。
-- 修复后的提交拆分，由 `vcs-collaboration-conventions` skill 管辖。本 skill 仅调整修复与无关改动分开提交这
+- 修复后的提交拆分，由 `vcs-collaboration-conventions` skill 管辖。本 skill 仅管辖修复与无关改动分开提交这
   一纪律。
 - 两项规则冲突的，代理应当说明冲突与所选规则，并将决定记录于缺陷工单或运行手册。
 
