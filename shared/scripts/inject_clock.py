@@ -44,7 +44,7 @@ def describe(now: datetime) -> str:
     zone_part = f"{zone}，" if zone else ""
     return (
         f"当前时间：{now:%Y-%m-%d %H:%M:%S} {offset}（{zone_part}星期{WEEKDAYS[now.weekday()]}）。"
-        "需要日期或时间时以此为准；长会话以最近一次注入为准。"
+        "涉及日期或时间事项的，应当以此为准；长会话应当以最近一次注入为准。"
     )
 
 

@@ -132,11 +132,11 @@ def main() -> int:
         return 0
 
     if len(data) > MAX_BYTES:
-        emit(event, f"用户全局约束正文过大，未直接注入；请读取 {rules_path} 并在本会话遵守。")
+        emit(event, f"用户全局约束正文过大，未直接注入；应当读取 {rules_path} 并在本会话遵守。")
         return 0
 
     text = data.decode("utf-8", "replace").strip()
-    emit(event, f"用户全局约束（由插件在会话启动时注入，必须遵守）：\n\n{text}")
+    emit(event, f"用户全局约束（由插件于会话启动时注入，必须遵守）：\n\n{text}")
     return 0
 
 
