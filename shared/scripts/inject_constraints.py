@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
-"""SessionStart 钩子：把用户全局约束与随包人格注入会话上下文。
+"""SessionStart 钩子：把用户全局约束全文注入会话上下文。
 
-正文来自插件包内的 rules/（Qwen 包为 constraints/）：global-user-constraints.md
-与 persona.md。若用户级或项目级已经加载同内容的规则或 AGENTS.md，则跳过对应
-文件，避免重复进入上下文。同时兼容 Qoder 插件与 Qwen Code 扩展：优先用宿主
-注入的根目录环境变量，否则按脚本自身位置推导。解析与文件读取异常静默退出 0，
-不阻断会话启动。
+约束正文来自插件包内的 rules/global-user-constraints.md。若用户级或项目级
+已经加载同内容的规则或 AGENTS.md，则跳过注入，避免同一份约束重复进入上下文。
+同时兼容 Qoder 插件与 Qwen Code 扩展：优先用宿主注入的根目录环境变量，
+否则按脚本自身位置推导。解析与文件读取异常静默退出 0，不阻断会话启动。
 """
 
 import hashlib
@@ -16,7 +15,6 @@ from pathlib import Path
 
 HOOK_EVENTS = {"SessionStart"}
 RULES_FILENAME = "global-user-constraints.md"
-PERSONA_FILENAME = "persona.md"
 MAX_BYTES = 512 * 1024
 # Qwen 会把扩展的 rules/ 当作条件规则扫描，无 paths 的常驻规则会被丢弃并告警；
 # 所以 Qwen 包把正文放在 constraints/，Qoder 包继续用 rules/。
@@ -34,20 +32,10 @@ def plugin_root(argv: list[str]) -> Path:
         if value:
             return Path(value)
     here = Path(__file__).resolve()
-    names = (RULES_FILENAME, PERSONA_FILENAME)
     for parent in here.parents:
-        if any((parent / directory / name).is_file()
-               for directory in RULES_DIRS for name in names):
+        if (parent / "rules" / RULES_FILENAME).is_file():
             return parent
     return here.parents[1]
-
-
-def find_rule(root: Path, filename: str):
-    for directory in RULES_DIRS:
-        path = root / directory / filename
-        if path.is_file():
-            return path
-    return None
 
 
 def config_roots() -> list[Path]:
@@ -127,29 +115,28 @@ def main() -> int:
         return 0
 
     root = plugin_root(sys.argv)
-    parts = []
-    for filename, label, header in (
-        (PERSONA_FILENAME, "表达人格", "表达人格（由插件随包注入，遵守全局约束）："),
-        (RULES_FILENAME, "用户全局约束", "用户全局约束（由插件在会话启动时注入，必须遵守）："),
-    ):
-        path = find_rule(root, filename)
-        if path is None:
-            continue
-        try:
-            data = path.read_bytes()
-        except OSError:
-            continue
-        digest = hashlib.sha256(data).hexdigest()
-        if any(has_same_content(candidate, digest) for candidate in candidate_files(payload)):
-            continue
-        if len(data) > MAX_BYTES:
-            parts.append(f"{label}正文过大，未直接注入；请读取 {path} 并在本会话遵守。")
-            continue
-        text = data.decode("utf-8", "replace").strip()
-        parts.append(f"{header}\n\n{text}")
+    rules_path = next(
+        (root / directory / RULES_FILENAME for directory in RULES_DIRS
+         if (root / directory / RULES_FILENAME).is_file()),
+        None,
+    )
+    if rules_path is None:
+        return 0
+    try:
+        data = rules_path.read_bytes()
+    except OSError:
+        return 0
 
-    if parts:
-        emit(event, "\n\n".join(parts))
+    digest = hashlib.sha256(data).hexdigest()
+    if any(has_same_content(path, digest) for path in candidate_files(payload)):
+        return 0
+
+    if len(data) > MAX_BYTES:
+        emit(event, f"用户全局约束正文过大，未直接注入；请读取 {rules_path} 并在本会话遵守。")
+        return 0
+
+    text = data.decode("utf-8", "replace").strip()
+    emit(event, f"用户全局约束（由插件在会话启动时注入，必须遵守）：\n\n{text}")
     return 0
 
 

@@ -1,9 +1,9 @@
 /**
- * DSH bundle：把包内 skills/ 注册为 skill 提供者，并把用户全局约束与随包人格注入系统提示。
+ * DSH bundle：把包内 skills/ 注册为 skill 提供者，并把用户全局约束注入系统提示。
  *
- * 安装本 bundle 后，十八个通用规范 skill 会出现在会话目录中；约束全文与随包人格经
- * ctx.systemPrompt.section() 自动注入，无需手动复制 ~/.dsh/AGENTS.md；人格排在约束之前。
- * 若用户级 AGENTS.md 已加载同内容约束或人格（按 sha256 去重），则跳过对应 section 避免重复。
+ * 安装本 bundle 后，十八个通用规范 skill 会出现在会话目录中；约束全文经
+ * ctx.systemPrompt.section() 自动注入，无需手动复制 ~/.dsh/AGENTS.md。
+ * 若用户级 AGENTS.md 已加载同内容约束（按 sha256 去重），则跳过注入避免重复。
  * 时间由 DSH 自身注入，本模块不重复。
  */
 import { createHash } from 'node:crypto'
@@ -20,12 +20,9 @@ const PROVIDER = 'global-user-constraints'
 const RANK = 700
 const SOURCE = 'bundled'
 const CONSTRAINTS_FILENAME = 'global-user-constraints.md'
-const PERSONA_FILENAME = 'persona.md'
 const SECTION_NAME = 'global-user-constraints'
-const PERSONA_SECTION_NAME = 'global-user-constraints-persona'
-// 随包人格排在用户全局约束之前；约束在冲突时拥有最终优先级。
+// 用户全局约束排在计划策略（500）之前。
 const SECTION_ORDER = 400
-const PERSONA_ORDER = SECTION_ORDER - 10
 function findPackageRoot() {
   let current = path.dirname(fileURLToPath(import.meta.url))
   for (;;) {
@@ -143,14 +140,7 @@ export function constraintsSection(pkgRoot) {
   return sectionFromFile(pkgRoot, CONSTRAINTS_FILENAME, SECTION_NAME, SECTION_ORDER)
 }
 
-/** 随包人格 section；文件缺失或用户级 AGENTS.md 已含同内容时返回 undefined。 */
-export function personaSection(pkgRoot) {
-  return sectionFromFile(pkgRoot, PERSONA_FILENAME, PERSONA_SECTION_NAME, PERSONA_ORDER)
-}
-
 export function apply(ctx) {
-  const persona = personaSection(findPackageRoot())
-  if (persona) ctx.systemPrompt.section(persona)
   const section = constraintsSection(findPackageRoot())
   if (section) ctx.systemPrompt.section(section)
 

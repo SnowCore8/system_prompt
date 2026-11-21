@@ -12,9 +12,7 @@ from pathlib import Path
 HOOK = Path(__file__).parents[2] / "shared" / "scripts" / "inject_constraints.py"
 HOOKS_JSON = Path(__file__).parents[2] / "plugins" / "qoder" / "hooks" / "hooks.json"
 RULES = "global-user-constraints.md"
-PERSONA = "persona.md"
 MARKER = "# 测试约束\n\nMARKER-7f3a9c\n"
-PERSONA_MARKER = "# 测试人格\n\nMARKER-persona-7f3a9c\n"
 
 
 def load_hooks():
@@ -165,50 +163,6 @@ class InjectConstraintsTest(unittest.TestCase):
         (self.plugin / "rules" / RULES).unlink()
         proc = self.run_hook({"hook_event_name": "SessionStart", "cwd": str(self.project)})
         self.assertEqual((proc.returncode, proc.stdout), (0, ""))
-
-
-    def test_injects_persona_with_constraints(self):
-        (self.plugin / "rules" / PERSONA).write_text(PERSONA_MARKER, encoding="utf-8")
-        proc = self.run_hook({"hook_event_name": "SessionStart", "cwd": str(self.project)})
-        self.assertEqual(proc.returncode, 0, proc.stderr)
-        context = json.loads(proc.stdout)["hookSpecificOutput"]["additionalContext"]
-        self.assertIn("MARKER-7f3a9c", context)
-        self.assertIn("MARKER-persona-7f3a9c", context)
-
-    def test_persona_is_injected_when_constraints_match(self):
-        target = self.cn / "rules"
-        target.mkdir(parents=True)
-        (target / RULES).write_text(MARKER, encoding="utf-8")
-        (self.plugin / "rules" / PERSONA).write_text(PERSONA_MARKER, encoding="utf-8")
-        proc = self.run_hook({"hook_event_name": "SessionStart", "cwd": str(self.project)})
-        context = json.loads(proc.stdout)["hookSpecificOutput"]["additionalContext"]
-        self.assertIn("MARKER-persona-7f3a9c", context)
-        self.assertNotIn("MARKER-7f3a9c\n", context)
-
-    def test_persona_dedupes_when_user_rule_matches(self):
-        (self.plugin / "rules" / PERSONA).write_text(PERSONA_MARKER, encoding="utf-8")
-        target = self.home / ".qwen"
-        target.mkdir()
-        (target / "AGENTS.md").write_text(PERSONA_MARKER, encoding="utf-8")
-        proc = self.run_hook({"hook_event_name": "SessionStart", "cwd": str(self.project)})
-        context = json.loads(proc.stdout)["hookSpecificOutput"]["additionalContext"]
-        self.assertIn("MARKER-7f3a9c", context)
-        self.assertNotIn("MARKER-persona-7f3a9c", context)
-
-    def test_persona_only_is_injected(self):
-        (self.plugin / "rules" / RULES).unlink()
-        (self.plugin / "rules" / PERSONA).write_text(PERSONA_MARKER, encoding="utf-8")
-        proc = self.run_hook({"hook_event_name": "SessionStart", "cwd": str(self.project)})
-        self.assertIn("MARKER-persona-7f3a9c", proc.stdout)
-
-    def test_persona_in_constraints_directory(self):
-        (self.plugin / "rules" / RULES).unlink()
-        (self.plugin / "constraints").mkdir()
-        (self.plugin / "constraints" / RULES).write_text(MARKER, encoding="utf-8")
-        (self.plugin / "constraints" / PERSONA).write_text(PERSONA_MARKER, encoding="utf-8")
-        proc = self.run_hook({"hook_event_name": "SessionStart", "cwd": str(self.project)})
-        self.assertIn("MARKER-7f3a9c", proc.stdout)
-        self.assertIn("MARKER-persona-7f3a9c", proc.stdout)
 
 
 if __name__ == "__main__":
