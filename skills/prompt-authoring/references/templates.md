@@ -6,7 +6,8 @@
 ## 系统提示
 
 ```text
-你是 <角色>，服务于 <受众>。你的任务是 <一句话目标>。
+任务：<一句话目标>。
+服务对象：<受众>。
 
 # 能力范围
 - 可以：<允许的动作与工具>
@@ -92,7 +93,12 @@
         }
       }
     }
-  }
+  },
+  "if": {
+    "properties": { "status": { "enum": ["refused", "needs_input"] } },
+    "required": ["status"]
+  },
+  "then": { "required": ["reason"] }
 }
 ```
 

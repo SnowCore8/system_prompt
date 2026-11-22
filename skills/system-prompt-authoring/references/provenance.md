@@ -6,18 +6,10 @@
 引文保留英文原文；省略处使用“...”标出。来源核验于 2026-11-14。CC-BP 引用版本冻结于 2026-11-12（不再跟随
 外部页面更新）；2026-11-14 核验时引文措辞已不存在的，以下列转述替代，删除日期未知。引文标点统一为 ASCII。
 
-## S1 角色、范围与完成定义
+## S1 范围、目标与完成定义
 
-- OAI-41 §5 General Advice > Prompt Structure：模板的第一节是 `# Role and Objective`。
-- ANT-PBP §General principles > Give Claude a role:
-  "Setting a role in the system prompt focuses Claude's behavior
-  and tone for your use case. Even a single sentence makes a difference..."
-- MS §Design checklist > 1. Start with the assistant's job:
-  "State the role and the expected outcome for a typical
-  request."
-- MS §Key concepts > Role and scope:
-  "Define what the assistant is (role) and what it is and isn't allowed to do
-  (scope)."
+- OAI-41 §5 General Advice > Prompt Structure：模板的第一节声明范围与目标。
+- MS §Design checklist 1：以职责与预期结果描述任务。
 - “完成定义”将预期结果转化为可验证的标准；此系推导内容。
 
 ## S2 为禁止性规则补充替代行为或理由

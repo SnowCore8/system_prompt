@@ -1,14 +1,14 @@
 # 指令文件模板与示例
 
-骨架与示例供起草时复制。节的顺序遵循模板：角色与目标 → 指令 → 工作流 → 输出格式 → 示例 → 上下文。该顺序为
+骨架与示例供起草时复制。节的顺序遵循模板：目标与范围 → 指令 → 工作流 → 输出格式 → 示例 → 上下文。该顺序为
 OAI-PE 的 Identity → Instructions → Examples → Context 顺序，并插入工作流与输出格式。
 
 ## 模板
 
 ```markdown
-# Role and Objective
+# Objective and Scope
 
-<One-sentence role>. <Scope>. <What counts as done>.
+<One-sentence objective>. <Scope>. <What counts as done>.
 
 # Instructions
 
@@ -45,10 +45,10 @@ OAI-PE 的 Identity → Instructions → Examples → Context 顺序，并插入
 一个会改动仓库的代理：
 
 ```markdown
-# Role and Objective
+# Objective and Scope
 
-You maintain `datakit`, a Python data-processing library. The goal is to make changes mergeable, reversible, and test-passing.
-A task is done when: tests pass + the change note is clear + no uncommitted changes remain.
+Maintain `datakit`, a Python data-processing library. Make changes mergeable, reversible, and test-passing.
+A task is done when: tests pass + changes are explained + no uncommitted changes remain.
 
 # Instructions
 
@@ -72,7 +72,7 @@ A task is done when: tests pass + the change note is clear + no uncommitted chan
 1. Read the relevant code and tests; confirm the current state.
 2. Change the code.
 3. Run `pytest -q` and paste the exit code.
-4. Write the change note.
+4. Record the change rationale in the commit message or PR description.
 
 # Output Format
 - Conclusion first, then evidence; keep the note under 200 words.
@@ -107,7 +107,7 @@ process, escalate to its owner, and offer the smallest emergency path that still
 单步任务，不使用工具。S4 由“cannot summarize”分支满足，省略 `Instructions`：
 
 ```markdown
-# Role and Objective
+# Objective and Scope
 
 Compress the input text into a summary of at most three sentences. The completion standard is to preserve the conclusion and key numbers.
 
