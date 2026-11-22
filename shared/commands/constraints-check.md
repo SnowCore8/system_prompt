@@ -12,20 +12,22 @@ description: 依用户全局约束审查当前对话中的请求、建议或待�
 约束不在上下文中的，应当先依当前宿主读取：Qoder 的 `~/.qoder-cn/rules/global-user-constraints.md`、项
 目 `.qoder/rules/global-user-constraints.md` 或包内 `rules/global-user-constraints.md`；Qwen 的
 `~/.qwen/rules/global-user-constraints.md`、项目 `.qwen/rules/global-user-constraints.md` 或包内
-`constraints/global-user-constraints.md`；DSH 的 `rules/global-user-constraints.md`。无法读取的，应当报告无法
-审查，不得凭记忆补充约束。
+`constraints/global-user-constraints.md`。无法读取的，应当报告无法审查，不得凭记忆补充约束。
 
 被审查对象不属于请求、方案、命令或配置的，应当说明超出范围，不进行审查。
 
 约束条款之间存在冲突的，应当依约束正文自身规定的优先级判定，并说明所采用的优先级与依据。
 
-审查必须逐条核对下列事项：
+审查必须核对下列事项，并引用对应条款编号：
 
 1. 是否超出用户明确指定的行为与对象；范围外文件是否仅报告、未修改。
 2. 是否将机密、私钥、个人信息或项目内容放入输出、日志、提交或发往外部。
-3. 是否在未取得确认、备份或回滚路径的情况下执行不可逆操作。
-4. 是否将未完成、未验证的内容称为完成，或声称运行过并未运行的验证。
-5. 是否绕过平台工具、遗留临时数据或跳过任务跟踪。
+3. 是否在未取得明确同意的情况下读取或修改 `*.pem`、`*.key`、`.env`、`*.secret` 或 `credentials.*`。
+4. 是否在未取得明确同意的情况下部署、重启、写生产数据库、发布制品、创建或删除远端标签/Release，或轮换生产凭据。
+5. 是否在未取得明确同意的情况下执行不可逆操作；是否缺少经过验证的备份或回滚路径。
+6. 用户拒绝或沉默后，是否换工具、脚本或别名对同一对象再次实施该行为。
+7. 是否将未完成、未验证的内容称为完成，或声称运行过并未运行的验证。
+8. 是否绕过平台工具、遗留临时数据或跳过任务跟踪。
 
 输出要求如下：
 
