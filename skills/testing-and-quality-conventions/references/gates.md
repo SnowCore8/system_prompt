@@ -27,7 +27,7 @@
 | 门禁 | 默认命令 | 默认阈值 |
 |---|---|---|
 | 格式 | `black --check .` 或 `ruff format --check .` | 任何 diff 都失败 |
-| lint | `ruff check .` | 新违规失败；基线只缩不增 |
+| lint | `ruff check .` | 新错误失败；新警告零新增并审查，按严重级别表升级为阻塞；基线只缩不增 |
 | 类型校验 | 新模块用 `mypy --strict`，已建基线的模块用 `mypy` | 任何错误失败；新模块必须保持严格 |
 | 单元测试 | `pytest -m "not integration" --cov --cov-branch` | 套件 2 分钟；变更覆盖率 80% |
 | 集成测试 | `pytest -m integration` | 套件 15 分钟 |
@@ -39,7 +39,7 @@
 | 门禁 | 默认命令 | 默认阈值 |
 |---|---|---|
 | 格式 | `prettier --check .` | 任何 diff 都失败 |
-| lint | `eslint . --max-warnings=0` | 任何错误或警告失败 |
+| lint | `eslint .` | 任何错误失败；新警告零新增并审查，按严重级别表升级为阻塞 |
 | 类型校验 | `tsc --noEmit` | 任何错误失败 |
 | 单元测试 | `vitest run --coverage` | 套件 2 分钟；变更覆盖率 80% |
 | 集成测试 | `vitest run --config vitest.integration.config.ts` | 套件 15 分钟 |
@@ -51,8 +51,8 @@
 | 门禁 | 默认命令 | 默认阈值 |
 |---|---|---|
 | 格式 | `./mvnw spotless:check` 或 `./gradlew spotlessCheck` | 任何 diff 都失败 |
-| lint 与分析器 | 通过 `./mvnw verify` 运行 SpotBugs 与 Checkstyle | 新违规失败；基线只缩不增 |
-| 类型校验 | 编译时使用 `javac -Xlint:all -Werror` | 任何警告失败 |
+| lint 与分析器 | 通过 `./mvnw verify` 运行 SpotBugs 与 Checkstyle | 新错误失败；新警告零新增并审查，按严重级别表升级为阻塞；基线只缩不增 |
+| 类型校验 | 编译时使用 `javac -Xlint:all` | 任何错误失败；警告按严重级别表处理 |
 | 单元测试 | 用 Surefire 运行 `./mvnw test` | 套件 2 分钟；变更覆盖率 80% |
 | 集成测试 | 用 Failsafe 运行 `./mvnw verify -P integration` | 套件 15 分钟 |
 | 覆盖率 | 同一次运行产生的 JaCoCo 报告 | 行覆盖下限取自基线；关键模块分支 70% |
@@ -64,11 +64,11 @@
 | 门禁 | 默认命令 | 默认阈值 |
 |---|---|---|
 | 格式 | `gofmt -l .` | 列出任何文件都算失败 |
-| lint | `golangci-lint run` | 新问题失败；基线只缩不增 |
+| lint | `golangci-lint run` | 新错误失败；新警告零新增并审查，按严重级别表升级为阻塞；基线只缩不增 |
 | 类型校验与 vet | `go build ./...` 与 `go vet ./...` | 任何错误失败 |
 | 单元测试 | `go test -race -coverprofile=coverage.out ./...` | 套件 2 分钟；变更覆盖率 80% |
 | 集成测试 | `go test -race -tags=integration ./...` | 套件 15 分钟 |
-| 依赖审查 | `govulncheck ./...` | 任何可触达漏洞失败 |
+| 依赖审查 | `govulncheck ./...` | 有修复方案的严重或高危可触达漏洞失败 |
 | 机密扫描 | `gitleaks detect --no-banner` | 任何发现失败 |
 
 ### Rust
@@ -76,11 +76,11 @@
 | 门禁 | 默认命令 | 默认阈值 |
 |---|---|---|
 | 格式 | `cargo fmt --check` | 任何 diff 都失败 |
-| lint | `cargo clippy --all-targets -- -D warnings` | 任何警告失败 |
+| lint | `cargo clippy --all-targets` | 任何错误失败；新警告零新增并审查，按严重级别表升级为阻塞 |
 | 类型校验 | `cargo check --all-targets` | 任何错误失败 |
 | 单元测试 | 用 `cargo llvm-cov` 运行 `cargo test --lib` | 套件 2 分钟；变更覆盖率 80% |
 | 集成测试 | `cargo test --test integration` | 套件 15 分钟 |
-| 依赖审查 | `cargo deny check advisories` | 任何安全公告失败 |
+| 依赖审查 | `cargo deny check advisories` | 有修复方案的严重或高危安全公告失败 |
 | 机密扫描 | `gitleaks detect --no-banner` | 任何发现失败 |
 
 ### C#
@@ -88,7 +88,7 @@
 | 门禁 | 默认命令 | 默认阈值 |
 |---|---|---|
 | 格式 | `dotnet format --verify-no-changes` | 任何 diff 都失败 |
-| lint 与分析器 | `dotnet build -p:TreatWarningsAsErrors=true` | 任何分析器警告失败 |
+| lint 与分析器 | `dotnet build` | 任何分析器错误失败；新警告零新增并审查，按严重级别表升级为阻塞 |
 | 类型校验 | 启用可空引用类型后的 Roslyn 编译 | 任何错误失败 |
 | 单元测试 | `dotnet test --collect:"XPlat Code Coverage"` | 套件 2 分钟；变更覆盖率 80% |
 | 集成测试 | `dotnet test --filter Category=Integration` | 套件 15 分钟 |
@@ -153,8 +153,8 @@
 | lint 错误 | 错误 | 阻塞合并 | 按文件允许；计数不得增长 |
 | lint 警告 | 警告 | 使零新增警告校验失败 | 现有警告入基线；计数不得增长 |
 | 复杂度与重复度 | 变更代码上为警告 | 审查意见；采用后转为阻塞 | 仅变更级别；不做全仓基线 |
-| 机密扫描 | 错误 | 立即阻塞 | 无基线；排查误报，轮换真实发现的凭据 |
-| 依赖审查 | 策略严重级别上的错误 | 按漏洞策略阻塞 | 无基线；策略负责人接受例外 |
+| 机密扫描 | 错误 | 立即阻塞 | 无基线；排查误报；真实发现先停止、保留证据并报告，调查结束并按 AU-1 取得同意后轮换与清理历史 |
+| 依赖审查 | 策略严重级别上的错误 | 按漏洞策略阻塞 | 无基线；策略负责人接受例外；严于漏洞策略的阈值需安全负责人批准并记录例外 |
 | 静态应用安全测试 | 策略严重级别上的错误 | 安全策略要求时阻塞 | 逐项接受，带负责人与到期时间 |
 | 格式化工具 | 错误 | 工作区有差异时阻塞 | 无基线；提交前格式化 |
 
@@ -195,7 +195,7 @@
 ```markdown
 ## Waiver: <gate> on <scope>
 
-- Approver: <code owner, not the change author>
+- Approver: <code owner, not the change author; single-person repo: maintainer, named>
 - Reason: <the failure and why it cannot be fixed in this change>
 - Scope: <paths, jobs, or branch the waiver covers>
 - Expiry: <YYYY-MM-DD, no more than 90 days out>
@@ -203,7 +203,7 @@
 - Remediation: <change that removes the waiver>
 ```
 
-- 没有到期时间或没有具名批准人的豁免无效，将在审查中被拒绝。
+- 没有到期时间或没有具名批准人的豁免无效，将在审查中被拒绝。单人维护的，批准人由维护者具名自批，并在治理文件记录该自批与补偿控制；代理不得自行批准。
 - 一条豁免仅覆盖一个门禁与一个范围；两个门禁需要两条记录。
 - 禁止豁免机密扫描发现；依赖漏洞的豁免按 `security-compliance-conventions` 的到期记录与批准流程执行，本
   skill 仅要求每条豁免有具名批准人与到期日。

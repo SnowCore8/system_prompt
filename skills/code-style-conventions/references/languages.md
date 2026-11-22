@@ -107,8 +107,8 @@
   `#[allow]` 并写明理由来放行特定 lint。
 - 默认于 `use` 块内按字母顺序排列（`reorder_imports`）；`group_imports = "StdExternalCrate"` 属于不稳定的
   nightly 选项，因此仅应于 nightly 工具链上启用，并于整个工作区保持一致。
-- rustfmt 不格式化宏调用（如 `quote!` 或 `select!`）内部的代码；该段代码需手工格式化，并接受工具不会检查
-  它。
+- rustfmt 不格式化宏调用（如 `quote!` 或 `select!`）内部的代码；该段属于 formatter 不覆盖的例外，应当按
+  rustfmt 文档手工处理。
 - 应当使 `cargo fmt`、Clippy 与构建使用同一工具链，并由 `rust-toolchain.toml` 锁定。
 
 ## C 与 C++
@@ -189,7 +189,8 @@
 - 应当以 shfmt 格式化（`-i 4` 使用空格，或默认制表符；`-ln bash` 与 shebang 匹配），并于 CI 中以
   `shfmt -d` 检查；heredoc 主体与内嵌脚本应当保持不变。
 - 应当以 ShellCheck 按 `--severity=warning` 执行 lint，对正在积极变更的脚本用 `style`；应当于代码中修复
-  每一发现，不得抑制它，并以 `# shellcheck disable=SC2086` 加理由来禁用特定检查。
+  每一发现，不得无理由抑制。确需抑制时，使用 `# shellcheck disable=SC2086`，写明理由与清理条件，并保持最
+  窄范围。
 - 无导入顺序；应当于第一次使用之前，在顶部 source 库，并以 `set -euo pipefail` 开始脚本，使失败停止脚本。
 - shfmt 仅格式化缩进与间距，无行长规则；应当按 ShellCheck 的要求给展开加引号，并于 bash 中使用 `[[ ]]`。
 - 应当对每个脚本运行两个工具，包括 CI 辅助脚本，因未加引号的变量通常正出现于一行流水线步骤中。

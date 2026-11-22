@@ -25,12 +25,13 @@ Verify: depth below 1,000 for ten minutes. Rollback: scale to three. Escalation:
 ## 变更日志条目
 
 用途：记录一组已发布的用户可见变更。
-必需章节：版本与日期、分组条目、升级动作、issue 链接。
+必需章节：版本与日期、分组条目、升级动作、issue 链接、亮点、分类。
 
 ```markdown
 ## 2.3.0 - 2026-02-10
 
 Added: `POST /v1/charges` accepts an `Idempotency-Key` header (issue #142).
+Highlights: charge retries are safe by default (issue #142).
 
 Deprecated: `GET /v1/orders` in 2.3; use `/v2/orders`; removed in 3.0 (issue #151).
 
@@ -42,7 +43,7 @@ Upgrade: send `Idempotency-Key` on every charge request.
 ## 发布说明
 
 用途：宣布一次发布，以及用户必须采取的动作。
-必需章节：版本与日期、升级动作、亮点、分类、链接。
+必需章节：版本与日期、分组条目、升级动作、issue 链接、亮点、分类。
 
 ```markdown
 # Release 2.3.0
@@ -51,7 +52,7 @@ Released 2026-02-10.
 
 Upgrade: send `Idempotency-Key` on every `POST /v1/charges` call.
 Highlights: retries are safe by default. Fixed: totals no longer round half-cent
-amounts down. Full categories and links: [changelog](CHANGELOG.md).
+amounts down. Issues: #142, #151. Full categories and links: [changelog](CHANGELOG.md).
 ```
 
 常见错误：重复每一条变更日志条目，读者无法识别哪些变化需要采取行动。

@@ -25,7 +25,7 @@ argument-hint: '[路径或符号]'
   公开名称视为 API。
 - 两项规则冲突的，代理应当说明冲突与所选规则，记录该决定，使后续变更遵循该决定。
 
-本 skill 规定名称选择、命名表与重命名机制；其他产物类别的策略与流程，依下列职责归属：
+本 skill 规定名称、大小写、被禁用的同义词、文件名、目录名、锚点、ADR 编号、命名表与重命名机制；其他产物类别的策略与流程，依下列职责归属：
 
 - 提交与 pull request 流程、合并与审查策略、历史记录与审查深度，由 vcs-collaboration-conventions 负责。
 - API 版本化、分页风格、CRUD 语义、错误模型，以及数据库 schema 变更流程与迁移安全性，由
@@ -37,7 +37,7 @@ argument-hint: '[路径或符号]'
   release-operations-conventions 负责。
 - 访问控制与权限策略，以及机密扫描、轮换与披露，由 security-compliance-conventions 负责。
 - 包与分发元数据以及发布策略，由 repository-governance-conventions 负责。
-- 变更日志与文档更新、发布说明文档以及文档站点，由 documentation-conventions 负责。
+- 文档正文、变更日志、发布说明、文档站点与术语表的散文定义，由 documentation-conventions 负责；名称、大小写、被禁用的同义词、文件名、目录名、锚点与 ADR 编号由本 skill 负责。
 - 指令文件，由 system-prompt-authoring 负责。
 
 ## 流程

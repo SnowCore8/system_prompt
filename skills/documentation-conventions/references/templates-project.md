@@ -123,19 +123,20 @@ Example: [retry guide](docs/guides/retry-charge.md).
 
 ## 术语表
 
-用途：为每个项目术语固定一种含义与一种拼写。
-必需章节：按字母顺序的术语表、定义、被禁用的同义词、负责人。
+用途：为每个项目术语保留散文定义，并链接至项目命名表。
+必需章节：按字母顺序的术语表、定义、命名表链接、负责人。
 
 ```markdown
 # Glossary
 
-| Term | Definition | Avoid |
+| Term | Definition | Naming table |
 |---|---|---|
-| charge | One attempt to collect a payment. | payment item |
-| invoice | A bill sent to a customer. | bill |
-| settlement | The provider's payout to the merchant. | payout |
+| charge | One attempt to collect a payment. | `Charge` |
+| invoice | A bill sent to a customer. | `Invoice` |
+| settlement | The provider's payout to the merchant. | `Settlement` |
 
-Owner: billing team. Add a term when it appears in a second document.
+Owner: billing team. Canonical names, casing and banned synonyms live in the
+project naming table; add a term here when it appears in a second document.
 ```
 
 常见错误：允许每个团队保留各自的术语表，使同一术语出现两种定义。
