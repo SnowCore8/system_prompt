@@ -1,6 +1,6 @@
 {
   "name": "@snowcore8/dsh-global-user-constraints",
-  "version": "0.27.0",
+  "version": "0.27.1",
   "description": "DSH bundle：安装后以 skill 提供者形式提供十八个通用规范 skill，并通过 systemPrompt.section 注入约束正文；用户级 AGENTS.md 已含同内容时按 sha256 去重。",
   "type": "module",
   "main": "plugins/dsh/src/index.js",
