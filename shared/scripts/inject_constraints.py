@@ -121,10 +121,14 @@ def main() -> int:
         None,
     )
     if rules_path is None:
+        emit(event, "用户全局约束未注入：插件包内未找到 rules/ 或 constraints/ 下的 global-user-constraints.md。"
+             "本会话须先读取约束；无法读取的，停止并报告安装缺失。")
         return 0
     try:
         data = rules_path.read_bytes()
-    except OSError:
+    except OSError as error:
+        emit(event, f"用户全局约束未注入：读取 {rules_path} 失败（{error.strerror or error}）。"
+             "本会话须先读取约束；无法读取的，停止并报告。")
         return 0
 
     digest = hashlib.sha256(data).hexdigest()

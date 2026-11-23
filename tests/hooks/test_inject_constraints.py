@@ -159,10 +159,13 @@ class InjectConstraintsTest(unittest.TestCase):
             proc = self.run_hook(payload)
             self.assertEqual((proc.returncode, proc.stdout), (0, ""))
 
-    def test_missing_rules_file_is_silent(self):
+    def test_missing_rules_file_reports(self):
         (self.plugin / "rules" / RULES).unlink()
         proc = self.run_hook({"hook_event_name": "SessionStart", "cwd": str(self.project)})
-        self.assertEqual((proc.returncode, proc.stdout), (0, ""))
+        self.assertEqual(proc.returncode, 0, proc.stderr)
+        output = json.loads(proc.stdout)["hookSpecificOutput"]
+        self.assertEqual(output["hookEventName"], "SessionStart")
+        self.assertIn("未注入", output["additionalContext"])
 
 
 if __name__ == "__main__":
