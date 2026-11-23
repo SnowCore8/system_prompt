@@ -42,6 +42,8 @@ argument-hint: '[路径或范围]'
 - 常驻指令文件（`AGENTS.md`、`CLAUDE.md`、`QWEN.md`）由 `system-prompt-authoring` skill 管辖；运行时与产品
   提示词由 `prompt-authoring` skill 管辖。上述文件不构成应用代码，不遵循本 skill 的 formatter 或 lint 规则；
   依风格审查上述文件时，应当依其所属 skill 的规则实施。
+- 依赖准入的通用标准由本 skill 裁定：维护状况、移除路径与传递依赖规模是否记录；漏洞、许可证、原生代码、安装
+  脚本与供应链证据由 `security-compliance-conventions` 裁定。传递依赖规模是风险信号，不得单独作为拒绝理由。
 - 生成代码与第三方引入代码不受编辑要求约束，但仍受下列规则约束：应当保留生成标记，保持第三方引入文件不被
   改动，将两者排除于 formatter 与 linter 之外，并以重新生成或重新引入替代编辑。
 - 强制手段应当留在仓库内。缺乏 formatter、linter、测试或审查检查点的规则，将在一个季度内失效；应当将校验
@@ -88,8 +90,8 @@ argument-hint: '[路径或范围]'
 - **仅应使用已声明的依赖。** 导入某一包，系因 manifest 已声明该包，不得因另一依赖安装了该包；应当导入已声
   明者，声明已导入者。
 - **复用优先于手写，新增依赖仍属设计决策。** 标准库、现有依赖或维护良好的第三方库能够胜任的，不得编写替代
-  实现；准入仍须检查维护状况、已知漏洞、许可证与移除路径，但费用、安装占用与传递依赖数量不构成拒绝优质库
-  的理由，证据记录于拉取请求中。
+  实现；准入仍须检查维护状况与移除路径，但费用、安装占用与传递依赖数量不构成拒绝优质库的理由，证据记录于
+  拉取请求中；漏洞、许可证与供应链证据由 `security-compliance-conventions` 裁定。
 - **配置仅应有一套有文档的优先级顺序。** 应当依命令行标志优先于环境变量、环境变量优先于配置文件、配置文件
   优先于编译期默认值的顺序应用，于启动时加载并合并一次，并禁止模块自行读取环境。
 - **应当于启动时校验配置一次。** 应当按 schema 检查必填键、类型、范围与组合，指出失败的键，并拒绝启动，不
@@ -124,7 +126,7 @@ argument-hint: '[路径或范围]'
 
 ## 维度索引
 
-每个维度的详细规则、示例与边界情况见 `references/dimensions.md`；维度列中的编号就是该文件中的节号。
+每个维度的详细规则、示例与边界情况见 `references/` 中对应的维度文件；维度列中的编号就是该文件中的节号。
 
 | 维度 | 首条规则 | 详情 |
 |---|---|---|
@@ -132,8 +134,8 @@ argument-hint: '[路径或范围]'
 | 2. 布局、模块与边界 | 仅选定一个组织轴；模块接口面与依赖方向的判据由 `architecture-and-design-conventions` 裁定，本 skill 仅以 lint 与 CI 强制。 | `references/dimensions.md` 第 2 节 |
 | 3. 依赖管理 | 仅声明直接依赖，提交一个锁文件，并依书面标准准入依赖。 | `references/dimensions.md` 第 3 节 |
 | 4. 配置管理 | 固定优先级顺序，于启动时校验合并后的结果，并使机密远离一切来源。 | `references/dimensions.md` 第 4 节 |
-| 5. 错误处理与日志 | 带上下文包装并保留原因；仅记录一次结构化日志，字段稳定且不含个人数据。 | `references/dimensions.md` 第 5 节 |
-| 6. 生成代码与第三方代码 | 标记生成输出，不得编辑，于 CI 中重新生成，并隔离带来源记录的第三方引入代码。 | `references/dimensions.md` 第 6 节 |
+| 5. 错误处理与日志 | 带上下文包装并保留原因；仅记录一次结构化日志，字段稳定且不含个人数据。 | `references/dimensions-errors.md` 第 5 节 |
+| 6. 生成代码与第三方代码 | 标记生成输出，不得编辑，于 CI 中重新生成，并隔离带来源记录的第三方引入代码。 | `references/dimensions-errors.md` 第 6 节 |
 
 ## 反模式
 
@@ -210,9 +212,10 @@ argument-hint: '[路径或范围]'
 
 ## 参考资料
 
-阅读 [references/dimensions.md](references/dimensions.md)，了解六个维度背后的完整规则集：每个维度各有一节编号
-章节，包含默认值、正例与反例以及边界情况。搭建仓库、选择边界，或决定 formatter 与 linter 未覆盖的策略时，应
-当阅读该文件；更改某一维度的规则前，应当先阅读对应章节。
+阅读 [references/dimensions.md](references/dimensions.md)，了解维度 1-4 的完整规则集；阅读
+[references/dimensions-errors.md](references/dimensions-errors.md)，了解维度 5-6。每个维度各有一节编号章节，
+包含默认值、正例与反例以及边界情况。搭建仓库、选择边界，或决定 formatter 与 linter 未覆盖的策略时，应当阅读
+对应文件；更改某一维度的规则前，应当先阅读对应章节。
 
 阅读 [references/languages.md](references/languages.md)，了解各语言的 formatter、linter、行宽与导入顺序默认
 值。向项目添加工具前，应当阅读对应语言行；仓库跨多种语言时，应当阅读整个矩阵，并将项目配置的值作为该行的

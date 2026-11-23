@@ -32,7 +32,7 @@
 - docstring 使用 `"""..."""` 并以祈使式摘要开头；PEP 257 要求多行 docstring 的结束引号单独成行。
 - 应当选定一种字段风格并保持一致：Sphinx reST（`:param name:`）、Google（`Args:`）或 NumPy；Sphinx
   autodoc 会解析所配置的风格。
-- `#` 是唯一的行注释，未赋值的字符串字面量是死代码；标记为 `# TODO(owner): ...`、`# FIXME:`、
+- `#` 是唯一的行注释；除 docstring 与 `__doc__` 赋值外，未赋值的字符串字面量属于死代码；标记为 `# TODO(owner): ...`、`# FIXME:`、
   `# NOTE:`、`# HACK:`，指令为 `# noqa: E501`、`# type: ignore[code]`、`# fmt: off`。
 - Sphinx 会把属性上方的 `#:` 注释读取为字段文档；仅应于 docstring 无法覆盖之处使用它们。
 

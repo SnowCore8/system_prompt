@@ -50,6 +50,8 @@ argument-hint: '[可选上下文]'
 
 含 `references/dimensions*.md` 的 skill 必须保留“维度索引”一节；不含维度文件的 skill，应当删除该节。
 
+拆分为多个维度文件时，说明句改为“每个维度的详细规则、示例与边界情况见 `references/` 中对应的维度文件；维度列中的编号就是该文件中的节号。”，详情列仍写 `references/<文件>.md` 第 N 节。
+
 ## description 写法
 
 `description` 应当写成“适用于……，不适用于……”，使代理依任务判断是否加载。下列三类写法不合格：
@@ -75,7 +77,8 @@ argument-hint: '[可选上下文]'
 
 ## 拆分判断
 
-- 正文超过 250 行（不含 frontmatter）的，应当将逐条展开移至 `references/` 下的维度文件。
+- 正文超过 `../SKILL.md` 核心规则“入口应当简短”规定的行数（不含 frontmatter）的，应当将逐条展开移至
+  `references/` 下的维度文件。
 - 单个维度文件超过 300 行或 20 节的，应当按主题拆分为 `dimensions-<主题>.md`；其余 `references` 文件按
   内容命名，不受该拆分规则约束。正文索引说明句指向 `references/` 中的对应文件，详情列写明
   `references/<文件>.md` 第 N 节，节号沿用原编号。
@@ -97,8 +100,7 @@ argument-hint: '[可选上下文]'
 
 ## references 命名与去重
 
-- 文件按内容维度命名，使用 kebab-case。下列为示例而非闭集：`dimensions.md`、`dimensions-<主题>.md`、
-  `templates.md`、`languages.md`、`playbooks.md`、`gates.md`、`evaluation.md`、`checklist.md`、
-  `checklists.md`；清单只有一份时使用 `checklist.md`，多份时使用 `checklists.md`。
+- 文件按内容维度命名，使用 kebab-case；文件类型、维度拆分与清单命名见 `../SKILL.md` 的「references 组织」与
+  核心规则「`references` 按主题管理」。
 - 文件名与正文链接一致；修改文件名的，应当同步修改链接；不得使用无意义名称（`ref1.md`、`extra.md`）。
 - 一项事实仅在一处：正文与各 `references` 之间不得互相复制，其余以链接引用。

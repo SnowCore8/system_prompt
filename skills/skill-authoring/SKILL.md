@@ -116,10 +116,7 @@ frontmatter 字段如下：
 
 ## references 组织
 
-- 一个文件承载一类内容：按维度（`dimensions.md` 或拆分后的 `dimensions-<主题>.md`）、模板
-  （`templates.md`）、技术栈（`languages.md`）、操作手册（`playbooks.md`）、门禁（`gates.md`）、评测
-  （`evaluation.md`）、检查清单（`checklist.md` 或 `checklists.md`）分别拆分，不得堆叠于一个文件；上述文
-  件名为示例，不构成闭集。
+- 一个文件承载一类内容，不得堆叠于一个文件；文件类型、维度拆分与清单命名见核心规则「`references` 按主题管理」。
 - 文件命名使用 kebab-case，名称描述内容，并与正文链接中的文件名完全一致。
 - 一项事实仅在一处：正文与各 `references` 之间、`references` 之间，均不得互相复制，其余以链接引用。
 
@@ -157,7 +154,7 @@ frontmatter 字段如下：
 - [ ] `SKILL.md` 第一屏说明用途、触发与边界。
 - [ ] 细节已拆至 `references/`，正文仅保留入口与默认值。
 - [ ] 正文不超过 250 行（不含 frontmatter）。
-- [ ] 正文与 `references/` 之间无逐字重复段落，清单仅有一处权威。
+- [ ] 正文与 `references/` 之间无重复的规则与默认值（示例、核对清单除外），清单仅有一处权威。
 - [ ] `references` 文件名使用 kebab-case、与正文链接一致、无互相重复。
 - [ ] 事实单一权威，交叉引用为链接而非复制。
 - [ ] 规则可判定，带阈值或示例。
@@ -172,7 +169,7 @@ frontmatter 字段如下：
 场景：新增 `prompt-authoring`，正文写了 400 行提示词规则。
 问题：`SKILL.md` 过载，加载即消耗大量上下文。
 修复：正文保留适用范围、优先级、流程、核心规则与类型矩阵；将骨架与评测细节移至 `prompt-authoring` 的
-`references/templates.md` 与 `references/evaluation.md`（示例，文件属于另一 skill），正文以相对路径链接。
+`references/templates.md` 与 `references/evaluation.md`（跨 skill 引用），正文以链接指向该 skill 的引用。
 </example>
 
 <example>

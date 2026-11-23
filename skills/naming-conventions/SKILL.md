@@ -28,15 +28,13 @@ argument-hint: '[路径或符号]'
 本 skill 规定名称、大小写、被禁用的同义词、文件名、目录名、锚点、ADR 编号、命名表与重命名机制；其他产物类别的策略与流程，依下列职责归属：
 
 - 提交与 pull request 流程、合并与审查策略、历史记录与审查深度，由 vcs-collaboration-conventions 负责。
-- API 版本化、分页风格、CRUD 语义、错误模型，以及数据库 schema 变更流程与迁移安全性，由
-  api-and-data-conventions 负责。
-- 格式化工具与 linter 配置、行宽、配置的优先级与语义，以及错误与日志内容策略，由 code-style-conventions
-  负责。
+- API 版本化、分页风格、CRUD 语义、错误模型，以及数据库 schema 变更流程与迁移安全性，由 api-and-data-conventions 负责。
+- 格式化工具与 linter 配置、行宽、配置的优先级与语义，以及错误与日志内容策略，由 code-style-conventions 负责。
 - 测试策略、门禁、测试处置，以及跳过、隔离与豁免策略，由 testing-and-quality-conventions 负责。
 - 遥测设计、功能开关生命周期、CI/CD、发布时机，以及弃用声明的时间与位置，由
   release-operations-conventions 负责。
 - 访问控制与权限策略，以及机密扫描、轮换与披露，由 security-compliance-conventions 负责。
-- 包与分发元数据以及发布策略，由 repository-governance-conventions 负责。
+- 包与分发元数据，由 repository-governance-conventions 负责；版本策略、发布流程与审批、上线与回滚，由 release-operations-conventions 负责。
 - 文档正文、变更日志、发布说明、文档站点与术语表的散文定义，由 documentation-conventions 负责；名称、大小写、被禁用的同义词、文件名、目录名、锚点与 ADR 编号由本 skill 负责。
 - 指令文件，由 system-prompt-authoring 负责。
 
@@ -120,7 +118,7 @@ argument-hint: '[路径或符号]'
 | 错误 | `XError` 或 `XException` | `InvoiceNotFoundError` |
 | 选项或配置 | `XOptions`、`XConfig` | `RetryOptions` |
 | 结果 | `XResult`、`XOutcome` | `PaymentResult` |
-| 标识符 | `id` 或 `<entity>_id` | `id`, `customer_id` |
+| 标识符 | 代码 `<Entity>Id`；存储 `<entity>_id`；HTTP JSON 资源标识可用 `id` 或 `<entity>_id` | `CustomerId`, `customer_id`, `id` |
 | 时间戳 | `<event>_at` | `created_at`, `paid_at` |
 | 时长 | `<quantity>_ms`、`_s` | `timeout_ms` |
 | 计数 | `<thing>_count` | `retry_count` |
@@ -204,6 +202,8 @@ argument-hint: '[路径或符号]'
 - [ ] 语法形式与产物种类匹配。
 - [ ] 不存在同义词、冲突或容易混淆的近似名称。
 - [ ] 不存在未加限定的泛化词。
+- [ ] 名称可读出声，且足够独特便于搜索。
+- [ ] 长度与作用域匹配；未编码类型或实现。
 - [ ] 布尔值为肯定式，且确为布尔类型。
 - [ ] 集合为复数；映射写明其键。
 - [ ] 单位、时间、金额、比率与范围均显式。
