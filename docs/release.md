@@ -10,11 +10,11 @@
 
 | 变更 | 版本位 |
 | --- | --- |
-| 规范正文或 skill 的语义不兼容变更、目录结构重组 | major |
+| 规范正文或 skill 的语义不兼容变更、目录结构重组 | 1.0 起为 major；0.x 阶段递增 minor |
 | 新增 skill、规则条目或兼容的能力扩展 | minor |
 | 错别字、链接、脚本缺陷与文档修正 | patch |
 
-在 0.x 阶段仍按 SemVer 递增，`0.2.0` 表示发布体系切换到 tag 发布。
+在 0.x 阶段仍按 SemVer 递增；破坏性变更递增 minor，并在发布说明中给出迁移路径。
 
 ## 发布步骤
 
@@ -28,7 +28,7 @@
    SBOM 挂到 Release；需要仓库 secret `NPM_TOKEN`，包版本必须新。
 7. 下载三个 zip 与对应的 `.sha256` 后，用
    `for p in qoder qwen dsh; do sha256sum -c "global-user-constraints-$p-<version>.sha256"; done` 核对。
-8. GitHub Packages 不再发布，旧包已删除；npm 是唯一发布通道。
+8. npm 是唯一发布通道；GitHub Packages 不是发布目标。
 
 本地出包可用 `scripts/dist.sh --require-tag`，要求 HEAD 正好带有 `v<version>` tag。
 

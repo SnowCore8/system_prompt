@@ -118,7 +118,7 @@ argument-hint: '[路径或符号]'
 | 错误 | `XError` 或 `XException` | `InvoiceNotFoundError` |
 | 选项或配置 | `XOptions`、`XConfig` | `RetryOptions` |
 | 结果 | `XResult`、`XOutcome` | `PaymentResult` |
-| 标识符 | 代码 `<Entity>Id`；存储 `<entity>_id`；HTTP JSON 资源标识可用 `id` 或 `<entity>_id` | `CustomerId`, `customer_id`, `id` |
+| 标识符 | 代码 `<Entity>Id`；存储与 HTTP JSON 资源标识 `<entity>_id` | `CustomerId`, `customer_id` |
 | 时间戳 | `<event>_at` | `created_at`, `paid_at` |
 | 时长 | `<quantity>_ms`、`_s` | `timeout_ms` |
 | 计数 | `<thing>_count` | `retry_count` |
