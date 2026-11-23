@@ -2,6 +2,22 @@
 
 按版本从新到旧记录可观察变更。自 0.2.0 起版本采用 SemVer、发布点为 tag `v<version>`，每节记录一个发布版本；0.2.0 之前按日期记录。条目按主题合并，记录最终可观察状态；被后续提交推翻的中间状态只在修复项里说明。
 
+## 0.30.0（2026-11-24）
+
+**变更**
+
+- 用户全局约束正文加入 32 KiB（32,768 UTF-8 字节）硬上限；超过时按主题把规则提取到对应 skill 的
+  `references/`，正文只保留摘要与加载指引。
+- 约束正文由 43,665 字节降至 32,553 字节：收录原则、制定理由、适用限制、示例与依据迁入
+  `system-prompt-authoring`；CH-1、CH-4 至 CH-11 按主题迁入 debugging、architecture、refactoring、
+  testing 与 documentation；OUT-1 至 OUT-10 迁入 `prompt-authoring`。
+- `scripts/check.sh`、Qoder/Qwen 注入脚本与 DSH systemPrompt 注入统一执行 32 KiB 检查；超限时不注入全文，
+  提示读取 `rules/global-user-constraints.md`。
+
+**修复**
+
+- 三包版本升到 `0.30.0`。
+
 ## 0.29.0（2026-11-24）
 
 **变更**
