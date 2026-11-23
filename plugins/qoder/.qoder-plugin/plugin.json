@@ -1,7 +1,7 @@
 {
   "name": "global-user-constraints",
   "displayName": "用户全局约束",
-  "version": "0.25.1",
+  "version": "0.25.2",
   "description": "Qoder 插件：安装后 SessionStart 注入用户全局约束全文、会话启动与每次提示提交注入当前时间；十八个 skill 与一个手动审查命令。",
   "author": {
     "name": "SnowCore8"
