@@ -250,5 +250,6 @@ ADR-0007：记录状态 `Accepted`、背景（超时后的重试将重复扣款�
 [references/dimensions-delivery.md](references/dimensions-delivery.md)。可复制骨架按主题分为三个模板文件：
 [references/templates-project.md](references/templates-project.md)、
 [references/templates-usage.md](references/templates-usage.md) 与
-[references/templates-delivery.md](references/templates-delivery.md)。编写或审查页面之前，应当先阅读匹配的维度；
-创建该类型的新页面之前，应当先阅读对应的模板。自零建立项目文档标准时，六个文件均应当阅读。
+[references/templates-delivery.md](references/templates-delivery.md)。变更记录与文档结构的规则见
+[references/change-records.md](references/change-records.md)。编写或审查页面之前，应当先阅读匹配的维度；
+创建该类型的新页面之前，应当先阅读对应的模板。自零建立项目文档标准时，七个文件均应当阅读。

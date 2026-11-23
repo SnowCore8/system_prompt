@@ -96,7 +96,11 @@ S5 反对将编号作为隐含优先级。文件可以显式声明同节内的�
   （ANT-PBP：“Prefer general instructions over prescriptive steps.”）。对需要显式规划的非推理模型，应当依
   OAI-41 增加 `Reasoning Steps`。对推理模型，不得写入“逐步思考”（think step by step）或要求其展示推理过
   程：该模型自带推理，仅给出目标与约束即可（OAI-PE §Prompting reasoning models）。
-- **长度**：无总长度限制；单行限制见 S12。
+- **长度**：用户全局约束正文（`rules/global-user-constraints.md`）以 UTF-8 字节计硬上限 32 KiB（32,768 字节）；
+  单行限制见 S12。超过上限时，必须按主题把规则提取到对应 skill 的 `references/`，正文只保留摘要与加载指引；
+  仓库 `scripts/check.sh` 校验该上限。
+  收录原则、制定理由、适用限制、示例与依据见
+  [references/constraint-maintenance.md](references/constraint-maintenance.md)。
 - **禁止项**：保留红线并说明理由；其余禁止项均应当写出替代行为。
 - **优先级**：编号本身不产生优先级；不得写入“编号小的优先”。文件可以显式声明顺序；存在声明的，遵循声明。
   OAI-MS 层级为 root > system > developer > user > guideline；同层中较晚的消息覆盖较早的消息。

@@ -3,6 +3,7 @@
 
 约束正文来自插件包内的 rules/global-user-constraints.md。若用户级或项目级
 已经加载同内容的规则或 AGENTS.md，则跳过注入，避免同一份约束重复进入上下文。
+正文超过 32 KiB 硬上限时不注入全文，只提示读取原文，防止常驻上下文失控。
 同时兼容 Qoder 插件与 Qwen Code 扩展：优先用宿主注入的根目录环境变量，
 否则按脚本自身位置推导。解析与文件读取异常静默退出 0，不阻断会话启动。
 """
@@ -15,7 +16,7 @@ from pathlib import Path
 
 HOOK_EVENTS = {"SessionStart"}
 RULES_FILENAME = "global-user-constraints.md"
-MAX_BYTES = 512 * 1024
+MAX_BYTES = 32 * 1024
 # Qwen 会把扩展的 rules/ 当作条件规则扫描，无 paths 的常驻规则会被丢弃并告警；
 # 所以 Qwen 包把正文放在 constraints/，Qoder 包继续用 rules/。
 RULES_DIRS = ("constraints", "rules")
@@ -136,7 +137,7 @@ def main() -> int:
         return 0
 
     if len(data) > MAX_BYTES:
-        emit(event, f"用户全局约束正文过大，未直接注入；应当读取 {rules_path} 并在本会话遵守。")
+        emit(event, f"用户全局约束正文超过 32 KiB 硬上限，未直接注入；应当读取 {rules_path} 并在本会话遵守。")
         return 0
 
     text = data.decode("utf-8", "replace").strip()

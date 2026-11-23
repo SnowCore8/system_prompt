@@ -124,3 +124,6 @@ argument-hint: '[路径或缺陷描述]'
 五个维度的完整规则集见 [references/dimensions.md](references/dimensions.md)；缺陷报告模板见
 [references/report-template.md](references/report-template.md)。接到缺陷后，应当先阅读报告模板；需要规则时，
 按维度阅读 dimensions.md 的匹配节。日常排查仅阅读适用的维度一节。
+
+根因治理的原始条款，即原用户全局约束 CH-4，见
+[references/root-cause-discipline.md](references/root-cause-discipline.md)；同一问题的补丁反复失败或考虑重构时阅读。

@@ -73,6 +73,12 @@ argument-hint: '[提示词文件或场景]'
   交。
 - **不写变更记录。** 提示词正文陈述当前行为；历史原因写入变更日志或 ADR，不得塞入提示词。
 
+## 输出契约
+
+提示词自身的输出契约见核心规则“输出契约明确”与 [`references/templates.md`](references/templates.md)。代理交
+付响应的输出契约见 [`references/output-contract.md`](references/output-contract.md)（OUT-1 至 OUT-10）；本文件
+不复述其规则。
+
 ## 推理模型与指令模型
 
 动笔前应当确认目标模型属于哪一类，写法与采样参数不同：
@@ -181,5 +187,6 @@ argument-hint: '[提示词文件或场景]'
 
 - 骨架与示例：`references/templates.md`。
 - 评测与回归：`references/evaluation.md`。
+- 交付输出契约：[`references/output-contract.md`](references/output-contract.md)。
 - 常驻指令文件：`system-prompt-authoring` skill。
 - 注入与越权风险面：`security-compliance-conventions` skill。

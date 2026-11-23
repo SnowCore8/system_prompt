@@ -148,3 +148,6 @@ skill 的服务对象为新增模块的作者、划分边界的架构师，以�
 
 阅读 [references/checklists.md](references/checklists.md)，了解架构审查清单、ADR 模板与边界/依赖决策表；在审
 查与记录决策期间阅读。
+
+框架与命名、框架变更程序的原始条款见
+[references/framework-changes.md](references/framework-changes.md)；新建模块、确定命名或变更框架与命名方案时阅读。

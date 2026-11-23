@@ -75,6 +75,31 @@ test('constraintsSection returns undefined when the rules file is missing', () =
   assert.equal(constraintsSection(tmp), undefined)
 })
 
+test('constraintsSection returns a hint instead of the full text when oversized', async () => {
+  const tmp = await mkdtemp(path.join(os.tmpdir(), 'dsh-constraints-'))
+  const rulesDir = path.join(tmp, 'rules')
+  await mkdir(rulesDir)
+  const body = '# 测试约束\n\nMARKER-dsh-oversized-6b2e\n' + 'x'.repeat(32 * 1024)
+  await writeFile(path.join(rulesDir, 'global-user-constraints.md'), body, 'utf8')
+
+  const previousHome = process.env.DSH_HOME
+  const previousAgents = process.env.DSH_AGENTS_HOME
+  process.env.DSH_HOME = path.join(tmp, 'dsh-home')
+  process.env.DSH_AGENTS_HOME = path.join(tmp, 'agents-home')
+  try {
+    const section = constraintsSection(tmp)
+    assert.ok(section)
+    assert.ok(!section.text.includes('MARKER-dsh-oversized-6b2e'))
+    assert.match(section.text, /32 KiB/u)
+    assert.match(section.text, /rules[/\\]global-user-constraints\.md/u)
+  } finally {
+    if (previousHome === undefined) delete process.env.DSH_HOME
+    else process.env.DSH_HOME = previousHome
+    if (previousAgents === undefined) delete process.env.DSH_AGENTS_HOME
+    else process.env.DSH_AGENTS_HOME = previousAgents
+  }
+})
+
 test('apply registers only the constraints section', async () => {
   const tmp = await mkdtemp(path.join(os.tmpdir(), 'dsh-sections-'))
   const previousHome = process.env.DSH_HOME

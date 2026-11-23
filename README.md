@@ -40,7 +40,7 @@ Qoder/Qwen 包在 `plugins/` 下用相对软链引用真源；DSH bundle 从仓�
 
 ## 编辑
 
-1. 改约束：编辑 `rules/global-user-constraints.md`（唯一权威来源）。
+1. 改约束：编辑 `rules/global-user-constraints.md`（唯一权威来源）；正文以 UTF-8 字节计硬上限 32 KiB，超限时按主题把规则提取到对应 skill 的 `references/`，正文只保留摘要与加载指引。
 2. 改 skill：编辑 `skills/` 下对应的 skill；三个包自动引用，不复制第二份。
 3. 改命令或注入脚本：编辑 `shared/commands/` 或 `shared/scripts/`。
 4. 改某一端的清单或 hook：编辑 `plugins/<包>/` 下对应文件，并同步三包版本。
@@ -110,9 +110,9 @@ python3 -m pip install -r requirements-dev.txt   # 建议用虚拟环境
 scripts/check.sh
 ```
 
-`scripts/check.sh` 覆盖 Markdown、skill 与 hook 测试、DSH bundle 的 `node --test`、shellcheck、
-ruff、依赖审计（pip-audit）、覆盖率（`--fail-under=90`）、JSON、敏感文件、软链、三工具项目级适配、
-三包清单一致性与物化后的 Qoder 插件校验。缺 `shellcheck`、`node` 或 `qoderclicn` 时会打印「跳过」并在
+`scripts/check.sh` 覆盖常驻约束体积（≤32 KiB）、Markdown、skill 与 hook 测试、DSH bundle 的 `node --test`、
+shellcheck、ruff、依赖审计（pip-audit）、覆盖率（`--fail-under=90`）、JSON、敏感文件、软链、三工具项目级
+适配、三包清单一致性与物化后的 Qoder 插件校验。缺 `shellcheck`、`node` 或 `qoderclicn` 时会打印「跳过」并在
 结尾计数。
 
 本地安装 smoke test：
