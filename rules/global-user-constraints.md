@@ -179,7 +179,7 @@ alwaysApply: true
 
 - IR-1 删除。删除前应当核查引用。能够归档且无其他规则要求删除的，应当优先归档；归档指保留可恢复副
   本。用户文件与受版本控制内容的批量删除，适用 AU-1。本条不适用于任务临时文件、敏感内容、被替换实
-  现、已批准的数据删除以及分支与标签清理；上述删除分别依 IR-2、IR-6、`refactoring-conventions` 的 CH-11、security-compliance-
+  现、已批准的数据删除以及分支与标签清理；上述删除分别依 IR-6、IR-2、`refactoring-conventions` 的 CH-11、security-compliance-
   conventions 与 vcs-collaboration-conventions 执行。已删除的内容通常难以恢复。
 - IR-2 提交卫生。提交前应当核查 `.gitignore`；本地配置、机密与数据库转储必须被忽略。含敏感内容的临
   时文件，使用后应当立即删除；怀疑泄露的，依 SP-6 处理。上述内容一旦进入提交历史，即无法清除。
@@ -299,6 +299,8 @@ alwaysApply: true
   不得以费用、安装体积或传递依赖数量为由，拒绝能够替代手写实现的优质库。自行实现的，应当在交付中
   说明无可复用实现的原因。重复实现既有能力，将引入本可避免的缺陷，维护成本最终由维护者承担。
 
+- ME-12 方案验证。新方案失败时至少试 3 个实现版本，每版先定位根因、不得叠加补丁；3 版均无效且根因有证据才可判定该方案不可行；未定位根因不得断言不可行。
+
 ### 4.7 变更纪律
 
 - CH-2 字面范围。代理应当按请求的字面含义实施，不得增加用户未提出的要求。为完成该要求所必需的调用点、
@@ -311,10 +313,10 @@ alwaysApply: true
   中途停顿等待确认；对象、范围或授权依据需要确认的，不在此列，应当先确认。单步任务或明确指令，应当
   直接实施。其他例外情形为第 4.2 节规定的确认、UN-2 规定的选项选择、IN-5 规定的混合请求、UN-4 规定
   的信息补充与 HO-5 规定的测试修改报告。每一步均请求确认将延迟交付。
-- CH-1、CH-4 至 CH-11 已按主题迁移：先读后改、修复/重构与清理见 `refactoring-conventions`；根因见
+
+迁移注：CH-1、CH-4 至 CH-11 已按主题迁移：先读后改、修复/重构与清理见 `refactoring-conventions`；根因见
   `debugging-conventions`；框架与命名见 `architecture-and-design-conventions`；项目命令见
-  `testing-and-quality-conventions`；文档与变更记录见 `documentation-conventions`。CH-2、CH-3 保留；
-  条款编号保留，原文见对应 references。
+  `testing-and-quality-conventions`；文档与变更记录见 `documentation-conventions`。CH-2、CH-3 保留；迁移条款的原文见对应 references。
 
 ### 4.8 不确定情形的处理
 
@@ -342,10 +344,9 @@ alwaysApply: true
 
 ### 4.10 输出
 
-- OUT-1 至 OUT-10：结论先行，失败与风险置前；证据附退出码与关键输出，机密打码；交付只写结果、证据
+- OUT-1 至 OUT-10 的要点：结论先行，失败与风险置前；证据附退出码与关键输出，机密打码；交付只写结果、证据
   与影响决定的风险；引用给路径与行号；正文默认 15 行，不堆砌；决策给 2-4 个选项及差异；事实判断依证据；
-  同一错误只道歉一次。完整见 `prompt-authoring/references/output-contract.md`；CH-9 见
-  `documentation-conventions/references/change-records.md`。
+  同一错误只道歉一次。完整见 `prompt-authoring/references/output-contract.md`。
 
 ## 5. 效力边界与适用范围
 

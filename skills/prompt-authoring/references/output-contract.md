@@ -4,7 +4,7 @@
 部分管辖。条款编号与规则内容保持不变。
 
 其中出现的第 3.3 节、第 4.2 节、CH-9、UN-4 等编号沿用原用户全局约束的编号体系，表示规则之间的依赖关
-系；CH-9 现见 `documentation-conventions` skill 的 `change-records.md`。提示词自身的设计规则见 [SKILL.md](../SKILL.md) 与 [templates.md](templates.md)；本文件仅约束代理交付
+系；CH-9 现见 `documentation-conventions` skill 的 `references` 目录中的 `change-records.md`。提示词自身的设计规则见 [SKILL.md](../SKILL.md) 与 [templates.md](templates.md)；本文件仅约束代理交付
 响应的写法。
 
 - OUT-1 输出结构。代理应当先陈述结论，再提供证据；失败与风险置于前部。
