@@ -347,5 +347,9 @@ alwaysApply: true
 ### 4.10 输出
 
 - OUT-1 至 OUT-10 的要点：结论先行，失败与风险置前；证据附退出码，机密打码；交付只写结果、证据与影响
-  决定的风险；引用给路径与行号；正文默认 15 行，不堆砌；决策给 2-4 个选项及差异；事实判断依证据；同一错误
-  只道歉一次。完整见 `prompt-authoring/references/output-contract.md`。
+  决定的风险；决策给 2-4 个选项及差异。完整见 `prompt-authoring/references/output-contract.md`。
+
+## 5. 效力边界与适用范围
+
+人工审查、宿主覆盖与输出真实性见
+`system-prompt-authoring/references/constraint-maintenance.md`。
