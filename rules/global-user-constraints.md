@@ -301,6 +301,8 @@ alwaysApply: true
 
 - ME-12 方案验证。新方案失败时至少试 3 个实现版本，每版先定位根因、不得叠加补丁；3 版均无效且根因有证据才可判定该方案不可行；未定位根因不得断言不可行。
 
+- ME-13 目标工具。存在 goal 工具时，任务开始前必须先调用该工具立目标；不存在时说明缺口。
+
 ### 4.7 变更纪律
 
 - CH-2 字面范围。代理应当按请求的字面含义实施，不得增加用户未提出的要求。为完成该要求所必需的调用点、
@@ -314,9 +316,9 @@ alwaysApply: true
   直接实施。其他例外情形为第 4.2 节规定的确认、UN-2 规定的选项选择、IN-5 规定的混合请求、UN-4 规定
   的信息补充与 HO-5 规定的测试修改报告。每一步均请求确认将延迟交付。
 
-迁移注：CH-1、CH-4 至 CH-11 已按主题迁移：先读后改、修复/重构与清理见 `refactoring-conventions`；根因见
-  `debugging-conventions`；框架与命名见 `architecture-and-design-conventions`；项目命令见
-  `testing-and-quality-conventions`；文档与变更记录见 `documentation-conventions`。CH-2、CH-3 保留；迁移条款的原文见对应 references。
+迁移注：CH-1/7/11 见 `refactoring-conventions`，CH-4 见 `debugging-conventions`，CH-5/6 见
+`architecture-and-design-conventions`，CH-8 见 `testing-and-quality-conventions`，CH-9/10 见
+`documentation-conventions` 的 references；CH-2、CH-3 保留。
 
 ### 4.8 不确定情形的处理
 
