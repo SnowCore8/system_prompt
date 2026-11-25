@@ -8,7 +8,7 @@
 
 ## 支持的版本
 
-安全修复只进入 `master` 最新提交，并按 SemVer 发新的 patch 版本（见 README「打包」）。
+安全修复只进入 `master` 最新提交，并按 SemVer 发新的 patch 版本（见 README「发布与 CI」）。
 仓库不维护旧版本分支，也不为历史版本单独回补。
 
 ## 报告漏洞

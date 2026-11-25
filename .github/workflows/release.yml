@@ -40,7 +40,7 @@ jobs:
       # runner 没有 qoderclicn，插件校验在本地发布前完成；此处用 --no-validate 换取可重复构建
       - name: 构建制品
         run: ./scripts/dist.sh --no-validate --require-tag
-      - name: 物化 DSH 包
+      - name: 组装 DSH 包
         run: scripts/materialize.sh dsh /tmp/dsh-package
       - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444  # v5
         with:

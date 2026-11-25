@@ -28,12 +28,13 @@
 | 破坏性 | breaking | 破坏兼容性的变更 | 销毁性（breaking） |
 | 系统提示 | system prompt | 交给模型的整体指令文本 | 系统指令、指代具体指令文件 |
 | 指令文件 | instruction file | `AGENTS.md`、`CLAUDE.md`、`QWEN.md` 等承载持久指令的文件 | 与系统提示混用 |
-| 插件 | plugin | 用户级 Qoder 插件包 | |
+| 插件 | plugin | 用户级安装包：Qoder 插件、Qwen 扩展、DSH bundle | 扩展、bundle（指具体包时） |
 | 组件 | component | 插件内的 skills、commands、hooks 等 | |
 | 宿主 | host | 加载插件与规则的 Qoder 客户端 | |
 | 打包 | package | 生成 zip | |
+| 组装 | assemble | 从顶层真源复制生成开发入口或安装包；生成物不提交 | 物化（仅指旧流程时） |
+| 开发入口 | dev entry | `scripts/assemble.sh` 生成的 `.dsh`、`.qoder`、`.qwen` 副本 | |
 | 分发 | distribute | 通过市场或内网分发 | |
-| 软链 | symlink | 指向仓库内另一路径的相对链接；目标必须在仓库内且不指向另一软链 | 符号链接 |
 | 变更日志 | changelog | `CHANGELOG.md` | 更新日志 |
 
 英文技术名保持原样（如 skill、hook、manifest、zip、payload、Markdown、JSON）。
