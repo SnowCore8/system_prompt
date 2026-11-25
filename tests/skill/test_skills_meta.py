@@ -206,6 +206,22 @@ class HistoryTextTest(unittest.TestCase):
                 if match:
                     self.fail(f"{path.relative_to(REPO)}:{number} 含历史记录措辞 {match.group(0)!r}")
 
+    def test_no_change_history_in_code_comments(self) -> None:
+        files = [
+            *sorted((REPO / "scripts").glob("*.sh")),
+            *sorted((REPO / "shared/scripts").glob("*.py")),
+            *sorted((REPO / "plugins/dsh/src").glob("*.js")),
+            *sorted((REPO / ".github/workflows").glob("*.yml")),
+        ]
+        for path in files:
+            for number, line in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
+                stripped = line.lstrip()
+                if not stripped.startswith(("#", "//", "/*", "*")):
+                    continue
+                match = self.PATTERN.search(line)
+                if match:
+                    self.fail(f"{path.relative_to(REPO)}:{number} 注释含历史记录措辞 {match.group(0)!r}")
+
 
 if __name__ == "__main__":
     unittest.main()
