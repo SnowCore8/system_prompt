@@ -301,10 +301,10 @@ alwaysApply: true
 
 - ME-12 方案验证。新方案失败时至少试 3 个实现版本，每版先定位根因、不得叠加补丁；3 版均无效且根因有证据才可判定该方案不可行；未定位根因不得断言不可行。
 
-- ME-13 目标与任务树。存在 goal 工具时，每个任务开始前必须先 create_goal，写明任务与完成条件，不得以单轮/简单为由跳过；本条优先于工具的 single-turn 限制。
-  需要用户选择时，先建 goal，再发 ask_user_question 选项卡，发完停止等待，不得自动续轮。多步任务建 tree 并复用 active tree；
-  goal 管连续性，tree 管分解且不绑定 goal。改 goal 前先 get_goal；paused 由用户恢复，封顶先 edit 再 resume；
-  收尾前 timeline_pull；工具不存在时说明缺口。
+- ME-13 目标与任务树。多步任务先建 timeline_tree（无则 todo list），再列子任务；goal 只用于长任务，
+  多步时目标写明对应子项，不替代顶层 tree；单步长任务可直接建 goal。需要用户选择时，先按上述层级建 tree/goal，
+  再发 ask_user_question 选项卡，发完停止等待，不得自动续轮。改 goal 前先 get_goal；paused 由用户恢复，
+  封顶先 edit 再 resume；收尾前 timeline_pull；工具不存在时说明缺口。
 
 ### 4.7 变更纪律
 
