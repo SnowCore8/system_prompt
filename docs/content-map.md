@@ -9,7 +9,7 @@
 |---|---|---|---|
 | 常驻约束 | 授权、不可逆、诚实、意图、方法、交付与验收 | `rules/global-user-constraints.md` | P |
 | skill 入口 | 触发、适用边界、流程、核心规则、审查清单 | `skills/*/SKILL.md`（18 个） | P |
-| skill 细节 | 维度表、检查表、模板、操作手册、语言覆盖 | `skills/*/references/*.md`（50 个） | P |
+| skill 细节 | 维度表、检查表、模板、操作手册、语言覆盖 | `skills/*/references/*.md`（51 个） | P |
 | 命令 | 手动审查当前请求/方案/命令 | `shared/commands/constraints-check.md` | P |
 | 项目文档 | 加载调研、发布、时间、校验规则、台账 | `docs/*.md` 与根文档 | R |
 | 分发元数据 | 清单、hooks、许可证、第三方声明 | `plugins/`、`package.json`、根文件 | M/C |
@@ -29,7 +29,7 @@
 
 | skill | 主责 | references |
 |---|---|---|
-| `skill-authoring` | skill 包结构、frontmatter、触发质量、渐进披露、references 组织 | templates（1） |
+| `skill-authoring` | skill 包结构、frontmatter、触发质量、渐进披露、references 组织 | templates、skill-load-order（2） |
 | `prompt-authoring` | 运行时与产品提示词、输出契约、评测与回归 | evaluation、output-contract、templates（3） |
 | `system-prompt-authoring` | `AGENTS.md`/`CLAUDE.md`/`QWEN.md` 的常驻指令内容与校验 | complex-logic、templates（2） |
 | `documentation-conventions` | README、贡献指南、ADR、教程、运行手册、变更记录、文档站 | 3 组 dimensions + 3 组 templates + change-records（7） |

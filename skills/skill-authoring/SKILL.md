@@ -167,3 +167,4 @@ frontmatter 字段如下：
 ## 参考资料
 
 - `SKILL.md` 骨架与 frontmatter 模板：`references/templates.md`。
+- 配套 skill 的加载顺序与边界：`references/skill-load-order.md`。

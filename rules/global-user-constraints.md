@@ -279,18 +279,14 @@ alwaysApply: true
   schema 的字段名、类型、必填项与枚举值；参数错误先修正，不得绕过。
 - ME-9 工具调度。相互独立的工具调用应当并发发出；存在依赖的，应当依序发出。每一轮应当先完成调用
   编排，再一并发出。逐项等待将浪费时间。
-- ME-10 规范的按需加载。新建项目、为项目制定规范，或整改明显不规范的存量项目时，应当依任务实际涉
-  及的方面加载配套 skill；顺序可以参照：`repository-governance-conventions` →
-  `vcs-collaboration-conventions` → `testing-and-quality-conventions` →
-  `code-style-conventions`、`naming-conventions`、`comment-conventions` →
-  `security-compliance-conventions`、`documentation-conventions`、`release-operations-conventions` →
-  `architecture-and-design-conventions`、`api-and-data-conventions`、`performance-conventions`、
-  `concurrency-conventions`。`debugging-conventions`、`refactoring-conventions`、`prompt-authoring`、
-  `skill-authoring`、`system-prompt-authoring` 依任务出现时加载。每一步仅应加载当前任务所需的
-  skill 与章节，形成可检查的结果后，再进入下一步。上述 skill 构成配套体系，第三方插件中主题相近
-  的，不替代上述 skill；宿主未提供的，应当说明缺口，并直接依本文件实施。一次性加载全部 skill 将占
-  用上下文，不相关规则还会稀释判断；加载 skill 不构成修改文件的授权，是否修改仍依用户请求确定，
-  第 4.2 节的高风险操作仍应单独取得同意。
+- ME-10 规范的按需加载。新建项目、为项目制定规范，或整改明显不规范的存量项目时，按任务实际需要加载配套 skill：`repository-governance-conventions`、
+  `vcs-collaboration-conventions`、`testing-and-quality-conventions`、`code-style-conventions`、
+  `naming-conventions`、`comment-conventions`、`security-compliance-conventions`、
+  `documentation-conventions`、`release-operations-conventions`、`architecture-and-design-conventions`、
+  `api-and-data-conventions`、`performance-conventions`、`concurrency-conventions`、
+  `debugging-conventions`、`refactoring-conventions`、`prompt-authoring`、`skill-authoring`、
+  `system-prompt-authoring`；加载顺序与边界见 `skill-authoring/references/skill-load-order.md`。
+  加载 skill 不构成修改授权；高风险操作依第 4.2 节取得同意。
 - ME-11 复用优先。实施功能前，应当依次考察标准库、现有依赖与维护良好的第三方库。现有实现可以胜任
   的，不得手写实现。引入依赖仍应当依项目准入标准核验维护状况、已知漏洞、许可证兼容性与移除路径；
   不得以费用、安装体积或传递依赖数量为由，拒绝能够替代手写实现的优质库。自行实现的，应当在交付中
@@ -301,6 +297,8 @@ alwaysApply: true
   多步时目标写明对应子项，不替代顶层 tree；单步长任务可直接建 goal，不建 tree。需要用户选择时，按此顺序
   建 tree/goal，再发 ask_user_question 选项卡，发完停止等待，不得自动续轮。改 goal 前先 get_goal；paused 由用户恢复，
   封顶先 edit 再 resume；goal 达成后立即 complete，不得遗留 active；收尾前 timeline_pull；工具不存在时说明缺口。
+- ME-14 行动前说明。每次发起工具调用前，代理应当先在正文中输出一句不超过 30 个汉字的话，说明本次动作与对象；
+  该句不得写入思考内容，之后不再展开解释。一次工具调用对应一句；同一轮并行多个工具调用时，一句覆盖整批。
 
 ### 4.7 变更纪律
 
