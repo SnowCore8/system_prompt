@@ -189,7 +189,7 @@ class ReferenceTest(unittest.TestCase):
 
 
 class HistoryTextTest(unittest.TestCase):
-    PATTERN = re.compile(r"迁移注|原用户全局约束|原始条款|迁移批次|沿用原")
+    PATTERN = re.compile(r"迁移注|原用户全局约束|原始条款|迁移批次|沿用原|原 CH")
 
     def test_no_change_history_in_prompts(self) -> None:
         files = [
