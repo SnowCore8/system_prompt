@@ -72,8 +72,7 @@ frontmatter 字段如下：
 - **`references` 按主题管理。** 文件名按内容命名，下列为示例而非闭集：`dimensions.md`、`templates.md`、
   `languages.md`、`playbooks.md`、`gates.md`、`evaluation.md`、`checklist.md`、`checklists.md`。单个维度
   文件超过 300 行或 20 节时，按主题拆分为 `dimensions-<主题>.md`，该拆分规则仅适用于维度文件；清单只有
-  一份时使用 `checklist.md`，多份时使用 `checklists.md`；索引详情列应当写明文件名与节号，节号沿用原
-  编号。
+  一份时使用 `checklist.md`，多份时使用 `checklists.md`；索引详情列应当写明文件名与节号，节号与索引一致。
 - **一项事实一个权威来源。** 共享事实仅在一处维护，其他 skill 以链接指向该处并注明“由 X 裁定”，不得复制。
 - **规则可判定。** 应当避免使用“合理”“合适”，优先给出可观察条件、阈值与正反例。改写示例见
   `references/templates.md`。
