@@ -1,7 +1,6 @@
 # 用户全局约束：Qoder 插件
 
-维护者：SnowCore8；何时阅读：安装或排查本插件时。本文是插件描述，只说明安装与运行行为，
-不定义规则；规则以包内 `rules/global-user-constraints.md` 为准。
+维护者：SnowCore8。本文只说明安装与运行行为，不定义规则；规则以包内 `rules/global-user-constraints.md` 为准。
 
 安装后由 `SessionStart` hook 注入约束全文，并在 `SessionStart` 与 `UserPromptSubmit`
 注入当前时间；已经通过规则或 `AGENTS.md` 加载同一份约束时自动跳过。
@@ -26,6 +25,11 @@ qoderclicn plugins install global-user-constraints-qoder-<版本>.zip --scope us
 ```
 
 安装后开新会话；不需要手动复制规则。
+
+## 命令
+
+`constraints-check` 读取包内 `rules/global-user-constraints.md`，审查当前请求、方案或待执行命令；
+只审查，不执行被审查对象。
 
 ## 行为
 

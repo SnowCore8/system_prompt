@@ -1,7 +1,6 @@
 # 用户全局约束：DeepSeek Harness bundle
 
-维护者：SnowCore8；何时阅读：安装或排查本 bundle 时。本文是插件描述，只说明安装与运行行为，
-不定义规则；规则以包内 `rules/global-user-constraints.md` 为准。
+维护者：SnowCore8。本文只说明安装与运行行为，不定义规则；规则以包内 `rules/global-user-constraints.md` 为准。
 
 安装到 profile 后，以 skill 提供者形式提供十八个通用规范 skill。
 
@@ -44,3 +43,9 @@ pnpm dsh plugin --profile web add /path/to/global-user-constraints-dsh-<版本>
 - 约束正文：安装后由插件经 `ctx.systemPrompt.section()` 自动注入，无需手动复制；若 `~/.dsh/AGENTS.md`
   或 `~/.agents/AGENTS.md` 已加载同内容（按 sha256 去重），则跳过注入避免重复。时间由 DSH 自身注入，
   本包不重复。
+
+## 安全边界
+
+- bundle 只读包内 `skills/`、`rules/` 并注册到宿主；不写盘、不联网、不持久化。
+- 注入的约束全文会进入模型上下文；敏感内容不要写进规则正文。
+- 安装即执行：只安装可信来源的包，并核对 SHA256 校验和。

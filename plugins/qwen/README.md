@@ -1,7 +1,6 @@
 # 用户全局约束：Qwen Code 扩展
 
-维护者：SnowCore8；何时阅读：安装或排查本扩展时。本文是插件描述，只说明安装与运行行为，
-不定义规则；规则以包内 `constraints/global-user-constraints.md` 为准。
+维护者：SnowCore8。本文只说明安装与运行行为，不定义规则；规则以包内 `constraints/global-user-constraints.md` 为准。
 
 安装后 `SessionStart` 注入约束全文与当前时间，`UserPromptSubmit` 每次刷新时间；已经通过
 `.qwen/rules`、`AGENTS.md` 或 `QWEN.md` 加载同一份约束时跳过。
@@ -27,6 +26,11 @@ qwen extensions install global-user-constraints-qwen-<版本>.zip
 
 安装后开新会话；不需要手动复制规则。Qwen 会把 `${CLAUDE_PLUGIN_ROOT}` 替换成扩展根，
 约束脚本同时接受根目录参数，不依赖环境变量。
+
+## 命令
+
+`constraints-check` 读取包内 `constraints/global-user-constraints.md`，审查当前请求、方案或待执行命令；
+只审查，不执行被审查对象。
 
 ## 行为
 
