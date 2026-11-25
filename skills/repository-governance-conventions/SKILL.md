@@ -1,6 +1,6 @@
 ---
 name: repository-governance-conventions
-description: 定义、审查并修复任意仓库的必需文件、卫生、治理与打包实践，覆盖社区文档与元数据，以及分支、产物、角色与发布政策。适用于创建仓库、审查公开或内部仓库、分配维护者角色与路由审批权，或准备并验证一次包发布。不适用于发布节奏与回滚（见 release-operations-conventions）、门禁阈值（见 testing-and-quality-conventions）、协作流程（见 vcs-collaboration-conventions）与 SBOM/声明内容（见 security-compliance-conventions）。
+description: 定义、审查并修复任意仓库的必需文件、卫生与打包实践，覆盖社区文档、元数据、产物、角色与审批路由。适用于创建仓库、审查公开或内部仓库、分配维护者角色或准备并验证一次包发布。不适用于分支与发布流程（见 vcs-collaboration-conventions 与 release-operations-conventions）、门禁阈值（见 testing-and-quality-conventions）与 SBOM/声明内容（见 security-compliance-conventions）。
 argument-hint: '[路径或范围]'
 ---
 

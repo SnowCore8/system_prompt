@@ -17,7 +17,7 @@
   "commands": {
     "constraints-check": {
       "source": "./commands/constraints-check.md",
-      "description": "按用户全局约束审查当前请求或方案"
+      "description": "依用户全局约束审查当前对话中的请求、建议或待执行命令"
     }
   },
   "hooks": "./hooks/hooks.json",

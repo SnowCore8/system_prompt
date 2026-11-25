@@ -189,7 +189,7 @@ python3 <skill-dir>/scripts/check.py --strict AGENTS.md
 脚本依赖 `markdown-it-py==4.2.0`；缺失时脚本报错并打印安装命令，不自动安装。校验脚本自身应当有测试，
 覆盖解析、规则判定与退出码；测试入口、依赖与全量校验命令见项目文档（本仓库为 `CONTRIBUTING.md`）。
 
-规则表、校验范围、有意不校验的项与输出级别见 [references/check-rules.md](references/check-rules.md)。
+机器校验的错误、警告与建议级别以脚本输出为准；完整规则表属于维护者文档，不在本 skill 复制。
 
 ## 反模式
 

@@ -32,6 +32,11 @@ pnpm dsh plugin --profile web add /path/to/global-user-constraints-dsh-<版本>
 
 装完开新会话；没生效重启 `pnpm dsh web`。
 
+## 命令
+
+本 bundle 不注册 `constraints-check` 命令；该命令由 Qoder/Qwen 包提供。DSH 中直接按规则与 skill 审查，
+不引入另一套命令格式。
+
 ## 行为
 
 - 行 id 是 `global-user-constraints-skills`，可在 profile 的 `cordis.patch.yml` 里覆盖或禁用。

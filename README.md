@@ -29,6 +29,7 @@ Qoder/Qwen 包只放清单与 hook；三包都由 `scripts/materialize.sh` 从�
 | `CONTRIBUTING.md` | 人类贡献、校验与发布约定（不进入模型上下文） |
 | `docs/agent-tooling-loading.md` | 三工具 rules/skills/plugins 加载规则调研 |
 | `docs/time-awareness.md` | Qoder/Qwen 时间注入设计 |
+| `docs/markdown-check-rules.md` | Markdown 校验脚本的规则表与输出级别 |
 | `docs/release.md` | 版本规则、tag 发布流程与回滚 |
 | `docs/prompt-inventory.md` | 提示词与纯规则分类台账及迁移批次 |
 | `scripts/` | `assemble.sh` 生成开发入口、`materialize.sh` 组装包、`check.sh` 校验、`dist.sh` 出包 |
@@ -83,6 +84,7 @@ Qoder/Qwen 包只放清单与 hook；三包都由 `scripts/materialize.sh` 从�
   细节见 [plugins/dsh/README.md](plugins/dsh/README.md)。
 - 约束：装完即自动注入，无需手动复制；若 `~/.dsh/AGENTS.md` 已加载同内容则按 sha256 去重跳过。
   时间由 DSH 自身注入，不需要额外 hook。
+- 命令：DSH 不注册 `constraints-check`；该命令仅由 Qoder/Qwen 包提供，DSH 中直接按规则与 skill 审查。
 
 ## Qwen Code 适配
 
