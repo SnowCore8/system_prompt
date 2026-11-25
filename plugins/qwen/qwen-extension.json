@@ -1,6 +1,6 @@
 {
   "name": "global-user-constraints",
-  "version": "0.39.0",
+  "version": "0.40.0",
   "displayName": "全局用户约束",
   "description": "Qwen Code 扩展：安装后 SessionStart 注入全局用户约束、UserPromptSubmit 注入当前时间；十八个 skill 与一个手动审查命令。",
   "contextFileName": [],
