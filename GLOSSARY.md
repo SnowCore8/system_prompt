@@ -4,10 +4,10 @@
 
 | 术语 | 英文 | 用法 | 不要写成 |
 |---|---|---|---|
-| 用户全局约束 | Global User Constraints（插件名） | `rules/global-user-constraints.md` 的正文与整体 | 全局用户约束、约束规则、全局规则 |
+| 全局用户约束 | Global User Constraints（插件名） | `rules/global-user-constraints.md` 的正文与整体 | 用户全局约束、约束规则、全局规则 |
 | 约束正文 | constraint text | 该文件的内容 | 规则正文 |
 | 约束条款 | constraint clause | 正文中的单条编号要求（SP-1 等） | 规则条款 |
-| 约束文件 | constraints file | 承载用户全局约束的文件 | 规则文件 |
+| 约束文件 | constraints file | 承载全局用户约束的文件 | 规则文件 |
 | 规则 | rule | 宿主 rules 机制（规则目录、规则激活），以及 skill 的内容与格式规则（各 skill 的规则表与 MD-*） | 指代约束正文 |
 | 校验 | check | 自动化检查：运行 `check.py`、`check.sh` 或测试 | 机检、检查（指自动化工具时） |
 | 校验脚本 | checker | `scripts/check.sh`（全量校验）；`skills/system-prompt-authoring/scripts/check.py`（Markdown 校验器） | 检查器、检查脚本、机检脚本 |
@@ -38,7 +38,7 @@
 | 变更日志 | changelog | `CHANGELOG.md` | 更新日志 |
 
 英文技术名保持原样（如 skill、hook、manifest、zip、payload、Markdown、JSON）。
-`global-user-constraints` 与 Global User Constraints 是插件标识和英文名，中文一律写「用户全局约束」，不按英文语序回译。
+`global-user-constraints` 与 Global User Constraints 是插件标识和英文名，中文一律写「全局用户约束」。
 
 ## 翻译与写作口径
 

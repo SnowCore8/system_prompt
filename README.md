@@ -1,6 +1,6 @@
 # AI 编码代理 system prompt
 
-本仓库维护用户全局约束、十八个通用规范 skill，以及面向 Qoder、Qwen Code、DeepSeek Harness（DSH）的三个包。
+本仓库维护全局用户约束、十八个通用规范 skill，以及面向 Qoder、Qwen Code、DeepSeek Harness（DSH）的三个包。
 `rules/`、`skills/`、`shared/` 是唯一真源；开发入口与安装包由组装脚本生成，不复制第二份。
 
 维护者：SnowCore8。职责见 [GOVERNANCE.md](GOVERNANCE.md)，代理指令见 [AGENTS.md](AGENTS.md)，人类贡献与发布约定见

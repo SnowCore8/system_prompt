@@ -1,4 +1,4 @@
-# 用户全局约束：Qoder 插件
+# 全局用户约束：Qoder 插件
 
 维护者：SnowCore8。本文只说明安装与运行行为，不定义规则；规则以包内 `rules/global-user-constraints.md` 为准。
 
@@ -11,7 +11,7 @@
 |---|---|
 | `.qoder-plugin/plugin.json` | Qoder 插件清单 |
 | `hooks/hooks.json` | hook 配置，根目录用 `${QODER_PLUGIN_ROOT}` |
-| `rules/global-user-constraints.md` | 用户全局约束正文 |
+| `rules/global-user-constraints.md` | 全局用户约束正文 |
 | `skills/` | 十八个通用规范 skill |
 | `commands/` | 手动审查命令 |
 | `scripts/` | 约束与时间注入脚本 |

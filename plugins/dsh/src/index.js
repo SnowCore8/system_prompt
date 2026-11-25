@@ -1,5 +1,5 @@
 /**
- * DSH bundle：把包内 skills/ 注册为 skill 提供者，并把用户全局约束注入系统提示。
+ * DSH bundle：把包内 skills/ 注册为 skill 提供者，并把全局用户约束注入系统提示。
  *
  * 安装本 bundle 后，十八个通用规范 skill 会出现在会话目录中；约束全文经
  * ctx.systemPrompt.section() 自动注入，无需手动复制 ~/.dsh/AGENTS.md。
@@ -23,7 +23,7 @@ const CONSTRAINTS_FILENAME = 'global-user-constraints.md'
 // 常驻约束正文的硬上限，与 scripts/check.sh、shared/scripts/inject_constraints.py 保持一致。
 const CONSTRAINTS_MAX_BYTES = 32 * 1024
 const SECTION_NAME = 'global-user-constraints'
-// 用户全局约束排在计划策略（500）之前。
+// 全局用户约束排在计划策略（500）之前。
 const SECTION_ORDER = 400
 function findPackageRoot() {
   let current = path.dirname(fileURLToPath(import.meta.url))
@@ -135,7 +135,7 @@ function sectionFromFile(pkgRoot, filename, sectionName, order, maxBytes) {
     return {
       name: sectionName,
       order,
-      text: `用户全局约束正文超过 ${maxBytes / 1024} KiB 硬上限，未注入全文；应当读取 ${filePath} 并在本会话遵守。`,
+      text: `全局用户约束正文超过 ${maxBytes / 1024} KiB 硬上限，未注入全文；应当读取 ${filePath} 并在本会话遵守。`,
       interpolate: false,
     }
   }
@@ -147,7 +147,7 @@ function sectionFromFile(pkgRoot, filename, sectionName, order, maxBytes) {
   }
 }
 
-/** 用户全局约束 section；文件缺失或已去重时返回 undefined，超过 32 KiB 硬上限时返回提示 section。 */
+/** 全局用户约束 section；文件缺失或已去重时返回 undefined，超过 32 KiB 硬上限时返回提示 section。 */
 export function constraintsSection(pkgRoot) {
   return sectionFromFile(pkgRoot, CONSTRAINTS_FILENAME, SECTION_NAME, SECTION_ORDER, CONSTRAINTS_MAX_BYTES)
 }

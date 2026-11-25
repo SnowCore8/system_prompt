@@ -190,7 +190,7 @@ class ReferenceTest(unittest.TestCase):
 
 class HistoryTextTest(unittest.TestCase):
     PATTERN = re.compile(
-        r"迁移注|原用户全局约束|原始条款|迁移批次|沿用原|原 CH|原编号|此前版本|原先|"
+        r"迁移注|原(?:用户全局约束|全局用户约束)|原始条款|迁移批次|沿用原|原 CH|原编号|此前版本|原先|"
         r"FIXED|formerly|previously|\bwas\b.*\bnow\b"
     )
     DATE = re.compile(r"20\d{2}-\d{2}-\d{2}")

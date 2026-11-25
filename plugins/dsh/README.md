@@ -1,4 +1,4 @@
-# 用户全局约束：DeepSeek Harness bundle
+# 全局用户约束：DeepSeek Harness bundle
 
 维护者：SnowCore8。本文只说明安装与运行行为，不定义规则；规则以包内 `rules/global-user-constraints.md` 为准。
 
@@ -12,7 +12,7 @@
 | `plugins/dsh/cordis.patch.yml` | 插入 skill 提供者行 `global-user-constraints-skills` |
 | `plugins/dsh/src/index.js` | Cordis 插件：`apply(ctx)` 注册 skill provider 与 `systemPrompt.section()` |
 | `skills/` | 十八个通用规范 skill |
-| `rules/global-user-constraints.md` | 用户全局约束正文 |
+| `rules/global-user-constraints.md` | 全局用户约束正文 |
 
 ## 安装
 

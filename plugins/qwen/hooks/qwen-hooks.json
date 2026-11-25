@@ -6,7 +6,7 @@
           "type": "command",
           "command": "python -X utf8 \"${CLAUDE_PLUGIN_ROOT}/scripts/inject_constraints.py\" \"${CLAUDE_PLUGIN_ROOT}\"",
           "name": "inject-constraints",
-          "description": "注入用户全局约束全文，已有同内容规则时跳过",
+          "description": "注入全局用户约束全文，已有同内容规则时跳过",
           "timeout": 10
         },
         {

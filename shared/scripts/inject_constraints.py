@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""SessionStart 钩子：把用户全局约束全文注入会话上下文。
+"""SessionStart 钩子：把全局用户约束全文注入会话上下文。
 
 约束正文来自插件包内的 rules/global-user-constraints.md。若用户级或项目级
 已经加载同内容的规则或 AGENTS.md，则跳过注入，避免同一份约束重复进入上下文。
@@ -122,13 +122,13 @@ def main() -> int:
         None,
     )
     if rules_path is None:
-        emit(event, "用户全局约束未注入：插件包内未找到 rules/ 或 constraints/ 下的 global-user-constraints.md。"
+        emit(event, "全局用户约束未注入：插件包内未找到 rules/ 或 constraints/ 下的 global-user-constraints.md。"
              "本会话须先读取约束；无法读取的，停止并报告安装缺失。")
         return 0
     try:
         data = rules_path.read_bytes()
     except OSError as error:
-        emit(event, f"用户全局约束未注入：读取 {rules_path} 失败（{error.strerror or error}）。"
+        emit(event, f"全局用户约束未注入：读取 {rules_path} 失败（{error.strerror or error}）。"
              "本会话须先读取约束；无法读取的，停止并报告。")
         return 0
 
@@ -137,11 +137,11 @@ def main() -> int:
         return 0
 
     if len(data) > MAX_BYTES:
-        emit(event, f"用户全局约束正文超过 32 KiB 硬上限，未直接注入；应当读取 {rules_path} 并在本会话遵守。")
+        emit(event, f"全局用户约束正文超过 32 KiB 硬上限，未直接注入；应当读取 {rules_path} 并在本会话遵守。")
         return 0
 
     text = data.decode("utf-8", "replace").strip()
-    emit(event, f"用户全局约束（由插件于会话启动时注入，必须遵守）：\n\n{text}")
+    emit(event, f"全局用户约束（由插件于会话启动时注入，必须遵守）：\n\n{text}")
     return 0
 
 
