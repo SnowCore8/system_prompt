@@ -77,5 +77,4 @@
 
 ## 参考文献
 
-8 份厂商文档的来源标签与链接见同目录的 [provenance.md](provenance.md)“来源表”；为避免重复，
-此处不再复制 URL。
+8 份厂商文档的来源标签与链接见仓库 `docs/system-prompt-sources.md` 的“来源表”；为避免重复，此处不复制 URL。

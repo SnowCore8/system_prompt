@@ -222,6 +222,5 @@ python3 <skill-dir>/scripts/check.py --strict AGENTS.md
 
 ## 参考资料
 
-规则表的“来源”列使用简写标签；标签定义、文档链接与核验日期见
-[references/provenance.md](references/provenance.md)（维护者资料，不进入默认加载）。仅在某一规则的来源受到
-质疑或所链文档更新时阅读该文件；日常执行不阅读。
+规则维护、超限处理与示例见 [references/constraint-maintenance.md](references/constraint-maintenance.md)
+（维护者资料，不进入默认加载）。厂商来源表在仓库 `docs/system-prompt-sources.md`，不随 skill 包分发。

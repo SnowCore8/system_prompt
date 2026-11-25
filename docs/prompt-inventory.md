@@ -21,7 +21,7 @@
 | `AGENTS.md` | P | DSH/Qwen/Qoder 项目指令 | 只放代理项目指令 |
 | `CONTRIBUTING.md` | R | 人类贡献者与维护者 | 人类文档，不进入模型上下文 |
 | `skills/*/SKILL.md` | P | 三端 skill 发现；正文按需加载 | 18 个 skill 入口 |
-| `skills/*/references/*.md` | P（2 个 R） | skill 按需读取 | 52 个；`constraint-maintenance.md`、`provenance.md` 为维护者资料 |
+| `skills/*/references/*.md` | P（1 个 R） | skill 按需读取 | 51 个；`constraint-maintenance.md` 为维护者资料 |
 | `shared/commands/constraints-check.md` | P | Qoder/Qwen 命令；DSH 未注册 | 命令提示词 |
 | `shared/scripts/*.py` | C | Qoder/Qwen hook | 提示词发射器，不是提示词正文 |
 | `plugins/dsh/src/index.js`、hooks | C | 宿主运行时 | 注入与 skill 提供者 |
@@ -36,7 +36,7 @@
 - `AGENTS.md` 只承载代理项目指令；`CONTRIBUTING.md` 只承载人类贡献与发布流程。
 - `skill-authoring` 不管辖本仓库打包；`system-prompt-authoring` 不复制本仓库的 32 KiB、`check.sh` 或来源表。
 - `documentation-conventions` 使用通用文档事实，不陈述本仓库的软链或 CHANGELOG 事实。
-- `system-prompt-authoring/references/constraint-maintenance.md` 与 `provenance.md` 是 R；其余 references 为 P。
+- `system-prompt-authoring/references/constraint-maintenance.md` 是 R；其余 references 为 P；来源表在 `docs/system-prompt-sources.md`。
 - 机器校验规则在 `docs/markdown-check-rules.md`，不在 skill references 中重复。
 - 发布 runbook 以 `docs/release.md` 为准；README、CONTRIBUTING、GOVERNANCE 只保留摘要与链接。
 - Qoder 插件 `rules/` 当前不被 CLI 加载；DSH 不注册 `constraints-check` 命令；DSH 与 Qoder/Qwen hook 均注入 rules 原文，宿主解析另行处理。
