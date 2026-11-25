@@ -29,6 +29,7 @@ Qoder/Qwen 包在 `plugins/` 下用相对软链引用真源；DSH bundle 从仓�
 | `docs/agent-tooling-loading.md` | 三工具 rules/skills/plugins 加载规则调研 |
 | `docs/time-awareness.md` | Qoder/Qwen 时间注入设计 |
 | `docs/release.md` | 版本规则、tag 发布流程与回滚 |
+| `docs/prompt-inventory.md` | 提示词与纯规则分类台账及迁移批次 |
 | `scripts/` | `check.sh` 全量校验、`dist.sh` 出包、`materialize.sh` 物化 |
 | `GLOSSARY.md` | 术语与写法约定 |
 | `CHANGELOG.md` | 按版本记录的可观察变更 |

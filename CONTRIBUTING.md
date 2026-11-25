@@ -43,7 +43,3 @@
 - 发布：版本采用 SemVer，三个清单的 `version` 必须一致；修改版本与 CHANGELOG 后，创建 `v<version>` tag，
   流程见 `docs/release.md`。本地出包使用 `scripts/dist.sh` 一次构建三个 zip（默认要求干净工作区，
   `--require-tag` 要求 tag 匹配）；zip 与 `.sha256` 不纳入版本库。
-
-## 输出
-
-- 输出应当结论先行；未执行的验证标注“未运行”，不得粘贴未曾见到的输出。

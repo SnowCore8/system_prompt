@@ -27,7 +27,7 @@ qoderclicn plugins install global-user-constraints-qoder-<版本>.zip --scope us
 
 ## 行为
 
-- `SessionStart`：读取 `rules/global-user-constraints.md` 注入全文（约 35 KB），注入前比对
+- `SessionStart`：读取 `rules/global-user-constraints.md` 注入全文（约 32 KiB），注入前比对
   用户级 `~/.qoder-cn/rules/`（国际版 `~/.qoder/rules/`）、`AGENTS.md`、项目 `.qoder/rules/`
   与 `AGENTS.local.md`，同内容则跳过；`source` 为 `resume` 时也跳过，`startup`/`new`/`clear`/`compact`
   才注入；同一事件还会注入当前本地时间、UTC 偏移、时区与星期。
