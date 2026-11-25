@@ -28,8 +28,7 @@ alwaysApply: true
 
 ## 2. 收录原则与制定理由
 
-本文件仅收录防止具体错误的规则；收录原则、示例与依据见
-`system-prompt-authoring/references/constraint-maintenance.md`。仓库特定的发布、打包、目录与工具流程写入项目文档或对应 skill。
+本文件仅收录防止具体错误的规则。仓库特定的发布、打包、目录与工具流程写入项目文档或对应 skill。
 
 ## 3. 术语与判定规则
 
@@ -345,5 +344,4 @@ alwaysApply: true
 
 ## 5. 效力边界与适用范围
 
-人工审查与输出真实性见
-`system-prompt-authoring/references/constraint-maintenance.md`。
+人工审查与输出真实性由维护者负责；本文件不覆盖发布、打包与项目特有流程。

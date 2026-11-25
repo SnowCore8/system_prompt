@@ -9,7 +9,7 @@
 |---|---|---|---|
 | 常驻约束 | 授权、不可逆、诚实、意图、方法、交付与验收 | `rules/global-user-constraints.md` | P |
 | skill 入口 | 触发、适用边界、流程、核心规则、审查清单 | `skills/*/SKILL.md`（18 个） | P |
-| skill 细节 | 维度表、检查表、模板、操作手册、语言覆盖 | `skills/*/references/*.md`（51 个） | P，另有 1 个 R |
+| skill 细节 | 维度表、检查表、模板、操作手册、语言覆盖 | `skills/*/references/*.md`（50 个） | P |
 | 命令 | 手动审查当前请求/方案/命令 | `shared/commands/constraints-check.md` | P |
 | 项目文档 | 加载调研、发布、时间、校验规则、台账 | `docs/*.md` 与根文档 | R |
 | 分发元数据 | 清单、hooks、许可证、第三方声明 | `plugins/`、`package.json`、根文件 | M/C |
@@ -31,7 +31,7 @@
 |---|---|---|
 | `skill-authoring` | skill 包结构、frontmatter、触发质量、渐进披露、references 组织 | templates（1） |
 | `prompt-authoring` | 运行时与产品提示词、输出契约、评测与回归 | evaluation、output-contract、templates（3） |
-| `system-prompt-authoring` | `AGENTS.md`/`CLAUDE.md`/`QWEN.md` 的常驻指令内容与校验 | complex-logic、templates（P）；constraint-maintenance（R，3） |
+| `system-prompt-authoring` | `AGENTS.md`/`CLAUDE.md`/`QWEN.md` 的常驻指令内容与校验 | complex-logic、templates（2） |
 | `documentation-conventions` | README、贡献指南、ADR、教程、运行手册、变更记录、文档站 | 3 组 dimensions + 3 组 templates + change-records（7） |
 
 ### 3.2 设计与代码
@@ -104,7 +104,7 @@
 
 ## 7. 例外与检查
 
-- `system-prompt-authoring/references/constraint-maintenance.md` 是维护者资料，不进入默认加载；厂商来源表在 `docs/system-prompt-sources.md`。
+- 约束维护与厂商来源在 `docs/system-prompt-maintenance.md` 与 `docs/system-prompt-sources.md`，不随 skill 包分发。
 - 专题 references 只陈述当前规则，不写来源头或迁移记录；历史见 `CHANGELOG.md`。
 - `docs/markdown-check-rules.md` 是脚本规则表（R），不属于 skill 内容。
 - 内容结构由 `tests/skill/test_skills_meta.py` 检查首尾段、250 行上限、维度索引与重复段落；全量门禁见 `scripts/check.sh`。

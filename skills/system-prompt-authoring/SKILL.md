@@ -100,8 +100,8 @@ S5 反对将编号作为隐含优先级。文件可以显式声明同节内的�
   过程：该模型自带推理，仅给出目标与约束即可（OAI-PE §Prompting reasoning models）。
 - **长度**：常驻指令文件应当有明确的长度上限；具体数值、校验命令与超限后的处理流程由项目文档规定（本仓库见
   `CONTRIBUTING.md` 与 `AGENTS.md`），本 skill 不重复具体阈值。超过上限时，必须按主题把规则提取到对应 skill 的
-  `references/`，正文只保留摘要与加载指引；单行限制见 S12。收录原则、制定理由、适用限制、示例与依据见
-  [references/constraint-maintenance.md](references/constraint-maintenance.md)（维护者资料，不进入默认加载）。
+  `references/`，正文只保留摘要与加载指引；单行限制见 S12。收录原则、制定理由与示例属于维护者材料，不在本
+  skill 重复。
 - **禁止项**：保留红线并说明理由；其余禁止项均应当写出替代行为。
 - **优先级**：编号本身不产生优先级；不得写入“编号小的优先”。文件可以显式声明顺序；存在声明的，遵循
   声明。OAI-MS 层级为 root > system > developer > user > guideline；同层中较晚的消息覆盖较早的消息。
@@ -222,5 +222,5 @@ python3 <skill-dir>/scripts/check.py --strict AGENTS.md
 
 ## 参考资料
 
-规则维护、超限处理与示例见 [references/constraint-maintenance.md](references/constraint-maintenance.md)
-（维护者资料，不进入默认加载）。厂商来源表在仓库 `docs/system-prompt-sources.md`，不随 skill 包分发。
+模板见 [references/templates.md](references/templates.md)。约束维护与厂商来源属于维护者材料，在仓库
+`docs/system-prompt-maintenance.md` 与 `docs/system-prompt-sources.md`，不随 skill 包分发。
