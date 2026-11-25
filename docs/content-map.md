@@ -104,7 +104,6 @@
 
 ## 7. 例外与检查
 
-- 约束维护与厂商来源在 `docs/system-prompt-maintenance.md` 与 `docs/system-prompt-sources.md`，不随 skill 包分发。
-- 专题 references 只陈述当前规则；维护历史在 `CHANGELOG.md`。
+- 专题 references 只陈述当前规则。
 - `docs/markdown-check-rules.md` 是脚本规则表（R），不属于 skill 内容。
 - 内容结构由 `tests/skill/test_skills_meta.py` 检查首尾段、250 行上限、维度索引与重复段落；全量门禁见 `scripts/check.sh`。

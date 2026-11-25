@@ -36,7 +36,7 @@
 - `AGENTS.md` 只承载代理项目指令；`CONTRIBUTING.md` 只承载人类贡献与发布流程。
 - `skill-authoring` 不管辖本仓库打包；`system-prompt-authoring` 不复制本仓库的 32 KiB、`check.sh` 或来源表。
 - `documentation-conventions` 使用通用文档事实，不陈述本仓库的软链或 CHANGELOG 事实。
-- 所有 skill references 为 P；维护者材料在 `docs/system-prompt-maintenance.md` 与 `docs/system-prompt-sources.md`。
+- 所有 skill references 为 P。
 - 机器校验规则在 `docs/markdown-check-rules.md`，不在 skill references 中重复。
 - 发布 runbook 以 `docs/release.md` 为准；README、CONTRIBUTING、GOVERNANCE 只保留摘要与链接。
 - Qoder 插件 `rules/` 当前不被 CLI 加载；DSH 不注册 `constraints-check` 命令；DSH 与 Qoder/Qwen hook 均注入 rules 原文，宿主解析另行处理。

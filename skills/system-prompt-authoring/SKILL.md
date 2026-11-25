@@ -222,5 +222,4 @@ python3 <skill-dir>/scripts/check.py --strict AGENTS.md
 
 ## 参考资料
 
-模板见 [references/templates.md](references/templates.md)。约束维护与厂商来源属于维护者材料，在仓库
-`docs/system-prompt-maintenance.md` 与 `docs/system-prompt-sources.md`，不随 skill 包分发。
+模板见 [references/templates.md](references/templates.md)。
