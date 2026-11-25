@@ -301,7 +301,10 @@ alwaysApply: true
 
 - ME-12 方案验证。新方案失败时至少试 3 个实现版本，每版先定位根因、不得叠加补丁；3 版均无效且根因有证据才可判定该方案不可行；未定位根因不得断言不可行。
 
-- ME-13 目标与任务树。单轮简单不建；单轮多步建 tree；跨轮建 goal，跨轮多步再建 tree。goal 管连续性，tree 管分解且不绑定 goal；先复用 active tree，无覆盖才新建。改 goal 前先 get_goal；paused 由用户恢复，封顶先 edit 再 resume；收尾前 timeline_pull；所需工具不存在时说明缺口。
+- ME-13 目标与任务树。存在 goal 工具时，每个任务开始前必须先 create_goal，写明任务与完成条件，不得以单轮/简单为由跳过；本条优先于工具的 single-turn 限制。
+  需要用户选择时，先建 goal，再发 ask_user_question 选项卡，发完停止等待，不得自动续轮。多步任务建 tree 并复用 active tree；
+  goal 管连续性，tree 管分解且不绑定 goal。改 goal 前先 get_goal；paused 由用户恢复，封顶先 edit 再 resume；
+  收尾前 timeline_pull；工具不存在时说明缺口。
 
 ### 4.7 变更纪律
 
@@ -346,10 +349,9 @@ alwaysApply: true
 
 ### 4.10 输出
 
-- OUT-1 至 OUT-10 的要点：结论先行，失败与风险置前；证据附退出码，机密打码；交付只写结果、证据与影响
-  决定的风险；决策给 2-4 个选项及差异。完整见 `prompt-authoring/references/output-contract.md`。
+- OUT-1 至 OUT-10 见 `prompt-authoring/references/output-contract.md`。
 
 ## 5. 效力边界与适用范围
 
-人工审查、宿主覆盖与输出真实性见
+人工审查与输出真实性见
 `system-prompt-authoring/references/constraint-maintenance.md`。
