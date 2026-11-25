@@ -189,7 +189,11 @@ class ReferenceTest(unittest.TestCase):
 
 
 class HistoryTextTest(unittest.TestCase):
-    PATTERN = re.compile(r"迁移注|原用户全局约束|原始条款|迁移批次|沿用原|原 CH")
+    PATTERN = re.compile(
+        r"迁移注|原用户全局约束|原始条款|迁移批次|沿用原|原 CH|原编号|此前版本|原先|"
+        r"FIXED|formerly|previously|\bwas\b.*\bnow\b"
+    )
+    DATE = re.compile(r"20\d{2}-\d{2}-\d{2}")
 
     def test_no_change_history_in_prompts(self) -> None:
         files = [
@@ -200,7 +204,7 @@ class HistoryTextTest(unittest.TestCase):
         ]
         for path in sorted(files):
             for number, line in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
-                if path.name == "global-user-constraints.md" and "不得写迁移注" in line:
+                if path.name == "global-user-constraints.md" and "记录性措辞" in line:
                     continue
                 match = self.PATTERN.search(line)
                 if match:
@@ -218,7 +222,7 @@ class HistoryTextTest(unittest.TestCase):
                 stripped = line.lstrip()
                 if not stripped.startswith(("#", "//", "/*", "*")):
                     continue
-                match = self.PATTERN.search(line)
+                match = self.PATTERN.search(line) or self.DATE.search(line)
                 if match:
                     self.fail(f"{path.relative_to(REPO)}:{number} 注释含历史记录措辞 {match.group(0)!r}")
 
