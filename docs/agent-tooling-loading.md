@@ -372,8 +372,8 @@ DSH 里「插件」是 TypeScript 模块，导出 `apply(ctx)`；可分发的安
   DSH bundle 只带 `rules/` 与 `skills/`。
 - 时间：两者都没有内建时间感知，插件在 `SessionStart` 与 `UserPromptSubmit` 注入一行当前时间，
   见 `docs/time-awareness.md`。
-- 根 `AGENTS.md` 也会被 Qwen Code 当作项目级 `AGENTS.md` 读取，所以它只承载本仓库维护约定，
-  不承载用户全局约束。
+- 根 `AGENTS.md` 也会被 Qwen Code 当作项目级 `AGENTS.md` 读取，所以它只承载本仓库的代理项目指令；
+  人类贡献与发布流程在 `CONTRIBUTING.md`，不进入模型上下文。
 - 插件包内 Qoder 与 DSH 随包分发 `rules/`、Qwen 分发 `constraints/`（Qwen 把扩展的 `rules/` 当作
   条件规则，见 Qwen 一节）；Qoder 宿主当前不加载插件的 `rules/`（见 Qoder 一节）。
 

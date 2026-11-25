@@ -6,7 +6,7 @@ Qoder/Qwen 包在 `plugins/` 下用相对软链引用真源；DSH bundle 从仓�
 构建时复制 `skills/` 与 `rules/`；三者打包时物化成自包含目录。
 
 维护者：SnowCore8，职责与决策规则见 [GOVERNANCE.md](GOVERNANCE.md)。
-项目维护约定见 [CONTRIBUTING.md](CONTRIBUTING.md)（根 `AGENTS.md` 是它的软链入口）。
+代理项目指令见 [AGENTS.md](AGENTS.md)；人类贡献、校验与发布约定见 [CONTRIBUTING.md](CONTRIBUTING.md)。
 
 ## 目录
 
@@ -25,7 +25,8 @@ Qoder/Qwen 包在 `plugins/` 下用相对软链引用真源；DSH bundle 从仓�
 | `.qwen/rules`、`.qwen/skills/` | Qwen Code 项目级入口，软链到顶层真源 |
 | `.qoder/rules`、`.qoder/skills/` | Qoder 项目级入口，软链到顶层真源 |
 | `.dsh/skills/` | DSH 项目级 skill 入口，软链到顶层真源 |
-| `AGENTS.md` | 项目维护约定入口，软链指向 `CONTRIBUTING.md` |
+| `AGENTS.md` | 代理项目指令（真实文件，进入模型上下文） |
+| `CONTRIBUTING.md` | 人类贡献、校验与发布约定（不进入模型上下文） |
 | `docs/agent-tooling-loading.md` | 三工具 rules/skills/plugins 加载规则调研 |
 | `docs/time-awareness.md` | Qoder/Qwen 时间注入设计 |
 | `docs/release.md` | 版本规则、tag 发布流程与回滚 |

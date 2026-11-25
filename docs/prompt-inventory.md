@@ -17,7 +17,8 @@
 | 路径 | 类别 | 加载者或消费者 | 结论 |
 |---|---|---|---|
 | `rules/global-user-constraints.md` | P | DSH systemPrompt；Qoder/Qwen rules 与 hook；命令按需读取 | 常驻约束唯一真源 |
-| `AGENTS.md` → `CONTRIBUTING.md` | H | DSH/Qwen/Qoder 项目指令；人类贡献指南 | 最大错位：人类流程整份进入上下文 |
+| `AGENTS.md` | P | DSH/Qwen/Qoder 项目指令 | 已拆分：只放代理项目指令 |
+| `CONTRIBUTING.md` | R | 人类贡献者与维护者 | 已拆分：不进入模型上下文 |
 | `skills/*/SKILL.md` | P（3 个混 R/H） | 三端 skill 发现；正文按需加载 | `skill-authoring`、`system-prompt-authoring`、`documentation-conventions` 混入维护流程 |
 | `skills/*/references/*.md` | P（2 个 R，8 个 H 头） | skill 按需读取 | 主体是 P；`constraint-maintenance.md`、`provenance.md` 是维护者资料；迁移头是 provenance |
 | `shared/commands/constraints-check.md` | P | Qoder/Qwen 命令；DSH 未注册 | 命令提示词 |
@@ -31,7 +32,7 @@
 
 ## 错位与风险
 
-1. **AGENTS/CONTRIBUTING 混合。** 根 `AGENTS.md` 是指向 `CONTRIBUTING.md` 的软链，DSH/Qwen/Qoder 会把贡献流程整份当项目指令加载；`## 输出` 与全局约束重复。
+1. **AGENTS/CONTRIBUTING 已拆分。** 根 `AGENTS.md` 现为真实文件，只放代理项目指令；`CONTRIBUTING.md` 只面向人类，不进入模型上下文。
 2. **通用 skill 夹带本仓库流程。** `skill-authoring` 的“打包与分发”、三端软链、计数断言、zip/npm 检查属于维护者流程；`system-prompt-authoring` 的 32 KiB、`check.sh`、脚本测试命令与来源表属于仓库审计材料。
 3. **references 混入维护材料。** `constraint-maintenance.md`、`provenance.md` 是 R；六处迁移头是 provenance；`skill-authoring/references/checklist.md` 大部分是发布清单。
 4. **仓库事实写入通用规范。** `documentation-conventions` 的 `AGENTS.md` 软链事实、`change-records.md` 的“本仓库为 CHANGELOG.md”应泛化。
@@ -53,4 +54,4 @@
 
 1. **文档与重复（低风险）**：修 Qoder README 体积、`docs/time-awareness.md` 副本、`CONTRIBUTING` 重复输出段；补 DSH 命令缺失说明。
 2. **skill 错位（中风险）**：将 `skill-authoring` 打包/软链/计数与 `system-prompt-authoring` 32 KiB/脚本测试/来源表移到维护者文档；删除 `checklist.md` 的发布清单；修正 4 个 description。
-3. **AGENTS/CONTRIBUTING 拆分（高风险）**：新建真实 `AGENTS.md`，移除软链；同步 `check.sh`、README、docs；发布新版本并做三端冒烟。
+3. **AGENTS/CONTRIBUTING 拆分（已完成）**：`AGENTS.md` 为真实代理指令，`CONTRIBUTING.md` 为人类文档；`check.sh`、README 与 docs 已同步。

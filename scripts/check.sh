@@ -196,12 +196,11 @@ check_skill_root() {
 echo "== DSH 适配 =="
 check_skill_root "DSH" ".dsh/skills"
 [ -f rules/global-user-constraints.md ] || fail "DSH: 缺少约束正文 rules/global-user-constraints.md"
-[ -f CONTRIBUTING.md ] || fail "DSH: 缺少项目维护约定 CONTRIBUTING.md"
-if [ -L AGENTS.md ] && [ "$(readlink -f AGENTS.md)" = "$REPO_ROOT/CONTRIBUTING.md" ]; then
-  :
-else
-  fail "DSH: AGENTS.md 未指向项目维护约定 CONTRIBUTING.md"
+[ -s AGENTS.md ] || fail "DSH: 缺少代理项目指令 AGENTS.md"
+if [ -L AGENTS.md ]; then
+  fail "DSH: AGENTS.md 应为真实文件，不得软链"
 fi
+[ -f CONTRIBUTING.md ] || fail "DSH: 缺少人类贡献约定 CONTRIBUTING.md"
 
 echo "== Qoder 适配 =="
 if [ ! -d .qoder ] || [ -L .qoder ]; then
