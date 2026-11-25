@@ -25,8 +25,8 @@ argument-hint: '[路径或文档类型]'
 4. 个人偏好，不得覆盖上述三层。
 
 - 手写文档的结构、模板与文笔，由本 skill 管辖。变更日志、发布说明、运行手册与事故复盘的编写或更新节奏及触发
-  条件，由 `release-operations-conventions` 管辖；弃用时机与公告位置亦由该 skill 管辖；代码内标记格式由
-  `comment-conventions` 管辖。
+  条件，以及其中必须记录的发布事实（版本、批准、上线与回滚、观察结果），由 `release-operations-conventions`
+  管辖；弃用时机与公告位置亦由该 skill 管辖；代码内标记格式由 `comment-conventions` 管辖。
 - API 契约内容（字段、请求与响应形态、版本管理）与数据迁移，由 `api-and-data-conventions` 管辖；本 skill 规定
   API 参考页的结构与文笔。契约以 IDL/schema 为唯一真源，API 参考页是其生成投影并链接契约，不得另行定义字段。
 - 术语表的散文定义由本 skill 管辖；名称、大小写、被禁用的同义词、文件名、目录名、锚点与 ADR 编号由
@@ -103,7 +103,7 @@ argument-hint: '[路径或文档类型]'
 | 事实 | 权威归属 | 同时链接自 |
 |---|---|---|
 | 项目内容、安装与首次运行 | `README.md` | 文档首页、包仓库页面 |
-| 开发环境搭建与测试命令 | `CONTRIBUTING.md` | README、issue 与 PR 模板 |
+| 开发环境搭建与测试命令 | `CONTRIBUTING.md` 文档入口（命令值以项目配置为准；规则由 `testing-and-quality-conventions` 的 CH-8 裁定） | README、issue 与 PR 模板 |
 | 当前标志、默认值与限制 | 参考页 | 指南、README 示例 |
 | 选择某种设计或技术的原因 | ADR | 架构页、代码注释 |
 | 端点接收与返回数据的方式 | API 契约（IDL/schema） | API 参考页、指南、客户端库 |
@@ -115,7 +115,7 @@ argument-hint: '[路径或文档类型]'
 
 ## 文档类型矩阵
 
-| 文档 | 读者与关切 | 必需内容 | 典型位置 |
+| 文档 | 读者与关切 | 必需章节 | 典型位置 |
 |---|---|---|---|
 | README | 新用户：项目内容与入门路径 | 名称与范围、安装、快速开始、配置、文档链接、许可证 | `README.md` |
 | CONTRIBUTING | 贡献者：环境搭建与提交路径 | 工具链、环境搭建、运行与测试、约定、审查预期 | `CONTRIBUTING.md` |

@@ -58,13 +58,20 @@ def parse(path: Path) -> tuple[dict[str, str], str]:
 
 
 def paragraphs(text: str) -> list[str]:
-    """取可比较的段落：去掉列表标记与首尾空白，只保留含中文的长行。"""
+    """取可比较的段落：按空行分块，去掉列表标记、围栏代码与全部空白。"""
     out = []
-    for line in text.splitlines():
-        stripped = line.strip()
-        stripped = re.sub(r"^(?:[-*]|\d+\.)\s*(?:\[[ x]\]\s*)?", "", stripped)
-        if len(stripped) >= MIN_DUPLICATE and CJK.search(stripped):
-            out.append(re.sub(r"\s+", "", stripped))
+    text = re.sub(r"```.*?```|~~~.*?~~~", "", text, flags=re.S)
+    for block in re.split(r"\n\s*\n", text):
+        lines = []
+        for line in block.splitlines():
+            stripped = line.strip()
+            stripped = re.sub(r"^(?:[-*]|\d+\.)\s*(?:\[[ x]\]\s*)?", "", stripped)
+            if stripped:
+                lines.append(stripped)
+        normalized = re.sub(r"\s+", "", "".join(lines))
+        for sentence in re.split(r"(?<=[。！？；])", normalized):
+            if len(sentence) >= MIN_DUPLICATE and CJK.search(sentence):
+                out.append(sentence)
     return out
 
 

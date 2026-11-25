@@ -1,7 +1,7 @@
 # 命名维度：代码
 
-本文件与 `SKILL.md` 配合使用。每一节规定一种命名产物的模式、示例与边界情况。项目约定与事实属于输入；本
-skill 的规则优先，项目约定仅在本 skill 未规定时补充。本文件提供默认值与理由。
+本文件与 `SKILL.md` 配合使用。每一节规定一种命名产物的模式、示例与边界情况。项目约定与事实作为输入；本文件
+给出默认值与理由，冲突时以 `SKILL.md` 为准。
 
 ## 1. 文件与目录
 
@@ -188,8 +188,8 @@ skill 的规则优先，项目约定仅在本 skill 未规定时补充。本文�
 - 每个项目维护一份简短的允许清单：`id`、`url`、`http`、`api`、`cpu`、`db`、`ui`、`cli`、`json`、
   `xml`、`sql`、`html`、`css`；其余一律展开（`usr` 展开为 `user`，`cfg` 展开为 `config`，`mgr` 展开
   为 `manager`）。
-- 首字母缩略词按单词处理：`userId`、`httpClient`、`parseUrl`；Go 使用首字母大写缩写（`UserID`、
-  `HTTPServer`），C# 保留 `Id`（`UserId`）。
+- 首字母缩略词按词处理，例如 `userId`、`httpClient`、`parseUrl`；语言特有写法见 `languages.md`（Go 的
+  `UserID`、`HTTPServer` 与 C# 的 `UserId`）。
 - 使用规则复数；不可数名词（`data`、`info`、`metadata`）表示集合时加限定词（`dataSet`、`infoList`）；
   不得使用 `datas` 或 `informations`。
 - 标识符中避免撇号与所有格；使用 `userIds`，不得写作 `user'sIds`。

@@ -69,12 +69,12 @@ formatter 无法拆分长字符串、URL、哈希或 base64 数据块；应当�
   于顶层之下混用两种轴，将令读者猜测下一个文件的放置位置。
 - 应当保持入口轻薄：`main.py`、`cmd/api/main.go`、`src/index.ts`、`Program.cs`。入口解析参数、加载配置、
   构建依赖并调用应用。入口不含业务规则、查询与格式化逻辑，因此替换传输层或启动顺序永远不会改变行为。
-- 每个模块应当声明一个公开接口面：Python 用 `__all__` 与前导下划线，Rust 用 `pub` 与私有模块，Go 用
-  `internal/` 包，Java 与 C# 用包私有类型，TypeScript 用 `index.ts` barrel。接口面之外的一切均无法自另一
-  模块导入，这使边界违规成为构建错误，而非审查意见。无可见性关键字的语言，通过包边界加上禁止深层导入的
-  lint 规则强制接口面。
-- 依赖指向内部。领域与应用代码不导入基础设施、框架或第三方 SDK；适配器实现领域拥有的接口。正是该反转使测
-  试可以用内存实现替换数据库，并使供应商变更远离业务规则。
+- 每个模块应当声明一个公开接口面，接口面与依赖方向的判据由 `architecture-and-design-conventions` 裁定；本 skill
+  只给出强制手段：Python 用 `__all__` 与前导下划线，Rust 用 `pub` 与私有模块，Go 用 `internal/` 包，Java 与
+  C# 用包私有类型，TypeScript 用 `index.ts` barrel。接口面之外的一切均无法自另一模块导入，这使边界违规成为
+  构建错误，而非审查意见。无可见性关键字的语言，通过包边界加上禁止深层导入的 lint 规则强制接口面。
+- 按 `architecture-and-design-conventions` 裁定的依赖方向配置导入规则：领域与应用代码不导入基础设施、框架或
+  第三方 SDK；适配器实现领域拥有的接口。本 skill 只负责用 lint 与 CI 强制该方向，不重新裁定方向本身。
 - 禁止导入循环，并将每一循环视为一项设计发现。Python 用 `import-linter`、JavaScript 用 `dependency-cruiser`
   或 `import/no-cycle`、Java 用 `jdeps`、Go 用编译器检测循环。应当通过将共享类型下移或以接口反转打破循环，
   不得使用抑制注释。`pydeps` 与 `madge` 绘制依赖图，而 `ArchUnit` 或一个小型依赖测试使规则保持可执行，而非

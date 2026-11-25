@@ -77,5 +77,5 @@
 
 ## 参考文献
 
-原参考文献区所列 8 份厂商文档的来源标签与链接见同目录的 [provenance.md](provenance.md)“来源表”；为避免重复，
+8 份厂商文档的来源标签与链接见同目录的 [provenance.md](provenance.md)“来源表”；为避免重复，
 此处不再复制 URL。

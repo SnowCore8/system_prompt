@@ -29,8 +29,8 @@ skill 规定一套决策程序与规则集，将提示词作为产品代码处�
 - skill 包的结构、frontmatter 与渐进披露由 `skill-authoring` 管辖；打包与分发由 `repository-governance-conventions` 与 `release-operations-conventions` 管辖。本 skill 仅管辖提示词正文的写法；
 - 本 skill 管辖运行时的一次性提示词、产品中的系统提示、few-shot、输出契约、工具与检索指令，以及评测；
 - 代码注释与文档注释由 `comment-conventions` 管辖；API 契约字段由 `api-and-data-conventions` 管辖；
-- 用户可见文档的写法由 `documentation-conventions` 管辖；评测作为发布门禁的阈值由
-  `testing-and-quality-conventions` 管辖；提示词版本的发布节奏由 `release-operations-conventions` 管辖；
+- 用户可见文档的写法由 `documentation-conventions` 管辖；提示词版本的发布与评测门禁按项目发布/门禁流程执行，
+  规则分别由 `release-operations-conventions` 与 `testing-and-quality-conventions` 提供；
 - 注入、越权、隐私与拒答的风险面由 `security-compliance-conventions` 管辖；本 skill 仅规定提示词层面的防
   线。
 

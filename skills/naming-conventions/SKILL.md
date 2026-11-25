@@ -1,6 +1,6 @@
 ---
 name: naming-conventions
-description: 定义、审查并重构任意编程项目的名称，覆盖文件、目录、包、类型、函数、变量、API、数据库、配置、测试、提交消息与资产。适用于启动项目或模块、命名新标识符、审查 diff 中的命名问题，或统一不一致的名称。提供与语言无关的默认值，并按语言给出覆盖规则。不适用于提交流程与分支流程（见 vcs-collaboration-conventions，仅覆盖提交消息的命名）、契约与 schema 演进（见 api-and-data-conventions）与格式化配置（见 code-style-conventions）。
+description: 定义、审查并重构任意编程项目的名称，覆盖文件、目录、包、类型、函数、变量、API、数据库、配置、测试、提交消息、分支、标签与资产。适用于启动项目或模块、命名新标识符、审查 diff 中的命名问题，或统一不一致的名称。提供与语言无关的默认值，并按语言给出覆盖规则。不适用于提交流程与分支流程（提交流程与分支流程见 vcs-collaboration-conventions；提交消息、分支与标签的命名归本 skill）、契约与 schema 演进（见 api-and-data-conventions）与格式化配置（见 code-style-conventions）。
 argument-hint: '[路径或符号]'
 ---
 
@@ -187,13 +187,13 @@ argument-hint: '[路径或符号]'
 
 ## 项目命名表
 
-项目启动时应当创建此表，保存于仓库中，并在术语扩散前先行增加一行：
+项目启动时应当创建此表，保存于仓库中，并在术语扩散前先行增加一行；术语解释见项目术语表（规则见 `documentation-conventions` 的 [术语与术语表维度](../documentation-conventions/references/dimensions-project.md) 第 16 节），本表只维护名称与命名约束，不复制定义：
 
-| 术语 | 定义 | 规范名称 | 避免 | 大小写 | 负责人 |
-|---|---|---|---|---|---|
-| invoice | 开给客户的账单 | `Invoice` | bill、statement | PascalCase | billing |
-| customer | 付款的一方 | `Customer` | client、buyer、account | PascalCase | CRM |
-| amount | 以最小货币单位表示的金额 | `amount_cents` | amount、total | snake_case | billing |
+| 术语 | 规范名称 | 避免 | 大小写 | 命名表维护人 |
+|---|---|---|---|---|
+| invoice | `Invoice` | bill、statement | PascalCase | billing |
+| customer | `Customer` | client、buyer、account | PascalCase | CRM |
+| amount | `amount_cents` | amount、total | snake_case | billing |
 
 ## 审查清单
 

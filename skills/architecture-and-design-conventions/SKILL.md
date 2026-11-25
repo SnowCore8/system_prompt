@@ -1,6 +1,6 @@
 ---
 name: architecture-and-design-conventions
-description: 定义、审查并重构软件系统的模块与组件边界、分层与依赖方向、数据流与控制流、可测试性设计与设计决策记录（ADR）。适用于新增模块或组件、划分边界、规划分层与依赖、决定接口与接缝、记录架构决策，或审查循环依赖、过度耦合与过度设计；不适用于 API 契约细节、代码风格、重构手法与测试策略，这些分别归 api-and-data-conventions、code-style-conventions、refactoring-conventions 与 testing-and-quality-conventions。
+description: 定义、审查并重构软件系统的模块与组件边界、分层与依赖方向、数据流与控制流、框架选择与变更、可测试性设计与设计决策记录（ADR）。适用于新增模块或组件、选择或变更框架、划分边界、规划分层与依赖、决定接口与接缝、记录架构决策，或审查循环依赖、过度耦合与过度设计；不适用于 API 契约细节、代码风格、重构手法与测试策略，这些分别归 api-and-data-conventions、code-style-conventions、refactoring-conventions 与 testing-and-quality-conventions。
 argument-hint: '[路径或场景]'
 ---
 
@@ -30,7 +30,7 @@ argument-hint: '[路径或场景]'
 - **代码风格由 `code-style-conventions` 管辖。** 该 skill 管辖目录布局、格式化、依赖管理与错误及日志风格；命名由 `naming-conventions` 管辖。本 skill 管辖上述元素如何组成模块与分层，不管辖单个文件的写法。
 - **重构手法由 `refactoring-conventions` 管辖。** 该 skill 管辖安全变更代码结构的手法与步骤；本 skill 管辖重构应当达成的目标结构，即依赖方向、边界与接缝。需要变更结构时，代理应当把手法交给该 skill，本 skill 只确定目标。
 - **测试策略与门禁由 `testing-and-quality-conventions` 管辖。** 本 skill 管辖可测试性设计，包括依赖注入点、接缝与可替换的依赖；测试的运行与门禁机制由该 skill 管辖。
-- **文档位置与发布节奏由 `documentation-conventions` 管辖。** ADR 的目录、文件名与发布节奏由该 skill 裁定；本 skill 裁定 ADR 的内容口径与触发时机。
+- **ADR 的内容与触发时机由本 skill 裁定。** 目录与模板由 `documentation-conventions` 裁定；文件名与编号由 `naming-conventions` 裁定；发布节奏由 `release-operations-conventions` 管辖。
 - **强制规则冲突的，代理应当报告用户裁决，不得自行选定；非强制的项目约定冲突，可以说明冲突与所选约定。** 所选约定应当记录于 ADR；模块文档可记录派生决定，不得替代 ADR，使下一次变更遵循该决定，避免重复争论同一问题。
 
 ## 流程
@@ -52,7 +52,7 @@ argument-hint: '[路径或场景]'
 6. 记录决策。
    新建或推翻架构决策的，代理应当编写 ADR，写明背景、决定、后果与替代方案；未记录的决策会在下一次变更时被重新争论。
 7. 审查。
-   代理应当运行 `references/checklists.md` 中的清单，确认无循环依赖、依赖不由内层指向外层、每个模块仅有一个变更理由、接缝可测试。
+   代理应当运行正文“审查清单”，并按 `references/checklists.md` 中的工作表执行；确认无循环依赖、依赖不由内层指向外层、每个模块仅有一个变更理由、接缝可测试。
 
 ## 核心规则
 
@@ -132,4 +132,4 @@ argument-hint: '[路径或场景]'
 
 阅读 [references/checklists.md](references/checklists.md)，了解架构审查清单、ADR 模板与边界/依赖决策表；在审查与记录决策期间阅读。
 
-框架与命名、框架变更程序的原始条款见 [references/framework-changes.md](references/framework-changes.md)；新建模块、确定命名或变更框架与命名方案时阅读。
+框架选择与变更程序见 [references/framework-changes.md](references/framework-changes.md)；新建模块或变更框架时阅读。
