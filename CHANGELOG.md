@@ -2,6 +2,20 @@
 
 按版本从新到旧记录可观察变更。自 0.2.0 起版本采用 SemVer、发布点为 tag `v<version>`，每节记录一个发布版本；0.2.0 之前按日期记录。条目按主题合并，记录最终可观察状态；被后续提交推翻的中间状态只在修复项里说明。
 
+## 0.36.0（2026-11-25）
+
+**变更**
+
+- 语义不变重写 global 约束与 18 个 `SKILL.md`；保留条款编号、阈值、示例与行为。
+- 拆分 `AGENTS.md` 与 `CONTRIBUTING.md`：前者只承载代理项目指令，后者仅人类流程。
+- 取消 64 个分发软链，新增 `scripts/assemble.sh` 与显式 `materialize` 组装；`check.sh` 校验零软链、开发入口与组装包。
+- 拆分 `skill-authoring`、`system-prompt-authoring`、`documentation-conventions` 及 references 的维护者内容；新增内容结构地图与 Qoder 本地市场组装。
+- 清洗 README 与根文档，统一“组装”术语。
+
+**修复**
+
+- 修正逐项核对发现的 API 版本边界、ADR 归属、命名表定义重复、vcs 历史修复审批、system-prompt 审查清单、跨 skill 重复与单一权威问题。
+- 三包版本升到 `0.36.0`。
 ## 0.35.0（2026-11-25）
 
 **变更**
