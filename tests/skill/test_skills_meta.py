@@ -192,7 +192,12 @@ class HistoryTextTest(unittest.TestCase):
     PATTERN = re.compile(r"迁移注|原用户全局约束|原始条款|迁移批次|沿用原")
 
     def test_no_change_history_in_prompts(self) -> None:
-        files = [REPO / "AGENTS.md", *SKILLS.glob("*/SKILL.md"), *SKILLS.glob("*/references/*.md")]
+        files = [
+            REPO / "AGENTS.md",
+            REPO / "rules/global-user-constraints.md",
+            *SKILLS.glob("*/SKILL.md"),
+            *SKILLS.glob("*/references/*.md"),
+        ]
         for path in sorted(files):
             for number, line in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
                 if path.name == "global-user-constraints.md" and "不得写迁移注" in line:
