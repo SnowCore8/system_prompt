@@ -314,10 +314,6 @@ alwaysApply: true
   对象、范围或授权依据需要确认的除外。单步任务或明确指令直接实施。规划、目标、选项卡与 skill 加载不是
   执行许可门槛；已授权、可逆的本地工作直接推进，普通技术选择不发卡；仅不可逆、范围变化或需求不清时确认。
 
-迁移注：CH-1/7/11 见 `refactoring-conventions`，CH-4 见 `debugging-conventions`，CH-5/6 见
-`architecture-and-design-conventions`，CH-8 见 `testing-and-quality-conventions`，CH-9/10 见
-`documentation-conventions` 的 references；CH-2、CH-3 保留。
-
 ### 4.8 不确定情形的处理
 
 - UN-1 约束的优先级。各项要求相互冲突时，凭据、隐私、不可逆性与授权优先于进度。

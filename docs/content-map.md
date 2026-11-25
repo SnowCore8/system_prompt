@@ -105,6 +105,6 @@
 ## 7. 例外与检查
 
 - `system-prompt-authoring/references/constraint-maintenance.md` 与 `provenance.md` 是维护者资料，不进入默认加载。
-- 六个专题 references 只保留一行 `CH-x` 编号来源说明，不再复制全局条款。
+- 专题 references 只陈述当前规则，不写来源头或迁移记录；历史见 `CHANGELOG.md`。
 - `docs/markdown-check-rules.md` 是脚本规则表（R），不属于 skill 内容。
 - 内容结构由 `tests/skill/test_skills_meta.py` 检查首尾段、250 行上限、维度索引与重复段落；全量门禁见 `scripts/check.sh`。

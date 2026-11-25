@@ -81,7 +81,7 @@ argument-hint: '[可选上下文]'
   `references/` 下的维度文件。
 - 单个维度文件超过 300 行或 20 节的，应当按主题拆分为 `dimensions-<主题>.md`；其余 `references` 文件按
   内容命名，不受该拆分规则约束。正文索引说明句指向 `references/` 中的对应文件，详情列写明
-  `references/<文件>.md` 第 N 节，节号沿用原编号。
+  `references/<文件>.md` 第 N 节，节号与索引一致。
 - 需要供读者复制粘贴的骨架，放置于 `references/` 下的模板文件。
 - 需要机器执行的校验或生成，放置于 `scripts/`，正文说明调用方式。
 

@@ -125,5 +125,5 @@ argument-hint: '[路径或范围]'
 [references/catalog.md](references/catalog.md)。实施重构前，代理应当先阅读上述两份文件；日常审查仅阅读判定与
 小步提交两节（第 1、3 节）。
 
-先读后改、修复与重构的判定、替换后清理的原始条款见
+先读后改、修复与重构的判定、替换后清理见
 [references/change-safety.md](references/change-safety.md)；开始改动、判定提交性质或删除被替换的实现之前阅读。

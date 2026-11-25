@@ -1,6 +1,6 @@
 # 根因治理与方案验证（CH-4、ME-12）
 
-CH-4 沿用原用户全局约束的编号；ME-12 见 `rules/global-user-constraints.md`。
+ME-12 见 `rules/global-user-constraints.md`。
 
 ## CH-4 根因治理
 

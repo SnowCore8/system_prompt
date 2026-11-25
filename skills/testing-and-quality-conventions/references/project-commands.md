@@ -1,7 +1,5 @@
 # 项目命令（CH-8）
 
-CH-8 沿用原用户全局约束的编号。
-
 ## CH-8 项目命令
 
 构建与测试命令应当自项目配置读取，包括 `README`、`package.json`、`pyproject.toml`、`Makefile` 或 CI 配置。

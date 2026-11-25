@@ -219,5 +219,4 @@ mock 计算本身只会测到 mock，而不是算术。
 阈值、覆盖率工作表、不稳定测试流程与豁免模板见 [references/gates.md](references/gates.md)。定义项目门禁
 集合前应当先读这两份文件；日常工作中仅读适用的维度与适用的技术栈一节。
 
-项目命令的原始条款，即原用户全局约束 CH-8，见
-[references/project-commands.md](references/project-commands.md)；确定构建或测试命令时阅读。
+项目命令规则（CH-8）见 [references/project-commands.md](references/project-commands.md)；确定构建或测试命令时阅读。
