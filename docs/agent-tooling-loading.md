@@ -356,16 +356,16 @@ DSH 里「插件」是 TypeScript 模块，导出 `apply(ctx)`；可分发的安
 
 本仓库按上文的规则整改后，各工具的项目级入口如下：
 
-- Qwen Code：`.qwen/rules`（目录软链到 `rules/`）。其中的规则没有 `paths:`，属 baseline，
+- Qwen Code：`.qwen/rules`（由 `scripts/assemble.sh` 从 `rules/` 生成）。其中的规则没有 `paths:`，属 baseline，
   首个请求进入 system prompt；`.qwen/AGENTS.md` 会被 Qwen 忽略，因此不再提供。
-- Qoder：项目级 `.qoder/rules`，软链指向根级 `rules/`；用户级由插件 `SessionStart` hook 自动注入
+- Qoder：项目级 `.qoder/rules`，由 `scripts/assemble.sh` 从根级 `rules/` 生成；用户级由插件 `SessionStart` hook 自动注入
   （同内容规则/`AGENTS.md` 已存在时跳过），也可手动复制到 `~/.qoder-cn/rules`（国际版 `~/.qoder/rules`）。
   `.qoder-cn` 与 `.qoder/plugins` 在项目级没有加载语义，已移除。
-- DeepSeek Harness：`.dsh/skills` 是 rank 100 的 skill 扫描根；根 `AGENTS.md` 是项目指令入口；
-  约束正文由 bundle 经 `ctx.systemPrompt.section()` 自动注入，`~/.dsh/AGENTS.md` 已含同内容时按
-  sha256 去重跳过。
-- skills：`.qwen/skills`、`.qoder/skills`、`.dsh/skills` 都是普通目录，目录内每个 skill 是指向顶层
-  `skills/<name>` 的相对软链；Qoder 与 Qwen Code 只扫描一层，DSH 也不递归发现嵌套 `SKILL.md`。
+- DeepSeek Harness：`.dsh/skills` 是 rank 100 的 skill 扫描根，由 `scripts/assemble.sh` 从顶层
+  `skills/` 生成；根 `AGENTS.md` 是项目指令入口；约束正文由 bundle 经 `ctx.systemPrompt.section()` 自动注入，
+  `~/.dsh/AGENTS.md` 已含同内容时按 sha256 去重跳过。
+- skills：`.qwen/skills`、`.qoder/skills`、`.dsh/skills` 都是由 `scripts/assemble.sh` 生成的普通目录；
+  Qoder 与 Qwen Code 只扫描一层，DSH 也不递归发现嵌套 `SKILL.md`。
 - 三包分发：Qoder 插件在 `plugins/qoder`（`command` + `args`，`${QODER_PLUGIN_ROOT}`），
   Qwen 扩展在 `plugins/qwen`（单条 `command`，`${CLAUDE_PLUGIN_ROOT}`），DSH bundle 在
   `plugins/dsh`（`ctx.skills.registerProvider`）；Qoder/Qwen 共用 `rules/`、`skills/` 与 `shared/`，

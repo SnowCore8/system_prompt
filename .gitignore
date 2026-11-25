@@ -26,3 +26,8 @@ global-user-constraints-*.sha256
 *.dump
 credentials.*
 *.secret
+.dsh/skills/
+.qoder/rules/
+.qoder/skills/
+.qwen/rules/
+.qwen/skills/

@@ -2,8 +2,8 @@
 
 本仓库维护用户全局约束、十八个通用规范 skill，以及分别面向 Qoder、Qwen Code 与
 DeepSeek Harness（DSH）的三个插件包。`rules/`、`skills/` 与 `shared/` 是唯一真源。
-Qoder/Qwen 包在 `plugins/` 下用相对软链引用真源；DSH bundle 从仓库根 `package.json` 打包，
-构建时复制 `skills/` 与 `rules/`；三者打包时物化成自包含目录。
+Qoder/Qwen 包只放清单与 hook；三包都由 `scripts/materialize.sh` 从顶层真源组装成自包含目录，
+不依赖、也不提交软链。
 
 维护者：SnowCore8，职责与决策规则见 [GOVERNANCE.md](GOVERNANCE.md)。
 代理项目指令见 [AGENTS.md](AGENTS.md)；人类贡献、校验与发布约定见 [CONTRIBUTING.md](CONTRIBUTING.md)。
@@ -22,16 +22,16 @@ Qoder/Qwen 包在 `plugins/` 下用相对软链引用真源；DSH bundle 从仓�
 | `package.json`（仓库根） | DSH bundle 清单（npm 包与 git 源安装入口） |
 | `plugins/dsh/` | DSH bundle 的插件源码、patch 与说明 |
 | `plugins/marketplace.json` | Qoder 本地市场描述，指向 `plugins/qoder` |
-| `.qwen/rules`、`.qwen/skills/` | Qwen Code 项目级入口，软链到顶层真源 |
-| `.qoder/rules`、`.qoder/skills/` | Qoder 项目级入口，软链到顶层真源 |
-| `.dsh/skills/` | DSH 项目级 skill 入口，软链到顶层真源 |
+| `.qwen/rules`、`.qwen/skills/` | Qwen Code 项目级入口，由 `scripts/assemble.sh` 生成（不提交） |
+| `.qoder/rules`、`.qoder/skills/` | Qoder 项目级入口，由 `scripts/assemble.sh` 生成（不提交） |
+| `.dsh/skills/` | DSH 项目级 skill 入口，由 `scripts/assemble.sh` 生成（不提交） |
 | `AGENTS.md` | 代理项目指令（真实文件，进入模型上下文） |
 | `CONTRIBUTING.md` | 人类贡献、校验与发布约定（不进入模型上下文） |
 | `docs/agent-tooling-loading.md` | 三工具 rules/skills/plugins 加载规则调研 |
 | `docs/time-awareness.md` | Qoder/Qwen 时间注入设计 |
 | `docs/release.md` | 版本规则、tag 发布流程与回滚 |
 | `docs/prompt-inventory.md` | 提示词与纯规则分类台账及迁移批次 |
-| `scripts/` | `check.sh` 全量校验、`dist.sh` 出包、`materialize.sh` 物化 |
+| `scripts/` | `assemble.sh` 生成开发入口、`materialize.sh` 组装包、`check.sh` 校验、`dist.sh` 出包 |
 | `GLOSSARY.md` | 术语与写法约定 |
 | `CHANGELOG.md` | 按版本记录的可观察变更 |
 | `GOVERNANCE.md` | 维护者、决策、审查与发布规则 |
@@ -46,20 +46,16 @@ Qoder/Qwen 包在 `plugins/` 下用相对软链引用真源；DSH bundle 从仓�
 2. 改 skill：编辑 `skills/` 下对应的 skill；三个包自动引用，不复制第二份。
 3. 改命令或注入脚本：编辑 `shared/commands/` 或 `shared/scripts/`。
 4. 改某一端的清单或 hook：编辑 `plugins/<包>/` 下对应文件，并同步三包版本。
-5. 新增入口时按「软链约定」执行，改完运行 `scripts/check.sh`。
+5. 新增或修改入口后按「组装约定」执行，改完运行 `scripts/check.sh`。
 
-## 软链约定
+## 组装约定
 
-- 软链只做入口，不承载内容：目标必须在仓库内、用相对路径、指向真实文件或目录，且不指向另一软链。
-- 每个入口只指向唯一真源（`rules/`、`skills/` 或 `shared/`），不复制第二份文件。
-- Qoder 与 Qwen 包内部的共享入口（Qoder 的 `skills/`、`rules/`、`commands/`、`scripts/`；
-  Qwen 的 `skills/`、`constraints/`、`commands/`、`scripts/`）都是指向顶层真源的软链；
-  DSH 没有包内软链，构建时由 `scripts/materialize.sh` 复制 `skills/` 与 `rules/`。
-  Qoder 的 `plugins validate` 会拒绝解析到包外的路径，所以安装或校验前用
-  `scripts/materialize.sh` 物化，或直接用 Release 里的 zip。
-- `scripts/check.sh` 的「软链」「插件清单」段校验未入库、缺失、绝对路径、目标出仓、指向 `.git`、
-  链式软链、目标不存在或未跟踪，以及三个包的软链是否指向正确真源。
-- Windows 检出需启用 `core.symlinks`；否则软链会落成普通文本文件。
+- `skills/`、`rules/`、`shared/` 是唯一真源；不复制第二份。
+- `scripts/assemble.sh` 生成 `.dsh/skills`、`.qoder/rules`、`.qoder/skills`、`.qwen/rules`、`.qwen/skills`，
+  供本地工具发现；这些目录被 `.gitignore` 忽略，修改真源后重新运行。
+- `scripts/materialize.sh` 从顶层真源组装 Qoder/Qwen/DSH 包；`scripts/dist.sh` 只打包组装结果；
+  三者都不含软链。Qoder 的 `plugins validate` 针对组装后的目录运行。
+- `scripts/check.sh` 校验零跟踪软链、开发组装、组装后的包清单与 Qoder 插件校验；不再要求 Windows `core.symlinks`。
 
 ## 三个包
 
@@ -76,8 +72,8 @@ Qoder/Qwen 包在 `plugins/` 下用相对软链引用真源；DSH bundle 从仓�
 
 ## DeepSeek Harness 适配
 
-- 项目级：`.dsh/skills/` 是 rank 100 的 skill 扫描根，软链到顶层 `skills/`；根 `AGENTS.md`
-  由 `dsh-agent-instructions` 作为指令链加载。
+- 项目级：`.dsh/skills/` 是 rank 100 的 skill 扫描根，由 `scripts/assemble.sh` 从顶层 `skills/` 生成；
+  根 `AGENTS.md` 由 `dsh-agent-instructions` 作为指令链加载。
 - bundle：仓库根 `package.json` 声明 `dsh.bundle.patch`，`plugins/dsh/src/index.js` 注册
   `ctx.skills.registerProvider` 提供十八个 skill，并注册 `ctx.systemPrompt.section()` 注入约束全文。
 - 安装：发布流水线把根包发到 npm 公共 registry，直接
@@ -90,8 +86,8 @@ Qoder/Qwen 包在 `plugins/` 下用相对软链引用真源；DSH bundle 从仓�
 
 ## Qwen Code 适配
 
-- 项目级：`.qwen/rules/` 软链到 `rules/`（无 `paths:`，baseline，首请求生效）；`.qwen/skills/`
-  软链到十八个 skill；`.qwen/AGENTS.md` 不被 Qwen 读取，仓库不提供。
+- 项目级：`.qwen/rules/` 由 `scripts/assemble.sh` 从 `rules/` 生成（无 `paths:`，baseline，首请求生效）；
+  `.qwen/skills/` 从十八个 skill 生成；`.qwen/AGENTS.md` 不被 Qwen 读取，仓库不提供。
 - 扩展：`plugins/qwen` 的 `qwen-extension.json` 指向 `hooks/qwen-hooks.json`，安装后
   `SessionStart` 注入约束全文与时间，`UserPromptSubmit` 刷新时间；已有同内容规则或
   `AGENTS.md` 时跳过。
@@ -99,8 +95,8 @@ Qoder/Qwen 包在 `plugins/` 下用相对软链引用真源；DSH bundle 从仓�
 
 ## Qoder 适配
 
-- 项目级：`.qoder/rules` 软链到 `rules/`，Qoder 从当前目录向上查到 `.git` 逐层读取；
-  `.qoder/skills/` 软链到十八个 skill。
+- 项目级：`.qoder/rules` 由 `scripts/assemble.sh` 从 `rules/` 生成，Qoder 从当前目录向上查到 `.git` 逐层读取；
+  `.qoder/skills/` 从十八个 skill 生成。
 - 插件：`plugins/qoder` 安装后 `SessionStart` 注入约束全文与时间，`UserPromptSubmit` 刷新时间；
   去重路径覆盖 `~/.qoder-cn/rules/`（国际版 `~/.qoder/rules/`）、`AGENTS.md`、`.qoder/rules/`。
 - 项目级不提供 `.qoder-cn` 与 `.qoder/plugins`：它们在项目级没有加载语义。
@@ -113,8 +109,8 @@ scripts/check.sh
 ```
 
 `scripts/check.sh` 覆盖常驻约束体积（≤32 KiB）、Markdown、skill 与 hook 测试、DSH bundle 的 `node --test`、
-shellcheck、ruff、依赖审计（pip-audit）、覆盖率（`--fail-under=90`）、JSON、敏感文件、软链、三工具项目级
-适配、三包清单一致性与物化后的 Qoder 插件校验。缺 `shellcheck`、`node` 或 `qoderclicn` 时会打印「跳过」并在
+shellcheck、ruff、依赖审计（pip-audit）、覆盖率（`--fail-under=90`）、JSON、敏感文件、零跟踪软链、开发
+组装、三包清单一致性与组装后的 Qoder 插件校验。缺 `shellcheck`、`node` 或 `qoderclicn` 时会打印「跳过」并在
 结尾计数。
 
 本地安装 smoke test：

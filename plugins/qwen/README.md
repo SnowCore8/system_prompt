@@ -17,6 +17,8 @@
 | `commands/` | 手动审查命令 |
 | `scripts/` | 约束与时间注入脚本 |
 
+以上为安装后的自包含结构；源码包只保留清单、hooks 与说明，使用 `scripts/materialize.sh qwen` 从顶层真源组装。
+
 ## 安装
 
 ```bash

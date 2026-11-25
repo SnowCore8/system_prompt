@@ -6,6 +6,7 @@ import os
 import re
 import subprocess
 import sys
+import tempfile
 import unittest
 from pathlib import Path
 
@@ -88,8 +89,15 @@ class HookConfigTest(unittest.TestCase):
         self.assertEqual(qoder["version"], qwen["version"])
         hooks_path = QWEN_MANIFEST.parent / qwen["hooks"]
         self.assertTrue(hooks_path.is_file())
-        self.assertEqual((QWEN_MANIFEST.parent / qwen["skills"]).resolve(), (ROOT / "skills").resolve())
-        self.assertEqual((QWEN_MANIFEST.parent / qwen["commands"]).resolve(), (ROOT / "shared/commands").resolve())
+        with tempfile.TemporaryDirectory() as tmp:
+            target = Path(tmp) / "qwen"
+            subprocess.run(
+                ["bash", str(ROOT / "scripts/materialize.sh"), "qwen", str(target)],
+                check=True, capture_output=True, text=True,
+            )
+            self.assertTrue((target / qwen["skills"]).is_dir())
+            self.assertTrue((target / qwen["commands"]).is_dir())
+            self.assertTrue((target / "constraints/global-user-constraints.md").is_file())
 
 
 if __name__ == "__main__":

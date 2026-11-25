@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# 全量校验：Markdown、skill 与 hook 测试、shellcheck、ruff、JSON、敏感文件、软链、三工具适配、三包清单与校验。
+# 全量校验：Markdown、skill 与 hook 测试、shellcheck、ruff、JSON、敏感文件、零软链与组装、三包清单与校验。
 # 故意不加 -e：要累积全部失败项后统一非零退出，而不是首错即停。
 set -uo pipefail
 
@@ -84,7 +84,7 @@ fi
 
 echo "== shellcheck =="
 if command -v shellcheck >/dev/null 2>&1; then
-  shellcheck scripts/dist.sh scripts/check.sh || fail "shellcheck"
+  shellcheck scripts/dist.sh scripts/check.sh scripts/assemble.sh scripts/materialize.sh || fail "shellcheck"
 else
   skip "未安装 shellcheck"
 fi
@@ -122,163 +122,76 @@ if git grep -n -I -E '-----BEGIN (RSA |EC |OPENSSH |PGP )?PRIVATE KEY-----' -- \
 fi
 
 echo "== 软链 =="
-link_fs=0
-while IFS= read -r link; do
-  link="${link#./}"
-  if git check-ignore -q --no-index "$link"; then
-    continue
-  fi
-  link_fs=$((link_fs + 1))
-  git ls-files --error-unmatch "$link" >/dev/null 2>&1 || fail "软链未纳入版本库: $link"
-  target="$(readlink "$link")"
-  case "$target" in
-    /*)
-      fail "软链使用绝对路径: $link -> $target"
-      continue
-      ;;
-  esac
-  target_path="$(dirname "$link")/$target"
-  [ -L "$target_path" ] && fail "软链指向另一软链: $link -> $target"
-  if ! resolved="$(readlink -f "$link")"; then
-    fail "软链无法解析: $link -> $target"
-    continue
-  fi
-  case "$resolved" in
-    "$REPO_ROOT"/*) ;;
-    *)
-      fail "软链目标在仓库外: $link -> $resolved"
-      continue
-      ;;
-  esac
-  case "$resolved" in
-    "$REPO_ROOT/.git"/*)
-      fail "软链指向 .git: $link -> $resolved"
-      continue
-      ;;
-  esac
-  [ -e "$resolved" ] || fail "软链目标不存在: $link -> $target"
-  rel_resolved="${resolved#"$REPO_ROOT"/}"
-  if [ -d "$resolved" ]; then
-    [ -n "$(git ls-files -- "$rel_resolved" | head -n 1)" ] || fail "软链指向未跟踪目录: $link"
-  else
-    git ls-files --error-unmatch "$rel_resolved" >/dev/null 2>&1 || fail "软链指向未跟踪文件: $link"
-  fi
-done < <(find . -type l -not -path './.git/*' -print)
-link_git="$(git ls-files -s | awk '$1=="120000"' | wc -l)"
-[ "$link_fs" -eq "$link_git" ] || fail "软链数量不一致：工作区 $link_fs，版本库 $link_git"
+tracked_links="$(git ls-files -s | awk '$1=="120000"{print $4}')"
+if [ -n "$tracked_links" ]; then
+  printf '%s\n' "$tracked_links" >&2
+  fail "版本库仍跟踪软链；入口应由 scripts/assemble.sh 与 scripts/materialize.sh 组装"
+fi
 
-plugin_skill_dirs="$(find skills -mindepth 1 -maxdepth 1 -type d | wc -l)"
-
-# 校验一个项目级 skill 入口：每项都是软链、可解析、含 SKILL.md，且 frontmatter name 与目录名一致。
-check_skill_root() {
-  local label="$1" root="$2" link_count=0 link name target front_name
-  for link in "$root"/*; do
-    [ -L "$link" ] || {
-      [ -e "$link" ] && fail "$label: $link 不是软链"
-      continue
-    }
-    link_count=$((link_count + 1))
-    name="$(basename "$link")"
-    if ! target="$(readlink -f "$link")"; then
-      fail "$label: 无法解析 $link"
-      continue
-    fi
-    [ -f "$target/SKILL.md" ] || {
-      fail "$label: $name 缺少 SKILL.md"
-      continue
-    }
-    front_name="$(sed -n 's/^name:[[:space:]]*//p' "$target/SKILL.md" | head -n 1 | tr -d '\r')"
-    [ "$front_name" = "$name" ] || fail "$label: $name 的 frontmatter name 为 '$front_name'"
-  done
-  [ "$link_count" -eq "$plugin_skill_dirs" ] || fail "$label: 软链 $link_count 个，顶层 skill $plugin_skill_dirs 个"
-}
-
-echo "== DSH 适配 =="
-check_skill_root "DSH" ".dsh/skills"
-[ -f rules/global-user-constraints.md ] || fail "DSH: 缺少约束正文 rules/global-user-constraints.md"
-[ -s AGENTS.md ] || fail "DSH: 缺少代理项目指令 AGENTS.md"
+echo "== 组装 =="
+bash scripts/assemble.sh --check || fail "开发组装校验"
+[ -f rules/global-user-constraints.md ] || fail "缺少约束正文 rules/global-user-constraints.md"
+[ -s AGENTS.md ] || fail "缺少代理项目指令 AGENTS.md"
 if [ -L AGENTS.md ]; then
-  fail "DSH: AGENTS.md 应为真实文件，不得软链"
+  fail "AGENTS.md 应为真实文件，不得软链"
 fi
-[ -f CONTRIBUTING.md ] || fail "DSH: 缺少人类贡献约定 CONTRIBUTING.md"
-
-echo "== Qoder 适配 =="
-if [ ! -d .qoder ] || [ -L .qoder ]; then
-  fail "Qoder: .qoder 应为普通目录"
-fi
-if [ -e .qoder-cn ] || [ -L .qoder-cn ]; then
-  fail "Qoder: 项目级不读 .qoder-cn，应删除"
-fi
-if [ -e .qoder/plugins ] || [ -L .qoder/plugins ]; then
-  fail "Qoder: 项目级不扫描 .qoder/plugins，应删除"
-fi
-if [ -L .qoder/rules ] && [ "$(readlink -f .qoder/rules)" = "$REPO_ROOT/rules" ]; then
-  :
-else
-  fail "Qoder: .qoder/rules 未指向 rules/"
-fi
-if [ ! -d .qoder/skills ] || [ -L .qoder/skills ]; then
-  fail "Qoder: .qoder/skills 应为普通目录"
-fi
-check_skill_root "Qoder" ".qoder/skills"
-
-echo "== Qwen 适配 =="
-if [ ! -d .qwen ] || [ -L .qwen ]; then
-  fail "Qwen: .qwen 应为普通目录"
-fi
-if [ -e .qwen/AGENTS.md ] || [ -L .qwen/AGENTS.md ]; then
-  fail "Qwen: 不读取项目级 .qwen/AGENTS.md，应删除"
-fi
-if [ -L .qwen/rules ] && [ "$(readlink -f .qwen/rules)" = "$REPO_ROOT/rules" ]; then
-  :
-else
-  fail "Qwen: .qwen/rules 未指向 rules/"
-fi
-if [ ! -f .qwen/rules/global-user-constraints.md ]; then
-  fail "Qwen: .qwen/rules 下缺少约束正文"
-fi
-if [ ! -d .qwen/skills ] || [ -L .qwen/skills ]; then
-  fail "Qwen: .qwen/skills 应为普通目录"
-fi
-check_skill_root "Qwen" ".qwen/skills"
-if head -n 10 rules/global-user-constraints.md | grep -q '^paths:'; then
-  fail "Qwen: 约束正文 front matter 含 paths，会变成条件规则"
-fi
-
+[ -f CONTRIBUTING.md ] || fail "缺少人类贡献约定 CONTRIBUTING.md"
 echo "== 插件清单 =="
-if ! python3 - "$REPO_ROOT" <<'PY'
+staged="$(mktemp -d)"
+trap 'rm -rf "$staged"' EXIT
+if ! bash scripts/materialize.sh qoder "$staged/qoder" >/dev/null; then
+  fail "组装 Qoder 包"
+fi
+if ! bash scripts/materialize.sh qwen "$staged/qwen" >/dev/null; then
+  fail "组装 Qwen 包"
+fi
+if ! python3 - "$REPO_ROOT" "$staged/qoder" "$staged/qwen" <<'PY'
 import json, re, sys
 from pathlib import Path
 
 root = Path(sys.argv[1])
-packages = {
-    "qoder": root / "plugins/qoder",
-    "qwen": root / "plugins/qwen",
-    "dsh": root / "plugins/dsh",
-}
-qoder = json.loads((packages["qoder"] / ".qoder-plugin/plugin.json").read_text(encoding="utf-8"))
-qwen = json.loads((packages["qwen"] / "qwen-extension.json").read_text(encoding="utf-8"))
-dsh = json.loads((root / "package.json").read_text(encoding="utf-8"))
+qdir = Path(sys.argv[2])
+wdir = Path(sys.argv[3])
 problems = []
+qoder = json.loads((qdir / ".qoder-plugin/plugin.json").read_text(encoding="utf-8"))
+qwen = json.loads((wdir / "qwen-extension.json").read_text(encoding="utf-8"))
+dsh = json.loads((root / "package.json").read_text(encoding="utf-8"))
 versions = {"qoder": qoder.get("version"), "qwen": qwen.get("version"), "dsh": dsh.get("version")}
 for name, version in versions.items():
     if not re.fullmatch(r"\d+\.\d+\.\d+", str(version or "")):
         problems.append(f"{name} manifest 版本不是 SemVer")
 if len(set(versions.values())) != 1:
     problems.append(f"三包版本不一致: {versions}")
-if not (packages["qwen"] / str(qwen.get("hooks", ""))).is_file():
-    problems.append("Qwen extension 的 hooks 路径不存在")
-for key in ("skills", "commands"):
-    if not (packages["qwen"] / str(qwen.get(key, ""))).is_dir():
-        problems.append(f"Qwen extension 的 {key} 路径不存在")
-if not (packages["qoder"] / str(qoder.get("hooks", ""))).is_file():
+for label, pkg in (("Qoder", qdir), ("Qwen", wdir)):
+    for path in pkg.rglob("*"):
+        if path.is_symlink():
+            problems.append(f"{label} 包包含软链: {path.relative_to(pkg)}")
+if not (qdir / str(qoder.get("hooks", ""))).is_file():
     problems.append("Qoder 插件的 hooks 路径不存在")
-if not (packages["qoder"] / str(qoder.get("skills", ""))).is_dir():
-    problems.append("Qoder 插件的 skills 路径不存在")
+for key in ("skills", "rules"):
+    if not (qdir / str(qoder.get(key, ""))).is_dir():
+        problems.append(f"Qoder 插件的 {key} 路径不存在")
 for command_name, command in (qoder.get("commands") or {}).items():
     source = command.get("source") if isinstance(command, dict) else None
-    if not source or not (packages["qoder"] / str(source)).is_file():
+    if not source or not (qdir / str(source)).is_file():
         problems.append(f"Qoder 命令 {command_name} 的 source 路径不存在")
+if not (qdir / "scripts").is_dir():
+    problems.append("Qoder 包缺少 scripts/")
+if list((qdir / "scripts").glob("test_*")):
+    problems.append("Qoder 包包含开发测试")
+if not (wdir / str(qwen.get("hooks", ""))).is_file():
+    problems.append("Qwen 扩展的 hooks 路径不存在")
+for key in ("skills", "commands"):
+    if not (wdir / str(qwen.get(key, ""))).is_dir():
+        problems.append(f"Qwen 扩展的 {key} 路径不存在")
+if not (wdir / "constraints/global-user-constraints.md").is_file():
+    problems.append("Qwen 包缺少 constraints/global-user-constraints.md")
+if (wdir / "rules").exists():
+    problems.append("Qwen 包不应包含 rules/")
+if not (wdir / "scripts").is_dir():
+    problems.append("Qwen 包缺少 scripts/")
+if list((wdir / "scripts").glob("test_*")):
+    problems.append("Qwen 包包含开发测试")
 bundle = (dsh.get("dsh") or {}).get("bundle") or {}
 patch_path = bundle.get("patch")
 if not patch_path or not (root / patch_path).is_file():
@@ -289,46 +202,18 @@ if not dsh.get("engines", {}).get("dsh"):
     problems.append("DSH bundle 缺少 engines.dsh")
 if (dsh.get("publishConfig") or {}).get("access") != "public":
     problems.append("DSH bundle 缺少 npm 公开包 publishConfig")
-if not (packages["qwen"] / "constraints/global-user-constraints.md").is_file():
-    problems.append("Qwen 包缺少 constraints/global-user-constraints.md")
-if (packages["qwen"] / "rules").exists():
-    problems.append("Qwen 包不应包含 rules/（Qwen 会按条件规则扫描）")
-if not (packages["qoder"] / "rules/global-user-constraints.md").is_file():
-    problems.append("Qoder 包缺少 rules/global-user-constraints.md")
-for package_name in ("qoder", "qwen"):
-    for test_file in (packages[package_name] / "scripts").glob("test_*"):
-        problems.append(f"{package_name} 包含开发测试: {test_file.name}")
-for required_dir in ("skills", "rules"):
-    if not (root / required_dir).is_dir():
-        problems.append(f"缺少 {required_dir}/")
-expected_links = {
-    "qoder": {"skills": "skills", "rules": "rules", "commands": "shared/commands", "scripts": "shared/scripts"},
-    "qwen": {"skills": "skills", "constraints": "rules", "commands": "shared/commands", "scripts": "shared/scripts"},
-}
-for name, links in expected_links.items():
-    for link, target in links.items():
-        path = packages[name] / link
-        if not path.is_symlink():
-            problems.append(f"{name} 的 {link} 应为软链")
-        elif path.resolve() != (root / target).resolve():
-            problems.append(f"{name} 的 {link} 未指向 {target}")
 if problems:
     sys.exit("; ".join(problems))
 PY
 then
   fail "插件清单"
 fi
-
 echo "== 插件校验 =="
 if command -v qoderclicn >/dev/null 2>&1; then
-  staged="$(mktemp -d)"
-  trap 'rm -rf "$staged"' EXIT
-  bash scripts/materialize.sh qoder "$staged/package" >/dev/null || fail "物化 Qoder 包"
-  qoderclicn plugins validate "$staged/package" || fail "插件校验"
+  qoderclicn plugins validate "$staged/qoder" || fail "插件校验"
 else
   skip "未安装 qoderclicn"
 fi
-
 if [ "$failures" -ne 0 ]; then
   echo "校验失败: $failures 项（跳过 $skips 项）" >&2
   exit 1

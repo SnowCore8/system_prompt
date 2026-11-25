@@ -33,13 +33,13 @@
 ## 错位与风险
 
 1. **AGENTS/CONTRIBUTING 已拆分。** 根 `AGENTS.md` 现为真实文件，只放代理项目指令；`CONTRIBUTING.md` 只面向人类，不进入模型上下文。
-2. **通用 skill 夹带本仓库流程（已拆）。** `skill-authoring` 的打包、三端软链、计数与 zip/npm 检查已移除；`system-prompt-authoring` 的 32 KiB、`check.sh`、脚本测试命令已泛化，来源表移入 `provenance.md`。
+2. **通用 skill 夹带本仓库流程（已拆）。** `skill-authoring` 的打包、三端组装、计数与 zip/npm 检查已移除；`system-prompt-authoring` 的 32 KiB、`check.sh`、脚本测试命令已泛化，来源表移入 `provenance.md`。
 3. **references 维护材料（已清理）。** `constraint-maintenance.md`、`provenance.md` 标为维护者资料；
    `skill-authoring/references/checklist.md` 已删除，发布/新增 skill 清单移入 `CONTRIBUTING.md`；
    六个迁移头精简为编号来源说明；`system-prompt-authoring/references/check-rules.md` 仍混有脚本文档。
 4. **仓库事实已泛化。** `documentation-conventions` 与 `change-records.md` 已改为通用表述，不再陈述本仓库软链或 CHANGELOG 事实。
 5. **描述职责重叠（部分处理）。** `skill-authoring` 已收窄；`repository-governance` 的“分支/发布政策”与 `naming-conventions` 的“提交”仍待收窄。
-6. **重复与漂移。** `docs/time-awareness.md` 复制注入文本；发布流程在 README、CONTRIBUTING、GOVERNANCE 与 `docs/release.md` 各有一份。`CONTRIBUTING` 输出段与 Qoder README 体积已修。
+6. **重复与漂移。** 发布流程在 README、CONTRIBUTING、GOVERNANCE 与 `docs/release.md` 各有一份；`docs/time-awareness.md` 已改为指向脚本，`CONTRIBUTING` 输出段与 Qoder README 体积已修。
 7. **入口差异。** Qoder 插件 `rules/` 当前不被 CLI 加载；DSH 未注册 `constraints-check` 命令；DSH/Qoder/Qwen 对 frontmatter 的处理不一致。
 
 ## 目标结构
@@ -50,10 +50,11 @@
 - `skills/`：SKILL.md 与 references 只放模型规范；维护者流程移至 `docs/` 或 CONTRIBUTING。
 - `docs/`：维护者材料、调研、发布 runbook 与分类台账；不得被包分发。
 - `shared/`：命令提示词（P）与注入脚本（C）分离。
+- 三端入口与安装包：由 `scripts/assemble.sh`/`scripts/materialize.sh` 从顶层真源生成，不提交软链。
 - `tests/`、`scripts/`、`.github/`：C，保持不进入上下文。
 
 ## 迁移批次
 
-1. **文档与重复（进行中）**：已修 Qoder README 体积与 `CONTRIBUTING` 输出段；仍待处理 `docs/time-awareness.md` 副本、发布流程重复与 DSH 命令缺失说明。
+1. **文档与重复（进行中）**：已修 Qoder README 体积、`CONTRIBUTING` 输出段与时间文档副本；仍待处理发布流程重复与 DSH 命令缺失说明。
 2. **skill 错位（大部分完成）**：已拆 `skill-authoring` 与 `system-prompt-authoring` 的仓库流程；已删 `checklist.md`、泛化 documentation 与迁移头；剩余 `check-rules.md` 与 2 个 description。
 3. **AGENTS/CONTRIBUTING 拆分（已完成）**：`AGENTS.md` 为真实代理指令，`CONTRIBUTING.md` 为人类文档；`check.sh`、README 与 docs 已同步。

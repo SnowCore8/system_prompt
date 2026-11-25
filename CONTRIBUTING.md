@@ -13,18 +13,17 @@
 - 本文件仅约束本仓库的维护工作；用户全局约束已经加载的，两者冲突时以用户全局约束为准。
 - 贡献者仅应修改被请求的内容；仓库为唯一真源，不得另建副本。
 - 代码注释与文档注释使用中文；第三方引入代码保留其原文注释。
-- Windows 检出必须先启用 `git config core.symlinks true`，或启用开发者模式；否则软链将落为普通文本文件，
-  各工具的 skill 与规则入口将静默失效，`scripts/check.sh` 的软链段将报告数量不一致。
+- 开发入口由 `scripts/assemble.sh` 生成到 `.dsh`、`.qoder`、`.qwen`；生成目录不提交，不需要 Windows `core.symlinks`。
 
 ## 工作流
 
 1. 修改约束、skill 或插件前，应当先阅读 `README.md` 与对应目录说明。
 2. 真源位置如下：约束正文为 `rules/global-user-constraints.md`；skill 真源为 `skills/`；命令与注入脚本为
-   `shared/`；Qoder/Qwen 包位于 `plugins/qoder|qwen`，包内放置清单、hook 与指向真源的软链；DSH bundle 的
+   `shared/`；Qoder/Qwen 包位于 `plugins/qoder|qwen`，包内只放清单与 hook，安装包由 `scripts/materialize.sh` 从顶层真源组装；DSH bundle 的
    清单为仓库根 `package.json`，`plugins/dsh` 放置源码与 patch，构建时复制 `skills/` 与 `rules/`。约束正文
    以 UTF-8 字节计硬上限 32 KiB；超限时按主题把规则提取到对应 skill 的 `references/`，正文只保留摘要与加载
    指引。
-3. 新增或调整入口时，应当保持软链约定：使用相对路径、目标位于仓库内、不复制第二份、不指向另一软链。
+3. 新增或调整入口时，运行 `scripts/assemble.sh` 重新组装；不手工复制，也不提交软链。
 4. 提交前应当运行 `scripts/check.sh`，失败先行修复；交付时应当粘贴真实输出与退出码。
 5. 分支模型为 trunk-based：单人维护，直接提交 `master`，不强制 PR；接入远端后，启用 `master` 保护与必需
    CI。
@@ -32,7 +31,7 @@
 ## 新增或改名 skill
 
 - 在 `skills/<name>/` 同步 `SKILL.md`、`references/` 与 `scripts/`；frontmatter 的 `name` 必须与目录名一致。
-- 同步 `.dsh/skills`、`.qoder/skills`、`.qwen/skills` 与 `plugins/qoder/skills`、`plugins/qwen/skills` 的相对软链；不复制正文。
+- 运行 `scripts/assemble.sh` 生成三端开发入口；运行 `scripts/materialize.sh` 验证安装包，不复制正文。
 - skill 数量变化时，更新 README 中的计数、`scripts/dist.sh` 的数量断言与 `tests/dsh/provider.test.mjs` 的标题。
 - 运行 `scripts/check.sh`；按 `docs/release.md` 出包，并核对 zip 内 skill 数量与本包入口。
 
@@ -41,7 +40,7 @@
 - 依赖安装：`python3 -m pip install -r requirements-dev.txt`。
 - 全量校验：`scripts/check.sh`，覆盖常驻约束体积（≤32 KiB）、Markdown、skill 与 hook 测试、DSH bundle 的
   `node --test`、shellcheck、ruff、依赖审计（pip-audit）、覆盖率（`--fail-under=90`）、JSON、敏感文件、
-  软链、三工具项目级适配与三包清单一致性。缺少 `shellcheck`、`node` 或 `qoderclicn` 时，对应段将打印“跳过”，交付时应
+  零软链与组装、三包清单一致性。缺少 `shellcheck`、`node` 或 `qoderclicn` 时，对应段将打印“跳过”，交付时应
   当说明缺口。
 - 单独运行测试：skill 测试使用
   `python3 -B -m unittest discover -s tests/skill -p 'test_*.py'`；hook 测试使用
