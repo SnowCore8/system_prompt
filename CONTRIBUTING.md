@@ -29,6 +29,13 @@
 5. 分支模型为 trunk-based：单人维护，直接提交 `master`，不强制 PR；接入远端后，启用 `master` 保护与必需
    CI。
 
+## 新增或改名 skill
+
+- 在 `skills/<name>/` 同步 `SKILL.md`、`references/` 与 `scripts/`；frontmatter 的 `name` 必须与目录名一致。
+- 同步 `.dsh/skills`、`.qoder/skills`、`.qwen/skills` 与 `plugins/qoder/skills`、`plugins/qwen/skills` 的相对软链；不复制正文。
+- skill 数量变化时，更新 README 中的计数、`scripts/dist.sh` 的数量断言与 `tests/dsh/provider.test.mjs` 的标题。
+- 运行 `scripts/check.sh`；按 `docs/release.md` 出包，并核对 zip 内 skill 数量与本包入口。
+
 ## 校验与打包
 
 - 依赖安装：`python3 -m pip install -r requirements-dev.txt`。

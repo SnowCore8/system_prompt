@@ -38,7 +38,7 @@ argument-hint: '[路径或文档类型]'
 - 源代码注释、docstring 与文档注释，由 `comment-conventions` 管辖；由文档注释生成的参考页，结构依本 skill，文
   笔依该 skill。
 - 常驻指令文件（AGENTS.md、CLAUDE.md、QWEN.md 及其软链目标）的结构与条款，由 `system-prompt-authoring` 管辖；
-  本 skill 仅规定普通项目文档。本仓库根 `AGENTS.md` 指向 `CONTRIBUTING.md`，同一文件同时充当指令入口与项目
+  本 skill 仅规定普通项目文档。项目根 `AGENTS.md` 经软链指向 `CONTRIBUTING.md` 时，同一文件同时充当指令入口与项目
   维护说明，其边界以 `system-prompt-authoring` 为准。
 - 生成的文档，结构规则与生成规则适用本 skill；代理不得手工编辑生成产物，应当修改生成器或源注释后重新生成，
   保留生成标记，并在页面或索引中记录上游来源。

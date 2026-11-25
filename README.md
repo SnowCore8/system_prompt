@@ -127,13 +127,9 @@ qoderclicn --cwd /tmp plugins list --json
 
 ## 打包
 
-版本采用 SemVer，三个清单的 `version` 必须一致；发布流程是「改三包版本与 CHANGELOG → 提交 →
-打 `v<version>` 注释 tag → 推送」，由 release 工作流分别构建三个 zip，详见 [docs/release.md](docs/release.md)。
-
-本地出包运行 `scripts/dist.sh`：默认要求工作区干净（`--allow-dirty` 放行），浅克隆直接拒绝，
-`--require-tag` 要求 HEAD 正好带有 `v<version>` tag。每个包物化后归一 mtime 与权限、按名称排序、
-用 `zip -X` 构建，输出可复现 zip 与 SHA256；每个包只保留最新制品，构建新版本时删除旧 zip 与
-`.sha256`。zip 与 `*.sha256` 被 `.gitignore` 忽略，不提交。
+版本、tag 与发布步骤以 [docs/release.md](docs/release.md) 为唯一 runbook。本地出包运行
+`scripts/dist.sh`；它要求干净工作区、可用 `--require-tag` 校验 tag，生成可复现 zip 与 SHA256。
+zip 与 `*.sha256` 不纳入版本库。
 
 ## CI
 

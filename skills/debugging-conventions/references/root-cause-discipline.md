@@ -1,7 +1,6 @@
 # 根因治理与方案验证（CH-4、ME-12）
 
-本文件收录原用户全局约束 CH-4「根因治理」，并展开常驻 ME-12「方案验证」的操作细节。CH-4 由
-`debugging-conventions` skill 管辖；常驻条款与本文冲突时，以 `rules/global-user-constraints.md` 为准。
+CH-4 沿用原用户全局约束的编号；ME-12 的常驻条款与本文冲突时，以 `rules/global-user-constraints.md` 为准。
 
 ## CH-4 根因治理
 

@@ -1,6 +1,6 @@
 ---
 name: prompt-authoring
-description: 定义、审查并重构面向语言模型的提示词，覆盖系统提示、任务指令、few-shot 示例、输出契约、工具与检索指令、分类/审查提示，以及评测集与回归。适用于编写或修改提示词、排查提示词退化、加固不可信输入、设计评测或把提示词版本化。不适用于常驻指令文件（见 system-prompt-authoring）、skill 包结构与分发（见 skill-authoring）与代码注释（见 comment-conventions）。
+description: 定义、审查并重构面向语言模型的提示词，覆盖系统提示、任务指令、few-shot 示例、输出契约、工具与检索指令、分类/审查提示，以及评测集与回归。适用于编写或修改提示词、排查提示词退化、加固不可信输入、设计评测或把提示词版本化。不适用于常驻指令文件（见 system-prompt-authoring）、skill 包结构（见 skill-authoring）、打包与分发（见 repository-governance-conventions 与 release-operations-conventions）与代码注释（见 comment-conventions）。
 argument-hint: '[提示词文件或场景]'
 ---
 
@@ -26,7 +26,7 @@ skill 规定一套决策程序与规则集，将提示词作为产品代码处�
 
 - 写入仓库、在每个会话中常驻的指令文件（`AGENTS.md`、`CLAUDE.md`、`QWEN.md`）由
   `system-prompt-authoring` 管辖；
-- skill 包的结构、frontmatter、渐进披露与分发由 `skill-authoring` 管辖；本 skill 仅管辖提示词正文的写法；
+- skill 包的结构、frontmatter 与渐进披露由 `skill-authoring` 管辖；打包与分发由 `repository-governance-conventions` 与 `release-operations-conventions` 管辖。本 skill 仅管辖提示词正文的写法；
 - 本 skill 管辖运行时的一次性提示词、产品中的系统提示、few-shot、输出契约、工具与检索指令，以及评测；
 - 代码注释与文档注释由 `comment-conventions` 管辖；API 契约字段由 `api-and-data-conventions` 管辖；
 - 用户可见文档的写法由 `documentation-conventions` 管辖；评测作为发布门禁的阈值由

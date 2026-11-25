@@ -1,7 +1,9 @@
 # 来源引文
 
-本文件为 `SKILL.md` 中 S1-S13 规则表的证据。仅在某一规则的来源受到质疑或某一来源已更新时阅读。链接与版本见
-`SKILL.md` 的“参考资料”一节。
+维护者资料，不进入默认加载。
+
+本文件为 `SKILL.md` 中 S1-S13 规则表的证据。仅在某一规则的来源受到质疑或某一来源已更新时阅读。来源标签、
+文档链接与核验日期见本文件末尾的“来源表”。
 
 引文保留英文原文；省略处使用“...”标出。来源核验于 2026-11-14。CC-BP 引用版本冻结于 2026-11-12（不再跟随
 外部页面更新）；2026-11-14 核验时引文措辞已不存在的，以下列转述替代，删除日期未知。引文标点统一为 ASCII。
@@ -120,3 +122,19 @@
 - OAI-41 introduction:
   "GPT-4.1 is trained to follow instructions more closely and more literally than its
   predecessors..."
+
+## 来源表
+
+| 简写标签 | 文档 | 链接 |
+|---|---|---|
+| OAI-PE | Prompt engineering | https://developers.openai.com/api/docs/guides/prompt-engineering |
+| OAI-41 | GPT-4.1 Prompting Guide (archived) | https://developers.openai.com/cookbook/examples/gpt4-1_prompting_guide |
+| OAI-MS | Model Spec (2026-08-18) | https://model-spec.openai.com/2026-08-18.html |
+| ANT-PBP | Prompting best practices | https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/claude-prompting-best-practices |
+| ANT-CE | Effective context engineering | https://www.anthropic.com/research/effective-context-engineering-for-ai-agents |
+| CC-BP | Best practices for Claude Code | https://code.claude.com/docs/en/best-practices |
+| GOOG | Prompt design strategies | https://aistudio.google.com/docs/prompting-strategies |
+| MS | System message design | https://learn.microsoft.com/en-us/azure/foundry/openai/concepts/advanced-prompt-engineering |
+
+来源核验于 2026-11-14；OAI-41 已归档。OAI-MS 为 2026-08-18 版本，该页注明存在更新版本。刷新后不再匹配的，应
+当修改或删除该规则；不得保留无法追溯的要求。

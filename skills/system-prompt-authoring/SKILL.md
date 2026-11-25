@@ -27,7 +27,7 @@ CLAUDE.md 或 QWEN.md。交付物为可直接加载的 Markdown：内容规则�
 - 凭据与机密，由 `security-compliance-conventions` 管辖。
 - 门禁与 CI，由 `testing-and-quality-conventions` 与 `release-operations-conventions` 管辖。
 - 一次性或产品提示词，即非常驻指令，由 `prompt-authoring` 管辖。
-- skill 包（SKILL.md 及其 `references/`、`scripts/`）的结构与打包，由 `skill-authoring` 管辖。
+- skill 包（SKILL.md 及其 `references/`、`scripts/`）的结构由 `skill-authoring` 管辖；打包与分发由 `repository-governance-conventions` 与 `release-operations-conventions` 管辖。
 
 ## 流程
 
@@ -98,10 +98,10 @@ S5 反对将编号作为隐含优先级。文件可以显式声明同节内的�
   （ANT-PBP：“Prefer general instructions over prescriptive steps.”）。对需要显式规划的非推理模型，应当依
   OAI-41 增加 `Reasoning Steps`。对推理模型，不得写入“逐步思考”（think step by step）或要求其展示推理
   过程：该模型自带推理，仅给出目标与约束即可（OAI-PE §Prompting reasoning models）。
-- **长度**：用户全局约束正文（`rules/global-user-constraints.md`）以 UTF-8 字节计硬上限 32 KiB（32,768
-  字节）；单行限制见 S12。超过上限时，必须按主题把规则提取到对应 skill 的 `references/`，正文只保留摘要
-  与加载指引；仓库 `scripts/check.sh` 校验该上限。收录原则、制定理由、适用限制、示例与依据见
-  [references/constraint-maintenance.md](references/constraint-maintenance.md)。
+- **长度**：常驻指令文件应当有明确的长度上限；具体数值、校验命令与超限后的处理流程由项目文档规定（本仓库见
+  `CONTRIBUTING.md` 与 `AGENTS.md`），本 skill 不重复具体阈值。超过上限时，必须按主题把规则提取到对应 skill 的
+  `references/`，正文只保留摘要与加载指引；单行限制见 S12。收录原则、制定理由、适用限制、示例与依据见
+  [references/constraint-maintenance.md](references/constraint-maintenance.md)（维护者资料，不进入默认加载）。
 - **禁止项**：保留红线并说明理由；其余禁止项均应当写出替代行为。
 - **优先级**：编号本身不产生优先级；不得写入“编号小的优先”。文件可以显式声明顺序；存在声明的，遵循
   声明。OAI-MS 层级为 root > system > developer > user > guideline；同层中较晚的消息覆盖较早的消息。
@@ -186,12 +186,8 @@ python3 <skill-dir>/scripts/check.py --strict AGENTS.md
 `--strict` 模式下，任何警告均将使运行失败；警告必须在源头消除（对已记录的误报，改造该写法或修改校验脚本），
 因为仅记录解释并不改变退出码。
 
-脚本依赖 `markdown-it-py==4.2.0`；缺失时脚本报错并打印安装命令，不自动安装。脚本自身的测试使用标准库
-unittest：
-
-```bash
-python3 -B -m unittest discover -s tests/skill -p 'test_*.py'
-```
+脚本依赖 `markdown-it-py==4.2.0`；缺失时脚本报错并打印安装命令，不自动安装。校验脚本自身应当有测试，
+覆盖解析、规则判定与退出码；测试入口、依赖与全量校验命令见项目文档（本仓库为 `CONTRIBUTING.md`）。
 
 规则表、校验范围、有意不校验的项与输出级别见 [references/check-rules.md](references/check-rules.md)。
 
@@ -226,19 +222,6 @@ python3 -B -m unittest discover -s tests/skill -p 'test_*.py'
 
 ## 参考资料
 
-规则表使用简写标签。仅在某一规则的来源受到质疑或所链文档更新时，方阅读
-[references/provenance.md](references/provenance.md)；日常执行不阅读该文件。
-
-| 简写标签 | 文档 | 链接 |
-|---|---|---|
-| OAI-PE | Prompt engineering | https://developers.openai.com/api/docs/guides/prompt-engineering |
-| OAI-41 | GPT-4.1 Prompting Guide (archived) | https://developers.openai.com/cookbook/examples/gpt4-1_prompting_guide |
-| OAI-MS | Model Spec (2026-08-18) | https://model-spec.openai.com/2026-08-18.html |
-| ANT-PBP | Prompting best practices | https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/claude-prompting-best-practices |
-| ANT-CE | Effective context engineering | https://www.anthropic.com/research/effective-context-engineering-for-ai-agents |
-| CC-BP | Best practices for Claude Code | https://code.claude.com/docs/en/best-practices |
-| GOOG | Prompt design strategies | https://aistudio.google.com/docs/prompting-strategies |
-| MS | System message design | https://learn.microsoft.com/en-us/azure/foundry/openai/concepts/advanced-prompt-engineering |
-
-来源核验于 2026-11-14；OAI-41 已归档。OAI-MS 为 2026-08-18 版本，该页注明存在更新版本。刷新后不再匹配的，应
-当修改或删除该规则；不得保留无法追溯的要求。
+规则表的“来源”列使用简写标签；标签定义、文档链接与核验日期见
+[references/provenance.md](references/provenance.md)（维护者资料，不进入默认加载）。仅在某一规则的来源受到
+质疑或所链文档更新时阅读该文件；日常执行不阅读。
