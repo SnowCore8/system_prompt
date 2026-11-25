@@ -1,7 +1,6 @@
 # 配套 skill 的加载顺序
 
-新建项目、为项目制定规范，或整改明显不规范的存量项目时，应当依任务实际涉及的方面加载配套 skill。
-顺序可以参照：
+配套 skill 的加载顺序可以参照：
 
 `repository-governance-conventions` → `vcs-collaboration-conventions` →
 `testing-and-quality-conventions` → `code-style-conventions`、`naming-conventions`、
