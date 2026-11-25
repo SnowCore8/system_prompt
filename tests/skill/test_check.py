@@ -838,17 +838,17 @@ class CliTest(unittest.TestCase):
         self.assertTrue(strict)
 
     def test_parse_args_rejects_unknown(self):
-        with self.assertRaises(SystemExit) as ctx:
+        with contextlib.redirect_stderr(io.StringIO()), self.assertRaises(SystemExit) as ctx:
             check.parse_args(["--nope", "a.md"])
         self.assertEqual(ctx.exception.code, 2)
 
     def test_parse_args_requires_one_target(self):
-        with self.assertRaises(SystemExit) as ctx:
+        with contextlib.redirect_stderr(io.StringIO()), self.assertRaises(SystemExit) as ctx:
             check.parse_args([])
         self.assertEqual(ctx.exception.code, 2)
 
     def test_help_exits_zero(self):
-        with self.assertRaises(SystemExit) as ctx:
+        with contextlib.redirect_stdout(io.StringIO()), self.assertRaises(SystemExit) as ctx:
             check.parse_args(["--help"])
         self.assertEqual(ctx.exception.code, 0)
 
