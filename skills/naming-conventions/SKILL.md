@@ -6,8 +6,8 @@ argument-hint: '[路径或符号]'
 
 # 命名规范
 
-名称是代码库中阅读次数最多的接口。良好的名称说明一个事物是什么或做什么，贴合语言，并在各层之间保持稳定；
-不良的名称迫使每位读者从实现反推意图。本 skill 规定命名的决策流程，以及项目各类命名产物所需的完整规则集。
+名称是代码库中阅读次数最多的接口。良好的名称说明一个事物是什么、做什么，贴合语言，并在各层之间保持稳定；不
+良的名称则迫使每位读者从实现反推意图。本 skill 规定命名的决策流程，以及项目各类命名产物所需的完整规则集。
 
 ## 适用范围与优先级
 
@@ -21,50 +21,50 @@ argument-hint: '[路径或符号]'
 
 - 生成代码、第三方引入代码、外部协议字段与第三方 schema 不受本规范约束。上述名称应当保留，在边界处隔离，
   并将映射记录于项目命名表。
-- 重命名属于一次变更，不属于清理。代理应当先阅读全部引用，在授权范围内更新测试、文档与 fixture，并将任何
-  公开名称视为 API。
-- 同一效力层级的强制规则冲突的，代理应当报告用户裁决，不得自行选定；非强制的项目约定冲突，可以说明冲突与所选约定；跨层冲突依用户全局约束 §3.3 处理，并记录决定，使后续变更遵循该决定。
+- 重命名属于一次变更，不属于清理。代理应当先阅读全部引用，在授权范围内更新测试、文档与 fixture，并将任何公开名称视为 API。
+- 同一效力层级的强制规则冲突时，代理应当报告用户裁决，不得自行选定。非强制的项目约定冲突，可以说明冲突与
+  所选约定；跨层冲突依用户全局约束 §3.3 处理，并记录决定，使后续变更遵循该决定。
 
-本 skill 规定名称、大小写、被禁用的同义词、文件名、目录名、锚点、ADR 编号、命名表与重命名机制；其他产物类别的策略与流程，依下列职责归属：
+本 skill 规定名称、大小写、被禁用的同义词、文件名、目录名、锚点、ADR 编号、命名表与重命名机制；其他产物类
+别的策略与流程，依下列职责归属：
 
-- 提交与 pull request 流程、合并与审查策略、历史记录与审查深度，由 vcs-collaboration-conventions 负责。
+- 提交与 PR 流程、合并与审查策略、历史记录与审查深度，由 vcs-collaboration-conventions 负责。
 - API 版本化、分页风格、CRUD 语义、错误模型，以及数据库 schema 变更流程与迁移安全性，由 api-and-data-conventions 负责。
 - 格式化工具与 linter 配置、行宽、配置的优先级与语义，以及错误与日志内容策略，由 code-style-conventions 负责。
 - 测试策略、门禁、测试处置，以及跳过、隔离与豁免策略，由 testing-and-quality-conventions 负责。
-- 遥测设计、功能开关生命周期、CI/CD、发布时机，以及弃用声明的时间与位置，由
-  release-operations-conventions 负责。
+- 遥测设计、功能开关生命周期、CI/CD、发布时机，以及弃用声明的时间与位置，由 release-operations-conventions 负责。
 - 访问控制与权限策略，以及机密扫描、轮换与披露，由 security-compliance-conventions 负责。
-- 包与分发元数据，由 repository-governance-conventions 负责；版本策略、发布流程与审批、上线与回滚，由 release-operations-conventions 负责。
-- 文档正文、变更日志、发布说明、文档站点与术语表的散文定义，由 documentation-conventions 负责；名称、大小写、被禁用的同义词、文件名、目录名、锚点与 ADR 编号由本 skill 负责。
+- 包与分发元数据，由 repository-governance-conventions 负责；版本策略、发布流程与审批、上线与回滚，由
+  release-operations-conventions 负责。
+- 文档正文、变更日志、发布说明、文档站与术语表的散文定义，由 documentation-conventions 负责；名称、大小写、被禁用的同义词、文件名、目录名、锚点与 ADR 编号由本 skill 负责。
 - 指令文件，由 system-prompt-authoring 负责。
 
 ## 流程
 
 1. 对产物分类：文件、目录、包、类型、函数、变量、常量、API 字段、数据库对象、配置键、测试、提交或资产。
-2. 以项目领域语言为该概念命名。代理应当先核查命名表与术语表是否已有现成术语。
+2. 以项目领域语言为该概念命名；代理应当先核查命名表与术语表是否已有现成术语。
 3. 从形式表中选择语法形式（名词、动词、形容词、复数）。
 4. 为产物与语言选择大小写风格；覆盖规则见 `references/languages.md`。
 5. 检查冲突、对称性、长度、可读性（能否读出声）、可搜索性，以及有误导性的编码。
 6. 新领域术语在超过一处使用前，应当先行记录于项目命名表。
-7. 重命名的，代理应当列出全部引用，选择别名或弃用路径，并核对完整 diff。
+7. 需要重命名时，代理应当列出全部引用，选择别名或弃用路径，并核对完整 diff。
 
 ## 核心规则
 
-- **一个概念，一个名称。** 一个名称对应一个概念。同一事物有多种叫法，属于缺陷；同一名称指两件事，属于
-  冲突。
+- **一个概念，一个名称。** 一个名称对应一个概念。同一事物有多种叫法，属于缺陷；同一名称指两件事，属于冲
+  突。
 - **命名意图，而不是实现。** `activeUsers` 优于 `filteredList2`；`retryCount` 优于 `loopCounter`。
 - **使用领域语言。** 应当优先采用用户与产品使用的词；记录被禁用的同义词。
-- **遵循语言。** 不得从其他语言引入大小写或前缀；Python 中的 `IUserStore` 或 Go 中的 `user_repository`，
-  即使概念正确，亦属错误。
-- **可搜索、可读出声。** 除循环索引外，应当避免单字母与双字母名称、省略元音的写法以及辅音连缀；审查时
-  应当有人能够将名称读出声。
-- **不得编码类型。** 不得采用匈牙利命名法，不得添加 `obj`、`str`、`arr`、`list` 后缀；仅当类型无法表达
-  时，方得编码单位、范围或含义（`timeout_ms`、`amount_cents`）。
+- **遵循语言。** 不得从其他语言引入大小写或前缀；Python 中的 `IUserStore` 或 Go 中的 `user_repository`，即
+  使概念正确，亦属错误。
+- **可搜索、可读出声。** 除循环索引外，应当避免单字母与双字母名称、省略元音的写法以及辅音连缀；审查时应当
+  有人能够将名称读出声。
+- **不得编码类型。** 不得采用匈牙利命名法，不得添加 `obj`、`str`、`arr`、`list` 后缀；仅当类型无法表达时，
+  方得编码单位、范围或含义（`timeout_ms`、`amount_cents`）。
 - **优先肯定式。** `isEnabled` 优于 `isNotDisabled`；不得构造双重否定。
-- **集合用复数。** `users` 包含多个用户；`user` 表示一个用户。映射应当写作 `usersById`，不得写作
-  `userMap`。
-- **按作用域控制名称长度。** 局部变量使用一到两个词，公开 API 使用两到四个词；长名称胜于含糊名称，但以
-  每个词均承载含义为前提。
+- **集合用复数。** `users` 包含多个用户；`user` 表示一个用户。映射应当写作 `usersById`，不得写作 `userMap`。
+- **按作用域控制名称长度。** 局部变量使用一到两个词，公开 API 使用两到四个词；长名称胜于含糊名称，前提是每
+  个词都承载含义。
 - **不得在请求之外重命名。** 一致性具有价值，但批量重命名属于另一次需要审查的变更。
 
 ## 大小写矩阵
@@ -236,7 +236,7 @@ argument-hint: '[路径或符号]'
 
 <example>
 场景：重命名一个含糊的服务。
-做法：`UserManager` 同时处理查找与存储，该名称掩盖两项职责；应当将其拆分为负责查找的 `UserDirectory` 与
+做法：`UserManager` 同时负责查找与存储，该名称掩盖两项职责；应当将其拆分为负责查找的 `UserDirectory` 与
 负责持久化的 `UserRepository`，并在一次受限的变更中更新全部调用点。
 </example>
 
@@ -249,7 +249,7 @@ argument-hint: '[路径或符号]'
 ## 参考资料
 
 按产物分类的完整规则集见 [references/dimensions-code.md](references/dimensions-code.md)、
-[references/dimensions-interface.md](references/dimensions-interface.md)、
-[references/dimensions-system.md](references/dimensions-system.md)，按语言的大小写矩阵见
+[references/dimensions-interface.md](references/dimensions-interface.md) 与
+[references/dimensions-system.md](references/dimensions-system.md)；按语言的大小写矩阵见
 [references/languages.md](references/languages.md)。建立新项目的命名表之前，应当先阅读上述文件；日常工作
 中，仅阅读适用的维度与适用的语言行。

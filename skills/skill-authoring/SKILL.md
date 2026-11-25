@@ -6,9 +6,9 @@ argument-hint: '[skill 目录或名称]'
 
 # 编写与审查 skill
 
-skill 是按需加载的规范包。其失效通常并非因为内容不足，而是因为触发不准、正文过载、事实分散于多处、打包
-时遗漏依赖或装入不应分发的文件。本 skill 规定 skill 的结构、写法、校验与分发规则，使每个 skill 均满足以下
-要求：体量适度、规则可判定、可被发现、可被打包。
+skill 是按需加载的规范包。它失效通常不是因为内容不足，而是因为触发不准、正文过载、事实散落在多处、打包时
+遗漏依赖，或装入不该分发的文件。本 skill 规定 skill 的结构、写法、校验与分发规则，使每个 skill 都满足四
+项要求：体量适度、规则可判定、可被发现、可被打包。
 
 ## 适用范围与优先级
 
@@ -17,8 +17,8 @@ skill 是按需加载的规范包。其失效通常并非因为内容不足，�
 1. 强制性的平台、法律、宿主与用户全局约束。宿主对 skill 的目录名、frontmatter 字段、`SKILL.md` 入口、
    加载与触发方式等强制要求，不可协商。
 2. 本 skill 的规则。结构、写法、校验与分发，以本文件与 `references/` 为准。
-3. 仓库既有 skill 约定与事实。动笔前应当先阅读相邻 skill 的 `SKILL.md` 与 `references/`；上述内容属于事实
-   输入，依本 skill 的规则处理。项目约定仅在本 skill 未规定时补充，不得覆盖本 skill。
+3. 仓库既有 skill 约定与事实。动笔前应当先阅读相邻 skill 的 `SKILL.md` 与 `references/`；这些内容属于
+   事实输入，依本 skill 的规则处理。项目约定仅在本 skill 未规定时补充，不得覆盖本 skill。
 4. 个人偏好，不得覆盖上述三层。
 
 分工边界如下：
@@ -26,8 +26,8 @@ skill 是按需加载的规范包。其失效通常并非因为内容不足，�
 - 常驻指令文件（`AGENTS.md`、`CLAUDE.md`、`QWEN.md`）始终加载，由 `system-prompt-authoring` 管辖；
 - 一次性或产品提示词一次交付，由 `prompt-authoring` 管辖；本 skill 仅管辖“按需触发加载、作为规范包分发”
   的 skill；
-- 内容事实的写法由对应领域 skill 管辖，例如 API 契约由 `api-and-data-conventions` 管辖；本 skill 仅管辖承
-  载结构；
+- 内容事实的写法由对应领域 skill 管辖，例如 API 契约由 `api-and-data-conventions` 管辖；本 skill 仅管辖
+  承载结构；
 - 发布节奏、版本与 CI 门禁由 `release-operations-conventions` 与 `testing-and-quality-conventions` 管辖。
 
 ## 结构
@@ -57,8 +57,8 @@ frontmatter 字段如下：
 1. **确认所解决的一个问题。** 一个 skill 仅服务一类读者与一类任务；承担两项职责的，应当拆分为两个 skill。
 2. **确定触发条件。** `description` 应当写成“适用于……”，不得罗列功能；代理依该字段决定是否加载。
 3. **编写入口。** `SKILL.md` 开头应当说明适用范围、优先级与分工边界，再给出核心规则。
-4. **将细节拆至 `references/`。** 正文放置决策程序与默认值；长模板、清单与维度规则移至 `references/`，正文
-   仅保留链接。
+4. **将细节拆至 `references/`。** 正文放置决策程序与默认值；长模板、清单与维度规则移至 `references/`，
+   正文仅保留链接。
 5. **配置脚本时保持单向依赖。** 脚本仅由 skill 调用；测试放置于仓库的 `tests/`，不得进入 `scripts/` 分发。
 6. **校验。** 运行仓库的 Markdown 严格检查，确认 `name` 与目录名一致、链接与脚本路径可以解析。
 7. **验证打包。** 确认三端软链、zip 与 npm 包均包含该 skill，且不含测试、缓存或跨包文件。
@@ -66,17 +66,18 @@ frontmatter 字段如下：
 ## 核心规则
 
 - **目录名即名称。** `name` 必须等于目录名；改名的，应当同时修改目录、软链与全部引用。
-- **`description` 写触发条件与排除项，不写功能清单。** 使代理能够直接判断“本次任务是否应当加载”，不得复
-  述目录名。
-- **入口应当简短。** `SKILL.md` 是路由与默认值，并非全文；正文不超过 250 行（不含 frontmatter），超出的细
-  节移至 `references/`。
+- **`description` 写触发条件与排除项，不写功能清单。** 使代理能够直接判断“本次任务是否应当加载”，不得
+  复述目录名。
+- **入口应当简短。** `SKILL.md` 是路由与默认值，并非全文；正文不超过 250 行（不含 frontmatter），超出的
+  细节移至 `references/`。
 - **`references` 按主题管理。** 文件名按内容命名，下列为示例而非闭集：`dimensions.md`、`templates.md`、
   `languages.md`、`playbooks.md`、`gates.md`、`evaluation.md`、`checklist.md`、`checklists.md`。单个维度
-  文件超过 300 行或 20 节时，按主题拆分为 `dimensions-<主题>.md`，该拆分规则仅适用于维度文件；清单只有一
-  份时使用 `checklist.md`，多份时使用 `checklists.md`；索引详情列应当写明文件名与节号，节号沿用原编号。
-- **一项事实一个权威来源。** 共享事实仅在一处维护，其他 skill 以链接指向该处并注明“由 X 裁定”，不得复
-  制。
-- **规则可判定。** 应当避免使用“合理”“合适”，优先给出可观察条件、阈值与正反例。改写示例见 `references/templates.md`。
+  文件超过 300 行或 20 节时，按主题拆分为 `dimensions-<主题>.md`，该拆分规则仅适用于维度文件；清单只有
+  一份时使用 `checklist.md`，多份时使用 `checklists.md`；索引详情列应当写明文件名与节号，节号沿用原
+  编号。
+- **一项事实一个权威来源。** 共享事实仅在一处维护，其他 skill 以链接指向该处并注明“由 X 裁定”，不得复制。
+- **规则可判定。** 应当避免使用“合理”“合适”，优先给出可观察条件、阈值与正反例。改写示例见
+  `references/templates.md`。
 - **适用与不适用均须写明。** `description` 与正文边界应当一致；边界含糊将导致代理在不应当加载时加载，或
   在重叠时选错。
 - **脚本与测试分离。** `scripts/` 仅放置运行时脚本；测试放置于仓库 `tests/`，分发包内不得出现 `test_*`。
@@ -116,7 +117,8 @@ frontmatter 字段如下：
 
 ## references 组织
 
-- 一个文件承载一类内容，不得堆叠于一个文件；文件类型、维度拆分与清单命名见核心规则「`references` 按主题管理」。
+- 一个文件承载一类内容，不得堆叠于一个文件；文件类型、维度拆分与清单命名见核心规则「`references` 按主题
+  管理」。
 - 文件命名使用 kebab-case，名称描述内容，并与正文链接中的文件名完全一致。
 - 一项事实仅在一处：正文与各 `references` 之间、`references` 之间，均不得互相复制，其余以链接引用。
 
@@ -124,10 +126,10 @@ frontmatter 字段如下：
 
 仓库的三个包各自引用同一套真源，分为两层：
 
-- 项目级入口：`.dsh/skills/`、`.qoder/skills/`、`.qwen/skills/` 为普通目录，内含指向顶层 `skills/<name>`
-  的相对软链。
-- 包内布局：`plugins/qoder/skills` 与 `plugins/qwen/skills` 为指向顶层 `skills/` 的包级软链，打包时解引
-  用；DSH 由 `scripts/materialize.sh` 将 `skills/` 与 `rules/` 复制为真实目录，清单位于仓库根
+- 项目级入口：`.dsh/skills/`、`.qoder/skills/`、`.qwen/skills/` 为普通目录，内含指向顶层
+  `skills/<name>` 的相对软链。
+- 包内布局：`plugins/qoder/skills` 与 `plugins/qwen/skills` 为指向顶层 `skills/` 的包级软链，打包时解
+  引用；DSH 由 `scripts/materialize.sh` 将 `skills/` 与 `rules/` 复制为真实目录，清单位于仓库根
   `package.json`。
 - 每个包均须包含全部 skill，计数一致；`dist.sh` 的 allowlist 拒绝测试与跨包文件。
 
