@@ -31,3 +31,7 @@ credentials.*
 .qoder/skills/
 .qwen/rules/
 .qwen/skills/
+plugins/qoder/commands/
+plugins/qoder/rules/
+plugins/qoder/scripts/
+plugins/qoder/skills/

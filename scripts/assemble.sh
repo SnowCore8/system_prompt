@@ -4,10 +4,12 @@ set -euo pipefail
 
 usage() {
   cat <<'EOF'
-用法: scripts/assemble.sh [dev|--check]
+用法: scripts/assemble.sh [dev|qoder|--check]
 
 dev     生成 .dsh/skills、.qoder/rules、.qoder/skills、.qwen/rules、.qwen/skills；
         这些目录被 .gitignore 忽略，不提交。
+qoder   生成 plugins/qoder 的 skills/rules/commands/scripts，供 Qoder 本地市场使用；
+        生成目录被 .gitignore 忽略，不提交。
 --check 在临时目录组装并校验 18 个 skill、两个 rules 入口与零软链，不改工作区。
 EOF
 }
@@ -26,6 +28,15 @@ assemble_into() {
   cp -a "$REPO_ROOT/skills/." "$root/.qwen/skills/"
   cp -a "$REPO_ROOT/rules/." "$root/.qoder/rules/"
   cp -a "$REPO_ROOT/rules/." "$root/.qwen/rules/"
+}
+
+assemble_qoder_local() {
+  local pkg="$REPO_ROOT/plugins/qoder"
+  rm -rf "$pkg/skills" "$pkg/rules" "$pkg/commands" "$pkg/scripts"
+  cp -a "$REPO_ROOT/skills" "$pkg/skills"
+  cp -a "$REPO_ROOT/rules" "$pkg/rules"
+  cp -a "$REPO_ROOT/shared/commands" "$pkg/commands"
+  cp -a "$REPO_ROOT/shared/scripts" "$pkg/scripts"
 }
 
 check_assembly() {
@@ -53,6 +64,10 @@ case "$MODE" in
   dev)
     assemble_into "$REPO_ROOT"
     check_assembly "$REPO_ROOT"
+    ;;
+  qoder)
+    assemble_qoder_local
+    echo "Qoder 本地市场包已生成：plugins/qoder（生成目录不提交）"
     ;;
   --check)
     tmp="$(mktemp -d)"

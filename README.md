@@ -28,7 +28,7 @@ scripts/check.sh             # 全量校验
 | `tests/`、`.github/` | 测试与 CI/Release 工作流 |
 | `AGENTS.md`、`CONTRIBUTING.md` | 代理项目指令与人类贡献约定（分离，不互相复制） |
 | `.dsh/`、`.qoder/`、`.qwen/` | `assemble.sh` 生成的开发入口，被 `.gitignore` 忽略 |
-| `package.json`、`plugins/marketplace.json` | DSH bundle 清单与 Qoder 本地市场描述 |
+| `package.json`、`plugins/marketplace.json` | DSH bundle 清单与 Qoder 本地市场描述；后者使用前运行 `scripts/assemble.sh qoder` |
 | 根文档与许可证 | 治理、安全、术语、变更日志、双许可证与第三方声明 |
 
 ## 编辑与组装
@@ -38,6 +38,7 @@ scripts/check.sh             # 全量校验
 - 改 skill：编辑 `skills/<name>/`，不复制第二份；改后运行 `scripts/assemble.sh` 刷新开发入口。
 - 改命令或注入脚本：编辑 `shared/commands/` 或 `shared/scripts/`。
 - 改包清单或 hook：编辑 `plugins/<包>/`，同步三包版本，并运行 `scripts/materialize.sh` 验证组装。
+- Qoder 本地市场：先运行 `scripts/assemble.sh qoder` 填充 `plugins/qoder`，再交给 Qoder 的 marketplace；生成目录不提交。
 - 提交前运行 `scripts/check.sh`；零跟踪软链、开发组装与组装后的包由该脚本校验。
 
 ## 三个包

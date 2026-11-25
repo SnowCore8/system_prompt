@@ -16,7 +16,10 @@
 | `commands/` | 手动审查命令 |
 | `scripts/` | 约束与时间注入脚本 |
 
-以上为安装后的自包含结构；源码包只保留清单、hooks 与说明，使用 `scripts/materialize.sh qoder` 从顶层真源组装。
+以上为安装后的自包含结构；源码包只保留清单、hooks 与说明。
+
+- 发布包：使用 `scripts/materialize.sh qoder` 从顶层真源组装。
+- 本地市场：先运行 `scripts/assemble.sh qoder` 填充本目录，再交给 Qoder 的 marketplace；生成目录不提交。
 
 ## 安装
 
