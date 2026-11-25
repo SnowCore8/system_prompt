@@ -37,7 +37,7 @@
 3. **references 混入维护材料。** `constraint-maintenance.md`、`provenance.md` 是 R；六处迁移头是 provenance；`skill-authoring/references/checklist.md` 大部分是发布清单。
 4. **仓库事实写入通用规范。** `documentation-conventions` 的 `AGENTS.md` 软链事实、`change-records.md` 的“本仓库为 CHANGELOG.md”应泛化。
 5. **描述职责重叠。** `skill-authoring` 的“打包与三端分发”、`repository-governance` 的“分支/发布政策”、`naming-conventions` 的“提交”需收窄。
-6. **重复与漂移。** `CONTRIBUTING` 输出段与全局约束重复；`docs/time-awareness.md` 复制注入文本；Qoder README 的“约 35 KB”过期。
+6. **重复与漂移。** `docs/time-awareness.md` 复制注入文本；发布流程在 README、CONTRIBUTING、GOVERNANCE 与 `docs/release.md` 各有一份。`CONTRIBUTING` 输出段与 Qoder README 体积已修。
 7. **入口差异。** Qoder 插件 `rules/` 当前不被 CLI 加载；DSH 未注册 `constraints-check` 命令；DSH/Qoder/Qwen 对 frontmatter 的处理不一致。
 
 ## 目标结构
@@ -52,6 +52,6 @@
 
 ## 迁移批次
 
-1. **文档与重复（低风险）**：修 Qoder README 体积、`docs/time-awareness.md` 副本、`CONTRIBUTING` 重复输出段；补 DSH 命令缺失说明。
+1. **文档与重复（进行中）**：已修 Qoder README 体积与 `CONTRIBUTING` 输出段；仍待处理 `docs/time-awareness.md` 副本、发布流程重复与 DSH 命令缺失说明。
 2. **skill 错位（中风险）**：将 `skill-authoring` 打包/软链/计数与 `system-prompt-authoring` 32 KiB/脚本测试/来源表移到维护者文档；删除 `checklist.md` 的发布清单；修正 4 个 description。
 3. **AGENTS/CONTRIBUTING 拆分（已完成）**：`AGENTS.md` 为真实代理指令，`CONTRIBUTING.md` 为人类文档；`check.sh`、README 与 docs 已同步。

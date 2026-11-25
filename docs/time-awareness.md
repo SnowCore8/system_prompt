@@ -13,9 +13,7 @@ Qoder 与 Qwen Code 都不向模型注入当前时间。模型只能靠对话里
   - `UserPromptSubmit`：每次提交提示前刷新，长会话、跨天与上下文压缩后仍然准确。
 - 固定一行，便于模型与人工核对：
 
-  ```text
-  当前时间：YYYY-MM-DD HH:MM:SS +HH:MM（Asia/Shanghai，星期六）。需要日期或时间时以此为准；长会话以最近一次注入为准。
-  ```
+  注入格式以 `shared/scripts/inject_clock.py` 的实现为准；本页不再复制整行，避免文档与脚本漂移。
 
 - 时区依次取 `TZ`、`/etc/timezone`、`/etc/localtime` 的 zoneinfo 路径，最后用 `tzname()` 兜底；
   取不到 IANA 名称时只留 UTC 偏移。
