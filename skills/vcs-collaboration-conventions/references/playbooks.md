@@ -85,7 +85,7 @@ GitHub flow、发布列车分支、按版本维护分支、GitFlow、Fork-and-pu
 - [ ] 无调试输出、被注释掉的代码、临时日志或 WIP 标记。
 - [ ] 无机密、令牌、个人数据或本地配置。
 - [ ] 提交信息说明变更的原因与结果，而非仅说明修补顺序；格式语法由 `naming-conventions` 管辖。
-- [ ] 合并前以 `git diff` 与 `git status` 核对，未跟踪的临时产物已清理。
+- [ ] 合并前以 `git diff` 与 `git status` 核对，不残留未跟踪的临时产物。
 
 ## 审查级别表
 
