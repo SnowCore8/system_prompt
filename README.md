@@ -31,6 +31,8 @@ scripts/check.sh             # 全量校验
 | `package.json`、`plugins/marketplace.json` | DSH bundle 清单与 Qoder 本地市场描述；后者使用前运行 `scripts/assemble.sh qoder` |
 | 根文档与许可证 | 治理、安全、术语、变更日志、双许可证与第三方声明 |
 
+内容层级、18 个 skill 的主责与边界见 [docs/content-map.md](docs/content-map.md)。
+
 ## 编辑与组装
 
 - 改约束：编辑 `rules/global-user-constraints.md`（唯一权威来源）；正文 UTF-8 上限 32 KiB，超限时把细节提取到
