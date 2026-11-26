@@ -2,6 +2,20 @@
 
 按版本从新到旧记录可观察变更。自 0.2.0 起版本采用 SemVer、发布点为 tag `v<version>`，每节记录一个发布版本；0.2.0 之前按日期记录。条目按主题合并，记录最终可观察状态；被后续提交推翻的中间状态只在修复项里说明。
 
+## 0.41.0（2026-11-27）
+
+**变更**
+
+- 约束正文硬上限从 32 KiB 提升到 40 KiB（40,960 字节）；新增 ME-15 提示词核对，要求提示词、规则与 skill 正文写完后核对逻辑、规则与语义。
+- 新增第十九个 skill `project-structure-conventions`，承接项目目录、包/工作区边界、物理导入与构建依赖图；`architecture-and-design-conventions` 与 `code-style-conventions` 的边界同步收紧。
+- Qoder 插件首次 `SessionStart` 把约束写入用户级 rules，内容不同直接覆盖；不再由 hook 注入全文，卸载需手动删除。
+- Qoder `UserPromptSubmit` 保留 `Never violate global user constraints.` 与 DSH 风格时间块；`PreToolUse`/`PostToolUse`/`PostToolUseFailure` 注入一行时间；`SessionStart(source=compact)` 补约束与压缩后时间；`SessionEnd` 清理时间状态。
+- 时间提示对齐 DSH 的 turn、浏览器时区解释与 elapsed；Qoder 无 step 字段，不输出恒为 1 的 step。Windows 无 tzdata 时回退系统时区，Linux 优先 IANA。
+
+**修复**
+
+- 三包版本升到 `0.41.0`。
+
 ## 0.40.0（2026-11-26）
 
 **变更**
