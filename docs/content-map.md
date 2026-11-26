@@ -39,9 +39,9 @@
 | skill | 主责 | references |
 |---|---|---|
 | `architecture-and-design-conventions` | 模块/组件边界、分层、依赖方向、数据流、ADR | dimensions、checklists、framework-changes（3） |
-| `project-structure-conventions` | 项目目录、包/工作区边界、模块依赖图、模块公开面、生成与第三方目录 | — |
+| `project-structure-conventions` | 项目目录、包/工作区边界、物理导入/构建图、包/工作区公开入口、生成与第三方目录 | — |
 | `api-and-data-conventions` | API 契约、错误/分页/幂等/授权、schema 迁移与保留 | dimensions、checklists（2） |
-| `code-style-conventions` | 格式、文件与资源布局、依赖版本管理、配置、错误与日志 | dimensions、dimensions-errors、languages（3） |
+| `code-style-conventions` | 格式、模块内部文件与资源布局、依赖版本管理、配置、错误与日志 | dimensions、dimensions-errors、languages（3） |
 | `comment-conventions` | 源码注释、文档注释、声明头、弃用与工具指令 | 3 组 dimensions + languages（4） |
 | `naming-conventions` | 文件/代码/接口/数据/配置/提交消息的命名 | 3 组 dimensions + languages（4） |
 | `refactoring-conventions` | 重构/修复判定、安全手法、代码异味、变更拆分 | dimensions、catalog、change-safety（3） |
@@ -97,7 +97,7 @@
 |---|---|
 | `prompt-authoring` / `system-prompt-authoring` / `skill-authoring` / `documentation-conventions` | 运行时提示词 / 常驻指令文件 / skill 包 / 项目文档 |
 | `architecture` / `api-and-data` / `performance` | 模块边界 / 契约与数据 / 性能调优（索引调优归 performance） |
-| `architecture` / `project-structure` / `code-style` | 逻辑边界与依赖方向 / 项目目录、包与工作区、依赖图与公开面 / 文件与资源布局、格式与依赖版本管理 |
+| `architecture` / `project-structure` / `code-style` | 逻辑边界与依赖方向 / 项目目录、包与工作区、物理导入/构建图与包公开入口 / 模块内部文件与资源布局、格式与依赖版本管理 |
 | `code-style` / `naming` / `comment` / `security` | 格式与配置 / 名称 / 源码注释 / 依赖漏洞与许可证 |
 | `testing` / `release-operations` / `vcs` | 测试与门禁 / 发布回滚 / 分支与 PR |
 | `repository-governance` / `release-operations` / `vcs` / `security` | 必需文件与打包 / 发布运维 / 协作 / 安全合规 |

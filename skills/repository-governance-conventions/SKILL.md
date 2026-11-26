@@ -28,7 +28,7 @@ argument-hint: '[路径或范围]'
   CONTRIBUTING 指南、决策记录与其他文档的内容、模板、结构与语气，由 `documentation-conventions` 管辖；
   本 skill 要求文件位于被认可的路径，并能够从仓库入口到达。许可证政策与安全文件的内容由
   `security-compliance-conventions` 管辖；本 skill 管辖文件是否存在及其必需的元数据字段。
-- 仓库必需文件的路径、元数据与卫生由本 skill 管辖；代码与资源目录布局由 `code-style-conventions` 管辖；
+- 仓库必需文件的路径、元数据与卫生由本 skill 管辖；项目级目录、包/工作区边界与物理依赖图由 `project-structure-conventions` 管辖；文件与资源在模块内部的布局由 `code-style-conventions` 管辖；
   仓库、包与文件命名由 `naming-conventions` 管辖。分支、PR、审查、审查者数量与 CODEOWNERS 机制由
   `vcs-collaboration-conventions` 管辖；本 skill 管辖这些机制所执行的角色与治理决策。版本号、发布时机与
   按发布类型的审批由 `release-operations-conventions` 管辖；发布说明文档由 `documentation-conventions`

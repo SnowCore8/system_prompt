@@ -1,6 +1,6 @@
 ---
 name: code-style-conventions
-description: 定义、审查并修复任意编程项目的代码风格、文件与资源布局、依赖管理、配置处理以及错误与日志策略。适用于选择 formatter 与 linter 规则、增删依赖、分离环境并校验配置、审查错误处理与日志、隔离生成代码或第三方引入代码，或统一不一致的文件与资源布局。不适用于命名（见 naming-conventions）、逻辑模块边界与依赖方向（见 architecture-and-design-conventions）、项目级目录、包/工作区结构与模块依赖图（见 project-structure-conventions）、提交与协作流程（见 vcs-collaboration-conventions）与许可证/漏洞策略（见 security-compliance-conventions）。
+description: 定义、审查并修复任意编程项目的代码风格、模块内部的文件与资源布局、依赖管理、配置处理以及错误与日志策略。适用于选择 formatter 与 linter 规则、增删依赖、分离环境并校验配置、审查错误处理与日志、隔离生成代码或第三方引入代码，或统一不一致的模块内部文件与资源布局。不适用于命名（见 naming-conventions）、逻辑模块边界与依赖方向（见 architecture-and-design-conventions）、项目级目录、包/工作区结构与模块依赖图（见 project-structure-conventions）、提交与协作流程（见 vcs-collaboration-conventions）与许可证/漏洞策略（见 security-compliance-conventions）。
 argument-hint: '[路径或范围]'
 ---
 
@@ -45,7 +45,7 @@ argument-hint: '[路径或范围]'
 1. 确定已配置的权威来源。
    代理应当定位 formatter 与 linter 配置、`.editorconfig`、包 manifest、锁文件、配置加载器与 CI 命令；项目有风格指南的，应当阅读该指南。
 2. 对关注点进行分类。
-   代理应当判断关注点属于格式化，文件或资源布局，依赖，配置，错误或日志策略，抑或生成代码与第三方代码。
+   代理应当判断关注点属于格式化，模块内部文件或资源布局，依赖，配置，错误或日志策略，抑或生成代码与第三方代码。
    跨类别的变更构成一份计划，而非一次编辑；同时符合两个类别的关注点，应当实施两次变更，各自验证。
 3. 判断 linter 是否已强制该关注点。
    已有规则的，应当修正违规，不得另行记录一条约定；无规则的，应当于独立的配置变更中新增一条规则，或者把约定记录于项目风格指南。
@@ -65,9 +65,9 @@ argument-hint: '[路径或范围]'
 - **空白由 formatter 负责。** 代理应当运行已配置的 formatter，不得手工折行、对齐或重新缩进；手工编辑会被下一次运行撤销，其间只产生审查噪声。例外仅限 formatter 不覆盖的宏体等区段，且应当按该工具文档手工处理。
 - **行宽仅有一个取值，且应当在配置或审查规则中设定。** 代理应当自 formatter 配置或项目审查规则读取行宽，并按其折行；字符串字面量、URL、哈希与数据表不得拆分，因拆分将改变含义。
 - **机械变更应当依工具输出审查，不得依肉眼审查。** 纯格式化变更在其描述中仅应包含 formatter 命令，不得包含其他内容；行为变更不得夹带重排。
-- **导入顺序表达依赖结构。** 代理应当按标准库、第三方、项目分组排列 import，组内排序，并禁止通配符导入；该顺序使边界违规在测试失败之前即可见。
-- **依赖仅指向一个方向。** 领域与应用代码不得导入基础设施；适配器实现领域拥有的接口，因此替换数据库或队列永远不会影响业务规则。判据由 `architecture-and-design-conventions` 裁定，本 skill 只负责以 lint 与 CI 强制。
-- **每个模块应当声明自身的公开接口面。** 应当暴露命名导出，其余内容不可导入，并且仅应通过模块接口面导入其他模块；导入内部路径属于边界违规，不构成捷径。接口面与边界的判据，同样由 `architecture-and-design-conventions` 裁定。
+- **导入顺序属于审查可读性，不裁定依赖结构。** 代理应当按标准库、第三方、项目分组排列 import，组内排序，
+  并禁止通配符导入；架构判定归 `architecture-and-design-conventions`，物理落点与门禁归
+  `project-structure-conventions`；本 skill 只配置 import 格式与 lint 执行。
 - **仅应使用已声明的依赖。** 导入某一包，是因为 manifest 已声明该包，不得因为另一依赖安装了该包；应当导入已声明者，声明已导入者。
 - **复用优先于手写，新增依赖仍属设计决策。** 标准库、现有依赖或维护良好的第三方库能够胜任的，不得编写替代实现；准入仍须检查维护状况与移除路径，但费用、安装占用与传递依赖数量不构成拒绝优质库的理由，证据记录于拉取请求中；漏洞、许可证与供应链证据由 `security-compliance-conventions` 裁定。
 - **配置仅应有一套有文档的优先级顺序。** 应当按命令行标志优先于环境变量、环境变量优先于配置文件、配置文件优先于编译期默认值的顺序应用，于启动时加载并合并一次，并禁止模块自行读取环境。
@@ -103,7 +103,7 @@ argument-hint: '[路径或范围]'
 | 维度 | 首条规则 | 详情 |
 |---|---|---|
 | 1. 代码风格与格式化 | 一个已配置的 formatter 负责空白；行宽、引号与导入顺序属于配置值或审查规则。 | `references/dimensions.md` 第 1 节 |
-| 2. 布局、模块与边界 | 仅选定一个组织轴；模块接口面与依赖方向的判据由 `architecture-and-design-conventions` 裁定，本 skill 仅以 lint 与 CI 强制。 | `references/dimensions.md` 第 2 节 |
+| 2. 文件布局与导入格式 | 文件只有一个变更理由；项目级目录、包/工作区与物理门禁由 `project-structure-conventions` 裁定，模块接口面、依赖方向与循环的架构判定由 `architecture-and-design-conventions` 裁定；本 skill 只配置 import 分组与 lint。 | `references/dimensions.md` 第 2 节 |
 | 3. 依赖管理 | 仅声明直接依赖，提交一个锁文件，并依书面标准准入依赖。 | `references/dimensions.md` 第 3 节 |
 | 4. 配置管理 | 固定优先级顺序，于启动时校验合并后的结果，并使机密远离一切来源。 | `references/dimensions.md` 第 4 节 |
 | 5. 错误处理与日志 | 带上下文包装并保留原因；仅记录一次结构化日志，字段稳定且不含个人数据。 | `references/dimensions-errors.md` 第 5 节 |
