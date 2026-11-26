@@ -118,7 +118,10 @@
 插件携带 rules 的现状：CN 支持矩阵把 Rules 标为 Desktop「即将支持」、CLI「不适用」；
 CLI 1.1.88 的 `plugins validate` 把 `"rules"` 报为 unknown field 并忽略，只含 `rules/` 的插件
 会因「没有可安装组件」被拒。宿主原生的做法仍是把规则放用户级或项目级 `.qoder/rules/`；
-插件若要让约束安装即生效，只能通过 hook 注入 `additionalContext`（本仓库插件在 `SessionStart`/`SubagentStart` 注入全文，并在 `UserPromptSubmit` 每轮提醒；实测 32 KB 可完整进入上下文）。`qoder.md` 是否加载未验证，本仓库已移除。
+插件若要让约束安装即生效，只能在 `SessionStart` hook 中把规则写进用户级 `.qoder/rules/`
+（本仓库插件首次/内容变化时覆盖写入并在当次会话桥接全文，之后由 Qoder 原生 rules 加载；
+`SubagentStart` 只在未命中原生规则时全文兜底，`UserPromptSubmit` 每轮提醒；实测 32 KB
+可完整进入上下文）。卸载需手动删除该 rules 文件。`qoder.md` 是否加载未验证，本仓库已移除。
 
 来源：[Qoder 插件参考](https://docs.qoder.com/cli/plugins-reference)、[Qoder CN 插件打包规范](https://docs.qoder.cn/qoder-plugins)。
 

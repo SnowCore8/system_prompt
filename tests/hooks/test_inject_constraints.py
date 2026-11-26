@@ -62,8 +62,11 @@ class InjectConstraintsTest(unittest.TestCase):
         hooks = load_hooks()
         self.assertEqual(set(hooks), {"SessionStart", "SubagentStart", "UserPromptSubmit"})
         names = [hook["name"] for hook in hooks["SessionStart"][0]["hooks"]]
-        self.assertEqual(names, ["inject-constraints", "inject-clock"])
-        entry = hooks["SessionStart"][0]["hooks"][0]
+        self.assertEqual(names, ["install-constraints", "inject-constraints", "inject-clock"])
+        installer = hooks["SessionStart"][0]["hooks"][0]
+        self.assertEqual(installer["name"], "install-constraints")
+        self.assertTrue(installer["args"][2].endswith("/scripts/install_constraints.py"))
+        entry = hooks["SessionStart"][0]["hooks"][1]
         self.assertEqual(entry["command"], "python")
         self.assertEqual(entry["args"][:2], ["-X", "utf8"])
         self.assertTrue(entry["args"][2].endswith("/scripts/inject_constraints.py"))
@@ -99,12 +102,16 @@ class InjectConstraintsTest(unittest.TestCase):
         self.assertIn("MARKER-7f3a9c", output["additionalContext"])
         self.assertIn("子代理", output["additionalContext"])
 
-    def test_subagent_injects_even_when_user_rule_matches(self):
+    def test_subagent_points_to_matching_user_rule(self):
         target = self.cn / "rules"
         target.mkdir(parents=True)
         (target / RULES).write_text(MARKER, encoding="utf-8")
         proc = self.run_hook({"hook_event_name": "SubagentStart", "cwd": str(self.project)})
-        self.assertIn("MARKER-7f3a9c", proc.stdout)
+        self.assertEqual(proc.returncode, 0, proc.stderr)
+        context = json.loads(proc.stdout)["hookSpecificOutput"]["additionalContext"]
+        self.assertNotIn("MARKER-7f3a9c", context)
+        self.assertIn("已安装于", context)
+        self.assertIn(str(target / RULES), context)
 
     def test_oversized_rules_report_hint(self):
         body = MARKER + "x" * (40 * 1024)

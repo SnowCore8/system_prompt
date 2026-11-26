@@ -1,12 +1,11 @@
 #!/usr/bin/env python3
-"""Qoder/Qwen 约束注入钩子：把全局用户约束注入会话或子代理上下文。
+"""Qoder/Qwen 约束注入钩子：在原生 rules 未覆盖时注入全文或短指针。
 
-SessionStart 注入全文；SubagentStart 向子代理注入全文；UserPromptSubmit 只发送一句
-固定提醒。约束正文来自插件包内的 rules/global-user-constraints.md。SessionStart 在
-用户级或项目级已经加载同内容规则/AGENTS.md 时跳过，避免重复；SubagentStart 始终注入
-全文，因为子代理不保证继承主会话上下文。正文超过 40 KiB 硬上限时不注入全文，只提示
-读取原文，防止常驻上下文失控。同时兼容 Qoder 插件与 Qwen Code 扩展：优先用宿主注入
-的根目录环境变量，否则按脚本自身位置推导。异常静默退出 0，不阻断会话。
+SessionStart 由安装钩子优先写入用户 rules；本脚本在用户级或项目级已有同内容规则/
+AGENTS.md 时跳过，仅在写入失败或未安装时注入全文。SubagentStart 在已有同源规则时
+只发送短指针，否则注入全文；UserPromptSubmit 只发送一句固定提醒。正文超过 40 KiB
+硬上限时不注入全文，只提示读取原文。同时兼容 Qoder 插件与 Qwen Code 扩展：优先用
+宿主注入的根目录环境变量，否则按脚本自身位置推导。异常静默退出 0，不阻断会话。
 """
 
 import hashlib
@@ -137,9 +136,13 @@ def main() -> int:
         return 0
 
     digest = hashlib.sha256(data).hexdigest()
-    if event == "SessionStart" and any(
-        has_same_content(path, digest) for path in candidate_files(payload)
-    ):
+    matches = [path for path in candidate_files(payload) if has_same_content(path, digest)]
+    if matches:
+        if event == "SubagentStart":
+            emit(
+                event,
+                f"全局用户约束已安装于 {matches[0]}；必须遵守；若当前上下文未加载该规则，先读取该文件。",
+            )
         return 0
 
     if len(data) > MAX_BYTES:
