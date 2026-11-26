@@ -62,7 +62,7 @@
 | `repository-governance-conventions` | 必需文件、仓库卫生、打包实践、角色与审批路由 | dimensions、playbooks（2） |
 | `release-operations-conventions` | 版本、发布、CI/CD、可观测性、事故、备份恢复 | dimensions、playbooks（2） |
 | `vcs-collaboration-conventions` | Git 工作流、分支、PR/MR、审查、保护与所有权 | dimensions、playbooks（2） |
-| `worktree-collaboration-conventions` | 智能体团队工作树分配、隔离、集成、恢复与清理 | dimensions、playbooks（2） |
+| `worktree-collaboration-conventions` | 领导者智能体统一管理的智能体团队工作树分配、隔离、集成、恢复与清理 | dimensions、playbooks（2） |
 | `security-compliance-conventions` | 威胁、凭据、供应链、SBOM、许可证、PII、披露 | dimensions、checklists（2） |
 
 ## 4. 统一内部结构
