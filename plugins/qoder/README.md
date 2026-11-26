@@ -15,7 +15,7 @@ hook 注入规则全文，正文由 Qoder 原生 rules 加载。`UserPromptSubmi
 | `rules/global-user-constraints.md` | 全局用户约束正文 |
 | `skills/` | 十九个通用规范 skill |
 | `commands/` | 手动审查命令 |
-| `scripts/` | 规则安装、时间注入与轨迹记录脚本 |
+| `scripts/` | 规则安装与时间注入脚本 |
 
 以上为安装后的自包含结构；源码包只保留清单、hooks 与说明。
 
@@ -47,20 +47,15 @@ rm ~/.qoder/rules/global-user-constraints.md       # 国际版
 
 ## 行为
 
-- `SessionStart`：安装用户级 rules，并由 `trajectory.py` 注入一行时间。
-- `UserPromptSubmit`：提醒 `Never violate global user constraints.` + 完整 DSH 三行时间；
-  `trajectory.py` 只记轨迹，不重复注入时间。
-- 全事件轨迹：所有 Qoder hook 事件都调用 `trajectory.py`，向
-  `${QODER_PLUGIN_DATA}/trajectory/<session>.jsonl` 追加时间戳、事件、耗时与有限元数据；
-  `PreToolUse`/`PostToolUse`/`PostToolUseFailure`/`SubagentStart`/`PostModelSwitch`/`Notification`
-  另注入一行时间。控制事件只记录，不拦截、不修改、不自动决定权限。
-- `PostModelSwitch`：额外提醒同一句约束。
-- `SessionEnd`：记录最后一条轨迹，并清理时间状态。
+- `SessionStart`：只安装用户级 rules，不注入上下文。
+- `UserPromptSubmit`：提醒 `Never violate global user constraints.` + 完整 DSH 三行时间。
+- `PreToolUse` / `PostToolUse` / `PostToolUseFailure`：工具事件前后注入一行时间，不注入完整时间块。
+- `SessionEnd`：清理当前 session 的时间状态，不注入上下文。
 - 规则缺失、payload 非法或事件不支持时静默退出 0。
 - 解释器用 `python`（PATH 上需有 3.9+），`-X utf8` 固定 stdio 编码；`timeout` 为 10 秒。
 
 ## 安全边界
 
-- hook 会在首次/内容变化时写用户级 rules，并可能直接覆盖同名文件；时间与轨迹 hook 会写插件数据目录的 clock/trajectory 状态。轨迹不记录 prompt、tool_input、tool_response 或错误正文。除这些路径外不写盘、不联网。
+- hook 会在首次/内容变化时写用户级 rules，并可能直接覆盖同名文件；时间 hook 还会写插件数据目录的 clock 状态。除这些路径外不写盘、不联网。
 - 原生 rules 会把约束正文加载进模型上下文；敏感内容不要写进规则正文。
 - 安装即执行：只安装可信来源的包，并核对 SHA256 校验和。

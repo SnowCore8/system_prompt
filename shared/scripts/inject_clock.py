@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
-"""在会话启动与每次提示提交时注入当前本地时间，并在会话结束时清理状态。
+"""注入当前本地时间；用户提示用完整 DSH 三行块，工具事件用一行时间。
 
-Qoder 与 Qwen Code 都没有内建时间感知；这个钩子采用 DSH time-context 的三行格式：
+Qoder 与 Qwen Code 都没有内建时间感知；用户提示采用 DSH time-context 的三行格式：
 轮次/步骤、带数值偏移与 IANA 时区的 ISO 时间戳、请求时区解释规则、距上一可见消息的耗时。
 Qoder hook 没有 turn/step/elapsed 字段：用插件数据目录按 session 记录 turn 与上次注入时间，
-step 固定为 1；没有可用状态时输出 turn 1、step 1、elapsed unavailable。任何异常静默退出 0。
+step 固定为 1；没有可用状态时输出 turn 1、step 1、elapsed unavailable。Pre/PostToolUse
+只发一行时间，避免每步注入完整三行。任何异常静默退出 0。
 """
 
 import hashlib
@@ -15,7 +16,11 @@ from datetime import datetime
 from pathlib import Path
 from typing import Optional
 
-HOOK_EVENTS = {"SessionStart", "UserPromptSubmit", "SessionEnd"}
+HOOK_EVENTS = {
+    "SessionStart", "UserPromptSubmit", "SessionEnd",
+    "PreToolUse", "PostToolUse", "PostToolUseFailure",
+}
+TOOL_EVENTS = {"PreToolUse", "PostToolUse", "PostToolUseFailure"}
 
 
 def timezone_name(now: datetime) -> str:
@@ -96,12 +101,17 @@ def cleanup_state(path: Optional[Path]) -> None:
         pass
 
 
-def describe(now: datetime, event: str, previous: Optional[tuple[int, float]]) -> tuple[str, int]:
+def timestamp(now: datetime) -> str:
     offset = now.strftime("%z")
     if offset:
         offset = f"{offset[:3]}:{offset[3:]}"
     zone = timezone_name(now) or "UTC"
-    stamp = f"{now:%Y-%m-%dT%H:%M:%S}{offset}[{zone}]"
+    return f"{now:%Y-%m-%dT%H:%M:%S}{offset}[{zone}]"
+
+
+def describe(now: datetime, event: str, previous: Optional[tuple[int, float]]) -> tuple[str, int]:
+    zone = timezone_name(now) or "UTC"
+    stamp = timestamp(now)
     if event == "SessionStart":
         turn = 1
         last = None
@@ -138,6 +148,20 @@ def main() -> int:
         return 0
 
     now = datetime.now().astimezone()
+    if event in TOOL_EVENTS:
+        tool = payload.get("tool_name")
+        suffix = f" ({tool})" if isinstance(tool, str) and tool else ""
+        output = {
+            "hookSpecificOutput": {
+                "hookEventName": event,
+                "additionalContext": f"Time sampled at {event}{suffix}: {timestamp(now)}.",
+            }
+        }
+        sys.stdout.buffer.write(json.dumps(output, ensure_ascii=False).encode("utf-8"))
+        sys.stdout.buffer.write(b"\n")
+        sys.stdout.buffer.flush()
+        return 0
+
     path = state_path(payload)
     text, turn = describe(now, event, load_state(path))
     save_state(path, turn, now.timestamp())

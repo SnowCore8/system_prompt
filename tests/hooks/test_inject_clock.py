@@ -24,6 +24,10 @@ CLOCK_PATTERN = re.compile(
     r"Elapsed since the preceding (model-visible message|step context): "
     r"(?:unavailable|(?:\d+d )?(?:\d+h )?(?:\d+m )?\d+s)\."
 )
+TOOL_PATTERN = re.compile(
+    r"^Time sampled at (PreToolUse|PostToolUse|PostToolUseFailure)( \([^)]+\))?: "
+    r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}[+-]\d{2}:\d{2}\[[^\]\n]+\]\.$"
+)
 
 
 def load_json(path):
@@ -74,6 +78,16 @@ class InjectClockTest(unittest.TestCase):
             second_text, r"Elapsed since the preceding model-visible message: \d+s\."
         )
 
+    def test_injects_tool_time_line(self):
+        for event in ("PreToolUse", "PostToolUse", "PostToolUseFailure"):
+            with self.subTest(event=event):
+                proc = run_hook({"hook_event_name": event, "tool_name": "Bash"})
+                self.assertEqual(proc.returncode, 0, proc.stderr)
+                output = json.loads(proc.stdout)["hookSpecificOutput"]
+                self.assertEqual(output["hookEventName"], event)
+                self.assertRegex(output["additionalContext"], TOOL_PATTERN)
+                self.assertIn("(Bash)", output["additionalContext"])
+
     def test_cleans_state_on_session_end(self):
         with tempfile.TemporaryDirectory() as tmp:
             env = {"QODER_PLUGIN_DATA": tmp}
@@ -87,7 +101,7 @@ class InjectClockTest(unittest.TestCase):
             self.assertEqual(list(state_dir.glob("*.json")), [])
 
     def test_ignores_other_events(self):
-        for event in ("PreToolUse", "PostToolUse", "Stop"):
+        for event in ("FileChanged", "Stop", "Notification"):
             proc = run_hook({"hook_event_name": event})
             self.assertEqual((proc.returncode, proc.stdout), (0, ""))
 
@@ -100,21 +114,19 @@ class InjectClockTest(unittest.TestCase):
 class HookConfigTest(unittest.TestCase):
     def test_qoder_hooks_register_clock(self):
         hooks = load_json(QODER_HOOKS)["hooks"]
-        self.assertEqual(len(hooks), 25)
+        self.assertEqual(len(hooks), 6)
         names = [h["name"] for h in hooks["SessionStart"][0]["hooks"]]
-        self.assertEqual(names, ["install-constraints", "trajectory"])
+        self.assertEqual(names, ["install-constraints"])
         user_names = [h["name"] for h in hooks["UserPromptSubmit"][0]["hooks"]]
-        self.assertEqual(user_names, ["inject-constraints-reminder", "inject-clock", "trajectory"])
+        self.assertEqual(user_names, ["inject-constraints-reminder", "inject-clock"])
         clock = hooks["UserPromptSubmit"][0]["hooks"][1]
         self.assertEqual(clock["name"], "inject-clock")
         self.assertTrue(clock["args"][2].endswith("/scripts/inject_clock.py"))
-        self.assertEqual(
-            [h["name"] for h in hooks["PostModelSwitch"][0]["hooks"]],
-            ["inject-constraints-model-switch", "trajectory"],
-        )
-        self.assertEqual(
-            [h["name"] for h in hooks["SessionEnd"][0]["hooks"]], ["cleanup-clock", "trajectory"]
-        )
+        for event in ("PreToolUse", "PostToolUse", "PostToolUseFailure"):
+            self.assertEqual(
+                [h["name"] for h in hooks[event][0]["hooks"]], ["inject-clock-tool"]
+            )
+        self.assertEqual([h["name"] for h in hooks["SessionEnd"][0]["hooks"]], ["cleanup-clock"])
 
     def test_qwen_hooks_register_clock(self):
         hooks = load_json(QWEN_HOOKS)

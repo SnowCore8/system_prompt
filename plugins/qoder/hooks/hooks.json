@@ -1,5 +1,5 @@
 {
-  "description": "首次会话启动安装用户 rules；提示与模型切换提醒；全事件记录时间轨迹；支持上下文的事件注入一行时间；会话结束清理状态。",
+  "description": "首次会话启动安装用户 rules；提示提交提醒并注入完整 DSH 时间块；工具事件注入一行时间；会话结束清理时间状态。",
   "hooks": {
     "SessionStart": [
       {
@@ -13,17 +13,6 @@
               "${QODER_PLUGIN_ROOT}/scripts/install_constraints.py"
             ],
             "name": "install-constraints",
-            "timeout": 10
-          },
-          {
-            "type": "command",
-            "command": "python",
-            "args": [
-              "-X",
-              "utf8",
-              "${QODER_PLUGIN_ROOT}/scripts/trajectory.py"
-            ],
-            "name": "trajectory",
             "timeout": 10
           }
         ]
@@ -53,22 +42,11 @@
             ],
             "name": "inject-clock",
             "timeout": 10
-          },
-          {
-            "type": "command",
-            "command": "python",
-            "args": [
-              "-X",
-              "utf8",
-              "${QODER_PLUGIN_ROOT}/scripts/trajectory.py"
-            ],
-            "name": "trajectory",
-            "timeout": 10
           }
         ]
       }
     ],
-    "PostModelSwitch": [
+    "PreToolUse": [
       {
         "hooks": [
           {
@@ -77,20 +55,43 @@
             "args": [
               "-X",
               "utf8",
-              "${QODER_PLUGIN_ROOT}/scripts/inject_constraints.py"
+              "${QODER_PLUGIN_ROOT}/scripts/inject_clock.py"
             ],
-            "name": "inject-constraints-model-switch",
+            "name": "inject-clock-tool",
             "timeout": 10
-          },
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "hooks": [
           {
             "type": "command",
             "command": "python",
             "args": [
               "-X",
               "utf8",
-              "${QODER_PLUGIN_ROOT}/scripts/trajectory.py"
+              "${QODER_PLUGIN_ROOT}/scripts/inject_clock.py"
             ],
-            "name": "trajectory",
+            "name": "inject-clock-tool",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "PostToolUseFailure": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python",
+            "args": [
+              "-X",
+              "utf8",
+              "${QODER_PLUGIN_ROOT}/scripts/inject_clock.py"
+            ],
+            "name": "inject-clock-tool",
             "timeout": 10
           }
         ]
@@ -108,374 +109,6 @@
               "${QODER_PLUGIN_ROOT}/scripts/inject_clock.py"
             ],
             "name": "cleanup-clock",
-            "timeout": 10
-          },
-          {
-            "type": "command",
-            "command": "python",
-            "args": [
-              "-X",
-              "utf8",
-              "${QODER_PLUGIN_ROOT}/scripts/trajectory.py"
-            ],
-            "name": "trajectory",
-            "timeout": 10
-          }
-        ]
-      }
-    ],
-    "PreToolUse": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "python",
-            "args": [
-              "-X",
-              "utf8",
-              "${QODER_PLUGIN_ROOT}/scripts/trajectory.py"
-            ],
-            "name": "trajectory",
-            "timeout": 10
-          }
-        ]
-      }
-    ],
-    "PostToolUse": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "python",
-            "args": [
-              "-X",
-              "utf8",
-              "${QODER_PLUGIN_ROOT}/scripts/trajectory.py"
-            ],
-            "name": "trajectory",
-            "timeout": 10
-          }
-        ]
-      }
-    ],
-    "PostToolUseFailure": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "python",
-            "args": [
-              "-X",
-              "utf8",
-              "${QODER_PLUGIN_ROOT}/scripts/trajectory.py"
-            ],
-            "name": "trajectory",
-            "timeout": 10
-          }
-        ]
-      }
-    ],
-    "PermissionRequest": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "python",
-            "args": [
-              "-X",
-              "utf8",
-              "${QODER_PLUGIN_ROOT}/scripts/trajectory.py"
-            ],
-            "name": "trajectory",
-            "timeout": 10
-          }
-        ]
-      }
-    ],
-    "PermissionDenied": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "python",
-            "args": [
-              "-X",
-              "utf8",
-              "${QODER_PLUGIN_ROOT}/scripts/trajectory.py"
-            ],
-            "name": "trajectory",
-            "timeout": 10
-          }
-        ]
-      }
-    ],
-    "Stop": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "python",
-            "args": [
-              "-X",
-              "utf8",
-              "${QODER_PLUGIN_ROOT}/scripts/trajectory.py"
-            ],
-            "name": "trajectory",
-            "timeout": 10
-          }
-        ]
-      }
-    ],
-    "StopFailure": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "python",
-            "args": [
-              "-X",
-              "utf8",
-              "${QODER_PLUGIN_ROOT}/scripts/trajectory.py"
-            ],
-            "name": "trajectory",
-            "timeout": 10
-          }
-        ]
-      }
-    ],
-    "SubagentStart": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "python",
-            "args": [
-              "-X",
-              "utf8",
-              "${QODER_PLUGIN_ROOT}/scripts/trajectory.py"
-            ],
-            "name": "trajectory",
-            "timeout": 10
-          }
-        ]
-      }
-    ],
-    "SubagentStop": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "python",
-            "args": [
-              "-X",
-              "utf8",
-              "${QODER_PLUGIN_ROOT}/scripts/trajectory.py"
-            ],
-            "name": "trajectory",
-            "timeout": 10
-          }
-        ]
-      }
-    ],
-    "PreCompact": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "python",
-            "args": [
-              "-X",
-              "utf8",
-              "${QODER_PLUGIN_ROOT}/scripts/trajectory.py"
-            ],
-            "name": "trajectory",
-            "timeout": 10
-          }
-        ]
-      }
-    ],
-    "PostCompact": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "python",
-            "args": [
-              "-X",
-              "utf8",
-              "${QODER_PLUGIN_ROOT}/scripts/trajectory.py"
-            ],
-            "name": "trajectory",
-            "timeout": 10
-          }
-        ]
-      }
-    ],
-    "PreModelSwitch": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "python",
-            "args": [
-              "-X",
-              "utf8",
-              "${QODER_PLUGIN_ROOT}/scripts/trajectory.py"
-            ],
-            "name": "trajectory",
-            "timeout": 10
-          }
-        ]
-      }
-    ],
-    "Notification": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "python",
-            "args": [
-              "-X",
-              "utf8",
-              "${QODER_PLUGIN_ROOT}/scripts/trajectory.py"
-            ],
-            "name": "trajectory",
-            "timeout": 10
-          }
-        ]
-      }
-    ],
-    "InstructionsLoaded": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "python",
-            "args": [
-              "-X",
-              "utf8",
-              "${QODER_PLUGIN_ROOT}/scripts/trajectory.py"
-            ],
-            "name": "trajectory",
-            "timeout": 10
-          }
-        ]
-      }
-    ],
-    "ConfigChange": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "python",
-            "args": [
-              "-X",
-              "utf8",
-              "${QODER_PLUGIN_ROOT}/scripts/trajectory.py"
-            ],
-            "name": "trajectory",
-            "timeout": 10
-          }
-        ]
-      }
-    ],
-    "CwdChanged": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "python",
-            "args": [
-              "-X",
-              "utf8",
-              "${QODER_PLUGIN_ROOT}/scripts/trajectory.py"
-            ],
-            "name": "trajectory",
-            "timeout": 10
-          }
-        ]
-      }
-    ],
-    "FileChanged": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "python",
-            "args": [
-              "-X",
-              "utf8",
-              "${QODER_PLUGIN_ROOT}/scripts/trajectory.py"
-            ],
-            "name": "trajectory",
-            "timeout": 10
-          }
-        ]
-      }
-    ],
-    "WorktreeCreate": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "python",
-            "args": [
-              "-X",
-              "utf8",
-              "${QODER_PLUGIN_ROOT}/scripts/trajectory.py"
-            ],
-            "name": "trajectory",
-            "timeout": 10
-          }
-        ]
-      }
-    ],
-    "WorktreeRemove": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "python",
-            "args": [
-              "-X",
-              "utf8",
-              "${QODER_PLUGIN_ROOT}/scripts/trajectory.py"
-            ],
-            "name": "trajectory",
-            "timeout": 10
-          }
-        ]
-      }
-    ],
-    "Elicitation": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "python",
-            "args": [
-              "-X",
-              "utf8",
-              "${QODER_PLUGIN_ROOT}/scripts/trajectory.py"
-            ],
-            "name": "trajectory",
-            "timeout": 10
-          }
-        ]
-      }
-    ],
-    "ElicitationResult": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "python",
-            "args": [
-              "-X",
-              "utf8",
-              "${QODER_PLUGIN_ROOT}/scripts/trajectory.py"
-            ],
-            "name": "trajectory",
             "timeout": 10
           }
         ]

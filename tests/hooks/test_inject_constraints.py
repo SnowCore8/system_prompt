@@ -60,23 +60,20 @@ class InjectConstraintsTest(unittest.TestCase):
 
     def test_hooks_config_points_to_scripts(self):
         hooks = load_hooks()
-        self.assertEqual(len(hooks), 25)
+        self.assertEqual(len(hooks), 6)
         names = [hook["name"] for hook in hooks["SessionStart"][0]["hooks"]]
-        self.assertEqual(names, ["install-constraints", "trajectory"])
+        self.assertEqual(names, ["install-constraints"])
         installer = hooks["SessionStart"][0]["hooks"][0]
         self.assertEqual(installer["name"], "install-constraints")
         self.assertTrue(installer["args"][2].endswith("/scripts/install_constraints.py"))
 
         user_names = [hook["name"] for hook in hooks["UserPromptSubmit"][0]["hooks"]]
-        self.assertEqual(user_names, ["inject-constraints-reminder", "inject-clock", "trajectory"])
-        self.assertEqual(
-            [hook["name"] for hook in hooks["PostModelSwitch"][0]["hooks"]],
-            ["inject-constraints-model-switch", "trajectory"],
-        )
-        self.assertEqual(
-            [hook["name"] for hook in hooks["SessionEnd"][0]["hooks"]],
-            ["cleanup-clock", "trajectory"],
-        )
+        self.assertEqual(user_names, ["inject-constraints-reminder", "inject-clock"])
+        for event in ("PreToolUse", "PostToolUse", "PostToolUseFailure"):
+            self.assertEqual(
+                [hook["name"] for hook in hooks[event][0]["hooks"]], ["inject-clock-tool"]
+            )
+        self.assertEqual([hook["name"] for hook in hooks["SessionEnd"][0]["hooks"]], ["cleanup-clock"])
 
     def test_injects_full_rules(self):
         proc = self.run_hook({"hook_event_name": "SessionStart", "cwd": str(self.project)})
@@ -92,13 +89,6 @@ class InjectConstraintsTest(unittest.TestCase):
         self.assertEqual(output["hookEventName"], "UserPromptSubmit")
         self.assertEqual(output["additionalContext"], "Never violate global user constraints.")
         self.assertNotIn("MARKER-7f3a9c", output["additionalContext"])
-
-    def test_reminds_on_post_model_switch(self):
-        proc = self.run_hook({"hook_event_name": "PostModelSwitch", "cwd": str(self.project)})
-        self.assertEqual(proc.returncode, 0, proc.stderr)
-        output = json.loads(proc.stdout)["hookSpecificOutput"]
-        self.assertEqual(output["hookEventName"], "PostModelSwitch")
-        self.assertEqual(output["additionalContext"], "Never violate global user constraints.")
 
     def test_oversized_rules_report_hint(self):
         body = MARKER + "x" * (40 * 1024)
@@ -187,7 +177,7 @@ class InjectConstraintsTest(unittest.TestCase):
         self.assertIn("MARKER-7f3a9c", proc.stdout)
 
     def test_ignores_other_events(self):
-        for event in ("PreToolUse", "SessionEnd", "SubagentStart", "SubagentStop"):
+        for event in ("PreToolUse", "SessionEnd", "PostModelSwitch", "SubagentStart", "SubagentStop"):
             proc = self.run_hook({"hook_event_name": event, "cwd": str(self.project)})
             self.assertEqual((proc.returncode, proc.stdout), (0, ""))
 
