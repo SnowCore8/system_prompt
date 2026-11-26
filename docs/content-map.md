@@ -1,14 +1,14 @@
 # 内容结构地图
 
 维护者：SnowCore8。何时阅读：新增 skill、调整 domains、移动 references 或判断一条事实应放在哪里时。
-本文件描述内容层级、领域划分、19 个 skill 的职责与 references 结构；目录与分发结构见 `README.md`，提示词/纯规则分类见 `docs/prompt-inventory.md`。
+本文件描述内容层级、领域划分、20 个 skill 的职责与 references 结构；目录与分发结构见 `README.md`，提示词/纯规则分类见 `docs/prompt-inventory.md`。
 
 ## 1. 内容层级
 
 | 层 | 内容 | 载体 | 类别 |
 |---|---|---|---|
 | 常驻约束 | 授权、不可逆、诚实、意图、方法、交付与验收 | `rules/global-user-constraints.md` | P |
-| skill 入口 | 触发、适用边界、流程、核心规则、审查清单 | `skills/*/SKILL.md`（19 个） | P |
+| skill 入口 | 触发、适用边界、流程、核心规则、审查清单 | `skills/*/SKILL.md`（20 个） | P |
 | skill 细节 | 维度表、检查表、模板、操作手册、语言覆盖 | `skills/*/references/*.md`（51 个） | P |
 | 命令 | 手动审查当前请求/方案/命令 | `shared/commands/constraints-check.md` | P |
 | 项目文档 | 加载调研、发布、时间、校验规则、台账 | `docs/*.md` 与根文档 | R |
@@ -23,7 +23,7 @@
 | 运行正确性 | `concurrency-conventions`、`performance-conventions`、`debugging-conventions`、`testing-and-quality-conventions` | 并发、性能、缺陷诊断、测试与门禁 | 发布/回滚、仓库治理、安全披露 |
 | 交付与治理 | `repository-governance-conventions`、`release-operations-conventions`、`vcs-collaboration-conventions`、`security-compliance-conventions` | 仓库卫生与打包、发布运维、Git 协作、安全合规 | 代码细节、具体门禁阈值、产品契约 |
 
-## 3. 19 个 skill 的主责
+## 3. 20 个 skill 的主责
 
 ### 3.1 编写与文档
 
@@ -62,6 +62,7 @@
 | `repository-governance-conventions` | 必需文件、仓库卫生、打包实践、角色与审批路由 | dimensions、playbooks（2） |
 | `release-operations-conventions` | 版本、发布、CI/CD、可观测性、事故、备份恢复 | dimensions、playbooks（2） |
 | `vcs-collaboration-conventions` | Git 工作流、分支、PR/MR、审查、保护与所有权 | dimensions、playbooks（2） |
+| `worktree-collaboration-conventions` | 智能体团队工作树分配、隔离、集成、恢复与清理 | dimensions、playbooks（2） |
 | `security-compliance-conventions` | 威胁、凭据、供应链、SBOM、许可证、PII、披露 | dimensions、checklists（2） |
 
 ## 4. 统一内部结构
@@ -100,6 +101,7 @@
 | `architecture` / `project-structure` / `code-style` | 逻辑边界与依赖方向 / 项目目录、包与工作区、物理导入/构建图与包公开入口 / 模块内部文件与资源布局、格式与依赖版本管理 |
 | `code-style` / `naming` / `comment` / `security` | 格式与配置 / 名称 / 源码注释 / 依赖漏洞与许可证 |
 | `testing` / `release-operations` / `vcs` | 测试与门禁 / 发布回滚 / 分支与 PR |
+| `vcs` / `worktree-collaboration` | 分支模型、PR 与合并策略 / 工作树分配、隔离与集成生命周期 |
 | `repository-governance` / `release-operations` / `vcs` / `security` | 必需文件与打包 / 发布运维 / 协作 / 安全合规 |
 | `refactoring` / `architecture` / `code-style` | 安全改造手法 / 目标结构 / 表面风格 |
 | `concurrency` / `performance` / `api-and-data` | 正确性 / 调优 / 幂等与重试 |

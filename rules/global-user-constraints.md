@@ -282,7 +282,7 @@ alwaysApply: true
 - ME-9 工具调度。相互独立的工具调用应当并发发出；存在依赖的，应当依序发出。每一轮应当先完成调用
   编排，再一并发出。逐项等待将浪费时间。
 - ME-10 规范的按需加载。新建项目、为项目制定规范，或整改明显不规范的存量项目时，按任务实际需要加载配套 skill：`repository-governance-conventions`、
-  `vcs-collaboration-conventions`、`testing-and-quality-conventions`、`code-style-conventions`、
+  `vcs-collaboration-conventions`、`worktree-collaboration-conventions`、`testing-and-quality-conventions`、`code-style-conventions`、
   `naming-conventions`、`comment-conventions`、`security-compliance-conventions`、
   `documentation-conventions`、`release-operations-conventions`、`architecture-and-design-conventions`、`project-structure-conventions`、
   `api-and-data-conventions`、`performance-conventions`、`concurrency-conventions`、

@@ -3,7 +3,7 @@
 配套 skill 的加载顺序可以参照：
 
 `repository-governance-conventions` → `vcs-collaboration-conventions` →
-`testing-and-quality-conventions` → `code-style-conventions`、`naming-conventions`、
+`worktree-collaboration-conventions` → `testing-and-quality-conventions` → `code-style-conventions`、`naming-conventions`、
 `comment-conventions` → `security-compliance-conventions`、`documentation-conventions`、
 `release-operations-conventions` → `architecture-and-design-conventions`、`project-structure-conventions`、
 `api-and-data-conventions`、`performance-conventions`、`concurrency-conventions`。

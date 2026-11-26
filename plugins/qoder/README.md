@@ -13,7 +13,7 @@ hook 注入规则全文，正文由 Qoder 原生 rules 加载。`UserPromptSubmi
 | `.qoder-plugin/plugin.json` | Qoder 插件清单 |
 | `hooks/hooks.json` | hook 配置，根目录用 `${QODER_PLUGIN_ROOT}` |
 | `rules/global-user-constraints.md` | 全局用户约束正文 |
-| `skills/` | 十九个通用规范 skill |
+| `skills/` | 二十个通用规范 skill |
 | `commands/` | 手动审查命令 |
 | `scripts/` | 规则安装与时间注入脚本 |
 

@@ -2,7 +2,7 @@
 
 维护者：SnowCore8；何时阅读：报告或处置安全漏洞时。
 
-本仓库内容是面向编码代理的规范文本、十九个 skill，以及面向 Qoder、Qwen Code、DeepSeek Harness
+本仓库内容是面向编码代理的规范文本、二十个 skill，以及面向 Qoder、Qwen Code、DeepSeek Harness
 的三个插件包；可执行部分为插件 hooks、`plugins/dsh/src/` 的提供者代码、skill 内的 Python 校验
 脚本与 `scripts/` 下的发布/校验脚本。
 
