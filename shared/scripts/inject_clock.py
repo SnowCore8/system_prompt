@@ -23,10 +23,30 @@ HOOK_EVENTS = {
 TOOL_EVENTS = {"PreToolUse", "PostToolUse", "PostToolUseFailure"}
 
 
-def timezone_name(now: datetime) -> str:
+def current_time() -> datetime:
     tz = os.environ.get("TZ", "").strip().lstrip(":")
     if tz:
-        return tz
+        try:
+            from zoneinfo import ZoneInfo
+            return datetime.now(ZoneInfo(tz))
+        except (ImportError, KeyError, OSError, ValueError):
+            pass
+    return datetime.now().astimezone()
+
+
+def timezone_name(now: datetime) -> str:
+    key = getattr(now.tzinfo, "key", None)
+    if isinstance(key, str) and key:
+        return key
+    tz = os.environ.get("TZ", "").strip().lstrip(":")
+    if tz:
+        try:
+            from zoneinfo import ZoneInfo
+            candidate = ZoneInfo(tz)
+            if now.utcoffset() == now.astimezone(candidate).utcoffset():
+                return tz
+        except (ImportError, KeyError, OSError, ValueError):
+            pass
     try:
         name = Path("/etc/timezone").read_text(encoding="utf-8").strip()
     except OSError:
@@ -147,7 +167,7 @@ def main() -> int:
         cleanup_state(state_path(payload))
         return 0
 
-    now = datetime.now().astimezone()
+    now = current_time()
     if event in TOOL_EVENTS:
         tool = payload.get("tool_name")
         suffix = f" ({tool})" if isinstance(tool, str) and tool else ""

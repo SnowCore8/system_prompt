@@ -21,7 +21,8 @@ Qoder 与 Qwen Code 都不向模型注入当前时间。模型只能靠对话里
 
   Qoder hook 没有 turn/step/elapsed 字段；脚本用 `QODER_PLUGIN_DATA` 按 session 记录 turn 与上次注入时间，step 固定为 1。没有状态时输出 turn 1、step 1、unavailable；Qwen 的 SessionStart 同样从 turn 1 开始。
 
-- 时区依次取 `TZ`、`/etc/timezone`、`/etc/localtime` 的 zoneinfo 路径，最后用 `tzname()` 兜底；
+- 时区依次取 `TZ`（有 `zoneinfo`/tzdata 时）、`/etc/timezone`、`/etc/localtime` 的 zoneinfo 路径，最后用 `tzname()` 兜底；
+  Windows 没有 `/etc`，有 tzdata 时用 IANA，否则显示系统时区名，仍保留有效 UTC 偏移。
   仍取不到时标 `UTC`。
 - 成本约为每轮几十 token；工具事件只加一行。失败静默，不阻断会话。Qoder 会写插件数据目录的 clock 状态，并在 `SessionEnd` 清理；不写项目文件、不联网，超时 10 秒。
 

@@ -32,7 +32,7 @@ class InjectCompactTest(unittest.TestCase):
         context = output["additionalContext"]
         self.assertIn("Never violate global user constraints.", context)
         self.assertIn("Time sampled after context compaction:", context)
-        self.assertIn("Asia/Shanghai", context)
+        self.assertIn("Browser time zone for this request:", context)
 
     def test_ignores_non_compact_sources(self):
         for source in ("startup", "resume", "clear", "new"):

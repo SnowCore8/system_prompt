@@ -40,6 +40,13 @@ rm ~/.qoder-cn/rules/global-user-constraints.md   # CN
 rm ~/.qoder/rules/global-user-constraints.md       # 国际版
 ```
 
+Windows PowerShell：
+
+```powershell
+Remove-Item "$env:USERPROFILE\.qoder-cn\rules\global-user-constraints.md"   # CN
+Remove-Item "$env:USERPROFILE\.qoder\rules\global-user-constraints.md"       # 国际版
+```
+
 ## 命令
 
 `constraints-check` 读取包内 `rules/global-user-constraints.md`，审查当前请求、方案或待执行命令；

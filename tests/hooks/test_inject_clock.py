@@ -51,7 +51,6 @@ class InjectClockTest(unittest.TestCase):
         self.assertEqual(output["hookEventName"], "SessionStart")
         self.assertRegex(output["additionalContext"], CLOCK_PATTERN)
         self.assertIn("turn 1, step 1", output["additionalContext"])
-        self.assertIn("Asia/Shanghai", output["additionalContext"])
 
     def test_injects_clock_on_user_prompt_submit(self):
         proc = run_hook({"hook_event_name": "UserPromptSubmit"})

@@ -8,9 +8,8 @@ SessionStart(source=compact)。这里只在该 source 触发时输出一句约�
 
 import json
 import sys
-from datetime import datetime
 
-from inject_clock import timestamp, timezone_name
+from inject_clock import current_time, timestamp, timezone_name
 
 
 def main() -> int:
@@ -25,7 +24,7 @@ def main() -> int:
     if payload.get("source") != "compact":
         return 0
 
-    now = datetime.now().astimezone()
+    now = current_time()
     zone = timezone_name(now) or "UTC"
     text = (
         "Never violate global user constraints.\n\n"
