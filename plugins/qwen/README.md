@@ -12,7 +12,7 @@
 | `qwen-extension.json` | Qwen 扩展清单 |
 | `hooks/qwen-hooks.json` | hook 配置，根目录用 `${CLAUDE_PLUGIN_ROOT}` |
 | `constraints/global-user-constraints.md` | 全局用户约束正文；不用 `rules/`，避免被 Qwen 当作条件规则扫描 |
-| `skills/` | 十八个通用规范 skill |
+| `skills/` | 十九个通用规范 skill |
 | `commands/` | 手动审查命令 |
 | `scripts/` | 约束与时间注入脚本 |
 

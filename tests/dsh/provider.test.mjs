@@ -21,11 +21,11 @@ function createContext() {
   return { provider: factories[0](), sections }
 }
 
-test('list returns the eighteen bundled skills', async () => {
+test('list returns the nineteen bundled skills', async () => {
   const { provider } = createContext()
   const candidates = await provider.list()
   const directories = (await readdir(path.join(PACKAGE_ROOT, 'skills'))).filter((name) => !name.startsWith('.'))
-  assert.equal(candidates.length, 18)
+  assert.equal(candidates.length, 19)
   assert.equal(candidates.length, directories.length)
   assert.deepEqual(candidates.map((item) => item.name), [...candidates.map((item) => item.name)].sort())
   for (const candidate of candidates) {

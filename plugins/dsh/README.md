@@ -2,7 +2,7 @@
 
 维护者：SnowCore8。本文只说明安装与运行行为，不定义规则；规则以包内 `rules/global-user-constraints.md` 为准。
 
-安装到 profile 后，以 skill 提供者形式提供十八个通用规范 skill。
+安装到 profile 后，以 skill 提供者形式提供十九个通用规范 skill。
 
 ## 结构
 
@@ -11,7 +11,7 @@
 | `package.json` | npm 包与 `dsh.bundle.patch` 声明 |
 | `plugins/dsh/cordis.patch.yml` | 插入 skill 提供者行 `global-user-constraints-skills` |
 | `plugins/dsh/src/index.js` | Cordis 插件：`apply(ctx)` 注册 skill provider 与 `systemPrompt.section()` |
-| `skills/` | 十八个通用规范 skill |
+| `skills/` | 十九个通用规范 skill |
 | `rules/global-user-constraints.md` | 全局用户约束正文 |
 
 ## 安装

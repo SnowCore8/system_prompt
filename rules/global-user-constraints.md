@@ -284,7 +284,7 @@ alwaysApply: true
 - ME-10 规范的按需加载。新建项目、为项目制定规范，或整改明显不规范的存量项目时，按任务实际需要加载配套 skill：`repository-governance-conventions`、
   `vcs-collaboration-conventions`、`testing-and-quality-conventions`、`code-style-conventions`、
   `naming-conventions`、`comment-conventions`、`security-compliance-conventions`、
-  `documentation-conventions`、`release-operations-conventions`、`architecture-and-design-conventions`、
+  `documentation-conventions`、`release-operations-conventions`、`architecture-and-design-conventions`、`project-structure-conventions`、
   `api-and-data-conventions`、`performance-conventions`、`concurrency-conventions`、
   `debugging-conventions`、`refactoring-conventions`、`prompt-authoring`、`skill-authoring`、
   `system-prompt-authoring`；加载顺序与边界见 `skill-authoring/references/skill-load-order.md`。

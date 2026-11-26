@@ -5,7 +5,7 @@
 `repository-governance-conventions` → `vcs-collaboration-conventions` →
 `testing-and-quality-conventions` → `code-style-conventions`、`naming-conventions`、
 `comment-conventions` → `security-compliance-conventions`、`documentation-conventions`、
-`release-operations-conventions` → `architecture-and-design-conventions`、
+`release-operations-conventions` → `architecture-and-design-conventions`、`project-structure-conventions`、
 `api-and-data-conventions`、`performance-conventions`、`concurrency-conventions`。
 
 `debugging-conventions`、`refactoring-conventions`、`prompt-authoring`、`skill-authoring`、

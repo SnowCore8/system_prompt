@@ -20,7 +20,7 @@
 | `rules/global-user-constraints.md` | P | DSH systemPrompt；Qoder/Qwen rules 与 hook；命令按需读取 | 常驻约束唯一真源 |
 | `AGENTS.md` | P | DSH/Qwen/Qoder 项目指令 | 只放代理项目指令 |
 | `CONTRIBUTING.md` | R | 人类贡献者与维护者 | 人类文档，不进入模型上下文 |
-| `skills/*/SKILL.md` | P | 三端 skill 发现；正文按需加载 | 18 个 skill 入口 |
+| `skills/*/SKILL.md` | P | 三端 skill 发现；正文按需加载 | 19 个 skill 入口 |
 | `skills/*/references/*.md` | P | skill 按需读取 | 51 个；维护者材料在 `docs/` |
 | `shared/commands/constraints-check.md` | P | Qoder/Qwen 命令；DSH 未注册 | 命令提示词 |
 | `shared/scripts/*.py` | C | Qoder/Qwen hook | 提示词发射器，不是提示词正文 |

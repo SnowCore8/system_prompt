@@ -27,7 +27,8 @@ argument-hint: '[路径或场景]'
 分工边界如下：
 
 - **API 契约内容由 `api-and-data-conventions` 管辖。** 该 skill 管辖资源、错误、分页、幂等、版本化与 schema 演进；本 skill 管辖接口在架构中的位置：谁依赖谁、经哪个接缝隔离、依赖方向是否向内。接口的形状由该 skill 定义，接口的位置由本 skill 定义。
-- **代码风格由 `code-style-conventions` 管辖。** 该 skill 管辖目录布局、格式化、依赖管理与错误及日志风格；命名由 `naming-conventions` 管辖。本 skill 管辖上述元素如何组成模块与分层，不管辖单个文件的写法。
+- **代码风格由 `code-style-conventions` 管辖。** 该 skill 管辖文件与资源布局、格式化、依赖管理与错误及日志风格；命名由 `naming-conventions` 管辖。本 skill 管辖上述元素如何组成模块与分层，不管辖单个文件的写法。
+- **项目级目录、包/工作区边界与依赖图的物理落地由 `project-structure-conventions` 管辖。** 本 skill 裁定逻辑边界、分层与依赖方向；物理目录、包/工作区与公开面由该 skill 承载。
 - **重构手法由 `refactoring-conventions` 管辖。** 该 skill 管辖安全变更代码结构的手法与步骤；本 skill 管辖重构应当达成的目标结构，即依赖方向、边界与接缝。需要变更结构时，代理应当把手法交给该 skill，本 skill 只确定目标。
 - **测试策略与门禁由 `testing-and-quality-conventions` 管辖。** 本 skill 管辖可测试性设计，包括依赖注入点、接缝与可替换的依赖；测试的运行与门禁机制由该 skill 管辖。
 - **ADR 的内容与触发时机由本 skill 裁定。** 目录与模板由 `documentation-conventions` 裁定；文件名与编号由 `naming-conventions` 裁定；发布节奏由 `release-operations-conventions` 管辖。

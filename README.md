@@ -1,6 +1,6 @@
 # AI 编码代理 system prompt
 
-本仓库维护全局用户约束、十八个通用规范 skill，以及面向 Qoder、Qwen Code、DeepSeek Harness（DSH）的三个包。
+本仓库维护全局用户约束、十九个通用规范 skill，以及面向 Qoder、Qwen Code、DeepSeek Harness（DSH）的三个包。
 `rules/`、`skills/`、`shared/` 是唯一真源；开发入口与安装包由组装脚本生成，不复制第二份。
 
 维护者：SnowCore8。职责见 [GOVERNANCE.md](GOVERNANCE.md)，代理指令见 [AGENTS.md](AGENTS.md)，人类贡献与发布约定见
@@ -21,7 +21,7 @@ scripts/check.sh             # 全量校验
 
 | 路径 | 作用 |
 |---|---|
-| `rules/`、`skills/`、`shared/` | 唯一真源：约束、十八个 skill、命令与注入脚本 |
+| `rules/`、`skills/`、`shared/` | 唯一真源：约束、十九个 skill、命令与注入脚本 |
 | `plugins/qoder/`、`plugins/qwen/`、`plugins/dsh/` | 三包清单、hooks 与说明 |
 | `scripts/` | `assemble.sh` 生成开发入口、`materialize.sh` 组装包、`check.sh` 校验、`dist.sh` 出包 |
 | `docs/` | 加载调研、时间设计、校验规则、分类台账与发布手册 |
@@ -31,7 +31,7 @@ scripts/check.sh             # 全量校验
 | `package.json`、`plugins/marketplace.json` | DSH bundle 清单与 Qoder 本地市场描述；后者使用前运行 `scripts/assemble.sh qoder` |
 | 根文档与许可证 | 治理、安全、术语、变更日志、双许可证与第三方声明 |
 
-内容层级、18 个 skill 的主责与边界见 [docs/content-map.md](docs/content-map.md)。
+内容层级、19 个 skill 的主责与边界见 [docs/content-map.md](docs/content-map.md)。
 
 ## 编辑与组装
 
