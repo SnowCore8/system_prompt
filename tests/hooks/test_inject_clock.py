@@ -17,8 +17,12 @@ QWEN_HOOKS = ROOT / "plugins/qwen/hooks/qwen-hooks.json"
 QODER_MANIFEST = ROOT / "plugins/qoder/.qoder-plugin/plugin.json"
 QWEN_MANIFEST = ROOT / "plugins/qwen/qwen-extension.json"
 CLOCK_PATTERN = re.compile(
-    r"^当前时间：\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} [+-]\d{2}:\d{2}"
-    r"（[^）]*星期[一二三四五六日]）。"
+    r"^Time sampled while preparing turn \d+, step \d+: "
+    r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}[+-]\d{2}:\d{2}\[[^\]\n]+\]\n"
+    r"Browser time zone for this request: [^\n]+\. "
+    r"Interpret otherwise-unqualified dates and times in this zone\.\n"
+    r"Elapsed since the preceding (model-visible message|step context): "
+    r"(?:unavailable|(?:\d+d )?(?:\d+h )?(?:\d+m )?\d+s)\."
 )
 
 
@@ -26,12 +30,12 @@ def load_json(path):
     return json.loads(path.read_text(encoding="utf-8"))
 
 
-def run_hook(payload):
+def run_hook(payload, env=None):
     raw = payload if isinstance(payload, str) else json.dumps(payload, ensure_ascii=False)
     return subprocess.run(
         [sys.executable, "-B", str(HOOK)],
         input=raw, capture_output=True, text=True, check=False,
-        env={**os.environ, "TZ": "Asia/Shanghai"},
+        env={**os.environ, "TZ": "Asia/Shanghai", **(env or {})},
     )
 
 
@@ -42,6 +46,7 @@ class InjectClockTest(unittest.TestCase):
         output = json.loads(proc.stdout)["hookSpecificOutput"]
         self.assertEqual(output["hookEventName"], "SessionStart")
         self.assertRegex(output["additionalContext"], CLOCK_PATTERN)
+        self.assertIn("turn 1, step 1", output["additionalContext"])
         self.assertIn("Asia/Shanghai", output["additionalContext"])
 
     def test_injects_clock_on_user_prompt_submit(self):
@@ -49,6 +54,25 @@ class InjectClockTest(unittest.TestCase):
         output = json.loads(proc.stdout)["hookSpecificOutput"]
         self.assertEqual(output["hookEventName"], "UserPromptSubmit")
         self.assertRegex(output["additionalContext"], CLOCK_PATTERN)
+        self.assertIn("turn 1, step 1", output["additionalContext"])
+
+    def test_advances_turn_and_elapsed_with_plugin_data(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            env = {"QODER_PLUGIN_DATA": tmp}
+            first = run_hook(
+                {"hook_event_name": "UserPromptSubmit", "session_id": "clock-test"}, env
+            )
+            second = run_hook(
+                {"hook_event_name": "UserPromptSubmit", "session_id": "clock-test"}, env
+            )
+        first_text = json.loads(first.stdout)["hookSpecificOutput"]["additionalContext"]
+        second_text = json.loads(second.stdout)["hookSpecificOutput"]["additionalContext"]
+        self.assertIn("turn 1, step 1", first_text)
+        self.assertIn("Elapsed since the preceding model-visible message: unavailable.", first_text)
+        self.assertIn("turn 2, step 1", second_text)
+        self.assertRegex(
+            second_text, r"Elapsed since the preceding model-visible message: \d+s\."
+        )
 
     def test_ignores_other_events(self):
         for event in ("PreToolUse", "PostToolUse", "SessionEnd"):

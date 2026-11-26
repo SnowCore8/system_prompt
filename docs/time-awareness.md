@@ -9,15 +9,19 @@ Qoder 与 Qwen Code 都不向模型注入当前时间。模型只能靠对话里
 
 - 载体是 hook 的 `additionalContext`，不改写系统提示，也不依赖模型主动运行 `date`。
 - 两个时机：
-  - `SessionStart`：会话开始注入一次，保证第一轮就有时间；
-  - `UserPromptSubmit`：每次提交提示前刷新，长会话、跨天与上下文压缩后仍然准确。
-- 固定一行，便于模型与人工核对：
+  - Qwen Code：`SessionStart` 与每次 `UserPromptSubmit`；
+  - Qoder：只接 `UserPromptSubmit`；`SessionStart` 只安装用户级 rules。
+- 采用 DSH `time-context` 的三行格式：
 
-  注入格式以 `shared/scripts/inject_clock.py` 的实现为准；本页不再复制整行，避免文档与脚本漂移。
+  `Time sampled while preparing turn <turn>, step <step>: <ISO 时间戳>[<IANA 时区>]`
+  `Browser time zone for this request: <时区>. Interpret otherwise-unqualified dates and times in this zone.`
+  `Elapsed since the preceding <model-visible message|step context>: <耗时|unavailable>.`
+
+  Qoder hook 没有 turn/step/elapsed 字段；脚本用 `QODER_PLUGIN_DATA` 按 session 记录 turn 与上次注入时间，step 固定为 1。没有状态时输出 turn 1、step 1、unavailable；Qwen 的 SessionStart 同样从 turn 1 开始。
 
 - 时区依次取 `TZ`、`/etc/timezone`、`/etc/localtime` 的 zoneinfo 路径，最后用 `tzname()` 兜底；
-  取不到 IANA 名称时只留 UTC 偏移。
-- 成本约每轮 30 token；失败静默，不阻断会话。hook 只读系统时间，不联网、不写盘，超时 10 秒。
+  仍取不到时标 `UTC`。
+- 成本约每轮几十 token；失败静默，不阻断会话。Qoder 会写插件数据目录的 clock 状态，不写项目文件、不联网，超时 10 秒。
 
 ## 双端接线
 
