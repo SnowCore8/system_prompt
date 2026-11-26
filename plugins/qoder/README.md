@@ -3,8 +3,8 @@
 维护者：SnowCore8。本文只说明安装与运行行为，不定义规则；规则以包内 `rules/global-user-constraints.md` 为准。
 
 安装后首次 `SessionStart` 把约束写入 Qoder 用户级 `rules/`，内容不同则覆盖；不再通过
-hook 注入规则全文，正文由 Qoder 原生 rules 加载。`UserPromptSubmit` 每轮提醒
-`Never violate global user constraints.`；卸载插件不会自动删除 rules，需手动清理。
+hook 注入规则全文，正文由 Qoder 原生 rules 加载。`UserPromptSubmit` 每轮只提醒
+`Never violate global user constraints.` 并注入当前时间；卸载插件不会自动删除 rules，需手动清理。
 
 ## 结构
 
@@ -47,10 +47,9 @@ rm ~/.qoder/rules/global-user-constraints.md       # 国际版
 
 ## 行为
 
-- `SessionStart`：先运行 `install_constraints.py`，把包内规则写入用户级 rules（CN
-  `~/.qoder-cn/rules/`，国际 `~/.qoder/rules/`；内容不同直接覆盖）；不注入规则正文，同一事件
-  只注入当前本地时间、UTC 偏移、时区与星期。
-- `UserPromptSubmit`：每次提示提交提醒 `Never violate global user constraints.`，再注入当前
+- `SessionStart`：只运行 `install_constraints.py`，把包内规则写入用户级 rules（CN
+  `~/.qoder-cn/rules/`，国际 `~/.qoder/rules/`；内容不同直接覆盖）；不注入任何上下文。
+- `UserPromptSubmit`：每次提示提交只提醒 `Never violate global user constraints.`，再注入当前
   时间；长会话与压缩后仍保持提醒。
 - 规则缺失、payload 非法、事件不在范围内时静默退出 0。
 - 解释器用 `python`（PATH 上需有 3.9+），`-X utf8` 固定 stdio 编码；`timeout` 为 10 秒。

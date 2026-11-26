@@ -62,7 +62,7 @@ class InjectConstraintsTest(unittest.TestCase):
         hooks = load_hooks()
         self.assertEqual(set(hooks), {"SessionStart", "UserPromptSubmit"})
         names = [hook["name"] for hook in hooks["SessionStart"][0]["hooks"]]
-        self.assertEqual(names, ["install-constraints", "inject-clock"])
+        self.assertEqual(names, ["install-constraints"])
         installer = hooks["SessionStart"][0]["hooks"][0]
         self.assertEqual(installer["name"], "install-constraints")
         self.assertTrue(installer["args"][2].endswith("/scripts/install_constraints.py"))

@@ -66,7 +66,7 @@ class HookConfigTest(unittest.TestCase):
         hooks = load_json(QODER_HOOKS)["hooks"]
         self.assertEqual(set(hooks), {"SessionStart", "UserPromptSubmit"})
         names = [h["name"] for h in hooks["SessionStart"][0]["hooks"]]
-        self.assertEqual(names, ["install-constraints", "inject-clock"])
+        self.assertEqual(names, ["install-constraints"])
         user_names = [h["name"] for h in hooks["UserPromptSubmit"][0]["hooks"]]
         self.assertEqual(user_names, ["inject-constraints-reminder", "inject-clock"])
         clock = hooks["UserPromptSubmit"][0]["hooks"][1]
