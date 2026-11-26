@@ -3,8 +3,8 @@
 
 SessionStart 在用户级或项目级已有同内容规则/AGENTS.md 时跳过，仅在未安装时注入全文；
 Qoder 的规则正文由 SessionStart 安装到用户级 rules，本脚本只负责每轮固定提醒。
-UserPromptSubmit 只发送一句固定提醒。正文超过 40 KiB 硬上限时不注入全文，只提示读取
-原文。同时兼容 Qoder 插件与 Qwen Code 扩展：优先用宿主注入的根目录环境变量，否则按
+UserPromptSubmit 与 PostModelSwitch 只发送一句固定提醒。正文超过 40 KiB 硬上限时不注入
+全文，只提示读取原文。同时兼容 Qoder 插件与 Qwen Code 扩展：优先用宿主注入的根目录环境变量，否则按
 脚本自身位置推导。异常静默退出 0，不阻断会话。
 """
 
@@ -14,7 +14,7 @@ import os
 import sys
 from pathlib import Path
 
-HOOK_EVENTS = {"SessionStart", "UserPromptSubmit"}
+HOOK_EVENTS = {"SessionStart", "UserPromptSubmit", "PostModelSwitch"}
 RULES_FILENAME = "global-user-constraints.md"
 MAX_BYTES = 40 * 1024
 # Qwen 会把扩展的 rules/ 当作条件规则扫描，无 paths 的常驻规则会被丢弃并告警；
@@ -111,7 +111,7 @@ def main() -> int:
     event = payload.get("hook_event_name")
     if event not in HOOK_EVENTS:
         return 0
-    if event == "UserPromptSubmit":
+    if event in {"UserPromptSubmit", "PostModelSwitch"}:
         emit(event, "Never violate global user constraints.")
         return 0
     source = payload.get("source")

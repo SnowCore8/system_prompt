@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""在会话启动与每次提示提交时注入当前本地时间。
+"""在会话启动与每次提示提交时注入当前本地时间，并在会话结束时清理状态。
 
 Qoder 与 Qwen Code 都没有内建时间感知；这个钩子采用 DSH time-context 的三行格式：
 轮次/步骤、带数值偏移与 IANA 时区的 ISO 时间戳、请求时区解释规则、距上一可见消息的耗时。
@@ -15,7 +15,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Optional
 
-HOOK_EVENTS = {"SessionStart", "UserPromptSubmit"}
+HOOK_EVENTS = {"SessionStart", "UserPromptSubmit", "SessionEnd"}
 
 
 def timezone_name(now: datetime) -> str:
@@ -87,6 +87,15 @@ def save_state(path: Optional[Path], turn: int, last: float) -> None:
         pass
 
 
+def cleanup_state(path: Optional[Path]) -> None:
+    if path is None:
+        return
+    try:
+        path.unlink()
+    except OSError:
+        pass
+
+
 def describe(now: datetime, event: str, previous: Optional[tuple[int, float]]) -> tuple[str, int]:
     offset = now.strftime("%z")
     if offset:
@@ -123,6 +132,9 @@ def main() -> int:
         return 0
     event = payload.get("hook_event_name")
     if event not in HOOK_EVENTS:
+        return 0
+    if event == "SessionEnd":
+        cleanup_state(state_path(payload))
         return 0
 
     now = datetime.now().astimezone()
