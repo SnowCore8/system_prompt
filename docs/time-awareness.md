@@ -15,11 +15,11 @@ Qoder 与 Qwen Code 都不向模型注入当前时间。模型只能靠对话里
     各注入一行时间；`SessionEnd` 清理状态。
 - 采用 DSH `time-context` 的三行格式：
 
-  `Time sampled while preparing turn <turn>, step <step>: <ISO 时间戳>[<IANA 时区>]`
+  `Time sampled while preparing turn <turn>: <ISO 时间戳>[<IANA 时区>]`
   `Browser time zone for this request: <时区>. Interpret otherwise-unqualified dates and times in this zone.`
-  `Elapsed since the preceding <model-visible message|step context>: <耗时|unavailable>.`
+  `Elapsed since the preceding model-visible message: <耗时|unavailable>.`
 
-  Qoder hook 没有 turn/step/elapsed 字段；脚本用 `QODER_PLUGIN_DATA` 按 session 记录 turn 与上次注入时间，step 固定为 1。没有状态时输出 turn 1、step 1、unavailable；Qwen 的 SessionStart 同样从 turn 1 开始。
+  Qoder 没有逐步 step 字段，因此不再输出恒为 1 的 step；脚本用 `QODER_PLUGIN_DATA` 按 session 记录 turn 与上次注入时间。没有状态时输出 turn 1、unavailable；Qwen 的 SessionStart 同样从 turn 1 开始。
 
 - 时区依次取 `TZ`（有 `zoneinfo`/tzdata 时）、`/etc/timezone`、`/etc/localtime` 的 zoneinfo 路径，最后用 `tzname()` 兜底；
   Windows 没有 `/etc`，有 tzdata 时用 IANA，否则显示系统时区名，仍保留有效 UTC 偏移。

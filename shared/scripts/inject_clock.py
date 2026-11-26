@@ -3,9 +3,9 @@
 
 Qoder 与 Qwen Code 都没有内建时间感知；用户提示采用 DSH time-context 的三行格式：
 轮次/步骤、带数值偏移与 IANA 时区的 ISO 时间戳、请求时区解释规则、距上一可见消息的耗时。
-Qoder hook 没有 turn/step/elapsed 字段：用插件数据目录按 session 记录 turn 与上次注入时间，
-step 固定为 1；没有可用状态时输出 turn 1、step 1、elapsed unavailable。Pre/PostToolUse
-只发一行时间，避免每步注入完整三行。任何异常静默退出 0。
+Qoder hook 没有逐步 step 与 elapsed 字段：用插件数据目录按 session 记录 turn 与上次
+注入时间，没有可用状态时输出 turn 1、elapsed unavailable。Pre/PostToolUse 只发一行
+时间，避免每步注入完整三行。任何异常静默退出 0。
 """
 
 import hashlib
@@ -141,14 +141,12 @@ def describe(now: datetime, event: str, previous: Optional[tuple[int, float]]) -
     else:
         turn = previous[0] + 1
         last = previous[1]
-    step = 1
-    baseline = "model-visible message" if step == 1 else "step context"
     elapsed = "unavailable" if last is None else format_duration((now.timestamp() - last) * 1000)
     text = (
-        f"Time sampled while preparing turn {turn}, step {step}: {stamp}\n"
+        f"Time sampled while preparing turn {turn}: {stamp}\n"
         f"Browser time zone for this request: {zone}. "
         "Interpret otherwise-unqualified dates and times in this zone.\n"
-        f"Elapsed since the preceding {baseline}: {elapsed}."
+        f"Elapsed since the preceding model-visible message: {elapsed}."
     )
     return text, turn
 

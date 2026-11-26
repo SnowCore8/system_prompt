@@ -373,7 +373,7 @@ DSH 里「插件」是 TypeScript 模块，导出 `apply(ctx)`；可分发的安
   `plugins/dsh`（`ctx.skills.registerProvider`）；Qoder/Qwen 共用 `rules/`、`skills/` 与 `shared/`，
   DSH bundle 只带 `rules/` 与 `skills/`。
 - 时间：两者都没有内建时间感知；Qwen 在 `SessionStart` 与 `UserPromptSubmit`、Qoder 在
-  `UserPromptSubmit` 注入 DSH 风格三行时间块（Qoder 用插件数据记录 turn 与耗时，step 固定 1）；
+  `UserPromptSubmit` 注入 DSH 风格三行时间块（Qoder 用插件数据记录 turn 与耗时，不输出 step）；
   Qoder 另在 `PreToolUse`/`PostToolUse`/`PostToolUseFailure` 注入一行时间，并在
   `SessionStart(source=compact)` 补约束提醒与压缩后时间，见 `docs/time-awareness.md`。
 - 根 `AGENTS.md` 也会被 Qwen Code 当作项目级 `AGENTS.md` 读取，所以它只承载本仓库的代理项目指令；

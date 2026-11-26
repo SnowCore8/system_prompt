@@ -17,11 +17,11 @@ QWEN_HOOKS = ROOT / "plugins/qwen/hooks/qwen-hooks.json"
 QODER_MANIFEST = ROOT / "plugins/qoder/.qoder-plugin/plugin.json"
 QWEN_MANIFEST = ROOT / "plugins/qwen/qwen-extension.json"
 CLOCK_PATTERN = re.compile(
-    r"^Time sampled while preparing turn \d+, step \d+: "
+    r"^Time sampled while preparing turn \d+: "
     r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}[+-]\d{2}:\d{2}\[[^\]\n]+\]\n"
     r"Browser time zone for this request: [^\n]+\. "
     r"Interpret otherwise-unqualified dates and times in this zone\.\n"
-    r"Elapsed since the preceding (model-visible message|step context): "
+    r"Elapsed since the preceding model-visible message: "
     r"(?:unavailable|(?:\d+d )?(?:\d+h )?(?:\d+m )?\d+s)\."
 )
 TOOL_PATTERN = re.compile(
@@ -50,14 +50,14 @@ class InjectClockTest(unittest.TestCase):
         output = json.loads(proc.stdout)["hookSpecificOutput"]
         self.assertEqual(output["hookEventName"], "SessionStart")
         self.assertRegex(output["additionalContext"], CLOCK_PATTERN)
-        self.assertIn("turn 1, step 1", output["additionalContext"])
+        self.assertIn("turn 1", output["additionalContext"])
 
     def test_injects_clock_on_user_prompt_submit(self):
         proc = run_hook({"hook_event_name": "UserPromptSubmit"})
         output = json.loads(proc.stdout)["hookSpecificOutput"]
         self.assertEqual(output["hookEventName"], "UserPromptSubmit")
         self.assertRegex(output["additionalContext"], CLOCK_PATTERN)
-        self.assertIn("turn 1, step 1", output["additionalContext"])
+        self.assertIn("turn 1", output["additionalContext"])
 
     def test_advances_turn_and_elapsed_with_plugin_data(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -70,9 +70,9 @@ class InjectClockTest(unittest.TestCase):
             )
         first_text = json.loads(first.stdout)["hookSpecificOutput"]["additionalContext"]
         second_text = json.loads(second.stdout)["hookSpecificOutput"]["additionalContext"]
-        self.assertIn("turn 1, step 1", first_text)
+        self.assertIn("turn 1", first_text)
         self.assertIn("Elapsed since the preceding model-visible message: unavailable.", first_text)
-        self.assertIn("turn 2, step 1", second_text)
+        self.assertIn("turn 2", second_text)
         self.assertRegex(
             second_text, r"Elapsed since the preceding model-visible message: \d+s\."
         )
