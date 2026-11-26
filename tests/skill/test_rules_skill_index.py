@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """规则正文与 skill 目录的一致性校验。
 
-常驻规则必须点名本仓库配套的全部 skill，避免代理把它与其他插件的同类 skill 混淆。
+常驻规则必须点名本仓库配套的全部 skill，避免智能体把它与其他插件的同类 skill 混淆。
 用标准库 unittest 编写：
     python3 -B -m unittest discover -s tests/skill -p 'test_*.py'
 """

@@ -18,7 +18,7 @@
 | 路径 | 类别 | 加载者或消费者 | 结论 |
 |---|---|---|---|
 | `rules/global-user-constraints.md` | P | DSH systemPrompt；Qoder/Qwen rules 与 hook；命令按需读取 | 常驻约束唯一真源 |
-| `AGENTS.md` | P | DSH/Qwen/Qoder 项目指令 | 只放代理项目指令 |
+| `AGENTS.md` | P | DSH/Qwen/Qoder 项目指令 | 只放智能体项目指令 |
 | `CONTRIBUTING.md` | R | 人类贡献者与维护者 | 人类文档，不进入模型上下文 |
 | `skills/*/SKILL.md` | P | 三端 skill 发现；正文按需加载 | 20 个 skill 入口 |
 | `skills/*/references/*.md` | P | skill 按需读取 | 51 个；维护者材料在 `docs/` |
@@ -33,7 +33,7 @@
 
 ## 当前边界
 
-- `AGENTS.md` 只承载代理项目指令；`CONTRIBUTING.md` 只承载人类贡献与发布流程。
+- `AGENTS.md` 只承载智能体项目指令；`CONTRIBUTING.md` 只承载人类贡献与发布流程。
 - `skill-authoring` 不管辖本仓库打包；`system-prompt-authoring` 不复制本仓库的 40 KiB、`check.sh` 或来源表。
 - `documentation-conventions` 使用通用文档事实，不陈述本仓库的软链或 CHANGELOG 事实。
 - 所有 skill references 为 P。
@@ -43,7 +43,7 @@
 
 ## 目标结构
 
-- `AGENTS.md`：真实文件，只放代理每次都要遵守的短规则。
+- `AGENTS.md`：真实文件，只放智能体每次都要遵守的短规则。
 - `CONTRIBUTING.md`：人类贡献、检出与发布流程。
 - `rules/`：单一常驻约束真源；不新增会被 Qwen/Qoder 自动加载的第二个 `.md`。
 - `skills/`：SKILL.md 与 references 只放模型规范；维护者流程移至 `docs/` 或 CONTRIBUTING。

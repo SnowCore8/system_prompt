@@ -131,7 +131,7 @@ fi
 echo "== 组装 =="
 bash scripts/assemble.sh --check || fail "开发组装校验"
 [ -f rules/global-user-constraints.md ] || fail "缺少约束正文 rules/global-user-constraints.md"
-[ -s AGENTS.md ] || fail "缺少代理项目指令 AGENTS.md"
+[ -s AGENTS.md ] || fail "缺少智能体项目指令 AGENTS.md"
 if [ -L AGENTS.md ]; then
   fail "AGENTS.md 应为真实文件，不得软链"
 fi

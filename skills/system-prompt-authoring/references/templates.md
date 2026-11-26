@@ -42,7 +42,7 @@ OAI-PE 的 Identity → Instructions → Examples → Context 顺序，并插入
 
 ## 完整示例
 
-一个会改动仓库的代理：
+一个会改动仓库的智能体：
 
 ```markdown
 # Objective and Scope

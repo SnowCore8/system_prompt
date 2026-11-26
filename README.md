@@ -1,9 +1,9 @@
-# AI 编码代理 system prompt
+# AI 编码智能体 system prompt
 
 本仓库维护全局用户约束、二十个通用规范 skill，以及面向 Qoder、Qwen Code、DeepSeek Harness（DSH）的三个包。
 `rules/`、`skills/`、`shared/` 是唯一真源；开发入口与安装包由组装脚本生成，不复制第二份。
 
-维护者：SnowCore8。职责见 [GOVERNANCE.md](GOVERNANCE.md)，代理指令见 [AGENTS.md](AGENTS.md)，人类贡献与发布约定见
+维护者：SnowCore8。职责见 [GOVERNANCE.md](GOVERNANCE.md)，智能体指令见 [AGENTS.md](AGENTS.md)，人类贡献与发布约定见
 [CONTRIBUTING.md](CONTRIBUTING.md)。
 
 ## 快速开始
@@ -26,7 +26,7 @@ scripts/check.sh             # 全量校验
 | `scripts/` | `assemble.sh` 生成开发入口、`materialize.sh` 组装包、`check.sh` 校验、`dist.sh` 出包 |
 | `docs/` | 加载调研、时间设计、校验规则、分类台账与发布手册 |
 | `tests/`、`.github/` | 测试与 CI/Release 工作流 |
-| `AGENTS.md`、`CONTRIBUTING.md` | 代理项目指令与人类贡献约定（分离，不互相复制） |
+| `AGENTS.md`、`CONTRIBUTING.md` | 智能体项目指令与人类贡献约定（分离，不互相复制） |
 | `.dsh/`、`.qoder/`、`.qwen/` | `assemble.sh` 生成的开发入口，被 `.gitignore` 忽略 |
 | `package.json`、`plugins/marketplace.json` | DSH bundle 清单与 Qoder 本地市场描述；后者使用前运行 `scripts/assemble.sh qoder` |
 | 根文档与许可证 | 治理、安全、术语、变更日志、双许可证与第三方声明 |

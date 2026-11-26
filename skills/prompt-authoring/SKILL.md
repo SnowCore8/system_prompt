@@ -76,7 +76,7 @@ skill 规定一套决策程序与规则集，将提示词作为产品代码处�
 
 ## 输出契约
 
-提示词自身的输出契约见核心规则“输出契约明确”与 [`references/templates.md`](references/templates.md)。代理交付
+提示词自身的输出契约见核心规则“输出契约明确”与 [`references/templates.md`](references/templates.md)。智能体交付
 响应的输出契约见 [`references/output-contract.md`](references/output-contract.md)（OUT-1 至 OUT-10）；本文件不
 复述其规则。
 

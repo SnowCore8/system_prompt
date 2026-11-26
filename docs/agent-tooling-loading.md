@@ -89,7 +89,7 @@
 | --- | --- |
 | `skills/` | 技能目录，自动发现 |
 | `commands/` | 自定义斜杠命令，可嵌套子目录 |
-| `agents/` | 子代理定义文件（`.md`） |
+| `agents/` | 子智能体定义文件（`.md`） |
 | `hooks/hooks.json` | Hook 配置，形状为 `{"hooks": {...}}` |
 | `output-styles/` | 输出风格 |
 | `workflows/` | Workflow 定义 |
@@ -376,7 +376,7 @@ DSH 里「插件」是 TypeScript 模块，导出 `apply(ctx)`；可分发的安
   `UserPromptSubmit` 注入 DSH 风格三行时间块（Qoder 用插件数据记录 turn 与耗时，不输出 step）；
   Qoder 另在 `PreToolUse`/`PostToolUse`/`PostToolUseFailure` 注入一行时间，并在
   `SessionStart(source=compact)` 补约束提醒与压缩后时间，见 `docs/time-awareness.md`。
-- 根 `AGENTS.md` 也会被 Qwen Code 当作项目级 `AGENTS.md` 读取，所以它只承载本仓库的代理项目指令；
+- 根 `AGENTS.md` 也会被 Qwen Code 当作项目级 `AGENTS.md` 读取，所以它只承载本仓库的智能体项目指令；
   人类贡献与发布流程在 `CONTRIBUTING.md`，不进入模型上下文。
 - 插件包内 Qoder 与 DSH 随包分发 `rules/`、Qwen 分发 `constraints/`（Qwen 把扩展的 `rules/` 当作
   条件规则，见 Qwen 一节）；Qoder 宿主当前不加载插件的 `rules/`（见 Qoder 一节）。
