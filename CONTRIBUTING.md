@@ -21,7 +21,7 @@
 2. 真源位置如下：约束正文为 `rules/global-user-constraints.md`；skill 真源为 `skills/`；命令与注入脚本为
    `shared/`；Qoder/Qwen 包位于 `plugins/qoder|qwen`，包内只放清单与 hook，安装包由 `scripts/materialize.sh` 从顶层真源组装；DSH bundle 的
    清单为仓库根 `package.json`，`plugins/dsh` 放置源码与 patch，构建时复制 `skills/` 与 `rules/`。约束正文
-   以 UTF-8 字节计硬上限 32 KiB；超限时按主题把规则提取到对应 skill 的 `references/`，正文只保留摘要与加载
+   以 UTF-8 字节计硬上限 40 KiB；超限时按主题把规则提取到对应 skill 的 `references/`，正文只保留摘要与加载
    指引。
 3. 新增或调整入口时，运行 `scripts/assemble.sh` 重新组装；不手工复制，也不提交软链。
 4. 提交前应当运行 `scripts/check.sh`，失败先行修复；交付时应当粘贴真实输出与退出码。
@@ -38,7 +38,7 @@
 ## 校验与打包
 
 - 依赖安装：`python3 -m pip install -r requirements-dev.txt`。
-- 全量校验：`scripts/check.sh`，覆盖常驻约束体积（≤32 KiB）、Markdown、skill 与 hook 测试、DSH bundle 的
+- 全量校验：`scripts/check.sh`，覆盖常驻约束体积（≤40 KiB）、Markdown、skill 与 hook 测试、DSH bundle 的
   `node --test`、shellcheck、ruff、依赖审计（pip-audit）、覆盖率（`--fail-under=90`）、JSON、敏感文件、
   零软链与组装、三包清单一致性。缺少 `shellcheck`、`node` 或 `qoderclicn` 时，对应段将打印“跳过”，交付时应
   当说明缺口。

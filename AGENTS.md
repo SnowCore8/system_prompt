@@ -11,7 +11,7 @@
 
 ## 约束与 skill
 
-- 约束正文以 UTF-8 字节计硬上限 32 KiB（32,768 字节）；超过时按主题提取到对应 skill 的 `references/`，正文只保留摘要与加载指引。`scripts/check.sh` 校验该上限。
+- 约束正文以 UTF-8 字节计硬上限 40 KiB（40,960 字节）；超过时按主题提取到对应 skill 的 `references/`，正文只保留摘要与加载指引。`scripts/check.sh` 校验该上限。
 - skill 真源为 `skills/<name>/SKILL.md` 与其 `references/`；修改后运行 `scripts/assemble.sh` 刷新开发入口，不复制正文。
 - 代码注释与文档注释使用中文；第三方引入代码保留原文注释。
 

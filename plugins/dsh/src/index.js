@@ -21,7 +21,7 @@ const RANK = 700
 const SOURCE = 'bundled'
 const CONSTRAINTS_FILENAME = 'global-user-constraints.md'
 // 常驻约束正文的硬上限，与 scripts/check.sh、shared/scripts/inject_constraints.py 保持一致。
-const CONSTRAINTS_MAX_BYTES = 32 * 1024
+const CONSTRAINTS_MAX_BYTES = 40 * 1024
 const SECTION_NAME = 'global-user-constraints'
 // 全局用户约束排在计划策略（500）之前。
 const SECTION_ORDER = 400
@@ -147,7 +147,7 @@ function sectionFromFile(pkgRoot, filename, sectionName, order, maxBytes) {
   }
 }
 
-/** 全局用户约束 section；文件缺失或已去重时返回 undefined，超过 32 KiB 硬上限时返回提示 section。 */
+/** 全局用户约束 section；文件缺失或已去重时返回 undefined，超过 40 KiB 硬上限时返回提示 section。 */
 export function constraintsSection(pkgRoot) {
   return sectionFromFile(pkgRoot, CONSTRAINTS_FILENAME, SECTION_NAME, SECTION_ORDER, CONSTRAINTS_MAX_BYTES)
 }

@@ -34,7 +34,7 @@
 ## 当前边界
 
 - `AGENTS.md` 只承载代理项目指令；`CONTRIBUTING.md` 只承载人类贡献与发布流程。
-- `skill-authoring` 不管辖本仓库打包；`system-prompt-authoring` 不复制本仓库的 32 KiB、`check.sh` 或来源表。
+- `skill-authoring` 不管辖本仓库打包；`system-prompt-authoring` 不复制本仓库的 40 KiB、`check.sh` 或来源表。
 - `documentation-conventions` 使用通用文档事实，不陈述本仓库的软链或 CHANGELOG 事实。
 - 所有 skill references 为 P。
 - 机器校验规则在 `docs/markdown-check-rules.md`，不在 skill references 中重复。

@@ -35,7 +35,7 @@ scripts/check.sh             # 全量校验
 
 ## 编辑与组装
 
-- 改约束：编辑 `rules/global-user-constraints.md`（唯一权威来源）；正文 UTF-8 上限 32 KiB，超限时把细节提取到
+- 改约束：编辑 `rules/global-user-constraints.md`（唯一权威来源）；正文 UTF-8 上限 40 KiB，超限时把细节提取到
   对应 skill 的 `references/`。
 - 改 skill：编辑 `skills/<name>/`，不复制第二份；改后运行 `scripts/assemble.sh` 刷新开发入口。
 - 改命令或注入脚本：编辑 `shared/commands/` 或 `shared/scripts/`。

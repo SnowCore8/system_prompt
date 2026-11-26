@@ -77,7 +77,7 @@ class InjectConstraintsTest(unittest.TestCase):
         self.assertIn("MARKER-7f3a9c", output["additionalContext"])
 
     def test_oversized_rules_report_hint(self):
-        body = MARKER + "x" * (32 * 1024)
+        body = MARKER + "x" * (40 * 1024)
         (self.plugin / "rules" / RULES).write_text(body, encoding="utf-8")
         proc = self.run_hook({"hook_event_name": "SessionStart", "cwd": str(self.project)})
         self.assertEqual(proc.returncode, 0, proc.stderr)
@@ -85,7 +85,7 @@ class InjectConstraintsTest(unittest.TestCase):
         self.assertEqual(output["hookEventName"], "SessionStart")
         context = output["additionalContext"]
         self.assertNotIn("MARKER-7f3a9c", context)
-        self.assertIn("32 KiB", context)
+        self.assertIn("40 KiB", context)
         self.assertIn("未直接注入", context)
         self.assertIn(str(self.plugin / "rules" / RULES), context)
 
