@@ -360,8 +360,8 @@ DSH 里「插件」是 TypeScript 模块，导出 `apply(ctx)`；可分发的安
 
 - Qwen Code：`.qwen/rules`（由 `scripts/assemble.sh` 从 `rules/` 生成）。其中的规则没有 `paths:`，属 baseline，
   首个请求进入 system prompt；`.qwen/AGENTS.md` 会被 Qwen 忽略，因此不再提供。
-- Qoder：项目级 `.qoder/rules`，由 `scripts/assemble.sh` 从根级 `rules/` 生成；用户级由插件 `SessionStart` hook 自动注入
-  （同内容规则/`AGENTS.md` 已存在时跳过），也可手动复制到 `~/.qoder-cn/rules`（国际版 `~/.qoder/rules`）。
+- Qoder：项目级 `.qoder/rules`，由 `scripts/assemble.sh` 从根级 `rules/` 生成；用户级由插件 `SessionStart` hook 自动写入
+  （同内容已存在时跳过，不注入正文），也可手动复制到 `~/.qoder-cn/rules`（国际版 `~/.qoder/rules`）。
   `.qoder-cn` 与 `.qoder/plugins` 在项目级没有加载语义，已移除。
 - DeepSeek Harness：`.dsh/skills` 是 rank 100 的 skill 扫描根，由 `scripts/assemble.sh` 从顶层
   `skills/` 生成；根 `AGENTS.md` 是项目指令入口；约束正文由 bundle 经 `ctx.systemPrompt.section()` 自动注入，

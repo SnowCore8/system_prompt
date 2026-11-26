@@ -85,25 +85,6 @@ class InjectConstraintsTest(unittest.TestCase):
         self.assertEqual(output["additionalContext"], "Never violate global user constraints.")
         self.assertNotIn("MARKER-7f3a9c", output["additionalContext"])
 
-    def test_injects_full_rules_for_subagent(self):
-        proc = self.run_hook({"hook_event_name": "SubagentStart", "cwd": str(self.project)})
-        self.assertEqual(proc.returncode, 0, proc.stderr)
-        output = json.loads(proc.stdout)["hookSpecificOutput"]
-        self.assertEqual(output["hookEventName"], "SubagentStart")
-        self.assertIn("MARKER-7f3a9c", output["additionalContext"])
-        self.assertIn("子代理", output["additionalContext"])
-
-    def test_subagent_points_to_matching_user_rule(self):
-        target = self.cn / "rules"
-        target.mkdir(parents=True)
-        (target / RULES).write_text(MARKER, encoding="utf-8")
-        proc = self.run_hook({"hook_event_name": "SubagentStart", "cwd": str(self.project)})
-        self.assertEqual(proc.returncode, 0, proc.stderr)
-        context = json.loads(proc.stdout)["hookSpecificOutput"]["additionalContext"]
-        self.assertNotIn("MARKER-7f3a9c", context)
-        self.assertIn("已安装于", context)
-        self.assertIn(str(target / RULES), context)
-
     def test_oversized_rules_report_hint(self):
         body = MARKER + "x" * (40 * 1024)
         (self.plugin / "rules" / RULES).write_text(body, encoding="utf-8")
@@ -191,7 +172,7 @@ class InjectConstraintsTest(unittest.TestCase):
         self.assertIn("MARKER-7f3a9c", proc.stdout)
 
     def test_ignores_other_events(self):
-        for event in ("PreToolUse", "SessionEnd", "SubagentStop"):
+        for event in ("PreToolUse", "SessionEnd", "SubagentStart", "SubagentStop"):
             proc = self.run_hook({"hook_event_name": event, "cwd": str(self.project)})
             self.assertEqual((proc.returncode, proc.stdout), (0, ""))
 

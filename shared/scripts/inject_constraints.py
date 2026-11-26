@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
-"""Qoder/Qwen 约束注入钩子：在原生 rules 未覆盖时注入全文或短指针。
+"""Qoder/Qwen 约束注入钩子：在原生 rules 未覆盖时注入全文或固定提醒。
 
-SessionStart 由安装钩子优先写入用户 rules；本脚本在用户级或项目级已有同内容规则/
-AGENTS.md 时跳过，仅在写入失败或未安装时注入全文。SubagentStart 在已有同源规则时
-只发送短指针，否则注入全文；UserPromptSubmit 只发送一句固定提醒。正文超过 40 KiB
-硬上限时不注入全文，只提示读取原文。同时兼容 Qoder 插件与 Qwen Code 扩展：优先用
-宿主注入的根目录环境变量，否则按脚本自身位置推导。异常静默退出 0，不阻断会话。
+SessionStart 在用户级或项目级已有同内容规则/AGENTS.md 时跳过，仅在未安装时注入全文；
+Qoder 的规则正文由 SessionStart 安装到用户级 rules，本脚本只负责每轮固定提醒。
+UserPromptSubmit 只发送一句固定提醒。正文超过 40 KiB 硬上限时不注入全文，只提示读取
+原文。同时兼容 Qoder 插件与 Qwen Code 扩展：优先用宿主注入的根目录环境变量，否则按
+脚本自身位置推导。异常静默退出 0，不阻断会话。
 """
 
 import hashlib
@@ -14,7 +14,7 @@ import os
 import sys
 from pathlib import Path
 
-HOOK_EVENTS = {"SessionStart", "UserPromptSubmit", "SubagentStart"}
+HOOK_EVENTS = {"SessionStart", "UserPromptSubmit"}
 RULES_FILENAME = "global-user-constraints.md"
 MAX_BYTES = 40 * 1024
 # Qwen 会把扩展的 rules/ 当作条件规则扫描，无 paths 的常驻规则会被丢弃并告警；
@@ -136,13 +136,7 @@ def main() -> int:
         return 0
 
     digest = hashlib.sha256(data).hexdigest()
-    matches = [path for path in candidate_files(payload) if has_same_content(path, digest)]
-    if matches:
-        if event == "SubagentStart":
-            emit(
-                event,
-                f"全局用户约束已安装于 {matches[0]}；必须遵守；若当前上下文未加载该规则，先读取该文件。",
-            )
+    if any(has_same_content(path, digest) for path in candidate_files(payload)):
         return 0
 
     if len(data) > MAX_BYTES:
@@ -150,11 +144,7 @@ def main() -> int:
         return 0
 
     text = data.decode("utf-8", "replace").strip()
-    if event == "SubagentStart":
-        prefix = "全局用户约束（由插件注入子代理，必须遵守）："
-    else:
-        prefix = "全局用户约束（由插件于会话启动时注入，必须遵守）："
-    emit(event, f"{prefix}\n\n{text}")
+    emit(event, f"全局用户约束（由插件于会话启动时注入，必须遵守）：\n\n{text}")
     return 0
 
 

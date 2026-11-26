@@ -15,7 +15,7 @@ hook 注入规则全文，正文由 Qoder 原生 rules 加载。`UserPromptSubmi
 | `rules/global-user-constraints.md` | 全局用户约束正文 |
 | `skills/` | 十九个通用规范 skill |
 | `commands/` | 手动审查命令 |
-| `scripts/` | 规则安装、约束与时间注入脚本 |
+| `scripts/` | 规则安装与时间注入脚本 |
 
 以上为安装后的自包含结构；源码包只保留清单、hooks 与说明。
 
