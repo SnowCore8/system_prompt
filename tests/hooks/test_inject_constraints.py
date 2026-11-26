@@ -60,24 +60,15 @@ class InjectConstraintsTest(unittest.TestCase):
 
     def test_hooks_config_points_to_scripts(self):
         hooks = load_hooks()
-        self.assertEqual(set(hooks), {"SessionStart", "SubagentStart", "UserPromptSubmit"})
+        self.assertEqual(set(hooks), {"SessionStart", "UserPromptSubmit"})
         names = [hook["name"] for hook in hooks["SessionStart"][0]["hooks"]]
-        self.assertEqual(names, ["install-constraints", "inject-constraints", "inject-clock"])
+        self.assertEqual(names, ["install-constraints", "inject-clock"])
         installer = hooks["SessionStart"][0]["hooks"][0]
         self.assertEqual(installer["name"], "install-constraints")
         self.assertTrue(installer["args"][2].endswith("/scripts/install_constraints.py"))
-        entry = hooks["SessionStart"][0]["hooks"][1]
-        self.assertEqual(entry["command"], "python")
-        self.assertEqual(entry["args"][:2], ["-X", "utf8"])
-        self.assertTrue(entry["args"][2].endswith("/scripts/inject_constraints.py"))
-        self.assertGreater(entry["timeout"], 0)
 
         user_names = [hook["name"] for hook in hooks["UserPromptSubmit"][0]["hooks"]]
         self.assertEqual(user_names, ["inject-constraints-reminder", "inject-clock"])
-        subagent = hooks["SubagentStart"][0]["hooks"][0]
-        self.assertEqual(subagent["name"], "inject-constraints-subagent")
-        self.assertTrue(subagent["args"][2].endswith("/scripts/inject_constraints.py"))
-        self.assertGreater(subagent["timeout"], 0)
 
     def test_injects_full_rules(self):
         proc = self.run_hook({"hook_event_name": "SessionStart", "cwd": str(self.project)})

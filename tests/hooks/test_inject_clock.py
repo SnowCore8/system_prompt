@@ -64,15 +64,14 @@ class InjectClockTest(unittest.TestCase):
 class HookConfigTest(unittest.TestCase):
     def test_qoder_hooks_register_clock(self):
         hooks = load_json(QODER_HOOKS)["hooks"]
-        self.assertEqual(set(hooks), {"SessionStart", "SubagentStart", "UserPromptSubmit"})
+        self.assertEqual(set(hooks), {"SessionStart", "UserPromptSubmit"})
         names = [h["name"] for h in hooks["SessionStart"][0]["hooks"]]
-        self.assertEqual(names, ["install-constraints", "inject-constraints", "inject-clock"])
+        self.assertEqual(names, ["install-constraints", "inject-clock"])
         user_names = [h["name"] for h in hooks["UserPromptSubmit"][0]["hooks"]]
         self.assertEqual(user_names, ["inject-constraints-reminder", "inject-clock"])
         clock = hooks["UserPromptSubmit"][0]["hooks"][1]
         self.assertEqual(clock["name"], "inject-clock")
         self.assertTrue(clock["args"][2].endswith("/scripts/inject_clock.py"))
-        self.assertEqual(hooks["SubagentStart"][0]["hooks"][0]["name"], "inject-constraints-subagent")
 
     def test_qwen_hooks_register_clock(self):
         hooks = load_json(QWEN_HOOKS)

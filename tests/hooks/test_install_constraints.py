@@ -54,15 +54,11 @@ class InstallConstraintsTest(unittest.TestCase):
             cwd=self.project,
         )
 
-    def test_installs_to_cn_and_bridges_current_session(self):
+    def test_installs_to_cn_without_emitting_context(self):
         proc = self.run_hook({"hook_event_name": "SessionStart", "cwd": str(self.project)})
-        self.assertEqual(proc.returncode, 0, proc.stderr)
+        self.assertEqual((proc.returncode, proc.stdout), (0, ""))
         target = self.cn / "rules" / RULES
         self.assertEqual(target.read_text(encoding="utf-8"), MARKER)
-        output = json.loads(proc.stdout)["hookSpecificOutput"]
-        self.assertEqual(output["hookEventName"], "SessionStart")
-        self.assertIn("MARKER-install-4c1d", output["additionalContext"])
-        self.assertIn(str(target), output["additionalContext"])
 
     def test_second_run_is_silent(self):
         self.run_hook({"hook_event_name": "SessionStart", "cwd": str(self.project)})
@@ -74,9 +70,8 @@ class InstallConstraintsTest(unittest.TestCase):
         self.run_hook({"hook_event_name": "SessionStart", "cwd": str(self.project)})
         (self.plugin / "rules" / RULES).write_text(MARKER2, encoding="utf-8")
         proc = self.run_hook({"hook_event_name": "SessionStart", "cwd": str(self.project)})
-        self.assertEqual(proc.returncode, 0, proc.stderr)
+        self.assertEqual((proc.returncode, proc.stdout), (0, ""))
         self.assertEqual((self.cn / "rules" / RULES).read_text(encoding="utf-8"), MARKER2)
-        self.assertIn("MARKER-updated-9e2b", proc.stdout)
 
     def test_uses_en_config_dir_when_cn_is_absent(self):
         proc = self.run_hook(

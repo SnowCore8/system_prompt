@@ -3,8 +3,8 @@
 
 Qoder CLI 没有插件安装/卸载生命周期 hook，因此首次 SessionStart 时把包内
 rules/global-user-constraints.md 复制到用户 rules 目录；内容不同则直接覆盖。
-首次安装或内容更新时同时把全文作为 additionalContext 注入，桥接当前会话；
-后续会话由 Qoder 原生 rules 加载。卸载插件不会自动删除该文件，需手动删除。
+本脚本只写文件，不注入任何 additionalContext；正文由 Qoder 原生 rules 加载。
+卸载插件不会自动删除该文件，需手动删除。
 """
 
 import json
@@ -41,18 +41,6 @@ def config_root() -> Path:
     return en
 
 
-def emit(event: str, text: str) -> None:
-    payload = {
-        "hookSpecificOutput": {
-            "hookEventName": event,
-            "additionalContext": text,
-        }
-    }
-    sys.stdout.buffer.write(json.dumps(payload, ensure_ascii=False).encode("utf-8"))
-    sys.stdout.buffer.write(b"\n")
-    sys.stdout.buffer.flush()
-
-
 def main() -> int:
     try:
         payload = json.loads(sys.stdin.buffer.read().decode("utf-8", "replace"))
@@ -82,15 +70,8 @@ def main() -> int:
         if target.is_file() and target.read_bytes() == data:
             return 0
         target.write_bytes(data)
-    except OSError as error:
-        emit("SessionStart", f"全局用户约束安装失败：写入 {target} 失败（{error.strerror or error}）；本会话仍将注入全文。")
+    except OSError:
         return 0
-
-    text = data.decode("utf-8", "replace").strip()
-    emit(
-        "SessionStart",
-        f"全局用户约束已安装到 {target}（本会话首次/更新注入，后续由 Qoder 原生 rules 加载）：\n\n{text}",
-    )
     return 0
 
 
