@@ -306,7 +306,7 @@ alwaysApply: true
   必须一致。核对未通过或未执行的，不得交付。
 - ME-16 智能体团队与工作树。智能体团队只分为领导者智能体与协作者智能体；领导者统一管理全部工作树的创建、
   分配、基线更新、集成、恢复与清理，协作者只在其分配的工作树内写入。工作树删除、强制移除或清理未跟踪内容
-  依 IR-1、IR-3、IR-6；推送共享或保护分支依 AU-1。详细流程见 `worktree-collaboration-conventions`。
+  依 AU-1、IR-1、IR-3、IR-6；推送共享或保护分支依 AU-1。详细流程见 `worktree-collaboration-conventions`。
 
 ### 4.7 变更纪律
 
