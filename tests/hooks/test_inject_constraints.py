@@ -60,7 +60,7 @@ class InjectConstraintsTest(unittest.TestCase):
 
     def test_hooks_config_points_to_scripts(self):
         hooks = load_hooks()
-        self.assertEqual(set(hooks), {"SessionStart", "UserPromptSubmit"})
+        self.assertEqual(set(hooks), {"SessionStart", "SubagentStart", "UserPromptSubmit"})
         names = [hook["name"] for hook in hooks["SessionStart"][0]["hooks"]]
         self.assertEqual(names, ["inject-constraints", "inject-clock"])
         entry = hooks["SessionStart"][0]["hooks"][0]
@@ -69,12 +69,42 @@ class InjectConstraintsTest(unittest.TestCase):
         self.assertTrue(entry["args"][2].endswith("/scripts/inject_constraints.py"))
         self.assertGreater(entry["timeout"], 0)
 
+        user_names = [hook["name"] for hook in hooks["UserPromptSubmit"][0]["hooks"]]
+        self.assertEqual(user_names, ["inject-constraints-reminder", "inject-clock"])
+        subagent = hooks["SubagentStart"][0]["hooks"][0]
+        self.assertEqual(subagent["name"], "inject-constraints-subagent")
+        self.assertTrue(subagent["args"][2].endswith("/scripts/inject_constraints.py"))
+        self.assertGreater(subagent["timeout"], 0)
+
     def test_injects_full_rules(self):
         proc = self.run_hook({"hook_event_name": "SessionStart", "cwd": str(self.project)})
         self.assertEqual(proc.returncode, 0, proc.stderr)
         output = json.loads(proc.stdout)["hookSpecificOutput"]
         self.assertEqual(output["hookEventName"], "SessionStart")
         self.assertIn("MARKER-7f3a9c", output["additionalContext"])
+
+    def test_reminds_on_user_prompt_submit(self):
+        proc = self.run_hook({"hook_event_name": "UserPromptSubmit", "cwd": str(self.project)})
+        self.assertEqual(proc.returncode, 0, proc.stderr)
+        output = json.loads(proc.stdout)["hookSpecificOutput"]
+        self.assertEqual(output["hookEventName"], "UserPromptSubmit")
+        self.assertEqual(output["additionalContext"], "Never violate global user constraints.")
+        self.assertNotIn("MARKER-7f3a9c", output["additionalContext"])
+
+    def test_injects_full_rules_for_subagent(self):
+        proc = self.run_hook({"hook_event_name": "SubagentStart", "cwd": str(self.project)})
+        self.assertEqual(proc.returncode, 0, proc.stderr)
+        output = json.loads(proc.stdout)["hookSpecificOutput"]
+        self.assertEqual(output["hookEventName"], "SubagentStart")
+        self.assertIn("MARKER-7f3a9c", output["additionalContext"])
+        self.assertIn("子代理", output["additionalContext"])
+
+    def test_subagent_injects_even_when_user_rule_matches(self):
+        target = self.cn / "rules"
+        target.mkdir(parents=True)
+        (target / RULES).write_text(MARKER, encoding="utf-8")
+        proc = self.run_hook({"hook_event_name": "SubagentStart", "cwd": str(self.project)})
+        self.assertIn("MARKER-7f3a9c", proc.stdout)
 
     def test_oversized_rules_report_hint(self):
         body = MARKER + "x" * (40 * 1024)
@@ -163,7 +193,7 @@ class InjectConstraintsTest(unittest.TestCase):
         self.assertIn("MARKER-7f3a9c", proc.stdout)
 
     def test_ignores_other_events(self):
-        for event in ("UserPromptSubmit", "PreToolUse", "SessionEnd"):
+        for event in ("PreToolUse", "SessionEnd", "SubagentStop"):
             proc = self.run_hook({"hook_event_name": event, "cwd": str(self.project)})
             self.assertEqual((proc.returncode, proc.stdout), (0, ""))
 

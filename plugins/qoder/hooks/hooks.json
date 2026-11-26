@@ -1,5 +1,5 @@
 {
-  "description": "会话启动注入全局用户约束；会话启动与每次提示提交注入当前本地时间。",
+  "description": "会话启动/子代理注入全局用户约束；每次提示提交提醒；会话启动与每次提示提交注入当前本地时间。",
   "hooks": {
     "SessionStart": [
       {
@@ -29,9 +29,37 @@
         ]
       }
     ],
+    "SubagentStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python",
+            "args": [
+              "-X",
+              "utf8",
+              "${QODER_PLUGIN_ROOT}/scripts/inject_constraints.py"
+            ],
+            "name": "inject-constraints-subagent",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
     "UserPromptSubmit": [
       {
         "hooks": [
+          {
+            "type": "command",
+            "command": "python",
+            "args": [
+              "-X",
+              "utf8",
+              "${QODER_PLUGIN_ROOT}/scripts/inject_constraints.py"
+            ],
+            "name": "inject-constraints-reminder",
+            "timeout": 10
+          },
           {
             "type": "command",
             "command": "python",

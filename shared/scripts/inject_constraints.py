@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
-"""SessionStart 钩子：把全局用户约束全文注入会话上下文。
+"""Qoder/Qwen 约束注入钩子：把全局用户约束注入会话或子代理上下文。
 
-约束正文来自插件包内的 rules/global-user-constraints.md。若用户级或项目级
-已经加载同内容的规则或 AGENTS.md，则跳过注入，避免同一份约束重复进入上下文。
-正文超过 40 KiB 硬上限时不注入全文，只提示读取原文，防止常驻上下文失控。
-同时兼容 Qoder 插件与 Qwen Code 扩展：优先用宿主注入的根目录环境变量，
-否则按脚本自身位置推导。解析与文件读取异常静默退出 0，不阻断会话启动。
+SessionStart 注入全文；SubagentStart 向子代理注入全文；UserPromptSubmit 只发送一句
+固定提醒。约束正文来自插件包内的 rules/global-user-constraints.md。SessionStart 在
+用户级或项目级已经加载同内容规则/AGENTS.md 时跳过，避免重复；SubagentStart 始终注入
+全文，因为子代理不保证继承主会话上下文。正文超过 40 KiB 硬上限时不注入全文，只提示
+读取原文，防止常驻上下文失控。同时兼容 Qoder 插件与 Qwen Code 扩展：优先用宿主注入
+的根目录环境变量，否则按脚本自身位置推导。异常静默退出 0，不阻断会话。
 """
 
 import hashlib
@@ -14,7 +15,7 @@ import os
 import sys
 from pathlib import Path
 
-HOOK_EVENTS = {"SessionStart"}
+HOOK_EVENTS = {"SessionStart", "UserPromptSubmit", "SubagentStart"}
 RULES_FILENAME = "global-user-constraints.md"
 MAX_BYTES = 40 * 1024
 # Qwen 会把扩展的 rules/ 当作条件规则扫描，无 paths 的常驻规则会被丢弃并告警；
@@ -111,6 +112,9 @@ def main() -> int:
     event = payload.get("hook_event_name")
     if event not in HOOK_EVENTS:
         return 0
+    if event == "UserPromptSubmit":
+        emit(event, "Never violate global user constraints.")
+        return 0
     source = payload.get("source")
     if isinstance(source, str) and source in SKIP_SOURCES:
         return 0
@@ -133,7 +137,9 @@ def main() -> int:
         return 0
 
     digest = hashlib.sha256(data).hexdigest()
-    if any(has_same_content(path, digest) for path in candidate_files(payload)):
+    if event == "SessionStart" and any(
+        has_same_content(path, digest) for path in candidate_files(payload)
+    ):
         return 0
 
     if len(data) > MAX_BYTES:
@@ -141,7 +147,11 @@ def main() -> int:
         return 0
 
     text = data.decode("utf-8", "replace").strip()
-    emit(event, f"全局用户约束（由插件于会话启动时注入，必须遵守）：\n\n{text}")
+    if event == "SubagentStart":
+        prefix = "全局用户约束（由插件注入子代理，必须遵守）："
+    else:
+        prefix = "全局用户约束（由插件于会话启动时注入，必须遵守）："
+    emit(event, f"{prefix}\n\n{text}")
     return 0
 
 
