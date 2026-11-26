@@ -10,8 +10,9 @@ Qoder 与 Qwen Code 都不向模型注入当前时间。模型只能靠对话里
 - 载体是 hook 的 `additionalContext`，不改写系统提示，也不依赖模型主动运行 `date`。
 - 时机：
   - Qwen Code：`SessionStart` 与每次 `UserPromptSubmit`；
-  - Qoder：`SessionStart` 只安装用户级 rules；`UserPromptSubmit` 注入完整 DSH 时间块；
-    `PreToolUse` / `PostToolUse` / `PostToolUseFailure` 各注入一行时间；`SessionEnd` 清理状态。
+  - Qoder：`SessionStart` 安装用户级 rules；`source=compact` 时补约束提醒和一行压缩后时间；
+    `UserPromptSubmit` 注入完整 DSH 时间块；`PreToolUse` / `PostToolUse` / `PostToolUseFailure`
+    各注入一行时间；`SessionEnd` 清理状态。
 - 采用 DSH `time-context` 的三行格式：
 
   `Time sampled while preparing turn <turn>, step <step>: <ISO 时间戳>[<IANA 时区>]`

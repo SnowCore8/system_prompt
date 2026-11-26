@@ -47,7 +47,8 @@ rm ~/.qoder/rules/global-user-constraints.md       # 国际版
 
 ## 行为
 
-- `SessionStart`：只安装用户级 rules，不注入上下文。
+- `SessionStart`：安装用户级 rules；`source=compact` 时额外注入 `Never violate global user constraints.`
+  和一行压缩后时间。
 - `UserPromptSubmit`：提醒 `Never violate global user constraints.` + 完整 DSH 三行时间。
 - `PreToolUse` / `PostToolUse` / `PostToolUseFailure`：工具事件前后注入一行时间，不注入完整时间块。
 - `SessionEnd`：清理当前 session 的时间状态，不注入上下文。
