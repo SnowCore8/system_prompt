@@ -3,6 +3,6 @@
 #   python3 -m pip install pip-tools
 #   python3 -m piptools compile --generate-hashes --allow-unsafe --output-file requirements-dev.txt requirements-dev.in
 markdown-it-py==4.2.0
-ruff==0.17.5
+ruff==0.17.6
 coverage==7.17.3
 pip-audit==2.10.1
