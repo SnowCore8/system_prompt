@@ -1,0 +1,10 @@
+{
+  "versionFiles": [
+    "package.json",
+    "plugins/qoder/.qoder-plugin/plugin.json",
+    "plugins/qwen/qwen-extension.json",
+    "npm/qoder/package.json",
+    "npm/qwen/package.json",
+    "package-lock.json"
+  ]
+}

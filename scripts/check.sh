@@ -166,17 +166,21 @@ qwen = json.loads((wdir / "qwen-extension.json").read_text(encoding="utf-8"))
 dsh = json.loads((root / "package.json").read_text(encoding="utf-8"))
 npmq = json.loads((root / "npm/qoder/package.json").read_text(encoding="utf-8"))
 npmw = json.loads((root / "npm/qwen/package.json").read_text(encoding="utf-8"))
-lock = json.loads((root / "package-lock.json").read_text(encoding="utf-8"))
-lock_root = (lock.get("packages") or {}).get("") or {}
 versions = {
     "qoder": qoder.get("version"),
     "qwen": qwen.get("version"),
     "dsh": dsh.get("version"),
     "npm-qoder": npmq.get("version"),
     "npm-qwen": npmw.get("version"),
-    "lock": lock.get("version"),
-    "lock-root": lock_root.get("version"),
 }
+for relative in json.loads(
+    (root / "scripts/version-manifests.json").read_text(encoding="utf-8")
+)["versionFiles"]:
+    data = json.loads((root / relative).read_text(encoding="utf-8"))
+    versions[f"manifest:{relative}"] = data.get("version")
+    if relative == "package-lock.json":
+        lock_root = (data.get("packages") or {}).get("") or {}
+        versions["manifest:package-lock-root"] = lock_root.get("version")
 for name, version in versions.items():
     if not re.fullmatch(r"\d+\.\d+\.\d+", str(version or "")):
         problems.append(f"{name} manifest 版本不是 SemVer")

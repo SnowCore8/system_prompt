@@ -59,10 +59,13 @@ import json, re, sys
 from pathlib import Path
 
 root = Path(sys.argv[1])
+manifest_paths = json.loads(
+    (root / "scripts/version-manifests.json").read_text(encoding="utf-8")
+)["versionFiles"]
 paths = {
-    "qoder": root / "plugins/qoder/.qoder-plugin/plugin.json",
-    "qwen": root / "plugins/qwen/qwen-extension.json",
-    "dsh": root / "package.json",
+    relative: root / relative
+    for relative in manifest_paths
+    if relative != "package-lock.json" and not relative.startswith("npm/")
 }
 versions = {name: json.loads(path.read_text(encoding="utf-8")).get("version") for name, path in paths.items()}
 for name, version in versions.items():
@@ -70,7 +73,7 @@ for name, version in versions.items():
         sys.exit(f"{name} 的 version 不是 SemVer: {version!r}")
 if len(set(versions.values())) != 1:
     sys.exit(f"三包版本不一致: {versions}")
-print(versions["qoder"])
+print(next(iter(versions.values())))
 PY
 )"
 
@@ -187,7 +190,7 @@ build_one() {
   find "$STAGE_DIR/pkg" -exec touch -t 198001010000 {} +
   (
     cd "$STAGE_DIR/pkg"
-    find . -mindepth 1 \
+    find . -mindepth 1 -type f \
       ! -name '.DS_Store' ! -path '*/__pycache__/*' ! -name '*.pyc' \
       -printf '%P\n' | LC_ALL=C sort | zip -X -q "$zip" -@
   )

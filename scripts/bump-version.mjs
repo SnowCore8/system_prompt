@@ -13,14 +13,7 @@ if (!version || !/^\d+\.\d+\.\d+$/.test(version)) {
   process.exit(2);
 }
 
-const targets = [
-  'package.json',
-  'plugins/qoder/.qoder-plugin/plugin.json',
-  'plugins/qwen/qwen-extension.json',
-  'npm/qoder/package.json',
-  'npm/qwen/package.json',
-  'package-lock.json',
-];
+const targets = JSON.parse(readFileSync(join(REPO, 'scripts', 'version-manifests.json'), 'utf8')).versionFiles;
 
 for (const relative of targets) {
   const path = join(REPO, relative);
