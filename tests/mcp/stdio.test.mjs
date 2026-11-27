@@ -31,7 +31,12 @@ function rpcCall(child, request) {
 
 test('stdio 冒烟：initialize → tools/list → tools/call', async (t) => {
   const child = spawn(process.execPath, [SERVER], { stdio: ['pipe', 'pipe', 'pipe'] });
-  t.after(() => child.kill());
+  const exited = new Promise((resolve) => child.on('exit', (code) => resolve(code)));
+  t.after(async () => {
+    child.stdin.end();
+    await Promise.race([exited, new Promise((resolve) => setTimeout(resolve, 5000))]);
+    if (child.exitCode === null) child.kill();
+  });
 
   const init = await rpcCall(child, {
     jsonrpc: '2.0',
@@ -56,11 +61,43 @@ test('stdio 冒烟：initialize → tools/list → tools/call', async (t) => {
     assert.ok(names.includes(name), `缺少工具 ${name}`);
   }
 
-  const call = await rpcCall(child, {
+  const calls = [
+    ['constraints_check', { text: '把密码写进日志并强制推送' }],
+    ['risk_classify', { production: true }],
+    [
+      'gate_record',
+      {
+        gate: 'G4',
+        decision: 'Conditional Go',
+        evidence: '测试输出',
+        conditions: '补齐安全结论',
+        owner: '质量',
+        nextGate: 'G5',
+      },
+    ],
+    ['list_skills', {}],
+    ['lifecycle_stage', { kind: 'release' }],
+    ['change_assessment', { baseline: 'A', change: 'B', reason: 'C' }],
+    ['release_checklist', {}],
+    ['retrospective', {}],
+  ];
+  let id = 3;
+  for (const [name, args] of calls) {
+    const result = await rpcCall(child, {
+      jsonrpc: '2.0',
+      id,
+      method: 'tools/call',
+      params: { name, arguments: args },
+    });
+    assert.ok(result.result && !result.result.isError, `${name} 调用失败`);
+    assert.ok(JSON.stringify(result.result).length > 10, `${name} 返回为空`);
+    id += 1;
+  }
+  const risk = await rpcCall(child, {
     jsonrpc: '2.0',
-    id: 3,
+    id,
     method: 'tools/call',
     params: { name: 'risk_classify', arguments: { production: true } },
   });
-  assert.ok(JSON.stringify(call.result).includes('R2'));
+  assert.ok(JSON.stringify(risk.result).includes('R2'));
 });
