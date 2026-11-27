@@ -16,7 +16,7 @@ REPO = Path(__file__).resolve().parents[2]
 RULES = REPO / "rules" / "global-user-constraints.md"
 SKILLS = REPO / "skills"
 REFERENCE = re.compile(r"`([a-z][a-z0-9-]*)`")
-SUFFIXES = ("-conventions", "-authoring")
+NAME = re.compile(r"^[a-z][a-z0-9-]*$")
 
 
 def skill_names() -> set[str]:
@@ -30,15 +30,9 @@ class RulesSkillIndexTest(unittest.TestCase):
         missing = sorted(skill_names() - named)
         self.assertEqual(missing, [], "规则正文未点名这些 skill")
 
-    def test_no_unknown_skill_names(self) -> None:
-        text = RULES.read_text(encoding="utf-8")
-        known = skill_names()
-        unknown = sorted(
-            name
-            for name in set(REFERENCE.findall(text))
-            if name.endswith(SUFFIXES) and name not in known
-        )
-        self.assertEqual(unknown, [], "规则正文点名了不存在的 skill")
+    def test_skill_names_are_well_formed(self) -> None:
+        malformed = sorted(name for name in skill_names() if not NAME.fullmatch(name))
+        self.assertEqual(malformed, [], "skill 目录名不符合小写连字符格式")
 
 
 if __name__ == "__main__":

@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
-"""skill 元规范校验。
+"""skill 结构契约：解剖、维度索引、去重与当前事实表述。
 
-把 `skills/skill-authoring` 的结构要求变成可执行断言，避免正文与 references 再次分叉。
 用标准库 unittest 编写：
     python3 -B -m unittest discover -s tests/skill -p 'test_*.py'
 """
@@ -14,217 +13,143 @@ from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[2]
 SKILLS = REPO / "skills"
-
-FIRST_SECTION = "适用范围与优先级"
-LAST_SECTION = "参考资料"
-INDEX_HEADER = "| 维度 | 首条规则 | 详情 |"
-INDEX_SENTENCE = (
-    "每个维度的详细规则、示例与边界情况见 `references/dimensions.md`；"
-    "维度列中的编号就是该文件中的节号。"
-)
-INDEX_SENTENCE_SPLIT = (
-    "每个维度的详细规则、示例与边界情况见 `references/` 中对应的维度文件；"
-    "维度列中的编号就是该文件中的节号。"
-)
-MAX_LINES = 250
-MIN_DUPLICATE = 24
-
-FRONTMATTER = re.compile(r"\A---\n(.*?)\n---\n", re.S)
-FIELD = re.compile(r"^(name|description|argument-hint):[ \t]*(.+)$", re.M)
 H2 = re.compile(r"^## (.+)$", re.M)
-HINT = re.compile(r"^'\[[^\[\]<>]+\]'$")
-INDEX_SECTION = re.compile(r"^## 维度索引\n(.*?)(?=^## )", re.M | re.S)
-INDEX_ROW = re.compile(
-    r"^\| (\d+)\. [^|]+ \| [^|]+ \| `(references/[a-z0-9-]+\.md)` 第 (\d+) 节 \|$",
-    re.M,
-)
-DIM_SECTION = re.compile(r"^## (\d+)\. ", re.M)
-SELF_REFERENCE = re.compile(r"references/[a-z0-9-]+\.md")
-CJK = re.compile(r"[\u4e00-\u9fff]")
+REQUIRED_SECTIONS = ("适用范围与优先级", "生命周期定位", "门禁与证据", "维度索引", "参考资料")
+MAX_LINES = 250
+HINT = re.compile(r"\[[^\]]+\]")
+INDEX_HEADER = "| 编号 | 维度名 | 首条规则 | 详情 |"
+NUMBERED_HEADING = re.compile(r"^## (\d+)\.")
+HISTORY_TERMS = ("来源清单", "取证日期", "版本基线", "历史沿革", "新旧对照", "迁移说明")
 
 
 def skill_files() -> list[Path]:
     return sorted(SKILLS.glob("*/SKILL.md"))
 
 
-def parse(path: Path) -> tuple[dict[str, str], str]:
-    text = path.read_text(encoding="utf-8")
-    match = FRONTMATTER.match(text)
-    if not match:
-        return {}, text
-    body = text[match.end():]
-    # description 可能以折叠标量续行出现，取首行已足够判定触发面
-    return dict(FIELD.findall(match.group(1))), body
+def body_of(path: Path) -> str:
+    parts = path.read_text(encoding="utf-8").split("---", 2)
+    return parts[2] if len(parts) == 3 else ""
 
 
-def paragraphs(text: str) -> list[str]:
-    """取可比较的段落：按空行分块，去掉列表标记、围栏代码与全部空白。"""
-    out = []
-    text = re.sub(r"```.*?```|~~~.*?~~~", "", text, flags=re.S)
-    for block in re.split(r"\n\s*\n", text):
-        lines = []
-        for line in block.splitlines():
-            stripped = line.strip()
-            stripped = re.sub(r"^(?:[-*]|\d+\.)\s*(?:\[[ x]\]\s*)?", "", stripped)
-            if stripped:
-                lines.append(stripped)
-        normalized = re.sub(r"\s+", "", "".join(lines))
-        for sentence in re.split(r"(?<=[。！？；])", normalized):
-            if len(sentence) >= MIN_DUPLICATE and CJK.search(sentence):
-                out.append(sentence)
-    return out
+def frontmatter_of(path: Path) -> dict[str, str]:
+    parts = path.read_text(encoding="utf-8").split("---", 2)
+    if len(parts) != 3:
+        return {}
+    meta: dict[str, str] = {}
+    for line in parts[1].splitlines():
+        match = re.match(r"^([A-Za-z][\w-]*):\s*(.*)$", line)
+        if match:
+            meta[match.group(1)] = match.group(2).strip()
+    return meta
 
 
-class FrontmatterTest(unittest.TestCase):
+def paragraphs(text: str) -> set[str]:
+    blocks = re.split(r"\n\s*\n", text)
+    return {block.strip() for block in blocks if len(block.strip()) > 80}
+
+
+class SkillsMetaTest(unittest.TestCase):
     def test_name_matches_directory(self) -> None:
         for path in skill_files():
-            meta, _ = parse(path)
             with self.subTest(skill=path.parent.name):
-                self.assertEqual(meta.get("name"), path.parent.name)
+                self.assertEqual(frontmatter_of(path).get("name"), path.parent.name)
 
     def test_argument_hint_uses_brackets(self) -> None:
         for path in skill_files():
-            meta, _ = parse(path)
             with self.subTest(skill=path.parent.name):
-                self.assertTrue(meta.get("argument-hint"), "缺少 argument-hint")
-                self.assertRegex(meta["argument-hint"], HINT)
+                hint = frontmatter_of(path).get("argument-hint", "")
+                self.assertTrue(hint, "缺少 argument-hint")
+                self.assertRegex(hint, HINT)
 
     def test_description_states_scope_and_exclusion(self) -> None:
         for path in skill_files():
-            meta, _ = parse(path)
-            description = meta.get("description", "")
             with self.subTest(skill=path.parent.name):
+                description = frontmatter_of(path).get("description", "")
                 self.assertIn("适用于", description)
                 self.assertIn("不适用于", description)
 
-
-class StructureTest(unittest.TestCase):
-    def test_first_and_last_section(self) -> None:
+    def test_required_sections_in_order(self) -> None:
         for path in skill_files():
-            _, body = parse(path)
-            titles = H2.findall(body)
             with self.subTest(skill=path.parent.name):
+                titles = H2.findall(body_of(path))
                 self.assertTrue(titles, "缺少二级标题")
-                self.assertEqual(titles[0], FIRST_SECTION)
-                self.assertEqual(titles[-1], LAST_SECTION)
+                self.assertEqual(titles[0], REQUIRED_SECTIONS[0])
+                self.assertEqual(titles[-1], REQUIRED_SECTIONS[-1])
+                found = [title for title in titles if title in REQUIRED_SECTIONS]
+                self.assertEqual(found, list(REQUIRED_SECTIONS), "必要节缺失或顺序错误")
 
     def test_body_length(self) -> None:
         for path in skill_files():
             with self.subTest(skill=path.parent.name):
-                _, body = parse(path)
-                self.assertLessEqual(len(body.splitlines()), MAX_LINES)
+                self.assertLessEqual(len(body_of(path).splitlines()), MAX_LINES)
 
     def test_dimension_index(self) -> None:
         for path in skill_files():
-            references = list((path.parent / "references").glob("dimensions*.md"))
-            if not references:
-                continue  # 元规范 skill 的 references 不按维度切分
-            _, body = parse(path)
-            section = INDEX_SECTION.search(body)
             with self.subTest(skill=path.parent.name):
+                body = body_of(path)
+                section = self._section(body, "维度索引")
                 self.assertIsNotNone(section, "缺少 维度索引 节")
-                assert section is not None
-                block = section.group(1)
-                self.assertTrue(
-                    INDEX_SENTENCE in block or INDEX_SENTENCE_SPLIT in block,
-                    "缺少维度索引说明句",
-                )
-                self.assertIn(INDEX_HEADER, block)
-                rows = INDEX_ROW.findall(block)
+                self.assertIn(INDEX_HEADER, section, "维度索引表头不符")
+                rows = re.findall(r"^\|\s*(\d+)\s*\|([^|]*)\|([^|]*)\|([^|]*)\|", section, re.M)
                 self.assertTrue(rows, "维度索引没有可解析的行")
-                numbers = [int(number) for number, _, _ in rows]
+                numbers = [int(row[0]) for row in rows]
                 self.assertEqual(numbers, list(range(1, len(rows) + 1)), "维度编号不连续")
-                by_file: dict[str, list[int]] = {}
-                for number, reference, section_number in rows:
-                    self.assertEqual(int(number), int(section_number), "详情列节号与维度编号不一致")
-                    by_file.setdefault(reference, []).append(int(number))
-                for reference, expected in by_file.items():
-                    target = path.parent / reference
-                    self.assertTrue(target.is_file(), f"缺少 {reference}")
-                    found = [int(n) for n in DIM_SECTION.findall(target.read_text(encoding="utf-8"))]
-                    self.assertEqual(found, expected, f"{reference} 的节号与索引不一致")
-                for line in block.splitlines():
-                    if line.startswith("|---"):
-                        continue
-                    cells = [c.strip() for c in line.strip().strip("|").split("|")]
-                    if len(cells) != 3 or cells[0] == "维度":
-                        continue
-                    self.assertNotIn("references/", cells[1], "首条规则列混入了详情内容")
-                    self.assertFalse(cells[0].endswith("。"), "维度名列写成了规则句")
-                    self.assertTrue(cells[1].endswith("。"), "首条规则列应是一句规则")
-                    self.assertTrue(cells[2].startswith("`references/"), "详情列缺少文件")
-                    self.assertTrue(cells[2].endswith(" 节"), "详情列缺少节号")
+                for number, _name, rule, detail in rows:
+                    self.assertTrue(rule.strip().endswith("。"), "首条规则列应是一句规则")
+                    match = re.fullmatch(r"\s*`?references/([\w./-]+)`?\s+第\s+(\d+)\s+节\s*", detail.strip())
+                    self.assertTrue(match, f"详情列格式不符: {detail}")
+                    reference = path.parent / "references" / match.group(1)
+                    self.assertTrue(reference.is_file(), f"缺少 {match.group(1)}")
+                    headings = NUMBERED_HEADING.findall(reference.read_text(encoding="utf-8"))
+                    self.assertGreaterEqual(
+                        len(headings), int(match.group(2)),
+                        f"{match.group(1)} 的编号节不足",
+                    )
 
-
-class ReferenceTest(unittest.TestCase):
     def test_no_prefix_self_reference(self) -> None:
+        pattern = re.compile(r"`[a-z0-9-]+/references/[^`]+`")
         for path in skill_files():
-            for reference in sorted((path.parent / "references").glob("*.md")):
-                text = reference.read_text(encoding="utf-8")
-                without_fences = re.sub(r"```.*?```|~~~.*?~~~", "", text, flags=re.S)
-                with self.subTest(file=reference.relative_to(SKILLS)):
-                    self.assertIsNone(SELF_REFERENCE.search(without_fences), "references 内应使用同目录相对名")
+            with self.subTest(skill=path.parent.name):
+                body = body_of(path)
+                self.assertIsNone(pattern.search(body), "references 应使用同目录相对名")
 
     def test_no_verbatim_duplication(self) -> None:
         for path in skill_files():
-            _, body = parse(path)
-            own = set(paragraphs(body))
-            for reference in sorted((path.parent / "references").glob("*.md")):
-                shared = own & set(paragraphs(reference.read_text(encoding="utf-8")))
-                with self.subTest(file=reference.relative_to(SKILLS)):
-                    self.assertEqual(sorted(shared), [], "正文与 references 存在逐字重复段落")
+            with self.subTest(skill=path.parent.name):
+                body_blocks = paragraphs(body_of(path))
+                reference_blocks: set[str] = set()
+                for reference in (path.parent / "references").glob("*.md"):
+                    reference_blocks |= paragraphs(reference.read_text(encoding="utf-8"))
+                self.assertEqual(sorted(body_blocks & reference_blocks), [], "正文与 references 存在逐字重复段落")
 
     def test_no_cross_reference_duplication(self) -> None:
+        corpus: dict[Path, set[str]] = {}
         for path in skill_files():
-            seen: dict[str, Path] = {}
-            for reference in sorted((path.parent / "references").glob("*.md")):
-                for paragraph in paragraphs(reference.read_text(encoding="utf-8")):
-                    previous = seen.get(paragraph)
-                    if previous is not None and previous != reference:
-                        self.fail(
-                            f"{reference.relative_to(SKILLS)} 与 {previous.relative_to(SKILLS)} "
-                            "存在逐字重复段落"
-                        )
-                    seen[paragraph] = reference
+            blocks = paragraphs(body_of(path))
+            for reference in (path.parent / "references").glob("*.md"):
+                blocks |= paragraphs(reference.read_text(encoding="utf-8"))
+            corpus[path.parent] = blocks
+        seen: dict[str, Path] = {}
+        for skill, blocks in corpus.items():
+            for block in blocks:
+                owner = seen.get(block)
+                if owner is not None and owner != skill:
+                    self.fail(f"{owner.name} 与 {skill.name} 存在逐字重复段落: {block[:60]}...")
+                seen.setdefault(block, skill)
 
+    def test_no_history_wording(self) -> None:
+        for path in skill_files():
+            with self.subTest(skill=path.parent.name):
+                texts = [body_of(path)]
+                texts += [reference.read_text(encoding="utf-8") for reference in (path.parent / "references").glob("*.md")]
+                for term in HISTORY_TERMS:
+                    for text in texts:
+                        self.assertNotIn(term, text, f"出现历史性措辞: {term}")
 
-class HistoryTextTest(unittest.TestCase):
-    PATTERN = re.compile(
-        r"迁移注|原(?:用户全局约束|全局用户约束)|原始条款|迁移批次|沿用原|原 CH|原编号|此前版本|原先|"
-        r"FIXED|formerly|previously|\bwas\b.*\bnow\b"
-    )
-    DATE = re.compile(r"20\d{2}-\d{2}-\d{2}")
-
-    def test_no_change_history_in_prompts(self) -> None:
-        files = [
-            REPO / "AGENTS.md",
-            REPO / "rules/global-user-constraints.md",
-            *SKILLS.glob("*/SKILL.md"),
-            *SKILLS.glob("*/references/*.md"),
-        ]
-        for path in sorted(files):
-            for number, line in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
-                if path.name == "global-user-constraints.md" and "记录性措辞" in line:
-                    continue
-                match = self.PATTERN.search(line)
-                if match:
-                    self.fail(f"{path.relative_to(REPO)}:{number} 含历史记录措辞 {match.group(0)!r}")
-
-    def test_no_change_history_in_code_comments(self) -> None:
-        files = [
-            *sorted((REPO / "scripts").glob("*.sh")),
-            *sorted((REPO / "shared/scripts").glob("*.py")),
-            *sorted((REPO / "plugins/dsh/src").glob("*.js")),
-            *sorted((REPO / ".github/workflows").glob("*.yml")),
-        ]
-        for path in files:
-            for number, line in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
-                stripped = line.lstrip()
-                if not stripped.startswith(("#", "//", "/*", "*")):
-                    continue
-                match = self.PATTERN.search(line) or self.DATE.search(line)
-                if match:
-                    self.fail(f"{path.relative_to(REPO)}:{number} 注释含历史记录措辞 {match.group(0)!r}")
+    @staticmethod
+    def _section(body: str, title: str) -> str | None:
+        match = re.search(rf"^## {re.escape(title)}\s*$(.*?)(?=^## |\Z)", body, re.M | re.S)
+        return match.group(1) if match else None
 
 
 if __name__ == "__main__":

@@ -23,7 +23,7 @@ LIFECYCLE_HEADINGS = (
     "## 交接与升级",
     "## 裁剪与度量",
 )
-STAGE_TABLE = "| 阶段 | 本 skill 的职责 | 产出 / 证据 |"
+STAGE_TABLE = "| 阶段 | 职责 | 产出与证据 |"
 GATE_TABLE = "| 门禁 | 必须提供的证据 | 不满足时 |"
 
 
@@ -32,11 +32,8 @@ def skill_files() -> list[Path]:
 
 
 def body_of(path: Path) -> str:
-    text = path.read_text(encoding="utf-8")
-    parts = text.split("---", 2)
-    if len(parts) == 3:
-        return parts[2]
-    return text
+    parts = path.read_text(encoding="utf-8").split("---", 2)
+    return parts[2] if len(parts) == 3 else ""
 
 
 class LifecycleContractTest(unittest.TestCase):
