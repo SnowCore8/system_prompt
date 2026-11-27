@@ -15,7 +15,7 @@ coverage/
 !.env.example
 *.pem
 *.key
-global-user-constraints-*.sha256
+se-governance-*.sha256
 /global-user-constraints-*/
 /dist/
 *.tgz
