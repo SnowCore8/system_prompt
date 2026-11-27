@@ -46,7 +46,9 @@
 **变更**
 
 - **JavaScript 统一**：4 个 Python hook 脚本迁移为 Node.js ESM 模块，统一三包脚本语言
-- **干净卸载**：移除 `install-constraints.js`，Qoder 改用 hook 注入，Qwen 添加 `contextFileName` 原生加载，三包卸载后无残留
+- **干净卸载**：移除 `install-constraints.js`，Qoder 改用 hook 注入，Qwen 添加 `contextFileName` 原生加载，三包卸载后无残留；
+  从 0.44.0 及更早版本升级需手动删除 `~/.qoder-cn/rules/global-user-constraints.md` 与
+  `~/.qoder/rules/global-user-constraints.md`（Windows 为 `%USERPROFILE%\.qoder-cn\rules\` 与 `%USERPROFILE%\.qoder\rules\`）
 - **Qwen 字段补全**：扩展清单添加 `author`、`license`、`repository` 字段
 - **测试迁移**：Python unittest 迁移为 Node.js test runner，18 个测试用例
 - **文档更新**：新增 `docs/restructure-design.md`，更新 `docs/time-awareness.md`

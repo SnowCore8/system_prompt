@@ -21,11 +21,11 @@ Qoder 与 Qwen Code 都不向模型注入当前时间。模型只能靠对话里
   `Browser time zone for this request: <时区>. Interpret otherwise-unqualified dates and times in this zone.`
   `Elapsed since the preceding model-visible message: <耗时|unavailable>.`
 
-  Qoder 没有逐步 step 字段，因此不再输出恒为 1 的 step；脚本用 `QODER_PLUGIN_DATA` 按 session 记录 turn 与上次注入时间。
+  Qoder 没有逐步 step 字段，因此不输出 step；脚本用 `QODER_PLUGIN_DATA` 按 session 记录 turn 与上次注入时间。
   没有状态时输出 turn 1、unavailable。Qwen 不设置插件数据目录变量，时间 hook 通常不落盘，turn 通常为 1、elapsed 为
   `unavailable`。
 
-  DSH 原版时间消息含 `turn N, step M` 与 `resolved`/`mixed`/`missing` 三种时区措辞；本页格式是 Qoder/Qwen 适配版。
+  上游 DSH 时间消息含 `turn N, step M` 与 `resolved`/`mixed`/`missing` 三种时区措辞；本页格式是 Qoder/Qwen 适配版。
 
 - 时区依次取 `TZ`（用 `Intl.DateTimeFormat` 校验）、`Intl` 解析出的系统时区、`/etc/timezone`，
   最后用 UTC 整点偏移兜底；Windows 没有 `/etc`，走 `Intl` 与偏移。时间戳同时写入数值偏移与方括号内的时区名。

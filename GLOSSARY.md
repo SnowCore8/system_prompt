@@ -32,7 +32,7 @@
 | 组件 | component | 插件内的 skills、commands、hooks 等 | |
 | 宿主 | host | 加载插件与规则的 Qoder 客户端 | |
 | 打包 | package | 生成 zip | |
-| 组装 | assemble | 从顶层真源复制生成开发入口或安装包；生成物不提交 | 物化（仅指旧流程时） |
+| 组装 | assemble | 从顶层真源复制生成开发入口或安装包；生成物不提交 | 物化 |
 | 开发入口 | dev entry | `scripts/assemble.sh` 生成的 `.dsh`、`.qoder`、`.qwen` 副本 | |
 | 分发 | distribute | 通过市场或内网分发 | |
 | 变更日志 | changelog | `CHANGELOG.md` | 更新日志 |
@@ -52,7 +52,7 @@
 | MAY | 可以 | 允许的行为 |
 
 - 不译：代码、标识符、文件路径、命令、URL、协议与格式名、宿主概念名（skill、hook、plugin、manifest、rules）、条款编号（SP-1、ME-6 等）、skill 名与目录名。
-- skill 名称写英文标识符（如 `naming-conventions`），首次出现可在括号内给中文描述；不再写「命名规范 skill」这类中文名。
+- skill 名称写英文标识符（如 `naming-conventions`），首次出现可在括号内给中文描述；不写「命名规范 skill」这类中文名。
 - 「评审」不用，统一写「审查」；技术审计写「审计」。
 - 标题、表格与示例说明译成中文；代码块内不译。
 - 同一术语全仓只用一种写法；首次出现可在括号内加英文。

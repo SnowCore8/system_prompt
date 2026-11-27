@@ -50,17 +50,9 @@ qoderclicn plugins install \
 
 `constraints-check` 读取包内规则，审查当前请求、方案或待执行命令；只审查，不执行被审查对象。
 
-## 卸载与升级
+## 卸载
 
-直接卸载插件即可，本版本不写项目或用户级 rules。从 0.44.0 及更早版本升级的，先手动删除一次旧版写入的文件：
-
-```bash
-rm ~/.qoder-cn/rules/global-user-constraints.md   # CN
-rm ~/.qoder/rules/global-user-constraints.md      # 国际版
-```
-
-Windows 为 `%USERPROFILE%\.qoder-cn\rules\global-user-constraints.md` 与
-`%USERPROFILE%\.qoder\rules\global-user-constraints.md`。
+直接卸载插件即可；插件不写项目或用户级 rules，没有需要清理的约束文件。
 
 ## 安全边界
 

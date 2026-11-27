@@ -163,7 +163,7 @@ Qwen 为 command hook 设置的目录变量只有 `QWEN_PROJECT_DIR`、`CLAUDE_P
 
 ### 本仓库用法与已知限制
 
-- Qwen 包只用清单 `contextFileName` 承载约束，不再有约束 hook；`SessionStart` 与 `UserPromptSubmit` 只保留时间 hook。
+- Qwen 包只用清单 `contextFileName` 承载约束，没有约束 hook；`SessionStart` 与 `UserPromptSubmit` 只保留时间 hook。
 - Qwen 不提供插件数据目录，[inject-clock.js](../shared/scripts/inject-clock.js) 在 Qwen 下不会写状态；因此 turn 固定为 1，
   elapsed 为 `unavailable`。这是当前实现的已知限制，不是宿主文档承诺。
 - 时间格式与关闭方式见 [time-awareness.md](time-awareness.md)。

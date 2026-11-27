@@ -121,7 +121,7 @@ CLI 1.1.90 的 `plugins validate` 把 `"rules"` 报为 unknown field 并忽略�
 会因「没有可安装组件」被拒。宿主原生的做法仍是把规则放用户级或项目级 `.qoder/rules/`；
 本仓库插件由 `SessionStart` hook 注入全文，不写用户级 rules，见
 [plugins/qoder/README.md](../plugins/qoder/README.md)；`UserPromptSubmit` 每轮提醒
-`Never violate global user constraints.`。`qoder.md` 是否加载未验证，本仓库已移除。
+`Never violate global user constraints.`。`qoder.md` 是否加载未验证，本仓库不提供。
 
 来源：[Qoder 插件参考](https://docs.qoder.com/cli/plugins-reference)、[Qoder CN 插件打包规范](https://docs.qoder.cn/qoder-plugins)。
 
@@ -149,8 +149,8 @@ Qwen Code 有两套常驻指令机制：上下文文件（`QWEN.md`/`AGENTS.md`�
 | `<project>/.qwen/QWEN.local.md` | 仅真实 git 根，最后追加 |
 | 已启用扩展的 context 文件 | 启动/刷新读取并缓存，随后每请求随 system prompt 携带；默认扩展目录内 `QWEN.md` |
 
-- `context.fileName`（`string | string[]`）会**替换**默认列表而不是追加；Qwen 配置的旧顶层键
-  `contextFileName` 已迁移为 `context.fileName`。扩展清单的 `contextFileName` 是另一项字段，语义见 hook 文档。
+- `context.fileName`（`string | string[]`）会**替换**默认列表而不是追加。扩展清单的 `contextFileName` 是另一项字段，
+  语义见 hook 文档。
 - 默认记忆文件按「文件名优先、目录其次」拼接；扩展 `contextFileName` 数组按声明顺序，跨扩展按启用顺序。
   每段包在 `--- Context from: <路径> ---` 标记里；按 realpath 去重，冲突需自行删改。
 - `@path/to/file` 导入受支持：相对被导入文件所在目录解析，深度上限 5，代码块与行内代码里的
@@ -364,10 +364,9 @@ DSH 里「插件」是 TypeScript 模块，导出 `apply(ctx)`；可分发的安
 - Qwen Code：`.qwen/rules`（由 `scripts/assemble.sh` 从 `rules/` 生成）。其中的规则没有 `paths:`，属 baseline，
   首个请求进入 system prompt；插件清单的 `contextFileName` 在启动/刷新读取一次，随后每请求随
   system prompt 携带 `constraints/global-user-constraints.md`；`SessionStart` 仅有时间 hook；
-  `.qwen/AGENTS.md` 会被 Qwen 忽略，因此不再提供。
+  `.qwen/AGENTS.md` 会被 Qwen 忽略，因此不提供。
 - Qoder：项目级 `.qoder/rules` 由 `scripts/assemble.sh` 从根级 `rules/` 生成；用户级约束由插件
-  `SessionStart` hook 注入全文，不写 `~/.qoder*/rules`。`.qoder-cn` 与 `.qoder/plugins` 在项目级没有加载语义，
-  已移除。
+  `SessionStart` hook 注入全文，不写 `~/.qoder*/rules`。`.qoder-cn` 与 `.qoder/plugins` 在项目级没有加载语义。
 - DeepSeek Harness：`.dsh/skills` 是 rank 100 的 skill 扫描根，由 `scripts/assemble.sh` 从顶层
   `skills/` 生成；根 `AGENTS.md` 是项目指令入口；约束正文由 bundle 在 `apply` 时经 `ctx.systemPrompt.section()`
   注册；只对两个用户级 `AGENTS.md` 做 sha256 去重，项目级不参与，文件变化需重载。
@@ -390,8 +389,8 @@ DSH 里「插件」是 TypeScript 模块，导出 `apply(ctx)`；可分发的安
 - Qoder 插件 rules 的落地时间：schema 与打包规范已存在，CLI 1.1.90 不加载，Desktop 标注「即将支持」。
 - Qoder IDE 的 100,000 字符上限是否同样适用于 CLI：文档未说明。
 - Qoder `qoder.md` 是否作为插件级指令加载：打包规范提到，支持矩阵标「—」，未验证。
-- Qwen Code 历史版本是否读过 `<project>/.qwen/AGENTS.md`：当前版本不支持，历史未找到证据。
-- Qwen Code 项目级扩展：`storage.ts` 注释提到过 `<project>/.qwen/extensions/`，当前实现不加载。
+- Qwen Code 不读取 `<project>/.qwen/AGENTS.md`：当前实现不支持。
+- Qwen Code 项目级扩展：`storage.ts` 注释提到 `<project>/.qwen/extensions/`，当前实现不加载。
 
 ## 来源
 
