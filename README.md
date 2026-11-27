@@ -39,10 +39,11 @@ Conditional Go、Hold、Recycle 与 No-Go，组合层另用 Defer。智能体任
 
 ## 快速开始
 
-开发与校验需要 `python3`、`node` 与 `git`；CI 在 Python 3.12/3.14 与 Node 22/24 的组合上运行校验。
+开发与校验需要 `python3`、`node`、`npm` 与 `git`；CI 在 Python 3.12/3.14 与 Node 22/24 的组合上运行校验。
 
 ```bash
 python3 -m pip install --require-hashes -r requirements-dev.txt
+npm ci                       # 安装 Biome 与 c8
 scripts/assemble.sh dev      # 生成 .dsh/.qoder/.qwen 开发入口（不提交）
 scripts/check.sh             # 全量校验
 ```
@@ -156,9 +157,10 @@ zip 与 `.sha256`，DSH 为 bundle。安装命令、hook 事件与边界见 [Qod
 
 ## 验证
 
-`scripts/check.sh` 是仓库附加门禁，覆盖常驻约束体积（≤64 KiB）、Markdown 严格校验、skill 与 hook 测试、
-DSH 包测试、shellcheck、ruff、依赖审计、覆盖率（`--fail-under=90`）、JSON、敏感文件、零软链、组装与三包
-清单一致性。覆盖范围、跳过条件与单独运行测试的命令见 [CONTRIBUTING.md](CONTRIBUTING.md)。
+`scripts/check.sh` 是仓库附加门禁，覆盖常驻约束体积（≤64 KiB）、Markdown 严格校验、skill、hook 与 DSH 测试、
+JS lint 与格式（Biome）、JS 覆盖率、shellcheck、ruff、依赖审计、Python 覆盖率（`--fail-under=90`）、JSON、
+敏感文件、零软链、组装与三包清单一致性。覆盖范围、跳过条件与单独运行测试的命令见
+[CONTRIBUTING.md](CONTRIBUTING.md)。
 
 Qoder 本地安装冒烟：
 

@@ -1,7 +1,7 @@
 /**
  * 包内 skills/ 的解析与 skill provider 构造。
  */
-import { readFile, readdir } from 'node:fs/promises'
+import { readdir, readFile } from 'node:fs/promises'
 import path from 'node:path'
 
 import { PROVIDER, RANK, SOURCE } from './constants.js'

@@ -13,8 +13,8 @@ import { constraintsSection } from './constraints.js'
 import { findPackageRoot } from './paths.js'
 import { createSkillsProvider } from './skills.js'
 
-export { constraintsSection }
 export { parseSkill } from './skills.js'
+export { constraintsSection }
 export const name = NAME
 export const inject = INJECT
 

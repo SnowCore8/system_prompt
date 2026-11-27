@@ -18,6 +18,15 @@
   "engines": {
     "dsh": ">=0.2.2-rc.1 <0.3.0"
   },
+  "scripts": {
+    "check:js": "biome check .",
+    "format:js": "biome check --write .",
+    "coverage:js": "c8 --check-coverage --lines 90 --branches 85 --functions 90 node --test \"tests/hooks/*.test.js\" \"tests/dsh/*.test.mjs\""
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.6.9",
+    "c8": "12.0.0"
+  },
   "dsh": {
     "bundle": {
       "patch": "./plugins/dsh/cordis.patch.yml"

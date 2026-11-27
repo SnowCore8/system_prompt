@@ -1,15 +1,8 @@
-import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
+import { describe, it } from 'node:test';
 
-import {
-  COMPACT_HOOK,
-  HOOKS_QODER,
-  cleanup,
-  contextOf,
-  makeSandbox,
-  runHook,
-} from './helpers.js';
+import { COMPACT_HOOK, cleanup, contextOf, HOOKS_QODER, makeSandbox, runHook } from './helpers.js';
 
 const TIMESTAMP = String.raw`\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}[+-]\d{2}:\d{2}\[.+\]`;
 
@@ -30,7 +23,10 @@ describe('inject-compact.js', () => {
     assert.equal(lines[0], 'Never violate global user constraints.');
     assert.equal(lines[1], '');
     assert.match(lines[2], new RegExp(`^Time sampled after context compaction: ${TIMESTAMP}\\.$`));
-    assert.match(lines[3], /^Browser time zone for this request: .+\. Interpret otherwise-unqualified dates and times in this zone\.$/);
+    assert.match(
+      lines[3],
+      /^Browser time zone for this request: .+\. Interpret otherwise-unqualified dates and times in this zone\.$/,
+    );
   });
 
   it('SessionStart source!=compact 静默退出', async (t) => {

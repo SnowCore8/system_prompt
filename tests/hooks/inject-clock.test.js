@@ -1,18 +1,10 @@
-import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import { existsSync, mkdtempSync, readdirSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { describe, it } from 'node:test';
 
-import {
-  CLOCK_HOOK,
-  HOOKS_QODER,
-  HOOKS_QWEN,
-  cleanup,
-  contextOf,
-  makeSandbox,
-  runHook,
-} from './helpers.js';
+import { CLOCK_HOOK, cleanup, contextOf, HOOKS_QODER, HOOKS_QWEN, makeSandbox, runHook } from './helpers.js';
 
 /**
  * 建一个插件数据目录，并在测试结束时清理。
@@ -71,11 +63,7 @@ describe('inject-clock.js', () => {
     const dataDir = dataDirFor(t);
     const env = box.env({ QODER_PLUGIN_DATA: dataDir });
 
-    const start = await runHook(
-      CLOCK_HOOK,
-      { hook_event_name: 'SessionStart', session_id: 'session-start' },
-      { env },
-    );
+    const start = await runHook(CLOCK_HOOK, { hook_event_name: 'SessionStart', session_id: 'session-start' }, { env });
     assert.match(contextOf(start.stdout), /Time sampled while preparing turn 1:/);
 
     const prompt = await runHook(
@@ -137,11 +125,7 @@ describe('inject-clock.js', () => {
     await runHook(CLOCK_HOOK, { hook_event_name: 'UserPromptSubmit', session_id: session }, { env });
     assert.equal(stateFiles(dataDir).length, 1);
 
-    const { code, stdout } = await runHook(
-      CLOCK_HOOK,
-      { hook_event_name: 'SessionEnd', session_id: session },
-      { env },
-    );
+    const { code, stdout } = await runHook(CLOCK_HOOK, { hook_event_name: 'SessionEnd', session_id: session }, { env });
     assert.equal(code, 0);
     assert.equal(stdout, '');
     assert.equal(stateFiles(dataDir).length, 0);
@@ -160,11 +144,7 @@ describe('inject-clock.js', () => {
     const box = makeSandbox();
     t.after(() => cleanup(box));
 
-    const { code, stdout } = await runHook(
-      CLOCK_HOOK,
-      { hook_event_name: 'UnknownEvent' },
-      { env: box.env() },
-    );
+    const { code, stdout } = await runHook(CLOCK_HOOK, { hook_event_name: 'UnknownEvent' }, { env: box.env() });
     assert.equal(code, 0);
     assert.equal(stdout, '');
   });

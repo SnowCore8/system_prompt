@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict'
-import { mkdtemp, mkdir, readFile, readdir, rm, writeFile } from 'node:fs/promises'
+import { mkdir, mkdtemp, readdir, readFile, rm, writeFile } from 'node:fs/promises'
 import os from 'node:os'
 import path from 'node:path'
 import test from 'node:test'
@@ -18,9 +18,9 @@ import {
 import { constraintsSection, sha256 } from '../../plugins/dsh/src/constraints.js'
 import {
   apply,
-  constraintsSection as reexportedConstraintsSection,
   inject,
   name,
+  constraintsSection as reexportedConstraintsSection,
   parseSkill as reexportedParseSkill,
 } from '../../plugins/dsh/src/index.js'
 import { findPackageRoot, userInstructionFiles } from '../../plugins/dsh/src/paths.js'
@@ -67,8 +67,16 @@ function createContext() {
   const factories = []
   const sections = []
   const ctx = {
-    skills: { registerProvider(factory) { factories.push(factory) } },
-    systemPrompt: { section(entry) { sections.push(entry) } },
+    skills: {
+      registerProvider(factory) {
+        factories.push(factory)
+      },
+    },
+    systemPrompt: {
+      section(entry) {
+        sections.push(entry)
+      },
+    },
   }
   apply(ctx)
   assert.equal(factories.length, 1)
@@ -100,7 +108,10 @@ test('list returns the twenty-one bundled skills', async () => {
   const directories = (await readdir(path.join(PACKAGE_ROOT, 'skills'))).filter((entry) => !entry.startsWith('.'))
   assert.equal(candidates.length, 21)
   assert.equal(candidates.length, directories.length)
-  assert.deepEqual(candidates.map((item) => item.name), [...candidates.map((item) => item.name)].sort())
+  assert.deepEqual(
+    candidates.map((item) => item.name),
+    [...candidates.map((item) => item.name)].sort(),
+  )
   assert.equal(provider.name, PROVIDER)
   for (const candidate of candidates) {
     assert.ok(candidate.description.length > 0)
@@ -180,7 +191,9 @@ test('list returns an empty array when the skills root is missing', async (t) =>
 })
 
 test('parseSkill keeps frontmatter and invocation parsing', () => {
-  const parsed = parseSkill('---\nname: demo-skill\ndescription: "演示用 skill"\nwhenToUse: 需要演示时\nuser-invocable: false\ndisable-model-invocation: true\n---\n\n# 演示\n\n')
+  const parsed = parseSkill(
+    '---\nname: demo-skill\ndescription: "演示用 skill"\nwhenToUse: 需要演示时\nuser-invocable: false\ndisable-model-invocation: true\n---\n\n# 演示\n\n',
+  )
   assert.ok(parsed)
   assert.equal(parsed.name, 'demo-skill')
   assert.equal(parsed.description, '演示用 skill')
@@ -197,14 +210,14 @@ test('sha256 returns a stable hex digest', () => {
 })
 
 test('userInstructionFiles returns only the two user-level AGENTS.md candidates', () => {
-  assert.deepEqual(
-    userInstructionFiles({ DSH_HOME: '/dsh-home', DSH_AGENTS_HOME: '/agents-home' }, '/home/tester'),
-    [path.join('/dsh-home', 'AGENTS.md'), path.join('/agents-home', 'AGENTS.md')],
-  )
-  assert.deepEqual(
-    userInstructionFiles({}, '/home/tester'),
-    [path.join('/home/tester', '.dsh', 'AGENTS.md'), path.join('/home/tester', '.agents', 'AGENTS.md')],
-  )
+  assert.deepEqual(userInstructionFiles({ DSH_HOME: '/dsh-home', DSH_AGENTS_HOME: '/agents-home' }, '/home/tester'), [
+    path.join('/dsh-home', 'AGENTS.md'),
+    path.join('/agents-home', 'AGENTS.md'),
+  ])
+  assert.deepEqual(userInstructionFiles({}, '/home/tester'), [
+    path.join('/home/tester', '.dsh', 'AGENTS.md'),
+    path.join('/home/tester', '.agents', 'AGENTS.md'),
+  ])
 })
 
 test('findPackageRoot locates the bundle root from the plugin module', () => {
@@ -275,7 +288,10 @@ test('constraintsSection returns a hint instead of the full text when oversized'
 test('apply registers only the constraints section', async (t) => {
   await withIsolatedUserHomes(t, async () => {
     const { sections } = createContext()
-    assert.deepEqual(sections.map((item) => item.name), [SECTION_NAME])
+    assert.deepEqual(
+      sections.map((item) => item.name),
+      [SECTION_NAME],
+    )
     assert.equal(sections.length, 1)
     assert.equal(sections[0].order, SECTION_ORDER)
     assert.equal(sections[0].interpolate, false)

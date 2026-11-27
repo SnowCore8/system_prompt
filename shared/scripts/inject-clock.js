@@ -12,8 +12,12 @@ import { createClockState } from './lib/state.js';
 import { currentTime, formatToolTime, formatUserTime } from './lib/time.js';
 
 const HOOK_EVENTS = new Set([
-  'SessionStart', 'UserPromptSubmit', 'SessionEnd',
-  'PreToolUse', 'PostToolUse', 'PostToolUseFailure',
+  'SessionStart',
+  'UserPromptSubmit',
+  'SessionEnd',
+  'PreToolUse',
+  'PostToolUse',
+  'PostToolUseFailure',
 ]);
 const TOOL_EVENTS = new Set(['PreToolUse', 'PostToolUse', 'PostToolUseFailure']);
 

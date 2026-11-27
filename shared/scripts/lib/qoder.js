@@ -58,9 +58,7 @@ export function dedupeCandidates(payload) {
   }
 
   const cwd =
-    typeof payload?.cwd === 'string' && payload.cwd
-      ? payload.cwd
-      : process.env.QODER_PROJECT_DIR || process.cwd();
+    typeof payload?.cwd === 'string' && payload.cwd ? payload.cwd : process.env.QODER_PROJECT_DIR || process.cwd();
   for (const directory of projectDirs(cwd)) {
     files.add(join(directory, '.qoder', 'rules', RULES_FILENAME));
     files.add(join(directory, 'AGENTS.md'));

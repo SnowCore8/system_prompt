@@ -13,7 +13,7 @@ import { fileURLToPath } from 'node:url';
 
 import { emitContext, isMain, runHook } from './lib/hook.js';
 import { fileMatches, sha256 } from './lib/paths.js';
-import { dedupeCandidates, pluginRoot, rulesFile, RULES_FILENAME, SKIP_SOURCES } from './lib/qoder.js';
+import { dedupeCandidates, pluginRoot, RULES_FILENAME, rulesFile, SKIP_SOURCES } from './lib/qoder.js';
 
 const SCRIPT_DIR = dirname(fileURLToPath(import.meta.url));
 const MAX_BYTES = 64 * 1024;
@@ -53,7 +53,10 @@ async function handle(payload) {
     data = readFileSync(path);
   } catch (error) {
     const reason = error.code || error.message || '未知错误';
-    emitContext('SessionStart', `全局用户约束未注入：读取 ${path} 失败（${reason}）。本会话须先读取约束；无法读取的，停止并报告。`);
+    emitContext(
+      'SessionStart',
+      `全局用户约束未注入：读取 ${path} 失败（${reason}）。本会话须先读取约束；无法读取的，停止并报告。`,
+    );
     return;
   }
 

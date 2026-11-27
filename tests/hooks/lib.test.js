@@ -1,8 +1,8 @@
-import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import { existsSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
+import { describe, it } from 'node:test';
 
 import {
   configRoots,
@@ -13,15 +13,6 @@ import {
   sha256,
 } from '../../shared/scripts/lib/paths.js';
 import {
-  formatCompactText,
-  formatDuration,
-  formatTimestamp,
-  formatToolTime,
-  formatUserTime,
-  timezoneName,
-} from '../../shared/scripts/lib/time.js';
-import { createClockState } from '../../shared/scripts/lib/state.js';
-import {
   CONFIG_ENVS,
   dedupeCandidates,
   HOME_CONFIG_DIRS,
@@ -30,6 +21,15 @@ import {
   RULES_FILENAME,
   SKIP_SOURCES,
 } from '../../shared/scripts/lib/qoder.js';
+import { createClockState } from '../../shared/scripts/lib/state.js';
+import {
+  formatCompactText,
+  formatDuration,
+  formatTimestamp,
+  formatToolTime,
+  formatUserTime,
+  timezoneName,
+} from '../../shared/scripts/lib/time.js';
 
 /**
  * 建一个测试用临时目录，并在测试结束时清理。
@@ -102,10 +102,7 @@ describe('paths.projectDirs', () => {
       assert.equal(dirs[index + 1], dirname(dirs[index]));
     }
     const last = dirs.at(-1);
-    assert.ok(
-      dirname(last) === last || existsSync(join(last, '.git')),
-      '应终止于文件系统根或含 .git 的目录',
-    );
+    assert.ok(dirname(last) === last || existsSync(join(last, '.git')), '应终止于文件系统根或含 .git 的目录');
   });
 });
 
@@ -224,7 +221,10 @@ describe('time 文本格式', () => {
     const lines = text.split('\n');
     assert.equal(lines.length, 3);
     assert.equal(lines[0], `Time sampled while preparing turn 3: ${formatTimestamp(now)}`);
-    assert.match(lines[1], /^Browser time zone for this request: .+\. Interpret otherwise-unqualified dates and times in this zone\.$/);
+    assert.match(
+      lines[1],
+      /^Browser time zone for this request: .+\. Interpret otherwise-unqualified dates and times in this zone\.$/,
+    );
     assert.equal(lines[2], 'Elapsed since the preceding model-visible message: 1m 5s.');
   });
 
@@ -245,7 +245,10 @@ describe('time 文本格式', () => {
     const lines = formatCompactText(now).split('\n');
     assert.deepEqual(lines.slice(0, 2), ['Never violate global user constraints.', '']);
     assert.equal(lines[2], `Time sampled after context compaction: ${formatTimestamp(now)}.`);
-    assert.match(lines[3], /^Browser time zone for this request: .+\. Interpret otherwise-unqualified dates and times in this zone\.$/);
+    assert.match(
+      lines[3],
+      /^Browser time zone for this request: .+\. Interpret otherwise-unqualified dates and times in this zone\.$/,
+    );
   });
 });
 
@@ -320,9 +323,18 @@ describe('qoder 常量与去重候选', () => {
     assert.ok(files.includes(join(home, '.qoder-cn', 'rules', RULES_FILENAME)));
     assert.ok(files.includes(join(home, '.qoder', 'rules', RULES_FILENAME)));
 
-    assert.equal(files.some((file) => file.includes('.qwen')), false);
-    assert.equal(files.some((file) => /QWEN\.md$/.test(file)), false);
-    assert.equal(files.some((file) => file.includes('CLAUDE')), false);
+    assert.equal(
+      files.some((file) => file.includes('.qwen')),
+      false,
+    );
+    assert.equal(
+      files.some((file) => /QWEN\.md$/.test(file)),
+      false,
+    );
+    assert.equal(
+      files.some((file) => file.includes('CLAUDE')),
+      false,
+    );
     assert.equal(new Set(files).size, files.length);
   });
 
@@ -342,7 +354,10 @@ describe('qoder 常量与去重候选', () => {
 
     const fromPayload = dedupeCandidates({ cwd: payloadDir });
     assert.ok(fromPayload.includes(join(payloadDir, 'AGENTS.md')));
-    assert.equal(fromPayload.some((file) => file.startsWith(envDir)), false);
+    assert.equal(
+      fromPayload.some((file) => file.startsWith(envDir)),
+      false,
+    );
 
     const fromEnv = dedupeCandidates({});
     assert.ok(fromEnv.includes(join(envDir, 'AGENTS.md')));

@@ -41,7 +41,7 @@ export function makeSandbox() {
   const config = join(dir, 'config');
   mkdirSync(config, { recursive: true });
 
-  const baseEnv = { ...process.env, HOME: dir };
+  const baseEnv = { ...process.env, HOME: dir, USERPROFILE: dir };
   for (const name of ISOLATED_ENVS) {
     delete baseEnv[name];
   }

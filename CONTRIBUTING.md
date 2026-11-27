@@ -86,19 +86,20 @@ Qoder 通过 `.qoder/rules` 读取；用户级安装插件后，由插件包提�
 
 ## 校验与打包
 
-- 环境：`python3`、`node` 与 `git`；CI 在 Python 3.12/3.14 与 Node 22/24 的组合上运行校验。
+- 环境：`python3`、`node`、`npm` 与 `git`；CI 在 Python 3.12/3.14 与 Node 22/24 的组合上运行校验。
 - 依赖安装：`python3 -m pip install --require-hashes -r requirements-dev.txt`；`requirements-dev.txt` 由
   `pip-compile --generate-hashes --allow-unsafe` 从 `requirements-dev.in` 生成，不手工编辑；升级依赖时先改
-  `.in` 再重新生成。
-- 全量校验：`scripts/check.sh`，覆盖常驻约束体积（≤64 KiB）、Markdown、skill 与 hook 测试、DSH bundle 的
-  `node --test`、shellcheck、ruff、依赖审计（pip-audit）、覆盖率（`--fail-under=90`）、JSON、敏感文件、
-  零软链与组装、发布包清单一致性。缺少 `shellcheck` 或 `qoderclicn` 时对应段打印「跳过」；缺少 `python3`、
-  `node`、`git` 或任一 Python 校验依赖时，脚本直接退出 2。交付时说明缺口。
+  `.in` 再重新生成。JS 工具链用 `npm ci` 安装，`package-lock.json` 由 npm 生成，不手工编辑。
+- 全量校验：`scripts/check.sh`，覆盖常驻约束体积（≤64 KiB）、Markdown、skill 测试、JS lint 与格式（Biome）、
+  JS 测试与覆盖率（行 ≥90%、分支 ≥85%、函数 ≥90%）、shellcheck、ruff、依赖审计（pip-audit）、Python 覆盖率
+  （`--fail-under=90`）、JSON、敏感文件、零软链与组装、发布包清单一致性。缺少 `shellcheck` 或 `qoderclicn`
+  时对应段打印「跳过」；缺少 `python3`、`node`、`npm`、`git`、Python 校验依赖或 JS 开发依赖（`npm ci`）时，
+  脚本直接退出 2。交付时说明缺口。
 - 单文件 Markdown 校验：
   `python3 skills/system-prompt-authoring/scripts/check.py --strict <文件>`，退出码 0 表示无错误。
 - 单独运行测试：skill 测试使用
-  `python3 -B -m unittest discover -s tests/skill -p 'test_*.py'`；hook 测试使用
-  `node --test tests/hooks/*.test.js`；DSH 包测试使用 `node --test tests/dsh/provider.test.mjs`。
+  `python3 -B -m unittest discover -s tests/skill -p 'test_*.py'`；JS lint 与格式使用 `npm run check:js`；
+  JS 测试与覆盖率使用 `npm run coverage:js`。
 - 发布、版本、tag 与出包流程见 [docs/release.md](docs/release.md)；本地出包使用 `scripts/dist.sh`。
 
 ## 分支与审查

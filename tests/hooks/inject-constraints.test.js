@@ -1,18 +1,18 @@
-import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import { copyFileSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { describe, it } from 'node:test';
 
 import {
   CONSTRAINTS_HOOK,
+  cleanup,
+  contextOf,
   HOOKS_QODER,
   HOOKS_QWEN,
   MANIFEST_QWEN,
+  makeSandbox,
   REPO,
   RULES,
-  cleanup,
-  contextOf,
-  makeSandbox,
   runHook,
 } from './helpers.js';
 
@@ -216,11 +216,7 @@ describe('inject-constraints.js', () => {
     const box = makeSandbox();
     t.after(() => cleanup(box));
 
-    const { code, stdout } = await runHook(
-      CONSTRAINTS_HOOK,
-      { hook_event_name: 'UnknownEvent' },
-      { env: box.env() },
-    );
+    const { code, stdout } = await runHook(CONSTRAINTS_HOOK, { hook_event_name: 'UnknownEvent' }, { env: box.env() });
     assert.equal(code, 0);
     assert.equal(stdout, '');
   });
@@ -230,9 +226,9 @@ describe('约束注入配置', () => {
   it('Qoder 在 SessionStart 与 UserPromptSubmit 调用 inject-constraints.js', () => {
     const hooks = JSON.parse(readFileSync(HOOKS_QODER, 'utf-8'));
     for (const event of ['SessionStart', 'UserPromptSubmit']) {
-      const referenced = hooks.hooks[event].some((group) => (
-        group.hooks.some((hook) => (hook.args || []).some((arg) => arg.endsWith('inject-constraints.js')))
-      ));
+      const referenced = hooks.hooks[event].some((group) =>
+        group.hooks.some((hook) => (hook.args || []).some((arg) => arg.endsWith('inject-constraints.js'))),
+      );
       assert.equal(referenced, true, `${event} 应调用 inject-constraints.js`);
     }
   });

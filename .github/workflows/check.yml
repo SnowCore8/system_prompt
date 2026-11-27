@@ -8,9 +8,14 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: check-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   check:
     runs-on: ubuntu-24.04
+    timeout-minutes: 20
     strategy:
       fail-fast: false
       matrix:
@@ -25,11 +30,16 @@ jobs:
       - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1  # v6
         with:
           python-version: ${{ matrix.python }}
+          cache: pip
+          cache-dependency-path: requirements-dev.txt
       - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444  # v5
         with:
           node-version: ${{ matrix.node }}
+          cache: npm
       - name: 安装校验依赖
         run: python3 -m pip install --require-hashes -r requirements-dev.txt
+      - name: 安装 JS 开发依赖
+        run: npm ci
       - name: 确认 shellcheck 可用
         run: shellcheck --version
       - name: 机密扫描（gitleaks，含历史）
@@ -40,3 +50,22 @@ jobs:
       # 发布前必须在装有 qoderclicn 的机器上运行 scripts/dist.sh。
       - name: 全量校验
         run: ./scripts/check.sh
+
+  windows:
+    runs-on: windows-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09  # v5
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444  # v5
+        with:
+          node-version: '22'
+          cache: npm
+      - name: 安装 JS 开发依赖
+        run: npm ci
+      - name: JS lint 与格式
+        run: npm run check:js
+      - name: JS 测试与覆盖率
+        run: npm run coverage:js
+      - name: 组装校验
+        shell: bash
+        run: bash scripts/assemble.sh --check

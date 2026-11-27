@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# 全量校验：Markdown、skill 与 hook 测试、shellcheck、ruff、JSON、敏感文件、零软链与组装、三包清单与校验。
+# 全量校验：Markdown、skill、hook 与 DSH 测试、JS lint/格式与覆盖率、shellcheck、ruff、JSON、敏感文件、零软链与组装、三包清单与校验。
 # 故意不加 -e：要累积全部失败项后统一非零退出，而不是首错即停。
 set -uo pipefail
 
@@ -28,6 +28,14 @@ command -v node >/dev/null 2>&1 || {
   echo "未找到 node" >&2
   exit 2
 }
+command -v npm >/dev/null 2>&1 || {
+  echo "未找到 npm" >&2
+  exit 2
+}
+if [ ! -x node_modules/.bin/biome ] || [ ! -x node_modules/.bin/c8 ]; then
+  echo "缺少 JS 开发依赖，先运行 npm ci" >&2
+  exit 2
+fi
 git rev-parse --is-inside-work-tree >/dev/null 2>&1 || {
   echo "需要在 git 仓库内运行" >&2
   exit 2
@@ -76,11 +84,12 @@ done < <(git ls-files --cached --others --exclude-standard -z '*.md')
 echo "== skill 测试 =="
 python3 -B -m unittest discover -s tests/skill -p 'test_*.py' || fail "skill 测试"
 
-echo "== hook 测试（JavaScript） =="
-node --test tests/hooks/*.test.js || fail "hook 测试"
+echo "== JS lint 与格式 =="
+npm run --silent check:js || fail "JS lint 与格式"
 
-echo "== DSH 包测试 =="
-node --test tests/dsh/provider.test.mjs || fail "DSH 包测试"
+echo "== JS 测试与覆盖率 =="
+npm run --silent coverage:js || fail "JS 测试与覆盖率"
+rm -rf coverage
 
 echo "== shellcheck =="
 if command -v shellcheck >/dev/null 2>&1; then
