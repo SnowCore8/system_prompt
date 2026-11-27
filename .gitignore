@@ -14,6 +14,7 @@ __pycache__/
 *.pem
 *.key
 global-user-constraints-*.sha256
+/global-user-constraints-*/
 /dist/
 *.tgz
 .ruff_cache/
