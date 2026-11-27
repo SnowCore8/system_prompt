@@ -2,6 +2,18 @@
 
 按版本从新到旧记录可观察变更。自 0.2.0 起版本采用 SemVer、发布点为 tag `v<version>`，每节记录一个发布版本；0.2.0 之前按日期记录。条目按主题合并，记录最终可观察状态；被后续提交推翻的中间状态只在修复项里说明。
 
+## 0.45.0（2026-11-27）
+
+**变更**
+
+- **JavaScript 统一**：4 个 Python hook 脚本迁移为 Node.js ESM 模块，统一三包脚本语言
+- **干净卸载**：移除 `install-constraints.js`，Qoder 改用 hook 注入，Qwen 添加 `contextFileName` 原生加载，三包卸载后无残留
+- **Qwen 字段补全**：扩展清单添加 `author`、`license`、`repository` 字段
+- **测试迁移**：Python unittest 迁移为 Node.js test runner，18 个测试用例
+- **文档更新**：新增 `docs/restructure-design.md`，更新 `docs/time-awareness.md`
+
+---
+
 ## 0.44.0（2026-11-27）
 
 **变更**
