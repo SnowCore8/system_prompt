@@ -25,7 +25,7 @@ scripts/check.sh             # 全量校验
 |---|---|
 | `rules/`、`skills/`、`shared/` | 唯一真源：约束、二十个 skill、命令与注入脚本 |
 | `plugins/qoder/`、`plugins/qwen/`、`plugins/dsh/` | 三包清单、hooks 与说明 |
-| `npm/qoder/` | Qoder npm 安装包清单：承载同版本 zip 与校验和 |
+| `npm/qoder/`、`npm/qwen/` | 平台 npm 安装包清单：承载同版本 zip 与校验和 |
 | `scripts/` | `assemble.sh` 生成开发入口、`materialize.sh` 组装包、`check.sh` 校验、`dist.sh` 出包 |
 | `docs/` | 加载调研、hook 与注入、时间设计、校验规则、分类台账与发布手册 |
 | `tests/`、`.github/` | 测试与 CI/Release 工作流 |
@@ -43,7 +43,7 @@ scripts/check.sh             # 全量校验
   对应 skill 的 `references/`。
 - 改 skill：编辑 `skills/<name>/`，不复制第二份；改后运行 `scripts/assemble.sh` 刷新开发入口。
 - 改命令或注入脚本：编辑 `shared/commands/` 或 `shared/scripts/`。
-- 改包清单或 hook：编辑 `plugins/<包>/`，同步三包与 `npm/qoder` 版本，并运行 `scripts/materialize.sh` 验证组装。
+- 改包清单或 hook：编辑 `plugins/<包>/`，同步三包与 `npm/qoder`、`npm/qwen` 版本，并运行 `scripts/materialize.sh` 验证组装。
 - Qoder 本地市场：先运行 `scripts/assemble.sh qoder` 填充 `plugins/qoder`，并用
   `qoderclicn plugins validate plugins/qoder` 确认组件齐全，再添加目录 `plugins/`：
   `qoderclicn plugins marketplace add <仓库>/plugins`。不要只添加 `plugins/marketplace.json`，
@@ -55,22 +55,23 @@ scripts/check.sh             # 全量校验
 | 包 | 安装 |
 |---|---|
 | Qoder | `qoderclicn plugins install <npm zip URL> --scope user`；或解压 zip 后按目录安装 |
-| Qwen Code | `qwen extensions install global-user-constraints-qwen-VERSION.zip` |
-| DSH | `pnpm dsh plugin --profile PROFILE add @snowcore8/dsh-global-user-constraints@VERSION` |
+| Qwen Code | 下载 zip 后 `qwen extensions install global-user-constraints-qwen-VERSION.zip` |
+| DSH | `pnpm dsh plugin --profile PROFILE add @snowcore8/global-user-constraints-dsh@VERSION` |
 
 Qoder 的 npm zip URL（必须以 `.zip` 结尾）：
 
 ```bash
 qoderclicn plugins install \
-  https://cdn.jsdelivr.net/npm/@snowcore8/qoder-global-user-constraints@VERSION/global-user-constraints-qoder-VERSION.zip \
+  https://cdn.jsdelivr.net/npm/@snowcore8/global-user-constraints-qoder@VERSION/global-user-constraints-qoder-VERSION.zip \
   --scope user
 ```
 
-Qoder 另发布 `@snowcore8/qoder-global-user-constraints@VERSION`，只承载同版本 zip 与 `.sha256`。
+Qoder 与 Qwen 各有一个同前缀 npm 包（`@snowcore8/global-user-constraints-qoder`、`-qwen`），只承载同版本 zip
+与 `.sha256`；DSH 使用 `@snowcore8/global-user-constraints-dsh` bundle。
 
 安装与行为细节见 [Qoder](plugins/qoder/README.md)、[Qwen Code](plugins/qwen/README.md) 与 [DSH](plugins/dsh/README.md)。
 
-三包与 Qoder npm 安装包共用 SemVer 版本号，校验细节见 [docs/release.md](docs/release.md)。各端差异：
+三包、两个 zip npm 包与 DSH bundle 共用 SemVer 版本号，校验细节见 [docs/release.md](docs/release.md)。各端差异：
 
 - Qoder 与 Qwen 由插件包提供约束（细节见各自 README）；DSH 以 skill 提供者与 `systemPrompt.section()`
   注入，不注册 `constraints-check` 命令。
@@ -96,7 +97,7 @@ qoderclicn --cwd /tmp plugins install --scope local /tmp/qoder-package
 
 - 发布：版本、tag、出包、回滚与检查单见 [docs/release.md](docs/release.md)；`scripts/dist.sh` 生成 zip 与 SHA256。
 - CI：`check` 运行 `scripts/check.sh` 并做历史机密扫描；`release` 在推送 `v*` tag 时构建三包、发布
-  DSH 与 Qoder 两个 npm 包、生成 SBOM 与 Release 附件。
+  DSH bundle 与 Qoder、Qwen 两个 zip 包、生成 SBOM 与 Release 附件。
 
 ## 安全、许可与变更
 

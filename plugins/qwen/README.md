@@ -20,11 +20,14 @@
 
 ## 安装
 
+下载 zip 后安装：
+
 ```bash
+curl -fLO https://cdn.jsdelivr.net/npm/@snowcore8/global-user-constraints-qwen@<版本>/global-user-constraints-qwen-<版本>.zip
 qwen extensions install global-user-constraints-qwen-<版本>.zip
 ```
 
-安装后开新会话；约束由清单的 `contextFileName` 在启动/刷新读取一次，随后每请求随 system prompt 携带，不需要复制规则。Qwen 会把
+也可以使用同版本 GitHub Release 附件的 zip。安装后开新会话；约束由清单的 `contextFileName` 在启动/刷新读取一次，随后每请求随 system prompt 携带，不需要复制规则。Qwen 会把
 `${CLAUDE_PLUGIN_ROOT}` 替换成扩展根。
 
 ## 命令

@@ -1,0 +1,21 @@
+{
+  "name": "@snowcore8/global-user-constraints-qwen",
+  "version": "0.45.3",
+  "description": "Qwen Code 扩展安装包：承载同版本 zip 与校验和。",
+  "files": [
+    "global-user-constraints-qwen-*.zip",
+    "global-user-constraints-qwen-*.sha256",
+    "LICENSE-CC-BY-4.0.txt",
+    "LICENSE-MIT.txt",
+    "THIRD-PARTY-NOTICES.md"
+  ],
+  "license": "MIT AND CC-BY-4.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SnowCore8/system_prompt.git"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org"
+  }
+}

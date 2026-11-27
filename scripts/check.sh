@@ -156,11 +156,13 @@ qoder = json.loads((qdir / ".qoder-plugin/plugin.json").read_text(encoding="utf-
 qwen = json.loads((wdir / "qwen-extension.json").read_text(encoding="utf-8"))
 dsh = json.loads((root / "package.json").read_text(encoding="utf-8"))
 npmq = json.loads((root / "npm/qoder/package.json").read_text(encoding="utf-8"))
+npmw = json.loads((root / "npm/qwen/package.json").read_text(encoding="utf-8"))
 versions = {
     "qoder": qoder.get("version"),
     "qwen": qwen.get("version"),
     "dsh": dsh.get("version"),
     "npm-qoder": npmq.get("version"),
+    "npm-qwen": npmw.get("version"),
 }
 for name, version in versions.items():
     if not re.fullmatch(r"\d+\.\d+\.\d+", str(version or "")):
@@ -237,14 +239,17 @@ if not (root / str(dsh.get("main", ""))).is_file():
     problems.append("DSH bundle 的 main 入口不存在")
 if not dsh.get("engines", {}).get("dsh"):
     problems.append("DSH bundle 缺少 engines.dsh")
+if dsh.get("name") != "@snowcore8/global-user-constraints-dsh":
+    problems.append("DSH npm 包名不一致")
 if (dsh.get("publishConfig") or {}).get("access") != "public":
     problems.append("DSH bundle 缺少 npm 公开包 publishConfig")
-if npmq.get("name") != "@snowcore8/qoder-global-user-constraints":
-    problems.append("Qoder npm 包名不一致")
-if not any(str(item).endswith("*.zip") for item in npmq.get("files") or []):
-    problems.append("Qoder npm 包 files 未包含 zip")
-if (npmq.get("publishConfig") or {}).get("access") != "public":
-    problems.append("Qoder npm 包缺少公开 publishConfig")
+for label, pkg in (("Qoder", npmq), ("Qwen", npmw)):
+    if pkg.get("name") != f"@snowcore8/global-user-constraints-{label.lower()}":
+        problems.append(f"{label} npm 包名不一致")
+    if not any(str(item).endswith("*.zip") for item in pkg.get("files") or []):
+        problems.append(f"{label} npm 包 files 未包含 zip")
+    if (pkg.get("publishConfig") or {}).get("access") != "public":
+        problems.append(f"{label} npm 包缺少公开 publishConfig")
 if problems:
     sys.exit("; ".join(problems))
 PY

@@ -20,8 +20,8 @@
 1. 修改约束、skill 或插件前，应当先阅读 `README.md` 与对应目录说明。
 2. 真源位置如下：约束正文为 `rules/global-user-constraints.md`；skill 真源为 `skills/`；命令与注入脚本为
    `shared/`；Qoder/Qwen 包位于 `plugins/qoder|qwen`，包内只放清单与 hook，安装包由 `scripts/materialize.sh` 从顶层真源组装；DSH bundle 的
-   清单为仓库根 `package.json`，`plugins/dsh` 放置源码与 patch，构建时复制 `skills/` 与 `rules/`；Qoder npm 安装包
-   清单为 `npm/qoder/package.json`，只承载 zip 与校验和。约束正文
+   清单为仓库根 `package.json`，`plugins/dsh` 放置源码与 patch，构建时复制 `skills/` 与 `rules/`；Qoder 与 Qwen
+   的 zip npm 包清单为 `npm/qoder/package.json` 与 `npm/qwen/package.json`，只承载 zip 与校验和。约束正文
    以 UTF-8 字节计硬上限 40 KiB；超限时按主题把规则提取到对应 skill 的 `references/`，正文只保留摘要与加载
    指引。
 3. 新增或调整入口时，运行 `scripts/assemble.sh` 重新组装；不手工复制，也不提交软链。

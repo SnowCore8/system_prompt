@@ -20,7 +20,7 @@
 来自 npm 公共 registry（推荐，插件页可检测更新）：
 
 ```bash
-pnpm dsh plugin --profile web add @snowcore8/dsh-global-user-constraints@<版本>
+pnpm dsh plugin --profile web add @snowcore8/global-user-constraints-dsh@<版本>
 ```
 
 也可以从 Git 源安装（tag 方式不会检测更新）或解压 Release 里的 dsh zip 后安装目录：

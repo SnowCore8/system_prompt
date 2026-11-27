@@ -30,6 +30,7 @@ jobs:
               "qwen": json.load(open("plugins/qwen/qwen-extension.json", encoding="utf-8"))["version"],
               "dsh": json.load(open("package.json", encoding="utf-8"))["version"],
               "npm-qoder": json.load(open("npm/qoder/package.json", encoding="utf-8"))["version"],
+              "npm-qwen": json.load(open("npm/qwen/package.json", encoding="utf-8"))["version"],
           }
           tag = os.environ["GITHUB_REF_NAME"]
           if len(set(versions.values())) != 1:
@@ -52,17 +53,21 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: npm publish --access public
-      - name: 准备 Qoder npm 包
+      - name: 准备 Qoder 与 Qwen npm 包
         run: |
-          mkdir -p /tmp/qoder-npm
-          cp npm/qoder/package.json npm/qoder/README.md /tmp/qoder-npm/
-          cp global-user-constraints-qoder-*.zip global-user-constraints-qoder-*.sha256 /tmp/qoder-npm/
-          cp LICENSE LICENSE-CC-BY-4.0.txt LICENSE-MIT.txt THIRD-PARTY-NOTICES.md /tmp/qoder-npm/
-      - name: 发布 Qoder 安装包到 npm
-        working-directory: /tmp/qoder-npm
+          for p in qoder qwen; do
+            mkdir -p "/tmp/$p-npm"
+            cp "npm/$p/package.json" "npm/$p/README.md" "/tmp/$p-npm/"
+            cp global-user-constraints-$p-*.zip global-user-constraints-$p-*.sha256 "/tmp/$p-npm/"
+            cp LICENSE LICENSE-CC-BY-4.0.txt LICENSE-MIT.txt THIRD-PARTY-NOTICES.md "/tmp/$p-npm/"
+          done
+      - name: 发布 Qoder 与 Qwen 安装包到 npm
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: npm publish --access public
+        run: |
+          for p in qoder qwen; do
+            (cd "/tmp/$p-npm" && npm publish --access public)
+          done
       - name: 生成 SBOM
         uses: anchore/sbom-action@e22c389904149dbc22b58101806040fa8d37a610  # v0
         with:
