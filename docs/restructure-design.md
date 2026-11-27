@@ -1,17 +1,19 @@
 
-## JavaScript 统一决策
+# JavaScript 统一决策
 
-**决策日期**: 2026-11-27
+* *决策日期**: 2026-11-27
 
-**决策内容**: 将所有 hook 脚本从 Python 统一为 JavaScript (Node.js ESM)。
+* *决策内容**: 将所有 hook 脚本从 Python 统一为 JavaScript (Node.js ESM)。
 
-**理由**:
+* *理由**:
+
 - 简化依赖：用户环境已有 Node.js（DSH 必需），无需额外安装 Python
 - 统一技术栈：DSH 插件已使用 JavaScript，保持一致性
 - 更好的模块支持：ESM 提供更清晰的导入/导出语法
 - 性能优势：Node.js 启动速度通常快于 Python
 
-**影响范围**:
+* *影响范围**:
+
 - Qoder hook 脚本：`shared/scripts/inject-*.js`
 - Qwen hook 脚本：`shared/scripts/inject-*.js`
 - 测试文件：`tests/hooks/*.test.js`
@@ -255,6 +257,7 @@ def log_error(message: str, exception: Optional[Exception] = None) -> None:
 
 #### 3.4.1 图标设计
 遵循 `references/artwork.md` 规范：
+
 - SVG 格式，256 KiB 以内
 - 简洁几何图形，代表"约束"与"安全"
 - 配色：深蓝（信任）+ 绿色（合规）
@@ -299,6 +302,7 @@ pnpm dsh plugin --profile PROFILE add @snowcore8/dsh-global-user-constraints@VER
 - 约束正文硬上限 40 KiB
 - Qoder 首次 SessionStart 写入用户级 rules
 - Qwen 通过 hook 注入，非原生 rules
+
 ```
 
 #### 3.4.3 多语言支持
@@ -415,7 +419,7 @@ if __name__ == "__main__":
 | Qwen | 无残留 | 通过 hook 注入约束，不修改用户文件系统 |
 | DSH | 无残留 | 通过 systemPrompt.section 注入，不修改用户文件系统 |
 
-**对比旧方案**：旧方案会安装约束文件到 `~/.qoder/rules/` 等用户级目录，卸载后需手动删除。
+* *对比旧方案**：旧方案会安装约束文件到 `~/.qoder/rules/` 等用户级目录，卸载后需手动删除。
 新方案完全通过 hook 或插件机制在运行时注入，卸载即生效，无需任何清理操作。
 
-**去重机制**：如果项目级 `AGENTS.md` 或 `QWEN.md` 已包含同内容约束，hook 会自动跳过注入，避免重复。
+* *去重机制**：如果项目级 `AGENTS.md` 或 `QWEN.md` 已包含同内容约束，hook 会自动跳过注入，避免重复。
