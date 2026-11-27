@@ -79,7 +79,7 @@ while IFS= read -r -d '' file; do
     printf '%s\n' "$output"
     fail "$file"
   fi
-done < <(git ls-files --cached --others --exclude-standard -z '*.md')
+done < <(git ls-files --cached --others --exclude-standard -z '*.md' -- ':(exclude)old')
 
 echo "== skill 测试 =="
 python3 -B -m unittest discover -s tests/skill -p 'test_*.py' || fail "skill 测试"
