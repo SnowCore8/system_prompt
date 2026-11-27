@@ -2,6 +2,23 @@
 
 按版本从新到旧记录可观察变更。自 0.2.0 起版本采用 SemVer、发布点为 tag `v<version>`，每节记录一个发布版本；0.2.0 之前按日期记录。条目按主题合并，记录最终可观察状态；被后续提交推翻的中间状态只在修复项里说明。
 
+## 0.45.2（2026-11-27）
+
+**修复**
+
+- 修复 JavaScript 迁移后 Qoder `SessionStart` 约束注入失效：恢复显式根/环境变量解析、`resume` 跳过、
+  同内容去重与缺失/超限提示。
+- 修正 Qwen `contextFileName` 读取时机：启动/刷新读取一次并缓存，随后每个请求随 system prompt 携带；
+  Qwen 无插件数据目录时时间状态按无状态输出（turn 1、elapsed unavailable）。
+- hook 统一使用 `hookSpecificOutput` 输出，异常静默退出 0，不再用 `process.exit` 截断 stdout。
+
+**变更**
+
+- 共享 hook 拆分为 `shared/scripts/lib/` 模块；Qoder 去重候选收敛为 Qoder 路径；时间状态只认
+  `QODER_PLUGIN_DATA`。
+- DSH 插件拆分为 constraints、skills、paths 等模块，section 与 skill provider 行为不变。
+- 新增 `docs/hooks-and-injection.md`；清理过时设计稿与文档中的 hook/注入、时间、发布事实。
+
 ## 0.45.1（2026-11-27）
 
 **修复**
