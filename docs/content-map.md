@@ -11,7 +11,7 @@
 | skill 入口 | 触发、适用边界、流程、核心规则、审查清单 | `skills/*/SKILL.md`（20 个） | P |
 | skill 细节 | 维度表、检查表、模板、操作手册、语言覆盖 | `skills/*/references/*.md` | P |
 | 命令 | 手动审查当前请求/方案/命令 | `shared/commands/constraints-check.md` | P |
-| 项目文档 | 加载调研、hook 与注入、发布、时间、校验规则、台账 | `docs/*.md` 与根文档 | R |
+| 项目文档 | 加载规则、hook 与注入、发布、时间、校验规则、台账 | `docs/*.md` 与根文档 | R |
 | 分发元数据 | 清单、hooks、许可证、第三方声明 | `plugins/`、`package.json`、根文件 | M/C |
 
 ## 2. 四个内容域

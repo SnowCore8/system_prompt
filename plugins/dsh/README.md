@@ -12,7 +12,7 @@
 | `skills/` | 二十个通用规范 skill |
 | `rules/global-user-constraints.md` | 全局用户约束正文 |
 
-来自 npm 公共 registry（推荐，插件页可检测更新）：
+从 npm 公共包仓库安装（插件页可检测更新）：
 
 ```bash
 pnpm dsh plugin --profile web add @snowcore8/dsh-global-user-constraints@<版本>

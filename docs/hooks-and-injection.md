@@ -3,7 +3,7 @@
 维护者：SnowCore8；何时阅读：调整 Qoder、Qwen Code 或 DSH 的 hook、约束注入、压缩后恢复行为时。
 
 本文件是 hook 事件、输出契约、注入落点与压缩/恢复时序的唯一权威。rules、skills、plugins 的目录与加载顺序见
-[agent-tooling-loading.md](agent-tooling-loading.md)；时间块在本仓库的适配见 [time-awareness.md](time-awareness.md)；
+[agent-tooling-loading.md](agent-tooling-loading.md)；本仓库的时间注入见 [time-awareness.md](time-awareness.md)；
 三个包的安装与行为见 [Qoder](../plugins/qoder/README.md)、[Qwen Code](../plugins/qwen/README.md)、
 [DSH](../plugins/dsh/README.md)。
 
@@ -32,7 +32,7 @@ Qoder 的 hook 配置位于 `<plugin>/hooks/hooks.json`，形状为 `{"hooks": {
 | 内部 | `ImagePrepare` |
 
 文档站事件表与实现不完全一致：文档列 `PreModelSwitch`、`PostModelSwitch`，二进制没有；
-实现有 `ImagePrepare`、`QueryEnd`，文档事件表未列。文档差异单独标注。
+实现有 `ImagePrepare`、`QueryEnd`，文档事件表未列。
 
 ### SessionStart 与 matcher
 
@@ -74,7 +74,7 @@ Qoder 的同步 `PostCompact.additionalContext` 不被消费、不进入对话�
 ### 插件 rules 与限制
 
 插件可以物理打包 `rules/`，但 CLI 不把它当 rules 自动加载，manifest 的 `rules` 字段被忽略；只含 `rules/` 的插件
-会因没有可安装组件被拒。插件想让正文生效，只能由自己的 hook 或 command 读取。宿主原生方式仍是项目/用户 `.qoder/rules`
+会因没有可安装组件被拒。插件想让正文生效，只能由自己的 hook 或 command 读取。宿主原生方式是项目/用户 `.qoder/rules`
 或 `AGENTS.md`。
 
 ### 本仓库用法
@@ -234,14 +234,12 @@ DSH 没有内建的 Claude 风格 hooks。需要兼容 `hooks.json` 时，挂载
 比 hook 的 SessionStart 注入更稳；DSH 的 section 是系统提示的正式载体，压缩后由 admission 重建。时间注入是独立需求，
 不复用约束载体。
 
-## 未验证与已知矛盾
+## 已知缺口与文档差异
 
-- Qoder compact/resume 全链路、37 KiB 上下文的实际计费与截断、`name` 的 UI 显示未验证。
-- Qoder 同步 `PostCompact.additionalContext` 不进入对话是源码结论，未做端到端验证；异步路径未验证。
-- Qwen `branch` source 只在源码确认，官方文档未列；自动压缩的异步 SessionStart 存在竞态，未验证。
-- DSH 桥接的 resume 重复、PTC 下 PostToolUse 上下文丢失、time-context 压缩后 10 分钟空档均为源码推断。
-- DSH 当前 checkout 没有 `clear`/`compact` 的 SessionStart 生产者；`clear` 行为无法验证。
-- DSH 实验包 README 的事件计数为 23/30，与本仓库统计不一致，不作为本仓库断言。
+- Qoder compact/resume 全链路、37 KiB 上下文的实际计费与截断、`name` 的 UI 显示，尚无定论。
+- Qoder 同步 `PostCompact.additionalContext` 不被消费、不进入对话（源码语义）；异步路径尚无定论。
+- Qwen 的 `branch` source 只在源码中存在，官方文档未列；自动压缩触发的异步 `SessionStart` 存在竞态。
+- DSH 桥接在 resume 时重复注入、PTC 下 `PostToolUse` 上下文丢失、time-context 压缩后 10 分钟空档，均只有源码依据。
+- DSH 当前实现没有 `clear`/`compact` 的 `SessionStart` 生产者，`clear` 分支不会触发。
+- DSH 实验包 README 的事件计数为 23/30，与本页统计的 7 个事件不一致。
 - Qwen 不设置插件数据目录；本仓库时间 hook 在 Qwen 下没有跨轮状态，turn 与 elapsed 受限。
-
-本文件与 `scripts/check.sh` 的 Markdown 校验一起维护。

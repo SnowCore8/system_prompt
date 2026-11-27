@@ -22,14 +22,15 @@ Qoder 与 Qwen Code 都不向模型注入当前时间。模型只能靠对话里
   `Elapsed since the preceding model-visible message: <耗时|unavailable>.`
 
   Qoder 没有逐步 step 字段，因此不输出 step；脚本用 `QODER_PLUGIN_DATA` 按 session 记录 turn 与上次注入时间。
-  没有状态时输出 turn 1、unavailable。Qwen 不设置插件数据目录变量，时间 hook 通常不落盘，turn 通常为 1、elapsed 为
-  `unavailable`。
+  没有状态时输出 turn 1、elapsed 为 `unavailable`。
 
   上游 DSH 时间消息含 `turn N, step M` 与 `resolved`/`mixed`/`missing` 三种时区措辞；本页格式为 Qoder/Qwen 注入格式。
 
 - 时区依次取 `TZ`（用 `Intl.DateTimeFormat` 校验）、`Intl` 解析出的系统时区、`/etc/timezone`，
   最后用 UTC 整点偏移兜底；Windows 没有 `/etc`，走 `Intl` 与偏移。时间戳同时写入数值偏移与方括号内的时区名。
-- 成本约为每轮几十 token；工具事件只加一行。失败静默，不阻断会话。Qoder 会写插件数据目录的 clock 状态，并在 `SessionEnd` 清理；Qwen 不设置插件数据目录，时间 hook 通常不落盘，其 hooks 也没有 `SessionEnd` 清理。两者都不写项目文件、不联网，超时 10 秒。
+- 成本约为每轮几十 token；工具事件只加一行。失败静默，不阻断会话。
+- Qoder 把 clock 状态写入插件数据目录，并在 `SessionEnd` 清理。Qwen 不设置插件数据目录，时间 hook 不落盘，
+  turn 固定为 1、elapsed 为 `unavailable`，其 hooks 也没有 `SessionEnd` 清理。两者都不写项目文件、不联网，超时 10 秒。
 
 ## 双端接线
 
@@ -52,7 +53,7 @@ Qoder 与 Qwen Code 都不向模型注入当前时间。模型只能靠对话里
 ## 验证
 
 - `tests/hooks/inject-clock.test.js` 覆盖用户提示完整时间、工具事件一行时间、SessionEnd 清理、非法 payload 静默、双端 hooks 配置与清单版本。
-- 宿主精确的 token 计费与 Windows 上 Qwen 扩展的 `node` 可用性尚未在仓库内验证。
+- 宿主精确的 token 计费与 Windows 上 Qwen 扩展的 `node` 可用性没有仓库内的校验手段。
 
 ## 关闭方式
 

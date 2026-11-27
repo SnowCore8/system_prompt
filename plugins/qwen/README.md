@@ -8,8 +8,8 @@
 | 路径 | 作用 |
 |---|---|
 | `qwen-extension.json` | 扩展清单，`contextFileName` 指向约束正文 |
-| `hooks/qwen-hooks.json` | hook 配置，根目录用 `${CLAUDE_PLUGIN_ROOT}` |
-| `constraints/global-user-constraints.md` | 全局用户约束正文，不使用 `rules/` |
+| `hooks/qwen-hooks.json` | hook 配置，根目录用 `${CLAUDE_PLUGIN_ROOT}`（Qwen 替换为扩展根） |
+| `constraints/global-user-constraints.md` | 全局用户约束正文 |
 | `skills/` | 二十个通用规范 skill |
 | `commands/` | 手动审查命令 |
 | `scripts/` | 时间注入脚本 |
@@ -21,8 +21,7 @@ curl -fLO https://cdn.jsdelivr.net/npm/@snowcore8/qwen-global-user-constraints@<
 qwen extensions install global-user-constraints-qwen-<版本>.zip
 ```
 
-也可改用同版本 GitHub Release 附件。安装后开新会话：`contextFileName` 在启动或刷新时读取并缓存，
-随后每请求随 system prompt 发送；Qwen 会把 `${CLAUDE_PLUGIN_ROOT}` 替换为扩展根。
+安装后开新会话生效：`contextFileName` 在启动或刷新时读取并缓存，随后每请求随 system prompt 发送。
 
 ## 行为
 

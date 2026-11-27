@@ -2,20 +2,19 @@
 
 维护者：SnowCore8；何时阅读：报告或处置安全漏洞时。
 
-本仓库内容是面向编码智能体的规范文本、二十个 skill，以及面向 Qoder、Qwen Code、DeepSeek Harness
-的三个插件包；可执行部分为插件 hooks、`plugins/dsh/src/` 的提供者代码、skill 内的 Python 校验
-脚本与 `scripts/` 下的发布/校验脚本。
+本仓库内容是面向编码智能体的规范文本、二十个 skill，以及面向 Qoder、Qwen Code、DeepSeek Harness 的三个
+插件包；可执行部分为插件 hooks、`plugins/dsh/src/` 的提供者代码、skill 内的 Python 校验脚本与 `scripts/`
+下的发布与校验脚本。
 
 ## 支持的版本
 
-安全修复只进入 `master` 最新提交，并按 SemVer 发新的 patch 版本（见 README「发布与 CI」）。
-仓库不维护旧版本分支，也不为历史版本单独回补。
+安全修复只进入 `master` 最新提交，并按 SemVer 发布新的 patch 版本（见 [README](README.md) 的「发布与 CI」）。
+仓库不维护其他版本分支。
 
 ## 报告漏洞
 
-首选 GitHub 的私下漏洞报告：仓库页 Security → Report a vulnerability。私有仓库需要
-GitHub Advanced Security 才有该入口；入口不可用时直接邮件联系维护者 snowcore8@gmail.com，
-不要开公开 issue，也不要在其他公开渠道披露细节。
+首选 GitHub 的私下漏洞报告：仓库页 Security → Report a vulnerability。私有仓库需要 GitHub Advanced Security 才有
+该入口；入口不可用时直接邮件联系维护者 snowcore8@gmail.com，不要开公开 issue，也不要在其他公开渠道披露细节。
 报告请包含：
 
 - 受影响的文件或路径；
@@ -25,10 +24,10 @@ GitHub Advanced Security 才有该入口；入口不可用时直接邮件联系�
 
 ## 处理流程
 
-- 目标时限：2 个工作日内确认收到，5 个工作日内给出初步评估，严重问题 7 个自然日内修复；
-  单人维护，时限为尽力而为，不构成 SLA。
+- 目标时限：2 个工作日内确认收到，5 个工作日内给出初步评估，严重问题 7 个自然日内修复。单人维护，时限为尽力而为，
+  不构成 SLA。
 - 修复在私有分支完成，发布后再公开细节；默认协调披露期限为 90 天。
-- 文档内容的事实错误、措辞争议不属于安全漏洞，按普通 issue 处理。
+- 文档内容的事实错误与措辞争议不属于安全漏洞，按普通 issue 处理。
 
 ## 范围
 

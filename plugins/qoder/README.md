@@ -13,9 +13,8 @@
 | `commands/` | 手动审查命令 |
 | `scripts/` | 约束与时间注入脚本 |
 
-安装后的包为上述自包含结构；发布包用 `scripts/materialize.sh qoder <目标目录>` 从顶层真源组装，
-源码包只保留清单、hooks 与说明。`qoderclicn plugins install` 只接受市场名、HTTPS zip URL 或本地目录，
-本地 zip 需先解压：
+安装后的包为上述自包含结构；发布包用 `scripts/materialize.sh qoder <目标目录>` 从顶层真源组装。
+`qoderclicn plugins install` 只接受市场名、HTTPS zip URL 或本地目录，本地 zip 需先解压：
 
 ```bash
 unzip global-user-constraints-qoder-<版本>.zip -d global-user-constraints-qoder-<版本>

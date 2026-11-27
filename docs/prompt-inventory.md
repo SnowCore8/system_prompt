@@ -42,13 +42,13 @@
 - Qoder 插件 `rules/` 当前不被 CLI 加载；DSH 不注册 `constraints-check` 命令。
 - 约束注入路径：Qoder 由 `SessionStart` hook 注入；Qwen 由清单 `contextFileName` 在启动/刷新读取一次，随后每请求随 system prompt 携带；DSH 由 bundle 经 `ctx.systemPrompt.section()` 注入。
 
-## 目标结构
+## 结构约定
 
 - `AGENTS.md`：真实文件，只放智能体每次都要遵守的短规则。
 - `CONTRIBUTING.md`：人类贡献、检出与发布流程。
 - `rules/`：单一常驻约束真源；不新增会被 Qwen/Qoder 自动加载的第二个 `.md`。
 - `skills/`：SKILL.md 与 references 只放模型规范；维护者流程移至 `docs/` 或 CONTRIBUTING。
-- `docs/`：维护者材料、调研、发布 runbook 与内容地图。
+- `docs/`：维护者材料、加载与注入说明、发布 runbook 与内容地图。
 - `shared/`：命令提示词（P）与注入脚本（C）分离。
 - 三端入口与安装包：由 `scripts/assemble.sh`/`scripts/materialize.sh` 从顶层真源生成，不提交软链。
 - `tests/`、`scripts/`、`.github/`：C，不进入上下文。

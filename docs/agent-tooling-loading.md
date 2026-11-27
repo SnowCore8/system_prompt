@@ -1,6 +1,6 @@
 # 三工具加载规则：rules、skills、plugins
 
-维护者：SnowCore8；何时阅读：调整各工具入口或调研加载行为时。
+维护者：SnowCore8；何时阅读：调整各工具入口或核对加载行为时。
 
 本文分别整理 Qoder、Qwen Code 与 DeepSeek Harness（DSH）三类工件的加载规则与目录结构；hook 事件、输出契约与
 压缩/恢复语义见 [hooks-and-injection.md](hooks-and-injection.md)。
@@ -22,7 +22,7 @@
 
 - 项目级规则可放在工作区任意层级（含嵌套子目录）；CLI 启动或刷新记忆时从当前目录**向上查找**
   到 `.git` 所在目录，逐层检查 `.qoder/rules/**/*.md` 与各级 `AGENTS.md`、`AGENTS.local.md`。
-- 子目录记忆不预加载：只有成功读取子目录里的文件后，才从该目录向上补入此前未加载的规则。
+- 子目录记忆不预加载：只有成功读取子目录里的文件后，才从该目录向上补入尚未加载的规则。
 - front matter 决定生效方式；`trigger` 存在时优先于 `alwaysApply`：
 
 | 字段 | 取值 | 说明 |
@@ -44,7 +44,7 @@
 - 没有官方定义的跨作用域覆盖顺序：用户级、项目级、本级规则逐条拼接注入，冲突由模型处理。
   IDE 文档另有一条：`AGENTS.md` 与 rules 冲突时 rules 优先。
 - IDE 限制所有活跃规则合计最多 100,000 字符，超出截断；CLI 是否有同一上限未在文档中说明。
-- `@path` 导入只对 `AGENTS.md` 有官方说明；rules 正文是否支持导入未验证，保守做法是写自包含正文。
+- `@path` 导入只对 `AGENTS.md` 有官方说明；rules 正文的导入行为无文档，规则正文应当自包含。
 - 没有独立的企业级 rules 目录；团队共享就是把项目级 `.qoder/rules/` 提交进 Git。
 - 插件侧可打包 `rules/` 与 manifest 字段，但 CLI 不加载（`plugins validate` 把 `rules` 报为未知并忽略），只能由 hook 或 command 读取。
 
@@ -63,8 +63,7 @@
 - 官方 front matter 必填 `name`（最多 64 字符，小写字母、数字、连字符）与 `description`
   （最多 1024 字符）。CLI 中身份取**目录名**，`name` 与目录名不一致不报错，
   且会递归发现 `skills/nested/deep/SKILL.md`。
-- 同名优先级存在文档矛盾：IDE 文档说项目级优先；CLI 文档与实测都是**用户级优先**
-  （内置 < 插件 < 项目 < 用户）。跨端使用时应避免同名。
+- 同名优先级（CLI）：内置 < 插件 < 项目 < 用户，用户级优先；IDE 文档写项目级优先。跨端使用时应避免同名。
 - 插件被禁用时其全部 skill 一并禁用，不能单独禁用插件内的某个 skill。
 - 管理命令：`qoderclicn skills list|install|link|enable|disable|uninstall`；没有 `skills validate`。
   交互态用 `/skills` 查看、`/skills reload` 重新发现；插件内的 skill 由 `plugins validate` 校验。
@@ -103,12 +102,12 @@
 - 市场清单 `marketplace.json` 含 `name`、`owner`、`plugins`；条目里写 `source`、`category`、
   `tags`、`strict`。`category`/`tags`/`strict` 属于市场清单，写进插件清单会被提示放错位置。
 
-插件携带 rules 的现状：CN 支持矩阵把 Rules 标为 Desktop「即将支持」、CLI「不适用」；
+插件携带 rules 的支持情况：CN 支持矩阵把 Rules 标为 Desktop「即将支持」、CLI「不适用」；
 CLI 的 `plugins validate` 把 `"rules"` 报为 unknown field 并忽略，只含 `rules/` 的插件
-会因「没有可安装组件」被拒。宿主原生的做法仍是把规则放用户级或项目级 `.qoder/rules/`；
+会因「没有可安装组件」被拒。宿主原生的做法是把规则放用户级或项目级 `.qoder/rules/`；
 本仓库插件由 `SessionStart` hook 注入全文，不写用户级 rules，见
 [plugins/qoder/README.md](../plugins/qoder/README.md)；`UserPromptSubmit` 每轮提醒
-`Never violate global user constraints.`。`qoder.md` 是否加载未验证，本仓库不提供。
+`Never violate global user constraints.`。`qoder.md` 是否作为插件级指令加载尚无定论，本仓库不提供。
 
 ### Qoder 三者关系
 
@@ -350,11 +349,11 @@ DSH 里「插件」是 TypeScript 模块，导出 `apply(ctx)`；可分发的安
 - 插件包内 Qoder 与 DSH 随包分发 `rules/`、Qwen 分发 `constraints/`（Qwen 把扩展的 `rules/` 当作
   条件规则，见 Qwen 一节）；Qoder 宿主当前不加载插件的 `rules/`（见 Qoder 一节）。
 
-## 未验证与文档矛盾
+## 已知缺口与文档矛盾
 
-- Qoder skills 同名优先级：IDE 文档写项目级优先，CLI 文档相反。
-- Qoder 插件 rules：schema 与打包规范已存在，CLI 不加载，Desktop 标注「即将支持」。
+- Qoder skills 同名优先级：IDE 文档写项目级优先，CLI 文档写用户级优先。
+- Qoder 插件 rules：schema 与打包规范已定义，CLI 不加载，Desktop 支持矩阵标「即将支持」。
 - Qoder IDE 的 100,000 字符上限是否同样适用于 CLI：文档未说明。
-- Qoder `qoder.md` 是否作为插件级指令加载：打包规范提到，支持矩阵标「—」，未验证。
+- Qoder `qoder.md` 是否作为插件级指令加载：打包规范提到，支持矩阵标「—」，尚无定论。
 - Qwen Code 不读取 `<project>/.qwen/AGENTS.md`：当前实现不支持。
 - Qwen Code 项目级扩展：`storage.ts` 注释提到 `<project>/.qwen/extensions/`，当前实现不加载。
