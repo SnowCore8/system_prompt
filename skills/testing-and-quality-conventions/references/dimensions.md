@@ -110,6 +110,24 @@ PR 阶段启用哪些层级取自本 skill 的门禁表，预算以测试层级�
 | 端到端测试 | 子集 | 完整 | 完整 |
 | 冒烟与性能 | 不运行 | 关键路径 | 在制品上必需 |
 
+### GitHub Actions 门禁实现
+
+- 必需校验以 job 名称为上下文；矩阵会生成 `test (20)` 等独立名称，规则集必须列出每个变体，或设置一个汇总
+  job 作为唯一必需校验，避免新增版本后遗漏。
+- 工作流级 `paths` 与 `paths-ignore` 会跳过整个工作流，必需检查停留在 Expected 并阻塞合并。不要在必需
+  工作流上使用路径过滤；按路径选择作业时，保留一个始终运行的汇总 job。
+- `if:` 跳过的 job 报告成功，可能让必需校验虚假通过；条件跳过仅用于非必需的附加作业。
+- 顶层 `permissions` 设为只读，按 job 提升：上传 SARIF 申请 `security-events: write`，发布 Release 申请
+  `contents: write`，生成来源证明申请 `attestations: write` 与 `id-token: write`；不授予 `write-all`。
+- 第三方 action 固定到完整提交 SHA，并由 Dependabot 的 `github-actions` 生态升级；浮动 tag 会把供应链
+  变更带入下一次运行。
+- fork 的 PR 工作流不注入机密；不得在 `pull_request_target` 中检出并执行 PR 头提交。需要写评论或标签时，
+  把高权限步骤放入独立的 `workflow_run` 工作流，且不执行不可信代码。
+- PR 运行使用 `concurrency` 取消同一分支的过期运行；主干预发布分支不取消，避免发布或部署半途终止。
+- 每个 job 设置 `timeout-minutes`；上传 JUnit、覆盖率与 SARIF 制品，保留期覆盖一个发布周期；日志不得
+  打印令牌或完整环境变量。
+- 必需工作流本身属于受审变更，由平台团队按 `vcs-collaboration-conventions` 的所有权规则审查。
+
 覆盖率指标及其默认门禁：
 
 | 指标 | 证明什么 | 默认门禁 |

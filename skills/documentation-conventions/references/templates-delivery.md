@@ -28,14 +28,27 @@ Verify: depth below 1,000 for ten minutes. Rollback: scale to three. Escalation:
 必需章节：版本与日期、分组条目、升级动作、issue 链接、亮点、分类。
 
 ```markdown
-## 2.3.0 - 2026-02-10
+## [Unreleased]
 
-Added: `POST /v1/charges` accepts an `Idempotency-Key` header (issue #142).
-Highlights: charge retries are safe by default (issue #142).
+## [2.3.0] - 2026-02-10
 
-Deprecated: `GET /v1/orders` in 2.3; use `/v2/orders`; removed in 3.0 (issue #151).
+### Added
+- `POST /v1/charges` accepts an `Idempotency-Key` header ([#142]).
 
-Upgrade: send `Idempotency-Key` on every charge request.
+### Changed
+- Charge retries are safe by default ([#142]).
+
+### Deprecated
+- `GET /v1/orders`; use `/v2/orders`; removed in 3.0 ([#151]).
+
+### Fixed
+- Totals no longer round half-cent charges down ([#158]).
+
+[#142]: https://github.com/OWNER/REPO/pull/142
+[#151]: https://github.com/OWNER/REPO/issues/151
+[#158]: https://github.com/OWNER/REPO/pull/158
+[Unreleased]: https://github.com/OWNER/REPO/compare/v2.3.0...HEAD
+[2.3.0]: https://github.com/OWNER/REPO/compare/v2.2.0...v2.3.0
 ```
 
 常见错误：粘贴提交标题，未写用户可见变更与升级所需动作。

@@ -42,6 +42,73 @@ Behavior changes need tests and docs; review takes two business days.
 
 常见错误：仅记录顺利路径的测试命令，贡献者无法复现 CI 失败。
 
+## GitHub issue 表单与 PR 模板
+
+用途：在 issue 与 PR 入口收集处理请求所需的最小信息，并把安全与使用问题导向正确渠道。
+必需章节：关闭空白 issue；至少一个缺陷表单；PR 模板包含验证证据、风险与回滚。
+
+```yaml
+# .github/ISSUE_TEMPLATE/bug.yml
+name: Bug report
+description: Report a reproducible defect
+labels: ["bug"]
+body:
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: "1. ...\n2. ..."
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Version and environment
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+```
+
+```yaml
+# .github/ISSUE_TEMPLATE/config.yml
+blank_issues_enabled: false
+contact_links:
+  - name: Usage questions
+    url: https://github.com/OWNER/REPO/discussions
+    about: Ask and answer usage questions
+  - name: Report a vulnerability
+    url: https://github.com/OWNER/REPO/security/advisories/new
+    about: Report privately; do not open a public issue
+```
+
+```markdown
+<!-- .github/pull_request_template.md -->
+## What and why
+
+Closes #<issue>
+
+## Verification
+
+Commands run and their results; screenshots for UI changes.
+
+## Risk and rollback
+
+Affected paths, rollout or flag plan, and the revert path.
+
+## Checklist
+
+- [ ] Tests cover the behavior change.
+- [ ] Docs and changelog are updated.
+- [ ] No secrets, debug output, or unrelated changes.
+```
+
+常见错误：表单要求用户公开漏洞细节；PR 模板只列复选框而没有验证证据与回滚。
+
 ## 架构概览
 
 用途：向维护者说明系统的组装方式，以及接下来应当阅读的内容。

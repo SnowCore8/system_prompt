@@ -22,6 +22,19 @@
 | 修复条目链接至 issue 与发布。 | “各种缺陷修复。” | 含糊条目无法据以行动。 |
 | 破坏性变更列于最前。 | 破坏性变更置于“变更”之下。 | 读者将错过必需的升级。 |
 
+### Keep a Changelog 与 GitHub Release
+
+- `CHANGELOG.md` 使用 Keep a Changelog 结构：顶部为 `## [Unreleased]`，其后每个版本为 `## [x.y.z] - YYYY-MM-DD`；
+  版本内使用 `### Added`、`### Changed`、`### Deprecated`、`### Removed`、`### Fixed`、`### Security` 分组，
+  空的组可以省略。
+- 版本链接置于文件末尾的引用定义；条目以用户可见行为开头，并链接 issue 或 PR。版本号与发布日期由
+  `release-operations-conventions` 决定，本 skill 只规定结构与写法。
+- GitHub Release 说明可以由 `.github/release.yml` 按标签分类生成；配置应当排除内部维护类 PR，并为破坏性变更、
+  迁移步骤、已知问题与校验和保留人工章节。自动生成的 PR 列表不构成完整发布说明。
+- 草稿 Release 用于补齐证据，发布前核对说明、标签与 `CHANGELOG.md` 一致；预发布标记为 pre-release，避免默认
+  受众获取。发布后不得改写不可变资产，更正以新版本说明呈现。
+- Release 说明应当链接迁移指南、安全公告与支持窗口；仅写“各项改进与修复”的说明无法帮助读者决定是否升级。
+
 ## 9. 运行手册、运维与事故复盘
 
 - 每本运行手册对应一项告警或操作，并以触发条件、影响与首个动作开头；读者正处于压力之下，仅有数分钟，而非

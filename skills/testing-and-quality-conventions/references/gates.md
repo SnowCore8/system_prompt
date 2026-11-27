@@ -166,6 +166,54 @@
 - 应当记录每个已接受的发现，包括负责人、产生它的规则与审查日期，使安全审查与质量审查读取同一份清单，
   不得各自从工具输出重建。
 
+## GitHub Actions 工作流骨架
+
+以下骨架展示必需工作流的最小形态：两种合并事件、只读权限、超时、并发取消、固定 action 与结果制品。尖括号
+处替换为仓库实际值；action 的完整 SHA 应当由依赖更新工具维护。
+
+```yaml
+name: ci
+on:
+  pull_request:
+  merge_group:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        runtime: [<version-a>, <version-b>]
+    steps:
+      - uses: actions/checkout@<full-sha> # vX
+      - uses: actions/setup-<toolchain>@<full-sha> # vX
+        with:
+          version: ${{ matrix.runtime }}
+      - run: <install-command>
+      - run: <test-command-with-junit-and-coverage>
+      - uses: actions/upload-artifact@<full-sha> # vX
+        if: always()
+        with:
+          name: test-results-${{ matrix.runtime }}
+          path: |
+            reports/junit.xml
+            coverage/
+          retention-days: 14
+```
+
+- 规则集中的必需校验名称必须包含矩阵值，例如 `test (<version-a>)`；新增版本时同步更新规则集，或增加一个
+  依赖全部矩阵 job 的汇总 job。
+- 上传 SARIF 的 job 单独授予 `security-events: write`；其余 job 保持只读。
+- `fail-fast: false` 使所有支持版本都给出结果；必需校验仍以每个矩阵 job 为准。
+- 制品路径与保留期写入仓库的质量策略，审查者据此核对结果是否可追溯。
+
 ## 本地环境清单
 
 改动 bootstrap 或流水线前，应当对全新克隆运行本清单：
