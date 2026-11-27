@@ -31,7 +31,20 @@ qoderclicn plugins install global-user-constraints-qoder-<版本>.zip --scope us
 
 ## 卸载
 
-直接卸载插件即可。hook 不写项目目录或用户级 rules，没有需要手动清理的约束文件。
+直接卸载插件即可。当前版本不写项目目录或用户级 rules，没有需要手动清理的约束文件；从 0.44.0
+及更早版本升级的，见下节。
+
+## 从 0.44.0 及更早版本升级
+
+这些版本会在首次 `SessionStart` 把约束写入用户级 rules，且卸载不会删除。升级到本版本后，请手动删除一次：
+
+```bash
+rm ~/.qoder-cn/rules/global-user-constraints.md   # CN
+rm ~/.qoder/rules/global-user-constraints.md       # 国际版
+```
+
+Windows 为 `%USERPROFILE%\.qoder-cn\rules\global-user-constraints.md` 或
+`%USERPROFILE%\.qoder\rules\global-user-constraints.md`。之后约束完全由 `SessionStart` hook 注入。
 
 ## 命令
 
