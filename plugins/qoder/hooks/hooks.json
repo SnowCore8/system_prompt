@@ -6,13 +6,11 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python",
+            "command": "node",
             "args": [
-              "-X",
-              "utf8",
-              "${QODER_PLUGIN_ROOT}/scripts/install_constraints.py"
+              "${QODER_PLUGIN_ROOT}/scripts/inject-constraints.js"
             ],
-            "name": "install-constraints",
+            "name": "inject-constraints",
             "timeout": 10
           }
         ]
@@ -22,11 +20,9 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python",
+            "command": "node",
             "args": [
-              "-X",
-              "utf8",
-              "${QODER_PLUGIN_ROOT}/scripts/inject_compact.py"
+              "${QODER_PLUGIN_ROOT}/scripts/inject-compact.js"
             ],
             "name": "inject-compact-constraints",
             "timeout": 10
@@ -39,22 +35,18 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python",
+            "command": "node",
             "args": [
-              "-X",
-              "utf8",
-              "${QODER_PLUGIN_ROOT}/scripts/inject_constraints.py"
+              "${QODER_PLUGIN_ROOT}/scripts/inject-constraints.js"
             ],
             "name": "inject-constraints-reminder",
             "timeout": 10
           },
           {
             "type": "command",
-            "command": "python",
+            "command": "node",
             "args": [
-              "-X",
-              "utf8",
-              "${QODER_PLUGIN_ROOT}/scripts/inject_clock.py"
+              "${QODER_PLUGIN_ROOT}/scripts/inject-clock.js"
             ],
             "name": "inject-clock",
             "timeout": 10
@@ -67,11 +59,9 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python",
+            "command": "node",
             "args": [
-              "-X",
-              "utf8",
-              "${QODER_PLUGIN_ROOT}/scripts/inject_clock.py"
+              "${QODER_PLUGIN_ROOT}/scripts/inject-clock.js"
             ],
             "name": "inject-clock-tool",
             "timeout": 10
@@ -84,11 +74,9 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python",
+            "command": "node",
             "args": [
-              "-X",
-              "utf8",
-              "${QODER_PLUGIN_ROOT}/scripts/inject_clock.py"
+              "${QODER_PLUGIN_ROOT}/scripts/inject-clock.js"
             ],
             "name": "inject-clock-tool",
             "timeout": 10
@@ -101,11 +89,9 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python",
+            "command": "node",
             "args": [
-              "-X",
-              "utf8",
-              "${QODER_PLUGIN_ROOT}/scripts/inject_clock.py"
+              "${QODER_PLUGIN_ROOT}/scripts/inject-clock.js"
             ],
             "name": "inject-clock-tool",
             "timeout": 10
@@ -118,11 +104,9 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python",
+            "command": "node",
             "args": [
-              "-X",
-              "utf8",
-              "${QODER_PLUGIN_ROOT}/scripts/inject_clock.py"
+              "${QODER_PLUGIN_ROOT}/scripts/inject-clock.js"
             ],
             "name": "cleanup-clock",
             "timeout": 10
