@@ -64,7 +64,7 @@ jobs:
       - name: 跨时区重建并比对制品
         run: |
           TZ=UTC ./scripts/dist.sh --no-validate
-          sha256sum global-user-constraints-*.zip > /tmp/repro.sha256
+          sha256sum se-governance-*.zip > /tmp/repro.sha256
           TZ=Asia/Shanghai ./scripts/dist.sh --no-validate
           sha256sum -c /tmp/repro.sha256
 

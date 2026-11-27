@@ -65,7 +65,7 @@ jobs:
         with:
           subject-path: |
             se-governance-*.zip
-            global-user-constraints-*.sha256
+            se-governance-*.sha256
             sbom.spdx.json
       - name: 校验构建来源证明
         env:
@@ -96,7 +96,7 @@ jobs:
         run: |
           gh release create "$GITHUB_REF_NAME" \
             se-governance-*.zip \
-            global-user-constraints-*.sha256 \
+            se-governance-*.sha256 \
             THIRD-PARTY-NOTICES.md \
             sbom.spdx.json \
             --title "$GITHUB_REF_NAME" \

@@ -4,12 +4,12 @@
     "name": "SnowCore8"
   },
   "metadata": {
-    "description": "本仓库自带的 Qoder 本地市场描述文件，用于安装 plugins/qoder。",
+    "description": "本仓库自带的 Qoder 本地市场描述文件，用于安装 plugins/qoder（se-governance）。",
     "pluginRoot": "."
   },
   "plugins": [
     {
-      "name": "global-user-constraints",
+      "name": "se-governance",
       "category": "developer-tools",
       "tags": [
         "rules",

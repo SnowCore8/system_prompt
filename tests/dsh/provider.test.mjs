@@ -86,7 +86,7 @@ function createContext() {
 test('constants keep the bundle identity and injection contract', () => {
   assert.equal(NAME, 'se-governance-skills')
   assert.deepEqual(INJECT, ['skills', 'systemPrompt'])
-  assert.equal(PROVIDER, 'global-user-constraints')
+  assert.equal(PROVIDER, 'se-governance')
   assert.equal(RANK, 700)
   assert.equal(SOURCE, 'bundled')
   assert.equal(SECTION_NAME, 'se-governance')
