@@ -20,7 +20,7 @@ const PROVIDER = 'global-user-constraints'
 const RANK = 700
 const SOURCE = 'bundled'
 const CONSTRAINTS_FILENAME = 'global-user-constraints.md'
-// 常驻约束正文的硬上限，与 scripts/check.sh、shared/scripts/inject_constraints.py 保持一致。
+// 常驻约束正文的硬上限，与 scripts/check.sh、shared/scripts/inject-constraints.js 保持一致。
 const CONSTRAINTS_MAX_BYTES = 40 * 1024
 const SECTION_NAME = 'global-user-constraints'
 // 全局用户约束排在计划策略（500）之前。

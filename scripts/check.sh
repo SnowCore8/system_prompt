@@ -24,6 +24,10 @@ command -v python3 >/dev/null 2>&1 || {
   echo "未找到 python3" >&2
   exit 2
 }
+command -v node >/dev/null 2>&1 || {
+  echo "未找到 node" >&2
+  exit 2
+}
 git rev-parse --is-inside-work-tree >/dev/null 2>&1 || {
   echo "需要在 git 仓库内运行" >&2
   exit 2
@@ -72,15 +76,11 @@ done < <(git ls-files --cached --others --exclude-standard -z '*.md')
 echo "== skill 测试 =="
 python3 -B -m unittest discover -s tests/skill -p 'test_*.py' || fail "skill 测试"
 
-echo "== hook 测试 =="
-python3 -B -m unittest discover -s tests/hooks -p 'test_*.py' || fail "hook 测试"
+echo "== hook 测试（JavaScript） =="
+node --test tests/hooks/*.test.js || fail "hook 测试"
 
 echo "== DSH 包测试 =="
-if command -v node >/dev/null 2>&1; then
-  node --test tests/dsh/provider.test.mjs || fail "DSH 包测试"
-else
-  skip "未安装 node"
-fi
+node --test tests/dsh/provider.test.mjs || fail "DSH 包测试"
 
 echo "== shellcheck =="
 if command -v shellcheck >/dev/null 2>&1; then
@@ -99,10 +99,9 @@ rm -rf "$audit_cache"
 
 echo "== 覆盖率 =="
 cov_cfg="$(mktemp)"
-printf '[run]\nbranch = true\nparallel = true\nsource = %s/shared/scripts,%s/skills/system-prompt-authoring/scripts\ndata_file = %s/.coverage\ndisable_warnings = no-data-collected\n' \
-  "$REPO_ROOT" "$REPO_ROOT" "$REPO_ROOT" > "$cov_cfg"
+printf '[run]\nbranch = true\nparallel = true\nsource = %s/skills/system-prompt-authoring/scripts\ndata_file = %s/.coverage\ndisable_warnings = no-data-collected\n' \
+  "$REPO_ROOT" "$REPO_ROOT" > "$cov_cfg"
 COVERAGE_PROCESS_START="$cov_cfg" python3 -B -m coverage run --rcfile="$cov_cfg" -m unittest discover -s tests/skill -p 'test_*.py' || fail "覆盖率 skill 测试"
-COVERAGE_PROCESS_START="$cov_cfg" python3 -B -m coverage run --rcfile="$cov_cfg" -m unittest discover -s tests/hooks -p 'test_*.py' || fail "覆盖率 hook 测试"
 python3 -m coverage combine --rcfile="$cov_cfg" >/dev/null 2>&1 || fail "覆盖率合并"
 python3 -m coverage report --rcfile="$cov_cfg" --fail-under=90 || fail "覆盖率低于 90%"
 rm -f "$cov_cfg" .coverage .coverage.*

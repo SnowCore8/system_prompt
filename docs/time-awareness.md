@@ -42,11 +42,11 @@ Qoder 与 Qwen Code 都不向模型注入当前时间。模型只能靠对话里
 ## 与约束注入的关系
 
 - Qwen 的约束注入只在 `SessionStart` 做一次，并做同内容去重；Qoder 通过 `SessionStart` 安装用户级 rules，不在 hook 注入全文。时间注入不去重，每轮都是新值。
-- 时间由 `scripts/inject_clock.py` 负责：`UserPromptSubmit` 发完整 DSH 块，工具事件发一行时间。
+- 时间由 `scripts/inject-clock.js` 负责：`UserPromptSubmit` 发完整 DSH 块，工具事件发一行时间。
 
 ## 验证
 
-- `tests/hooks/test_inject_clock.py` 覆盖用户提示完整时间、工具事件一行时间、SessionEnd 清理、非法 payload 静默、双端 hooks 配置与清单版本。
+- `tests/hooks/test_inject-clock.js` 覆盖用户提示完整时间、工具事件一行时间、SessionEnd 清理、非法 payload 静默、双端 hooks 配置与清单版本。
 - 仓库测试覆盖时间注入、工具事件时间、状态清理、静默失败与双端 hooks 配置。
 - 宿主精确的 token 计费与 Windows 上 Qwen 扩展的 `python` 可用性尚未在仓库内验证。
 
