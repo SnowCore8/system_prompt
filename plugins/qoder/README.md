@@ -18,16 +18,21 @@ rules，卸载时无需手动清理约束文件。项目或用户配置中已有
 
 以上为安装后的自包含结构；源码包只保留清单、hooks 与说明。
 
-- 发布包：使用 `scripts/materialize.sh qoder` 从顶层真源组装。
-- 本地市场：先运行 `scripts/assemble.sh qoder` 填充本目录，再交给 Qoder 的 marketplace；生成目录不提交。
+- 发布包：使用 `scripts/materialize.sh qoder <目标目录>` 从顶层真源组装。
+- 本地市场：先运行 `scripts/assemble.sh qoder` 填充本目录，并运行
+  `qoderclicn plugins validate plugins/qoder` 确认组件齐全，再交给 Qoder 的 marketplace；生成目录不提交。
 
 ## 安装
 
+`qoderclicn plugins install` 只接受市场名、远程 HTTPS zip URL 或本地目录；本地 zip 需先解压：
+
 ```bash
-qoderclicn plugins install global-user-constraints-qoder-<版本>.zip --scope user
+unzip global-user-constraints-qoder-<版本>.zip -d global-user-constraints-qoder-<版本>
+qoderclicn plugins install ./global-user-constraints-qoder-<版本> --scope user
 ```
 
-安装后开新会话即可。约束由 `SessionStart` hook 注入，不写入用户级或项目级 rules。
+也可以直接传入 Release 附件的 HTTPS zip URL。安装后开新会话即可。约束由 `SessionStart` hook 注入，
+不写入用户级或项目级 rules。
 
 ## 卸载
 

@@ -43,14 +43,15 @@ scripts/check.sh             # 全量校验
 - 改 skill：编辑 `skills/<name>/`，不复制第二份；改后运行 `scripts/assemble.sh` 刷新开发入口。
 - 改命令或注入脚本：编辑 `shared/commands/` 或 `shared/scripts/`。
 - 改包清单或 hook：编辑 `plugins/<包>/`，同步三包版本，并运行 `scripts/materialize.sh` 验证组装。
-- Qoder 本地市场：先运行 `scripts/assemble.sh qoder` 填充 `plugins/qoder`，再交给 Qoder 的 marketplace；生成目录不提交。
+- Qoder 本地市场：先运行 `scripts/assemble.sh qoder` 填充 `plugins/qoder`，并用
+  `qoderclicn plugins validate plugins/qoder` 确认组件齐全，再交给 Qoder 的 marketplace；生成目录不提交。
 - 提交前运行 `scripts/check.sh`；零跟踪软链、开发组装与组装后的包由该脚本校验。
 
 ## 三个包
 
 | 包 | 安装 |
 |---|---|
-| Qoder | `qoderclicn plugins install global-user-constraints-qoder-VERSION.zip --scope user` |
+| Qoder | 解压后 `qoderclicn plugins install ./global-user-constraints-qoder-VERSION --scope user`，或传 Release 附件的 HTTPS zip URL |
 | Qwen Code | `qwen extensions install global-user-constraints-qwen-VERSION.zip` |
 | DSH | `pnpm dsh plugin --profile PROFILE add @snowcore8/dsh-global-user-constraints@VERSION` |
 
