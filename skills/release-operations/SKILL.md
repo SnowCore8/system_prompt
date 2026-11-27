@@ -24,7 +24,7 @@ argument-hint: '[发布、环境或范围]'
 
 - 发布标签的命名归命名规范 skill；标签的创建时点、指向与保护由本 skill 决定。
 - 变更日志、发布说明、运行手册与事故复盘文档的格式归文档规范 skill；本 skill 规定必须记录的内容与更新时点。
-- 分支、PR 与审查归 `code-review` 与版本控制协作 skill；已审查变更如何形成发布由本 skill 决定。
+- 分支、PR 与审查归 `code-review` 与 `vcs-collaboration`；已审查变更如何形成发布由本 skill 决定。
 - 门禁阈值与不稳定测试归 `testing-quality`；流水线阶段、环境晋级与上线控制由本 skill 决定。
 - 产品版本与 API 版本：API 版本管理归 API 契约 skill；产品版本、兼容性承诺与发布节奏由本 skill 决定。
 - 凭据、机密存储与披露归安全合规 skill；部署权限与回滚决策权由本 skill 决定，并消费安全流程签发的凭据。
