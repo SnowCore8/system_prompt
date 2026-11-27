@@ -1,7 +1,7 @@
 {
   "name": "global-user-constraints",
   "displayName": "全局用户约束",
-  "version": "0.45.0",
+  "version": "0.45.1",
   "description": "Qoder 插件：首次 SessionStart 安装全局用户约束到用户级 rules；UserPromptSubmit 提醒与 DSH 时间；工具/压缩后补时间；二十个 skill 与一个手动审查命令。",
   "author": {
     "name": "SnowCore8"
