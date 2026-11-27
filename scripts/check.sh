@@ -239,17 +239,15 @@ if not (root / str(dsh.get("main", ""))).is_file():
     problems.append("DSH bundle 的 main 入口不存在")
 if not dsh.get("engines", {}).get("dsh"):
     problems.append("DSH bundle 缺少 engines.dsh")
-if dsh.get("name") != "@snowcore8/dsh-global-user-constraints":
-    problems.append("DSH npm 包名不一致")
-if (dsh.get("publishConfig") or {}).get("access") != "public":
-    problems.append("DSH bundle 缺少 npm 公开包 publishConfig")
-for label, pkg in (("Qoder", npmq), ("Qwen", npmw)):
-    if pkg.get("name") != f"@snowcore8/{label.lower()}-global-user-constraints":
-        problems.append(f"{label} npm 包名不一致")
-    if not any(str(item).endswith("*.zip") for item in pkg.get("files") or []):
-        problems.append(f"{label} npm 包 files 未包含 zip")
+for name, pkg in (("dsh", dsh), ("qoder", npmq), ("qwen", npmw)):
+    if pkg.get("name") != f"@snowcore8/{name}-global-user-constraints":
+        problems.append(f"{name} npm 包名不一致")
     if (pkg.get("publishConfig") or {}).get("access") != "public":
-        problems.append(f"{label} npm 包缺少公开 publishConfig")
+        problems.append(f"{name} npm 包缺少公开 publishConfig")
+for name, pkg in (("qoder", npmq), ("qwen", npmw)):
+    for suffix in ("*.zip", "*.sha256"):
+        if not any(str(item).endswith(suffix) for item in pkg.get("files") or []):
+            problems.append(f"{name} npm 包 files 未包含 {suffix[2:]}")
 if problems:
     sys.exit("; ".join(problems))
 PY

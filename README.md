@@ -58,7 +58,7 @@ scripts/check.sh             # 全量校验
 | Qwen Code | 下载 zip 后 `qwen extensions install global-user-constraints-qwen-VERSION.zip` |
 | DSH | `pnpm dsh plugin --profile PROFILE add @snowcore8/dsh-global-user-constraints@VERSION` |
 
-Qoder 的 npm zip URL（必须以 `.zip` 结尾）：
+Qoder 的 npm zip 直链（URL 必须以 `.zip` 结尾）：
 
 ```bash
 qoderclicn plugins install \
@@ -66,9 +66,15 @@ qoderclicn plugins install \
   --scope user
 ```
 
-Qoder 与 Qwen 各有一个 zip npm 包（`@snowcore8/qoder-global-user-constraints`、
-`@snowcore8/qwen-global-user-constraints`），只承载同版本 zip 与 `.sha256`；DSH 使用
-`@snowcore8/dsh-global-user-constraints` bundle。
+Qwen 的 zip 从同前缀 npm 包下载后安装：
+
+```bash
+curl -fLO https://cdn.jsdelivr.net/npm/@snowcore8/qwen-global-user-constraints@VERSION/global-user-constraints-qwen-VERSION.zip
+qwen extensions install global-user-constraints-qwen-VERSION.zip
+```
+
+三个平台包各有一个同前缀 npm 包（`@snowcore8/{qoder,qwen,dsh}-global-user-constraints`）：Qoder、Qwen 只承载
+zip 与 `.sha256`，DSH 为 bundle。
 
 安装与行为细节见 [Qoder](plugins/qoder/README.md)、[Qwen Code](plugins/qwen/README.md) 与 [DSH](plugins/dsh/README.md)。
 

@@ -42,31 +42,25 @@ jobs:
       # runner 没有 qoderclicn，插件校验在本地发布前完成；此处用 --no-validate 换取可重复构建
       - name: 构建制品
         run: ./scripts/dist.sh --no-validate --require-tag
-      - name: 组装 DSH 包
-        run: scripts/materialize.sh dsh /tmp/dsh-package
       - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444  # v5
         with:
           node-version: '20'
           registry-url: 'https://registry.npmjs.org'
-      - name: 发布 DSH bundle 到 npm
-        working-directory: /tmp/dsh-package
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: npm publish --access public
-      - name: 准备 Qoder 与 Qwen npm 包
+      - name: 准备三个 npm 包
         run: |
+          scripts/materialize.sh dsh /tmp/npm-dsh
           for p in qoder qwen; do
-            mkdir -p "/tmp/$p-npm"
-            cp "npm/$p/package.json" "npm/$p/README.md" "/tmp/$p-npm/"
-            cp global-user-constraints-$p-*.zip global-user-constraints-$p-*.sha256 "/tmp/$p-npm/"
-            cp LICENSE LICENSE-CC-BY-4.0.txt LICENSE-MIT.txt THIRD-PARTY-NOTICES.md "/tmp/$p-npm/"
+            mkdir -p "/tmp/npm-$p"
+            cp "npm/$p/package.json" "npm/$p/README.md" "/tmp/npm-$p/"
+            cp global-user-constraints-$p-*.zip global-user-constraints-$p-*.sha256 "/tmp/npm-$p/"
+            cp LICENSE LICENSE-CC-BY-4.0.txt LICENSE-MIT.txt THIRD-PARTY-NOTICES.md "/tmp/npm-$p/"
           done
-      - name: 发布 Qoder 与 Qwen 安装包到 npm
+      - name: 发布三个 npm 包
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
-          for p in qoder qwen; do
-            (cd "/tmp/$p-npm" && npm publish --access public)
+          for p in dsh qoder qwen; do
+            (cd "/tmp/npm-$p" && npm publish --access public)
           done
       - name: 生成 SBOM
         uses: anchore/sbom-action@e22c389904149dbc22b58101806040fa8d37a610  # v0

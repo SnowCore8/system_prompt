@@ -55,9 +55,15 @@
     --scope user
   ```
 
+- Qwen 的 zip 从同前缀包下载后安装：
+
+  ```bash
+  curl -fLO https://cdn.jsdelivr.net/npm/@snowcore8/qwen-global-user-constraints@<version>/global-user-constraints-qwen-<version>.zip
+  qwen extensions install global-user-constraints-qwen-<version>.zip
+  ```
+
 - `npm/qoder` 与 `npm/qwen` 只承载同版本 zip 与 `.sha256`，内容与 Release 附件一致；对应包在 `npm publish`
-  成功后才可下载。Qwen 先下载 zip 再 `qwen extensions install`；DSH bundle 为
-  `@snowcore8/dsh-global-user-constraints`。
+  成功后才可下载。DSH bundle 为 `@snowcore8/dsh-global-user-constraints`。
 
 ## 回滚
 
