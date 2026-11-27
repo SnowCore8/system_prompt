@@ -171,6 +171,37 @@ if not (qdir / str(qoder.get("skills", ""))).is_dir():
     problems.append("Qoder 插件的 skills 路径不存在")
 if not (qdir / "rules" / "global-user-constraints.md").is_file():
     problems.append("Qoder 包缺少 rules/global-user-constraints.md")
+
+
+def hook_commands(node):
+    if isinstance(node, dict):
+        for key, value in node.items():
+            if key in ("command", "args"):
+                items = value if isinstance(value, list) else [value]
+                for item in items:
+                    if isinstance(item, str):
+                        yield item
+            else:
+                yield from hook_commands(value)
+    elif isinstance(node, list):
+        for item in node:
+            yield from hook_commands(item)
+
+
+hooks_path = qdir / str(qoder.get("hooks", ""))
+if hooks_path.is_file():
+    try:
+        hooks_data = json.loads(hooks_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        hooks_data = None
+    refs = {
+        ref
+        for command in hook_commands(hooks_data)
+        for ref in re.findall(r'\$\{QODER_PLUGIN_ROOT\}/([^"\s]+)', command)
+    }
+    for ref in sorted(refs):
+        if ".." in ref.split("/") or not (qdir / ref).is_file():
+            problems.append(f"Qoder 钩子引用的文件不存在: {ref}")
 for command_name, command in (qoder.get("commands") or {}).items():
     source = command.get("source") if isinstance(command, dict) else None
     if not source or not (qdir / str(source)).is_file():

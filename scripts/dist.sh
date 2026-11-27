@@ -100,7 +100,9 @@ import json, sys, zipfile
 
 name, path, version = sys.argv[1], sys.argv[2], sys.argv[3]
 required = {
-    "qoder": [".qoder-plugin/plugin.json", "hooks/hooks.json", "rules/global-user-constraints.md"],
+    "qoder": [".qoder-plugin/plugin.json", "hooks/hooks.json", "rules/global-user-constraints.md",
+              "scripts/inject-constraints.js", "scripts/inject-compact.js",
+              "scripts/inject-clock.js"],
     "qwen": ["qwen-extension.json", "hooks/qwen-hooks.json", "constraints/global-user-constraints.md"],
     "dsh": ["package.json", "plugins/dsh/cordis.patch.yml", "plugins/dsh/src/index.js",
             "rules/global-user-constraints.md"],
