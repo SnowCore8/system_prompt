@@ -22,7 +22,7 @@
 | SQL | 表 `snake_case`、列 `snake_case` | 不适用 | 约束 `snake_case` | 不适用 | `YYYYMMDDHHMMSS_description.sql` | 迁移测试 |
 | Shell | 不适用 | `snake_case` | `snake_case`，环境变量 `UPPER_SNAKE` | `UPPER_SNAKE` | `kebab-case.sh` | `*_test.sh` |
 | HTML / CSS | 类 `kebab-case`、BEM | 不适用 | 自定义属性 `--kebab-case` | 不适用 | `kebab-case.css` | 视觉测试 |
-| JSON / YAML | 对象 `PascalCase` 或 `snake_case` | 不适用 | 键每个 schema 一种大小写 | 不适用 | `kebab-case.json` | schema 测试 |
+| JSON / YAML | 键 `camelCase` 或 `snake_case` | 不适用 | 键每个 schema 一种大小写 | 不适用 | `kebab-case.json` | schema 测试 |
 
 ## Python
 

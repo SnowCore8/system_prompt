@@ -83,15 +83,16 @@
 
 ## 22. 提交、分支与标签
 
-- 提交为 `type(scope): imperative summary`；类型有 `feat`、`fix`、`refactor`、`docs`、`test`、`chore`、
-  `perf`、`build` 与 `ci`。
+- 提交为 `type(scope): imperative summary`；类型有 `feat`、`fix`、`refactor`、`docs`、`test`、`style`、
+  `chore`、`perf`、`build`、`ci` 与 `revert`。
 - 摘要用祈使句，冒号后小写：`fix(invoice): reject expired cards`，不得写作 `Fixed the bug`。
 - 分支为 `type/short-description`：`feat/order-export`、`fix/expired-card`；小写、连字符、无空格。
-- 标签为带 `v` 前缀的 SemVer：`v1.4.0`、`v1.4.0-rc.1`；不得以日期或构建号作为发布标签。
-- issue 与 PR 标签采用小写 kebab 的受控集合，例如 `bug`、`good first issue`、`needs-triage`；同义词只保留一个，
-  带前缀的标签只使用一种分隔符，新增标签前由词表维护人检查冲突。
+- 发布标签（tag）为带 `v` 前缀的 SemVer：`v1.4.0`、`v1.4.0-rc.1`；不得以日期或构建号作为发布标签。
+- 议题与 PR 标签（label）采用小写受控集合，例如 `bug`、`needs-triage`；多词标签选定连字符或空格一种写法，
+  GitHub 默认标签如 `good first issue` 保留原写法；同义词只保留一个，带前缀的标签只使用一种分隔符，新增标
+  签前由词表维护人检查冲突。
 - 仓库名使用小写 kebab；工作流文件、job 与复合 action 的标识使用稳定的小写 kebab，必需校验名称与之逐字一致；
-  发布标题等于标签名，发布说明的分类名称与标签词表一致。
+  发布标题等于发布标签名，发布说明的分类名称与标签词表一致。
 - CODEOWNERS 的 owner 使用真实的 Team slug 或用户句柄，不使用显示名；所有者语义由 vcs-collaboration-conventions 裁定。
 - 提交正文与脚注的构成、pull request 标题、合并门禁与历史策略属于 vcs-collaboration-conventions；本节仅
   定义名称。

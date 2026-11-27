@@ -1,6 +1,6 @@
 ---
 name: naming-conventions
-description: 定义、审查并重构任意编程项目的名称，覆盖文件、目录、包、类型、函数、变量、API、数据库、配置、测试、提交消息、分支、标签与资产。适用于启动项目或模块、命名新标识符、审查 diff 中的命名问题，或统一不一致的名称。提供与语言无关的默认值，并按语言给出覆盖规则。不适用于提交流程与分支流程（提交流程与分支流程见 vcs-collaboration-conventions；提交消息、分支与标签的命名归本 skill）、契约与 schema 演进（见 api-and-data-conventions）与格式化配置（见 code-style-conventions）。
+description: 定义、审查并重构任意编程项目的名称，覆盖文件、目录、包、类型、函数、变量、API、数据库、配置、测试、提交消息、分支、发布标签、议题标签、资产与平台命名产物。适用于启动项目或模块、命名新标识符、审查 diff 中的命名问题，或统一不一致的名称。提供与语言无关的默认值，并按语言给出覆盖规则。不适用于提交流程与分支流程（见 vcs-collaboration-conventions）、契约与 schema 演进（见 api-and-data-conventions）与格式化配置（见 code-style-conventions）；提交消息、分支、发布标签与议题标签的命名归本 skill。
 argument-hint: '[路径或符号]'
 ---
 
@@ -66,8 +66,9 @@ argument-hint: '[路径或符号]'
 - **按作用域控制名称长度。** 局部变量使用一到两个词，公开 API 使用两到四个词；长名称胜于含糊名称，前提是每
   个词都承载含义。
 - **不得在请求之外重命名。** 一致性具有价值，但批量重命名属于另一次需要审查的变更。
-- **GitHub 命名产物使用受控词表。** issue 与 PR 标签取小写 kebab 的受控集合，仓库名小写 kebab；工作流、job 与
-  复用 action 使用稳定标识，发布标题等于标签名；词表与维护人置于仓库中，新增条目先检查同义词。
+- **GitHub 命名产物使用受控词表。** 议题与 PR 标签（label）取小写受控集合，多词标签选定连字符或空格一种写法
+  （GitHub 默认标签如 `good first issue` 保留原写法）；仓库名小写 kebab；工作流、job 与复用 action 使用稳定标
+  识，发布标题等于发布标签名；词表与维护人置于仓库中，新增条目先检查同义词。
 
 ## 大小写矩阵
 
@@ -100,7 +101,7 @@ argument-hint: '[路径或符号]'
 | i18n 键 | 点分隔小写 | `orders.list.empty` |
 | 提交类型 | 小写 | `feat`, `fix`, `refactor`, `docs` |
 | 分支 | `type/short-description` | `feat/order-export` |
-| 标签 | 带 `v` 前缀的 SemVer | `v1.4.0` |
+| 发布标签 | 带 `v` 前缀的 SemVer | `v1.4.0` |
 
 ## 语法形式
 
@@ -216,7 +217,7 @@ argument-hint: '[路径或符号]'
 - [ ] 重命名具有回滚路径，且回滚顺序与上线顺序相反。
 - [ ] 引用、测试、文档、fixture 与快照均已更新。
 - [ ] 未在授权范围之外重命名。
-- [ ] 命名表已更新，GitHub 标签词表与新增标识符一致；项目配置的命名 lint 规则通过。
+- [ ] 命名表已更新，GitHub 议题与 PR 标签词表、新增标识符一致；项目配置的命名 lint 规则通过。
 
 ## 示例
 

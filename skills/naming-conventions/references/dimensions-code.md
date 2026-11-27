@@ -155,8 +155,8 @@
 
 - 类型无法表达的，每个数量均带单位：`timeout_ms`、`size_bytes`、`weight_kg`、`distance_m`、
   `temperature_c`。
-- 时刻使用 UTC 下的 `<event>_at`（`created_at`、`paid_at`）；日期使用 `_date`；时长使用 `_ms` 或
-  `_s`。不得使用没有单位或时区规则的 `timestamp`。
+- 时刻使用 UTC 下的 `<event>_at`（`created_at`、`paid_at`）；日期使用 `_date`；时长使用 `_ms` 或 `_s`。领域
+  值不得使用没有单位或时区规则的 `timestamp`；日志 schema 的固定字段 `timestamp` 不在此列。
 - 金额使用整数最小单位加 ISO 4217 货币：`amount_cents` 与 `currency`；不得使用浮点数。
 - 比率为 0-1（`success_ratio`）；百分比为 0-100（`discount_pct`）；应当在命名表中说明范围。
 - 范围同时命名两端与包含规则：`min_`/`max_`、`start_`/`end_`、`from_`/`to_`；记录末端是否包含。

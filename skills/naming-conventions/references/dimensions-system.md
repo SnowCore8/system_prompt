@@ -117,7 +117,7 @@
 ## 34. 文档、图表与决策
 
 - 文档文件用 kebab-case；固定文件名除外：`README.md`、`CONTRIBUTING.md`、`CHANGELOG.md`、
-  `SECURITY.md`、`SUPPORT.md`、`LICENSE`；ADR 编号且保持稳定（`0001-use-postgres.md` 或
+  `SECURITY.md`、`SUPPORT.md`、`LICENSE`；ADR 使用编号并保持稳定（`0001-use-postgres.md` 或
   `ADR-0001-use-postgres.md`）；不得为已接受的 ADR 重新编号。
 - 标题属于稳定锚点；不得重命名被链接的标题，但同时提供重定向或更新链接的除外。遵循项目的标题大小写
   （句首大写或词首大写），不得两者混用。
