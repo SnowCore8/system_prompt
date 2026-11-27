@@ -39,10 +39,10 @@ Conditional Go、Hold、Recycle 与 No-Go，组合层另用 Defer。智能体任
 
 ## 快速开始
 
-开发与校验需要 `python3`、`node` 与 `git`（CI 使用 Python 3.12 与 Node 20）。
+开发与校验需要 `python3`、`node` 与 `git`；CI 在 Python 3.12/3.14 与 Node 22/24 的组合上运行校验。
 
 ```bash
-python3 -m pip install -r requirements-dev.txt
+python3 -m pip install --require-hashes -r requirements-dev.txt
 scripts/assemble.sh dev      # 生成 .dsh/.qoder/.qwen 开发入口（不提交）
 scripts/check.sh             # 全量校验
 ```
@@ -58,7 +58,7 @@ scripts/check.sh             # 全量校验
 | `plugins/qoder/`、`plugins/qwen/`、`plugins/dsh/` | 三包清单、hooks 与说明；DSH 另含 `src/` 提供者代码 |
 | `npm/qoder/`、`npm/qwen/` | 平台 npm 安装包清单：承载同版本 zip 与校验和 |
 | `scripts/` | `assemble.sh` 生成开发入口、`materialize.sh` 组装包、`check.sh` 校验、`dist.sh` 出包 |
-| `docs/` | 内容地图、提示词台账、三工具加载、hook 与注入、时间、Markdown 校验规则与发布手册 |
+| `docs/` | 内容地图、提示词台账、三工具加载、hook 与注入、时间、威胁模型、Markdown 校验规则与发布手册 |
 | `tests/`、`.github/` | 测试与 CI/Release 工作流 |
 | `AGENTS.md`、`CONTRIBUTING.md` | 智能体项目指令与人类贡献约定，分离且不互相复制 |
 | `.dsh/`、`.qoder/`、`.qwen/` | `assemble.sh` 生成的开发入口，被 `.gitignore` 忽略 |
@@ -176,7 +176,8 @@ qoderclicn --cwd /tmp plugins install --scope local /tmp/qoder-package
 
 ## 安全、许可与变更
 
-- 漏洞报告渠道、支持版本与安全在生命周期各阶段的责任见 [SECURITY.md](SECURITY.md)；仓库不保存密钥或个人数据。
+- 漏洞报告渠道、支持版本与安全在生命周期各阶段的责任见 [SECURITY.md](SECURITY.md)；威胁模型见
+  [docs/threat-model.md](docs/threat-model.md)；仓库不保存密钥或个人数据。
 - 文档与规范正文采用 [CC BY 4.0](LICENSE-CC-BY-4.0.txt)，代码与配置采用 [MIT](LICENSE-MIT.txt)；范围见
   [LICENSE](LICENSE)。
 - 可观察变更按版本记录在 [CHANGELOG.md](CHANGELOG.md)。

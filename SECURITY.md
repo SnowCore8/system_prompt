@@ -28,9 +28,8 @@
 
 ## 报告漏洞
 
-首选 GitHub 的私下漏洞报告：仓库页 Security → Report a vulnerability。私有仓库需要 GitHub Advanced Security
-才有该入口；入口不可用时直接邮件联系维护者 snowcore8@gmail.com，不要开公开 issue，也不要在其他公开渠道披露
-细节。报告请包含：
+首选 GitHub 的私下漏洞报告：仓库页 Security → Report a vulnerability（仓库已启用该入口）。入口不可用时
+直接邮件联系维护者 snowcore8@gmail.com，不要开公开 issue，也不要在其他公开渠道披露细节。报告请包含：
 
 - 受影响的文件或路径；
 - 复现步骤与所需环境；
@@ -53,6 +52,11 @@
 - 在范围内：`plugins/qoder/hooks/`、`plugins/qwen/hooks/`、`shared/scripts/` 与 `scripts/` 下的脚本、
   `skills/*/scripts/` 的校验脚本、`plugins/dsh/src/` 的提供者代码、发布制品。
 - 不在范围内：规范文本的合规性判断、第三方工具（Qoder、Qwen Code、DeepSeek Harness）自身漏洞。
+
+## 威胁模型
+
+资产、信任边界、威胁、控制与残余风险见 [docs/threat-model.md](docs/threat-model.md)；每个 R2 变更与每次发布前
+复核，复核结论随 G4/G5 证据保留。
 
 ## 仓库自身的安全约束
 
