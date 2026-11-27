@@ -220,6 +220,14 @@
 - 不得以项目 formatter 格式化锁文件或生成的 manifest；其字节布局归生成工具所有，重新格式化将重新打开一个
   仅应于依赖变化时变化的文件。
 
+GitHub Actions 工作流：
+
+- 应当以 actionlint 校验工作流，并以 Prettier 格式化；`on`、`true`、`yes` 在 YAML 1.1 解析器中被读作布尔值，本地
+  工具应当显式按 YAML 1.2 处理，不得依赖解析器的真值猜测。
+- `run:` 步骤应当声明 `shell` 并按该 shell 的 linter 检查；`${{ }}` 表达式应当经环境变量传入脚本，不得直接拼接。
+- 复合 action 的 `action.yml` 应当包含 `name`、`description` 与 `runs`，输入输出按 schema 校验，名称由
+  `naming-conventions` 裁定。
+
 ## 跨语言规则
 
 - 每种文件类型应当仅运行一个 formatter。两个工具重叠的，应当于第二个工具中关闭格式化（

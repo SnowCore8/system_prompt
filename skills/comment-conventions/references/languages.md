@@ -43,7 +43,7 @@
 - `//` 是默认的行注释；`/* ... */` 用于临时禁用与许可证块，不用于 API 文档。
 - 指令为 `// @ts-expect-error`（始终带理由）、文件顶部的 `/// <reference types="node" />` 或
   `/// <reference path="./types.d.ts" />`，以及 `// eslint-disable-next-line rule -- reason`；
-  `// @ts-ignore` 是最后手段。
+  `// @ts-ignore` 不检查错误是否仍然存在，不得使用；错误消失后 `@ts-expect-error` 会自身报错，是唯一可审查的形式。
 - 纯 JavaScript 中，`@typedef` 与 `@property` 描述对象形状；TypeScript 中应当优先用真实类型，不得用
   JSDoc。
 

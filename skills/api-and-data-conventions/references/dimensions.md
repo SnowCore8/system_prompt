@@ -75,6 +75,18 @@ schema 或兼容性策略的，智能体应当先阅读，并将其作为事实�
 | 仅增量演进 | GraphQL、protobuf 或带容忍式读取方且发布协调的内部服务 | 移除、重命名或必填输入，任何增量规则均无法使其安全 |
 | 功能开关或影子端点 | 新旧行为并行的迁移窗口 | 窗口关闭后作为稳定公共版本的替代品 |
 
+### GitHub 契约仓库
+
+- 契约文件放在仓库固定位置（`api/openapi.yaml`、`proto/`、`schema/` 或项目既定目录），由 CODEOWNERS 指定 API
+  所有者；生成的客户端输出到只读目录，CI 重新生成后以 `git diff --exit-code` 为空作为通过条件。
+- protobuf 使用 `buf breaking --against` 对比基线，OpenAPI 使用 `oasdiff breaking`，GraphQL 使用
+  `graphql-inspector diff`。基线取最近发布标签而非当前分支，使并行变更不能互相掩盖破坏；检查失败应指出具体
+  字段与变更类型。
+- 契约 lint（Spectral、`buf lint`）与 diff 检查同为必需校验，规则文件与工具版本入库；不得以忽略规则静默通过
+  破坏性发现。
+- 发布时将契约文件作为 Release 资产或文档站输入，资产与发布归 `release-operations-conventions`，页面归
+  `documentation-conventions`，版本与标签保持一致。
+
 ## 2. 数据库与 schema 变更
 
 schema 变更较代码变更更为困难，因发布期间新旧数据共存，且每一步均触碰在线数据库。智能体应当假设零停机，并假

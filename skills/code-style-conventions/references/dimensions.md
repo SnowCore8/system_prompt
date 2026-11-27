@@ -58,6 +58,19 @@ formatter 无法拆分长字符串、URL、哈希或 base64 数据块；应当�
 审查的配置变更解决，不得要求审查者记住某一例外。formatter 与 linter 对同一文件意见不一致的，属于需要解决
 的配置冲突，不得作为文件豁免处理。
 
+### GitHub 平台文件
+
+- 工作流与 action 清单是源代码：应当以 Prettier 格式化，以 actionlint 校验事件名、`${{ }}` 表达式、`uses` 引用
+  与 shell 步骤；`action.yml` 的 `inputs`、`outputs` 与 `runs` 按 schema 校验，缺失必填字段即失败。
+- 应当提交 `.gitattributes`：`* text=auto eol=lf` 统一文本换行，二进制文件显式标注，生成树与第三方引入树标注
+  `linguist-generated=true` 与 `-diff`，使审查与语言统计不把生成差异当作人工变更。
+- 工作流中的 `run:` 块应当声明 `shell`，脚本按该 shell 的 linter 检查；不得把 `${{ }}` 直接拼入 shell 片段，应当
+  经环境变量传入，避免表达式结果改变命令结构。
+- 复合 action 的脚本应当放在 action 目录内并以相对路径引用，不得以内联 heredoc 生成大段脚本；脚本与工作流使用同一
+  套 formatter 与 linter，版本于 pre-commit 与 CI 中锁定。
+- `.github/dependabot.yml`、`.github/release.yml` 与 issue 表单属于配置：键名与取值按 schema 校验，格式化与分组属于
+  本节；依赖更新频率与安全策略由 `security-compliance-conventions` 裁定。
+
 ## 2. 文件布局与导入格式
 
 项目级目录、包/工作区与物理门禁由 `project-structure-conventions` 裁定；模块公开面、依赖方向与循环的架构判定由 `architecture-and-design-conventions` 裁定；本节只规定模块内部的文件与资源放置、单文件职责与 import 呈现。

@@ -76,6 +76,10 @@ argument-hint: '[路径或范围]'
 - **仅应捕获能够处理的错误。** 处理失败的，应当补充上下文并保留原因，或者使其继续传播；空 catch 与记录日志后再抛出，都会破坏下一位响应者所需的证据。
 - **仅应记录一次结构化日志，并使用能够说明何人应当行动的级别。** 应当于决定结果的边界输出稳定字段；ERROR 意味着必须有人行动，任何日志行均不得包含机密或未脱敏的个人数据。
 - **生成代码不得手工编辑。** 修改生成器、schema 或模板后，应当重新生成；本地补丁应当置于生成树之外，附负责人与上游引用，并于上游修复后移除。
+- **GitHub 平台文件与代码同等对待。** `.github/workflows/` 与 `.github/actions/` 的 YAML 纳入仓库 formatter，并以
+  actionlint 校验事件名、表达式、`uses` 引用与 shell 步骤；`action.yml`、`dependabot.yml` 与 `release.yml` 按 schema
+  校验。`.gitattributes` 应当统一文本换行为 LF，并把生成树与第三方引入树标为不参与 diff 与语言统计；Dependabot 的
+  格式与分组属于本 skill，更新策略由 `security-compliance-conventions` 裁定。
 
 ## 风格决策矩阵
 
@@ -95,6 +99,7 @@ argument-hint: '[路径或范围]'
 | 错误分类 | 领域错误与系统错误分开；分类决定 catch 与日志级别 | 代码约定与审查 | 领域失败返回结果；系统失败于重试耗尽后记 ERROR |
 | 日志内容 | 带稳定字段的事件；不包含机密、令牌或完整个人数据 | 日志器配置与审查 | `logger.error("invoice.sync_failed", error_code="E_SYNC")` |
 | 生成代码 | 重新生成，不得编辑；提交的输出存在差异时 CI 失败 | 生成器配置与 CI 任务 | `git diff --exit-code -- gen/` |
+| 平台配置 | 工作流与 action 清单纳入 YAML 格式化与 actionlint；换行由 `.gitattributes` 统一 | `.github/` 与仓库根配置 | `actionlint`, Prettier, `* text=auto eol=lf` |
 
 ## 维度索引
 
@@ -151,6 +156,7 @@ argument-hint: '[路径或范围]'
 - [ ] 日志为结构化，携带约定字段，并使用与“何人必须行动”相匹配的级别。
 - [ ] 日志行中不出现机密、令牌、完整请求体或未脱敏的个人数据。
 - [ ] 生成文件带有标记，且系重新生成而非编辑所得；第三方引入文件未被改动。
+- [ ] `.github/` 下的工作流、action 清单与仓库配置已格式化，并通过 actionlint 或 schema 校验；`.gitattributes` 统一换行。
 - [ ] 描述该行为的配置与文档于同一次交付中变更。
 - [ ] 该变更系一次范围明确的提交，可以在不影响其他关注点的情况下回滚。
 - [ ] diff 中不出现构建输出、缓存或第三方引入文件，除非其为经过审查的输入。
