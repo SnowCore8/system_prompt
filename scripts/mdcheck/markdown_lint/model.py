@@ -317,10 +317,15 @@ class Doc:
             )
             ranges.append((token.map[0] + 1, token.map[1] + 1, parsed))
         skip = self.code_lines | self.html_lines
+        table_rows = {
+            token.map[0] + 1
+            for token in self.tokens
+            if token.type == "tr_open" and token.map
+        }
         written: dict[int, int] = {}
         first_line: dict[int, int] = {}
         for i, line in enumerate(self.raw, 1):
-            if i in skip:
+            if i in skip or i in table_rows:
                 continue
             text = strip_inline_code(line)
             found = len(re.findall(r"!?\[[^\]\n]*\]\(", text))
