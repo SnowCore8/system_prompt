@@ -167,9 +167,10 @@ for label, pkg in (("Qoder", qdir), ("Qwen", wdir)):
             problems.append(f"{label} 包包含软链: {path.relative_to(pkg)}")
 if not (qdir / str(qoder.get("hooks", ""))).is_file():
     problems.append("Qoder 插件的 hooks 路径不存在")
-for key in ("skills", "rules"):
-    if not (qdir / str(qoder.get(key, ""))).is_dir():
-        problems.append(f"Qoder 插件的 {key} 路径不存在")
+if not (qdir / str(qoder.get("skills", ""))).is_dir():
+    problems.append("Qoder 插件的 skills 路径不存在")
+if not (qdir / "rules" / "global-user-constraints.md").is_file():
+    problems.append("Qoder 包缺少 rules/global-user-constraints.md")
 for command_name, command in (qoder.get("commands") or {}).items():
     source = command.get("source") if isinstance(command, dict) else None
     if not source or not (qdir / str(source)).is_file():
