@@ -30,6 +30,7 @@
 
 - 发布由维护者执行；版本规则、tag 与三包版本一致性、出包、回滚与检查单见
   [docs/release.md](docs/release.md)。
+- 发布完成以 `release` 工作流成功为准；npm registry 索引延迟不作为发布门禁，也不人工轮询确认。
 - 分支保护：`master` 要求 `check` 状态通过、禁止强推、要求线性历史；`v*` tag 受保护。
   免费计划的私有仓库不支持分支保护与仓库规则集（API 返回 403），升级到 GitHub Pro 后立即启用；
   在此之前以 `check` 工作流、CODEOWNERS 与 PR 模板约束。

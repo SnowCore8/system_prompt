@@ -30,6 +30,12 @@
    `for p in qoder qwen dsh; do sha256sum -c "global-user-constraints-$p-<version>.sha256"; done` 核对。
 8. npm 是唯一发布通道；GitHub Packages 不是发布目标。
 
+## 发布完成判定
+
+- `release` 工作流成功即视为发布完成：校验、构建、npm publish、SBOM 与 GitHub Release 都在同一次运行中完成。
+- 不人工轮询 npm registry；索引传播延迟不属于发布失败，也不以 `npm view` 或网页可见性作为发布门禁。
+- 工作流失败时按回滚节处理。
+
 ## 出包
 
 - `scripts/dist.sh` 只出包，不改写版本；构建归一 mtime、按名称排序并使用 `zip -X`，
@@ -52,4 +58,5 @@
 - [ ] CHANGELOG 已加版本节
 - [ ] `scripts/check.sh` 通过，插件校验在本地通过
 - [ ] 工作区干净，`scripts/dist.sh --require-tag` 通过
+- [ ] `release` 工作流成功（含 npm publish 与 GitHub Release）
 - [ ] Release 附件包含 zip 与 `.sha256`
