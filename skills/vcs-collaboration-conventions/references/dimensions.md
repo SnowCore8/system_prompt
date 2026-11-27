@@ -106,6 +106,12 @@ PR 或 MR 属于审查单位与回退单位，亦为变更存在原因的记录�
 
 无法以描述的四个问题说清的请求，尚未达到可审查的程度；模板不鼓励提供证据的，缺陷在模板，不在作者。
 
+GitHub 的 PR 模板位于 `.github/pull_request_template.md`、`.github/PULL_REQUEST_TEMPLATE/` 或根目录与 `docs/`，
+打开请求时由平台自动填入；模板应当包含关联 issue 与关闭关键字、变更类型、验证证据、风险与回滚、自审清单。
+多个模板并存时应当以文件名区分场景，并在贡献指南中说明选择方式；模板行文由 `documentation-conventions`
+管辖，存在与路径由 `repository-governance-conventions` 管辖。来自 fork 的请求由外部作者提交，维护者不得在
+本地工作副本直接运行其脚本；平台为 fork 的 `pull_request` 提供只读令牌且不注入仓库机密。
+
 ## 3. 代码审查
 
 审查是第二个人判断变更是否正确、安全与可维护的环节。投入的注意力应当与出错代价成正比，并使每条评论均可执
@@ -211,6 +217,42 @@ PR 或 MR 属于审查单位与回退单位，亦为变更存在原因的记录�
 平台无法强制某一规则的，应当以定期人工检查替代该规则，并指定负责人；人人以为正在强制执行、实际无人执行的规
 则，比没有规则更为有害。
 
+### GitHub 规则集与保护映射
+
+规则集是 GitHub 的默认保护机制，旧式分支保护规则可以与之叠加，两者对同一行为的要求不一致时最严格者生效。
+组织级规则集适用于 Team 与 Enterprise 套餐，可以覆盖多个仓库；仓库级规则集用于仓库特有的路径与标签。
+
+| 规则或设置 | 要求 | 证据 |
+|---|---|---|
+| Require a pull request before merging | 默认分支与受支持发布分支开启 | 规则集页面截图或 API 导出 |
+| Required approvals | 标准 1 名，高风险路径 2 名；单人仓库为 0 并记录自审 | 规则集与治理记录 |
+| Dismiss stale approvals | 实质性推送后使旧批准失效 | 规则集开启状态 |
+| Require approval of the most recent reviewable push | 最近一次推送须由他人批准 | 规则集开启状态 |
+| Require review from Code Owners | 风险路径在 CODEOWNERS 中标记为必需 | 规则集与 CODEOWNERS |
+| Require conversation resolution | 合并前解决全部对话 | 规则集开启状态 |
+| Require status checks to pass | 列出全部必需校验，并绑定到 `merge_group` | 规则集与工作流 |
+| Require branches to be up to date | 与合并队列二选一，避免重复集成 | 规则集或队列设置 |
+| Require linear history | 压缩合并或变基的主干开启 | 规则集开启状态 |
+| Require signed commits | 组织策略要求时开启 | 规则集与签名验证 |
+| Block force pushes | 所有受保护分支与发布标签开启 | 规则集开启状态 |
+| Restrict deletions | 默认分支、发布分支与发布标签开启 | 规则集开启状态 |
+| Require deployments to succeed | 发布分支要求受保护环境部署通过 | 规则集与环境设置 |
+| Require code scanning results | 代码扫描可用时要求无高危结果 | 规则集与扫描配置 |
+| Tag ruleset | 阻止移动或删除 `v*` 等发布标签 | 标签规则集 |
+| Push ruleset | 限制可推送路径、扩展名与文件大小 | 推送规则集；适用于 fork 网络 |
+| Bypass list | 仅紧急通道组；按次记录操作者、原因与复审 | 规则集与审计日志 |
+
+必需校验的名称必须与工作流中的 job 名称一致，重命名 job 会使规则静默失效；每次修改工作流后应当重新核对
+规则集列表。团队或组织规则集与仓库规则集冲突时，应当以更严格者为准并在治理记录中说明差异；不得以“另一层
+已经允许”为由放宽本层。
+
+### GitHub 签名提交
+
+启用签名要求时，GPG、SSH 与 S/MIME 签名均可被 GitHub 验证；作者应当在本机配置签名并在推送前确认提交带有
+`Good signature`。GitHub 网页编辑与部分 API 提交由 GitHub 代为签名，只能证明提交经由平台产生，不能证明作者
+身份。签名要求来自组织策略时由规则集强制，本地 `commit.gpgsign` 与钩子仅作早期提示；签名密钥丢失时应当
+轮换并重新登记，不得关闭验证以恢复推送。
+
 ## 5. 代码所有权
 
 所有权确定谁必须审查某条路径、失败时由谁负责。所有权应当编码于平台能够强制执行之处，保持最新，并不得存在没
@@ -260,3 +302,14 @@ PR 或 MR 属于审查单位与回退单位，亦为变更存在原因的记录�
 
 未指定回退的所有权规则属于单点故障；智能体应当以“所有者明日消失时，由谁审查该路径”检验该规则，并在下一次变
 更到来之前修正答案。
+
+### GitHub CODEOWNERS 语义
+
+GitHub 依次读取 `.github/CODEOWNERS`、根目录 `CODEOWNERS` 与 `docs/CODEOWNERS`，使用找到的第一个文件；其余
+位置的文件被静默忽略。模式按文件顺序匹配，最后匹配的模式生效，因此宽泛回退放在前面、具体模式放在后面。
+`*` 不跨越 `/`，`**` 递归匹配，`?` 匹配单个字符，`[0-9]` 匹配字符范围，`\#` 转义注释符；不支持 `!` 否定。
+
+所有者必须是具有显式写权限的用户或团队，团队应当对仓库可见并有写权限，邮箱形式的所有者必须是协作者；仅有
+读取权限的团队不会收到审查请求。`Require review from Code Owners` 开启后，匹配路径的批准才成为合并条件；
+批准被实质性推送失效时，代码所有者审查同样需要重新取得。`.github/workflows/**` 与 `.github/actions/**`
+应当由平台团队拥有，CODEOWNERS 本身的修改由维护者审查；CODEOWNERS 变更与权限变更适用同一审查路径。

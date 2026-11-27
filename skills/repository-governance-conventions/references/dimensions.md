@@ -41,6 +41,57 @@
   分支为保护与 CI 的目标；可见性、发布与讨论均为有意设置。描述与主页应当镜像至包 manifest，使仓库页面与
   包页面无法不一致。
 
+### GitHub 托管设置
+
+仓库使用 GitHub 时，下列设置属于本维度的必需项。每项应当记录当前值、核对日期与负责人；无法读取设置的，
+记录缺口，以仓库内配置文件为准，并请求有权限者核对，不得猜测设置值。
+
+| 设置 | 必需状态 | 证据 |
+|---|---|---|
+| 默认分支 | 由规则集保护，合并需批准与必需校验；机制由 `vcs-collaboration-conventions` 管辖。 | 规则集页面或 API 导出。 |
+| Actions 权限 | `GITHUB_TOKEN` 默认只读；工作流按需提升单个作业的权限；禁止将写权限设为全局默认。 | 仓库 Actions 设置。 |
+| Actions 准入 | 仅允许 GitHub 维护的 action、已验证创建者或白名单；其余固定到全 SHA 或使用工作流依赖锁文件。 | 允许列表与工作流 diff。 |
+| Actions PR 权限 | 禁止 Actions 创建或批准 pull request；需要自动化的，使用独立的机器人身份并记录审查路径。 | 仓库 Actions 设置。 |
+| fork 构建 | 首次贡献者的 fork PR 需批准后运行；fork 构建不获得仓库机密；不得在 `pull_request_target` 中检出并执行不可信代码。 | 工作流事件与机密作用域。 |
+| 自托管运行器 | 公开仓库不使用自托管运行器；私有仓库使用隔离、短生命周期或 JIT 运行器，并按组限制访问。 | 运行器组设置。 |
+| 环境 | 生产与预发布使用受保护环境，配置必需审查者、等待计时器与允许的部署分支或标签；环境机密仅在批准后可用。 | 环境设置与部署记录。 |
+| 依赖图与告警 | 启用依赖图、Dependabot 告警与安全更新；版本更新由 `.github/dependabot.yml` 按生态与频率配置。 | 安全设置与依赖清单。 |
+| 机密扫描 | 在套餐支持处启用机密扫描与推送保护，并为自有令牌格式配置自定义模式；推送保护不得被例行绕过。 | 安全设置与绕过记录。 |
+| 代码扫描 | 启用 CodeQL 默认设置或等价的高级设置；风险分支的规则集要求代码扫描结果。 | 代码扫描配置与规则集。 |
+| 私有漏洞报告 | 启用私有漏洞报告，并在 `SECURITY.md` 中指向该入口；公告通过仓库安全公告发布。 | 安全设置与公告。 |
+| 不可变发布 | 在仓库或组织级启用不可变发布；已发布标签与资产不可改写，发布证明随发布生成。 | 发布设置与证明。 |
+| 文档站 | 使用 GitHub Pages 时，发布源分支受保护，构建由 Actions 执行，部署权限仅授予发布工作流。 | Pages 设置与工作流。 |
+
+功能受套餐限制时，应当记录不可用项、影响与补偿控制。公开仓库通常可以使用依赖图、Dependabot、机密扫描
+与代码扫描；私有仓库的依赖审查、代码扫描与机密扫描需要组织套餐与相应安全产品授权。不可用不构成跳过
+其余控制的理由。
+
+### GitHub 社区文件路径
+
+| 文件 | 认可位置 | 备注 |
+|---|---|---|
+| `README.md` | 根目录、`docs/`、`.github/` | 仓库入口；内容由 `documentation-conventions` 管辖。 |
+| `LICENSE` | 根目录 | 许可证识别依赖根目录的完整文本；`LICENSE.md` 仅在平台识别时有效。 |
+| `CONTRIBUTING.md`、`CODE_OF_CONDUCT.md`、`SECURITY.md`、`SUPPORT.md` | 根目录、`docs/`、`.github/` | 内容分别由文档与安全角色管辖。 |
+| `GOVERNANCE.md`、`MAINTAINERS.md` | 根目录、`docs/`、`.github/` | 项目约定；必须可从仓库入口到达。 |
+| `CHANGELOG.md` | 根目录、`docs/` | 发布记录；格式由 `documentation-conventions` 管辖。 |
+| `CITATION.cff` | 根目录 | 引用工具读取根目录。 |
+| `.github/FUNDING.yml` | `.github/` | 赞助渠道。 |
+| `CODEOWNERS` | `.github/`、根目录、`docs/` | 机制与语法由 `vcs-collaboration-conventions` 管辖。 |
+| issue 表单 | `.github/ISSUE_TEMPLATE/*.yml` | 旧式 Markdown 模板仅用于不支持表单的宿主。 |
+| `config.yml` | `.github/ISSUE_TEMPLATE/config.yml` | 关闭空白 issue，并链接讨论区、安全报告与支持路径。 |
+| PR 模板 | 根目录、`docs/`、`.github/` | 必须要求问题、做法、风险、验证证据与回滚。 |
+| 工作流 | `.github/workflows/` | 属于受审代码；由 CODEOWNERS 指定平台团队。 |
+| Dependabot 配置 | `.github/dependabot.yml` | 版本更新与分组规则。 |
+| 发布说明配置 | `.github/release.yml` | 按标签或类型分组生成发布说明。 |
+
+### 第三方审计
+
+OpenSSF Scorecard 提供仓库外部可验证的检查项：分支保护、代码审查、CI 测试、危险工作流、依赖更新工具、
+许可证、依赖固定、SAST、安全策略、签名发布、令牌权限与已知漏洞。应当按周或按发布运行 Scorecard 工作流，
+将 SARIF 结果上传至代码扫描，并为每项发现指定负责人与到期日。Scorecard 检查的是可自动观测的信号，不替代
+本 skill 的必需文件、各 owner 的规则或人工审查；低分应当解释，不得以“工具未检测到”关闭发现。
+
 | 好 | 坏 | 为什么 |
 |---|---|---|
 | 单许可证仓库的 `LICENSE` 包含完整文本，manifest 包含其 SPDX 标识符。 | `LICENSE.md` 仅包含许可证名称。 | 识别、法务审查与扫描器均需要条款与标识符。 |
