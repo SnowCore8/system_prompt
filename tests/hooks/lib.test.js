@@ -186,6 +186,7 @@ describe('paths.findRulesFile / configRoots', () => {
     const home = tempDir(t);
     const restore = withEnv({
       HOME: home,
+      USERPROFILE: home,
       HOOKS_CFG_A: '/cfg-a',
       HOOKS_CFG_EMPTY: '',
     });
@@ -308,6 +309,7 @@ describe('qoder 常量与去重候选', () => {
     mkdirSync(join(project, '.qwen', 'rules'), { recursive: true });
     const restore = withEnv({
       HOME: home,
+      USERPROFILE: home,
       QODER_CONFIG_DIR: join(home, 'cfg'),
       QODERCN_CONFIG_DIR: undefined,
     });
@@ -346,6 +348,7 @@ describe('qoder 常量与去重候选', () => {
     mkdirSync(envDir, { recursive: true });
     const restore = withEnv({
       HOME: home,
+      USERPROFILE: home,
       QODER_PROJECT_DIR: envDir,
       QODER_CONFIG_DIR: undefined,
       QODERCN_CONFIG_DIR: undefined,
