@@ -1,78 +1,102 @@
 ---
 name: naming-conventions
-description: 定义、审查并重构任意编程项目的名称，覆盖文件、目录、包、类型、函数、变量、API、数据库、配置、测试、提交消息、分支、发布标签、议题标签、资产与平台命名产物。适用于启动项目或模块、命名新标识符、审查 diff 中的命名问题，或统一不一致的名称。提供与语言无关的默认值，并按语言给出覆盖规则。不适用于提交流程与分支流程（见 vcs-collaboration-conventions）、契约与 schema 演进（见 api-and-data-conventions）与格式化配置（见 code-style-conventions）；提交消息、分支、发布标签与议题标签的命名归本 skill。
+description: 定义、审查并重构任意编程项目的名称，覆盖文件、目录、包、类型、函数、变量、API、数据库、配置、测试、提交消息、分支、发布标签、议题标签、资产与平台命名产物。适用于启动项目或模块、在 S2 计划中固定跨层名称契约、命名新标识符、审查 diff 中的命名问题、执行或审查重命名，或统一不一致的名称；提供与语言无关的默认值，并按语言给出覆盖规则。不适用于提交流程与分支流程（见 vcs-collaboration-conventions）、契约与 schema 演进（见 api-and-data-conventions）与格式化与 linter 配置（见 code-style-conventions）；提交消息、分支、发布标签与议题标签的命名由本 skill 裁定。
 argument-hint: '[路径或符号]'
 ---
 
 # 命名规范
 
-名称是代码库中阅读次数最多的接口。良好的名称说明一个事物是什么、做什么，贴合语言，并在各层之间保持稳定；不
-良的名称则迫使每位读者从实现反推意图。本 skill 规定命名的决策流程，以及项目各类命名产物所需的完整规则集。
+名称是代码库中阅读次数最多的接口，良好的名称说明事物是什么、做什么，贴合语言，并在各层之间保持稳定。
+本 skill 规定命名的决策流程与命名产物的完整规则集；阶段职责见 `## 生命周期定位`，门禁证据见 `## 门禁与证据`。
 
 ## 适用范围与优先级
 
-效力依下列层级判断：高层覆盖低层，低层仅在高层未规定时补充：
+效力依下列层级判断：高层覆盖低层，低层仅在高层未规定时补充。
 
 1. 强制性的平台、语言、宿主与全局用户约束。Go 导出标识符、C# 的 `I` 接口与 PEP 8 均非可选事项。
 2. 本 skill 的规则与默认值。
-3. 既有项目约定与事实。项目约定仅在本 skill 未规定时补充；现有代码、命名表、lint 配置与语言版本作为输入，
-   依本 skill 的规则处理，不得覆盖本 skill。
+3. 既有项目约定与事实。现有代码、命名表、lint 配置与语言版本是输入，按本 skill 的规则处理；项目约定仅在
+   本 skill 未规定时补充，不得覆盖本 skill。
 4. 个人偏好，不得覆盖上述三层。
 
-- 生成代码、第三方引入代码、外部协议字段与第三方 schema 不受本规范约束。上述名称应当保留，在边界处隔离，
-  并将映射记录于项目命名表。
-- 重命名属于一次变更，不属于清理。智能体应当先阅读全部引用，在授权范围内更新测试、文档与 fixture，并将任何公开名称视为 API。
-- 同一效力层级的强制规则冲突时，智能体应当报告用户裁决，不得自行选定。非强制的项目约定冲突，可以说明冲突与
-  所选约定；跨层冲突依全局用户约束 §3.3 处理，并记录决定，使后续变更遵循该决定。
+管辖与边界：
 
-本 skill 规定名称、大小写、被禁用的同义词、文件名、目录名、锚点、ADR 编号、命名表与重命名机制；其他产物类
-别的策略与流程，依下列职责归属：
+- 本 skill 裁定名称本身：术语、大小写、语法形式、被禁用的同义词、文件名、目录名、锚点、ADR 编号、命名表，
+  以及提交消息、分支、发布标签与议题标签的名称。
+- 生成代码、第三方引入代码、外部协议字段与第三方 schema 保留原名，在边界处隔离并把映射记入命名表。
+- 提交流程、分支模型、合并与审查策略归 vcs-collaboration-conventions；API 版本化、分页、CRUD 语义、错误模型
+  与 schema 迁移归 api-and-data-conventions；格式化工具、行宽与 linter 配置归 code-style-conventions。
+- 测试策略、门禁与豁免归 testing-and-quality-conventions；遥测、开关生命周期、CI/CD 与弃用时机归
+  release-operations-conventions；权限策略与机密归 security-compliance-conventions；包元数据与分发归
+  repository-governance-conventions；文档正文、变更记录、发布说明与术语定义归 documentation-conventions，
+  本 skill 只维护名称与命名约束。
+- 强制规则冲突时报告用户裁决，不得自行选定；非强制约定冲突时说明冲突与所选约定并记录。
+- 重命名属于一次变更，不属于清理：先读全部引用，在授权范围内更新测试、文档与 fixture，公开名称视为 API。
 
-- 提交与 PR 流程、合并与审查策略、历史记录与审查深度，由 vcs-collaboration-conventions 负责。
-- API 版本化、分页风格、CRUD 语义、错误模型，以及数据库 schema 变更流程与迁移安全性，由 api-and-data-conventions 负责。
-- 格式化工具与 linter 配置、行宽、配置的优先级与语义，以及错误与日志内容策略，由 code-style-conventions 负责。
-- 测试策略、门禁、测试处置，以及跳过、隔离与豁免策略，由 testing-and-quality-conventions 负责。
-- 遥测设计、功能开关生命周期、CI/CD、发布时机，以及弃用声明的时间与位置，由 release-operations-conventions 负责。
-- 访问控制与权限策略，以及机密扫描、轮换与披露，由 security-compliance-conventions 负责。
-- 包与分发元数据，由 repository-governance-conventions 负责；版本策略、发布流程与审批、上线与回滚，由
-  release-operations-conventions 负责。
-- 文档正文、变更日志、发布说明、文档站与术语表的散文定义，由 documentation-conventions 负责；名称、大小写、被禁用的同义词、文件名、目录名、锚点与 ADR 编号由本 skill 负责。
-- 指令文件，由 system-prompt-authoring 负责；生命周期中本 skill 主责 S3 构建（G3），门禁与证据见 `project-lifecycle-governance`。
+## 生命周期定位
 
-## 流程
+上游输入来自 S2 的接口契约、数据模型、目录与包边界、发布与分支方案，它们决定需要哪些名称与跨层映射；
+下游交接给 S3 的实现与审查、S4 的 lint 与一致性验证、S5 的标签与发布说明。
 
-1. 对产物分类：文件、目录、包、类型、函数、变量、常量、API 字段、数据库对象、配置键、测试、提交或资产。
-2. 以项目领域语言为该概念命名；智能体应当先核查命名表与术语表是否已有现成术语。
-3. 从形式表中选择语法形式（名词、动词、形容词、复数）。
-4. 为产物与语言选择大小写风格；覆盖规则见 `references/languages.md`。
-5. 检查冲突、对称性、长度、可读性（能否读出声）、可搜索性，以及有误导性的编码。
-6. 新领域术语在超过一处使用前，应当先行记录于项目命名表。
-7. 需要重命名时，智能体应当列出全部引用，选择别名或弃用路径，并核对完整 diff。
+- 升级与停止：公开名称重命名、跨仓库共享标识符、需要版本化或弃用的名称变更，退回 G2 重新确认并取得授权；
+  命名表与既有契约冲突且无法在授权范围内裁决时，停止改动并报告冲突双方。
+
+| 阶段 | 本 skill 的职责 | 产出 / 证据 |
+|---|---|---|
+| S2 计划 | 把接口、数据、配置、目录与发布产物名称纳入设计，确定禁用同义词与命名 lint 规则 | 命名表、跨层名称清单、lint 规则 |
+| S3 构建 | 按矩阵与维度规则命名新增标识符；重命名按证据、引用清单与回滚点执行 | diff 中的名称、命名表更新、引用清单 |
+| S4 验证 | 核对跨层一致性与命名 lint 结果，检查公开名称的兼容路径 | lint 输出、跨层映射、别名或弃用证据 |
+| S5 发布 | 核对发布标签、发布说明与变更记录中的名称 | 标签与说明的一致性检查 |
+
+## 门禁与证据
+
+| 门禁 | 必须提供的证据 | 不满足时 |
+|---|---|---|
+| G2 计划 | 命名表、跨层名称清单、命名 lint 规则、重命名影响与回滚说明 | 缺命名表或公开名称未定时 Hold，退回 S1/S2 |
+| G3 构建 | 命名 lint 输出、diff 与大小写矩阵一致、重命名引用清单 | Recycle 到 S3；公开名称无别名或弃用路径时按 No-Go 阻断合并 |
+| G4 验证 | 跨层一致性核对、lint 通过记录、弃用与别名证据 | 修复后重验；不可兼容的公开改名按 No-Go 处理 |
+| G5 发布 | 标签、发布说明与命名表一致 | Hold 发布，修正名称后再过门 |
+
+证据必须可复核：lint 命令与输出、diff 行号、命名表条目；计划与口头承诺不构成证据。
+
+## 工作流
+
+1. 分类产物：文件、目录、包、类型、函数、变量、常量、API 字段、数据库对象、配置键、测试、提交、分支、标签或资产。
+2. 以项目领域语言命名概念，先查命名表与术语表；未收录的新术语在第二处使用前登记。
+3. 从语法形式表选择形式，再为产物与语言选择大小写；覆盖规则见 `references/languages.md`。
+4. 检查冲突、对称性、长度、可读性（能否读出声）、可搜索性，以及有误导性的编码。
+5. 需要重命名时，陈述证据、列出引用、选择别名或弃用路径与回滚点，核对 diff，更新测试与文档并运行 lint。
 
 ## 核心规则
 
-- **一个概念，一个名称。** 一个名称对应一个概念。同一事物有多种叫法，属于缺陷；同一名称指两件事，属于冲
-  突。
+- **一个概念，一个名称，并使用领域语言。** 同一事物有多种叫法属于缺陷，同一名称指两件事属于冲突；优先采用
+  用户与产品使用的词，记录被禁用的同义词。
 - **命名意图，而不是实现。** `activeUsers` 优于 `filteredList2`；`retryCount` 优于 `loopCounter`。
-- **使用领域语言。** 应当优先采用用户与产品使用的词；记录被禁用的同义词。
-- **遵循语言。** 不得从其他语言引入大小写或前缀；Python 中的 `IUserStore` 或 Go 中的 `user_repository`，即
-  使概念正确，亦属错误。
-- **可搜索、可读出声。** 除循环索引外，应当避免单字母与双字母名称、省略元音的写法以及辅音连缀；审查时应当
-  有人能够将名称读出声。
+- **遵循语言。** 不得从其他语言引入大小写或前缀；Python 中的 `IUserStore` 与 Go 中的 `user_repository` 均属错误。
+- **可搜索、可读出声。** 除循环索引外，避免单字母与双字母名称、省略元音的写法以及辅音连缀。
 - **不得编码类型。** 不得采用匈牙利命名法，不得添加 `obj`、`str`、`arr`、`list` 后缀；仅当类型无法表达时，
   方得编码单位、范围或含义（`timeout_ms`、`amount_cents`）。
 - **优先肯定式。** `isEnabled` 优于 `isNotDisabled`；不得构造双重否定。
-- **集合用复数。** `users` 包含多个用户；`user` 表示一个用户。映射应当写作 `usersById`，不得写作 `userMap`。
-- **按作用域控制名称长度。** 局部变量使用一到两个词，公开 API 使用两到四个词；长名称胜于含糊名称，前提是每
-  个词都承载含义。
+- **集合用复数。** `users` 包含多个用户；映射写作 `usersById`，不得写作 `userMap`。
+- **按作用域控制长度。** 局部变量一到两个词，公开 API 两到四个词；长名称胜于含糊名称，前提是每个词都承载含义。
 - **不得在请求之外重命名。** 一致性具有价值，但批量重命名属于另一次需要审查的变更。
-- **GitHub 命名产物使用受控词表。** 议题与 PR 标签（label）取小写受控集合，多词标签选定连字符或空格一种写法
-  （GitHub 默认标签如 `good first issue` 保留原写法）；仓库名小写 kebab；工作流、job 与复用 action 使用稳定标
-  识，发布标题等于发布标签名；词表与维护人置于仓库中，新增条目先检查同义词。
+- **GitHub 命名产物使用受控词表。** 标签取小写受控集合，多词标签选定连字符或空格一种写法（GitHub 默认标签如
+  `good first issue` 保留原写法）；仓库名小写 kebab；工作流、job 与复用 action 使用稳定标识，发布标题等于发布
+  标签名；词表与维护人置于仓库中，新增条目先检查同义词。
+
+## 项目命名表
+
+项目启动时创建此表，保存于仓库中，并在术语扩散前先行增加一行；术语解释归项目术语表，本表只维护名称与命名约束。
+
+| 术语 | 规范名称 | 避免 | 大小写 | 命名表维护人 |
+|---|---|---|---|---|
+| invoice | `Invoice` | bill、statement | PascalCase | billing |
+| customer | `Customer` | client、buyer、account | PascalCase | CRM |
+| amount | `amount_cents` | amount、total | snake_case | billing |
 
 ## 大小写矩阵
 
-下列默认值与语言无关。`references/languages.md` 按语言与框架覆盖上述默认值。
+下列默认值与语言无关。`references/languages.md` 按语言与框架覆盖这些默认值。
 
 | 产物 | 默认大小写 | 示例 |
 |---|---|---|
@@ -112,19 +136,14 @@ argument-hint: '[路径或符号]'
 | 资源或实体 | 单数名词 | `Invoice`, `Customer` |
 | 集合 | 复数名词 | `invoices`, `activeUsers` |
 | 映射 | 名词加 `by` 键 | `invoicesById`, `priceBySku` |
-| 工厂 | `XFactory` 或 `createX` | `InvoiceFactory`, `createInvoice` |
-| 构建器 | `XBuilder` | `InvoiceBuilder` |
-| 仓库 | `XRepository` | `InvoiceRepository` |
-| 服务 | 仅真正的领域服务用 `XService` | `BillingService` |
-| 适配器或网关 | `XAdapter`、`XGateway` | `StripeAdapter`, `PaymentGateway` |
+| 工厂、构建器与仓库 | `XFactory` 或 `createX`、`XBuilder`、`XRepository` | `InvoiceFactory`, `InvoiceBuilder`, `InvoiceRepository` |
+| 服务、适配器与网关 | 仅真正的领域服务用 `XService`；外部集成用 `XAdapter`、`XGateway` | `BillingService`, `StripeAdapter`, `PaymentGateway` |
 | DTO 或线上模型 | `XDto`、`XRequest`、`XResponse` | `InvoiceDto`, `CreateOrderRequest` |
 | 错误 | `XError` 或 `XException` | `InvoiceNotFoundError` |
-| 选项或配置 | `XOptions`、`XConfig` | `RetryOptions` |
-| 结果 | `XResult`、`XOutcome` | `PaymentResult` |
+| 选项、配置与结果 | `XOptions`、`XConfig`、`XResult`、`XOutcome` | `RetryOptions`, `PaymentResult` |
 | 标识符 | 代码 `<Entity>Id`；存储与 HTTP JSON 资源标识 `<entity>_id` | `CustomerId`, `customer_id` |
 | 时间戳 | `<event>_at` | `created_at`, `paid_at` |
-| 时长 | `<quantity>_ms`、`_s` | `timeout_ms` |
-| 计数 | `<thing>_count` | `retry_count` |
+| 时长与计数 | `<quantity>_ms`、`_s`；`<thing>_count` | `timeout_ms`, `retry_count` |
 | 金额 | `<amount>_cents` 加货币 | `total_cents`, `currency` |
 | 比率或百分比 | `_ratio`（0-1）或 `_pct`（0-100） | `success_ratio`, `discount_pct` |
 
@@ -171,53 +190,42 @@ argument-hint: '[路径或符号]'
 
 ## 反模式
 
-| 反模式 | 为什么失败 | 修复 |
-|---|---|---|
-| `data`、`info`、`item`、`obj`、`temp`、`foo`、`bar` | 未表达任何信息，迫使读者阅读函数体。 | 命名概念本身：`invoice`、`parseResult`、`pendingJobs`。 |
-| `Manager`、`Helper`、`Util`、`Common`、`Base` | 掩盖职责，并吸引不相关的代码。 | 命名角色：`BillingService`、`RetryPolicy`、`PathFormatter`。 |
-| `userObj`、`strName`、`arrItems` | 编码了类型，重构后立即过时。 | `user`、`name`、`items`。 |
-| `notReady`、`disableCache`、`isNotUnavailable` | 否定式名称迫使每个读取点反向理解。 | `isReady`、`cacheEnabled`、`isAvailable`。 |
-| `usr`、`cfg`、`mgr`、`btn`、`msg` | 节省三个字符，增加一次查找。 | `user`、`config`、`manager`、`button`、`message`。 |
-| 同一概念使用 `client` / `customer` / `buyer` | 读者无法判断三者是否存在区别。 | 选定一个领域术语，禁用其余说法。 |
-| 同一层同时出现 `userId` 与 `user_id` | 破坏搜索与机械化重构。 | 每层仅用一种大小写；仅在边界处映射。 |
-| 名为 `isActive` 却返回计数 | 名称表达的类型错误。 | `activeCount`。 |
-| 在 `getX` 暗示 I/O 处，纯读取器使用 `getUser` | 暗示一次并不发生的读取。 | 使用 `user` 属性；I/O 使用 `fetchUser`；其余情形名词或 `get` 访问器均可。 |
-| `UserServiceImpl` | 泄露实现，并增加噪声。 | `SqlUserRepository`、`StripePaymentGateway`。 |
-| Python 或 Go 中的 `IUserStore` | 将 C# 约定带入拒绝该约定的语言。 | `UserStore` 或 `UserDirectory`。 |
-| `user2`、`newUser`、`tempUser` | 带编号或时间性的名称立即过时。 | `importedUser`、`pendingUser`、`user`。 |
-| 布尔值命名为 `flag`、`status`、`check` | 含义含糊，类型亦常常错误。 | `hasExported`、`isReady`、`isValid`。 |
-| 仅使用 `do`、`handle`、`process`、`run` | 未说明处理何种对象或产出何种结果。 | `handlePaymentFailure`、`processRefund`、`runMigration`。 |
-
-## 项目命名表
-
-项目启动时应当创建此表，保存于仓库中，并在术语扩散前先行增加一行；术语解释见项目术语表（规则见 `documentation-conventions` 的 [术语与术语表维度](../documentation-conventions/references/dimensions-project.md) 第 16 节），本表只维护名称与命名约束，不复制定义：
-
-| 术语 | 规范名称 | 避免 | 大小写 | 命名表维护人 |
-|---|---|---|---|---|
-| invoice | `Invoice` | bill、statement | PascalCase | billing |
-| customer | `Customer` | client、buyer、account | PascalCase | CRM |
-| amount | `amount_cents` | amount、total | snake_case | billing |
+| 阶段 | 反模式 | 为什么失败 | 修复 |
+|---|---|---|---|
+| S2 | `data`、`info`、`item`、`obj`、`temp`、`foo`、`bar` | 未表达任何信息，迫使读者阅读函数体。 | 命名概念本身：`invoice`、`parseResult`、`pendingJobs`。 |
+| S2 | `Manager`、`Helper`、`Util`、`Common`、`Base` | 掩盖职责，并吸引不相关的代码。 | 命名角色：`BillingService`、`RetryPolicy`、`PathFormatter`。 |
+| S2 | 同一概念使用 `client` / `customer` / `buyer` | 读者无法判断三者是否存在区别。 | 选定一个领域术语，禁用其余说法。 |
+| S3 | `userObj`、`strName`、`arrItems` | 编码了类型，重构后立即过时。 | `user`、`name`、`items`。 |
+| S3 | `notReady`、`disableCache`、`isNotUnavailable` | 否定式名称迫使每个读取点反向理解。 | `isReady`、`cacheEnabled`、`isAvailable`。 |
+| S3 | `usr`、`cfg`、`mgr`、`btn`、`msg` | 节省三个字符，增加一次查找。 | `user`、`config`、`manager`、`button`、`message`。 |
+| S3 | `UserServiceImpl` | 泄露实现，并增加噪声。 | `SqlUserRepository`、`StripePaymentGateway`。 |
+| S3 | 跨层或跨语言混用大小写与前缀（`userId` 与 `user_id`，Python 中的 `IUserStore`） | 破坏搜索与机械化重构，并把一种语言的约定带入另一种。 | 每层用一种大小写，边界处映射；`I` 前缀仅用于 C#。 |
+| S3 | `user2`、`newUser`、`tempUser` | 带编号或时间性的名称立即过时。 | `importedUser`、`pendingUser`、`user`。 |
+| S3 | 布尔值命名为 `flag`、`status`、`check` | 含义含糊，类型亦常常错误。 | `hasExported`、`isReady`、`isValid`。 |
+| S3 | 仅使用 `do`、`handle`、`process`、`run` | 未说明处理何种对象或产出何种结果。 | `handlePaymentFailure`、`processRefund`、`runMigration`。 |
+| S4 | 公开名称直接改名，无别名或弃用路径 | 调用方无从迁移，改名等同破坏契约。 | 提供别名并记录移除条件，按 G2 重新确认。 |
 
 ## 审查清单
 
-- [ ] 术语与项目命名表或术语表一致。
-- [ ] 大小写与语言及产物匹配。
-- [ ] 语法形式与产物种类匹配。
+计划与命名表（G2）：
+
+- [ ] 术语与命名表或术语表一致，新术语已登记禁用同义词。
+- [ ] 大小写与语法形式同语言及产物匹配，跨层映射只发生在边界。
+- [ ] 重命名有证据、引用清单、别名或弃用路径与回滚顺序。
+
+构建（G3）：
+
 - [ ] 不存在同义词、冲突、容易混淆的近似名称或未加限定的泛化词。
-- [ ] 名称可读出声，且足够独特便于搜索。
-- [ ] 长度与作用域匹配；未编码类型或实现。
+- [ ] 名称可读出声且足够独特便于搜索；长度与作用域匹配，未编码类型或实现。
 - [ ] 布尔值为肯定式且确为布尔类型；集合为复数，映射写明其键。
-- [ ] 单位、时间、金额、比率与范围均显式。
-- [ ] 异步、错误、测试与 API 约定与所用技术栈匹配。
-- [ ] 文件名与主要导出或职责匹配。
-- [ ] 数据库、API、配置与日志名称在各层之间一致。
-- [ ] 缩写均在允许清单中；首字母缩略词遵循语言规则。
-- [ ] 对称配对使用相同的词。
-- [ ] 公开重命名具有弃用或别名路径。
-- [ ] 重命名具有回滚路径，且回滚顺序与上线顺序相反。
-- [ ] 引用、测试、文档、fixture 与快照均已更新。
-- [ ] 未在授权范围之外重命名。
-- [ ] 命名表已更新，GitHub 议题与 PR 标签词表、新增标识符一致；项目配置的命名 lint 规则通过。
+- [ ] 单位、时间、金额、比率与范围均显式；异步、错误、测试与 API 约定与所用技术栈匹配。
+- [ ] 文件名与主要导出或职责匹配；数据库、API、配置与日志名称在各层之间一致。
+- [ ] 缩写均在允许清单中；对称配对使用相同的词；未在授权范围之外重命名。
+
+验证与发布（G4/G5）：
+
+- [ ] 公开重命名具有弃用或别名路径，引用、测试、文档、fixture 与快照均已更新。
+- [ ] 命名表与 GitHub 标签词表已更新且与新增标识符一致；命名 lint 通过；发布标签与发布说明名称一致。
 
 ## 示例
 
@@ -229,27 +237,19 @@ argument-hint: '[路径或符号]'
 </example>
 
 <example>
-场景：重命名一个布尔值。
-做法：将 `notDisabled` 改为 `isEnabled`；将 `flag` 改为 `hasExported`；可空布尔值改为三态枚举
+场景：重命名一个布尔值或数量值。
+做法：将 `notDisabled` 改为 `isEnabled`，将 `flag` 改为 `hasExported`；可空布尔值改为三态枚举
 （`Visibility.PUBLIC`、`Visibility.PRIVATE`、`Visibility.UNLISTED`），不得保留 `isPublic: boolean | null`。
-</example>
-
-<example>
-场景：重命名一个含糊的服务。
-做法：`UserManager` 同时负责查找与存储，该名称掩盖两项职责；应当将其拆分为负责查找的 `UserDirectory` 与
-负责持久化的 `UserRepository`，并在一次受限的变更中更新全部调用点。
-</example>
-
-<example>
-场景：命名数量值。
-做法：将 `timeout` 改为 `timeout_ms`；将 `amount` 改为 `amount_cents` 加 `currency`；将 `discount` 改为
-`discount_pct`（0-100）或 `discount_ratio`（0-1），并在命名表中记录该范围。
+将 `timeout` 改为 `timeout_ms`，将 `amount` 改为 `amount_cents` 加 `currency`，并在命名表中记录 `discount_pct`
+（0-100）或 `discount_ratio`（0-1）的范围。
 </example>
 
 ## 参考资料
 
-按产物分类的完整规则集见 [references/dimensions-code.md](references/dimensions-code.md)、
-[references/dimensions-interface.md](references/dimensions-interface.md) 与
-[references/dimensions-system.md](references/dimensions-system.md)；按语言的大小写矩阵见
-[references/languages.md](references/languages.md)。建立新项目的命名表之前，应当先阅读上述文件；日常工作
-中，仅阅读适用的维度与适用的语言行。
+- [references/lifecycle.md](references/lifecycle.md)：进入 S2 命名设计、准备门禁记录或判断升级与裁剪时阅读。
+- [references/dimensions-code.md](references/dimensions-code.md)、
+  [references/dimensions-interface.md](references/dimensions-interface.md)、
+  [references/dimensions-system.md](references/dimensions-system.md)：按维度编号查阅完整规则；命名新标识符或审查
+  diff 中的名称时阅读对应维度。
+- [references/languages.md](references/languages.md)：确认语言与框架的大小写、文件与测试约定时阅读；建立命名表
+  之前应先读完维度文件。

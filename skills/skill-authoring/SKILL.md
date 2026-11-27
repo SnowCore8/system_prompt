@@ -1,6 +1,6 @@
 ---
 name: skill-authoring
-description: 定义、审查并重构可加载的 skill 包（SKILL.md 及其 references/scripts），覆盖结构、frontmatter、触发质量、渐进披露、references 组织、反模式与审查。适用于创建新 skill、审查现有 skill 的结构与触发质量，或把分散的规范整理成 skill。不适用于常驻指令文件（见 system-prompt-authoring）、运行时与产品提示词（见 prompt-authoring）与代码注释（见 comment-conventions）。
+description: 定义、审查并重构可加载的 skill 包（SKILL.md 及其 references/scripts），覆盖结构、frontmatter、触发质量、渐进披露、references 组织、反模式与审查。适用于创建新 skill、审查现有 skill 的结构与触发质量，或把分散的规范整理成 skill；不适用于常驻指令文件（见 system-prompt-authoring）、运行时与产品提示词（见 prompt-authoring）、代码注释（见 comment-conventions）、内容事实本身（由对应领域 skill 管辖）与发布打包（见 release-operations-conventions）。
 argument-hint: '[skill 目录或名称]'
 ---
 
@@ -23,13 +23,47 @@ skill 是按需加载的规范包。它失效通常不是因为内容不足，�
 
 分工边界如下：
 
-- 常驻指令文件（`AGENTS.md`、`CLAUDE.md`、`QWEN.md`）始终加载，由 `system-prompt-authoring` 管辖；
+- 常驻指令文件（`AGENTS.md`、`CLAUDE.md`、`QWEN.md`）始终加载，由 `system-prompt-authoring` 管辖。
 - 一次性或产品提示词一次交付，由 `prompt-authoring` 管辖；本 skill 仅管辖“按需触发加载、作为规范包维护”
-  的 skill；
+  的 skill。
 - 内容事实的写法由对应领域 skill 管辖，例如 API 契约由 `api-and-data-conventions` 管辖；本 skill 仅管辖
-  承载结构；
-- 发布节奏、版本与 CI 门禁由 `release-operations-conventions` 与 `testing-and-quality-conventions` 管辖。
-- 生命周期：skill 包结构主责 S1/S2（G1/G2）与 S4 验证（G4）；阶段门禁与证据见 `project-lifecycle-governance`。
+  承载结构。
+- 项目文档与文档站由 `documentation-conventions` 管辖；发布节奏、版本与 CI 门禁由
+  `release-operations-conventions` 与 `testing-and-quality-conventions` 管辖。
+
+## 生命周期定位
+
+上游输入：S1 的问题与读者、S2 的相邻 skill 边界结论与宿主字段约束。下游交接：S3 交付正文与 references，
+S4 交付结构、触发与去重证据，供门禁与打包使用。升级与停止：与相邻 skill 争同一事实时交该事实的领域 skill
+或在无管辖者时报 `project-lifecycle-governance` 裁决；宿主对目录名、frontmatter 与加载方式的要求无法满足时
+停止并报告；一个 skill 承担两类读者时先拆分，拆不动即停止编写，不得混装。
+
+| 阶段 | 本 skill 的职责 | 产出 / 证据 |
+|---|---|---|
+| S1 探索 | 判断是否值得新建：一类读者、一类任务、与相邻 skill 的边界 | 边界结论；不新建时的链接方案 |
+| S2 计划 | 设计目录、frontmatter、正文与 references 的分工与行数预算 | 骨架、description 草稿、拆分计划 |
+| S4 验证 | 校验结构、链接、去重与触发面，运行 Markdown 校验 | 校验输出、触发判断结论、去重结果 |
+
+## 门禁与证据
+
+| 门禁 | 必须提供的证据 | 不满足时 |
+|---|---|---|
+| G1 立项 | 一类读者、一类任务与相邻 skill 的边界结论；不新建时给出应链接的现有 skill | Hold：读者或边界不明时不建包 |
+| G2 计划 | 目录与 frontmatter 方案、正文与 references 分工、行数与拆分预算 | Recycle：正文超预算仍塞细节的退回重划 |
+| G4 验证 | Markdown 校验输出、`name` 与目录名一致、相对链接可解析、触发与排除项可判定 | Recycle：断链或触发面与边界不一致 |
+
+`description` 的触发面无法只靠脚本判断，应当以典型任务句逐个核对“应当加载”与“不应当加载”两类判断，并把
+结论写入交付。触发判断与边界声明不一致的，按验证未通过处理。
+
+## 工作流
+
+1. **确认所解决的一个问题。** 一个 skill 仅服务一类读者与一类任务；承担两项职责的，应当拆分为两个 skill。
+2. **确定触发条件。** `description` 应当写成“适用于……，不适用于……”，不得罗列功能。
+3. **编写入口。** `SKILL.md` 开头说明适用范围、优先级与分工边界，再给出核心规则。
+4. **将细节拆至 `references/`。** 正文放置决策程序与默认值；长模板、清单与维度规则移入 `references/`，
+   正文仅保留链接。
+5. **脚本保持单一职责。** 脚本仅由 skill 调用；测试由项目测试套件承载，不放入 `scripts/`。
+6. **校验。** 运行 Markdown 校验，确认 `name` 与目录名一致、相对链接与脚本路径可以解析，并复核触发判断。
 
 ## 结构
 
@@ -51,17 +85,7 @@ frontmatter 字段如下：
 | `argument-hint` | 是 | 调用时可以补充的上下文；以单引号包裹方括号，例如 `'[路径或名称]'` |
 
 正文链接 `references/dimensions*.md` 的，必须有“维度索引”一节；说明句、表头与行格式见
-`references/templates.md`；不含维度文件的 skill 应当删除该节。
-
-## 流程
-
-1. **确认所解决的一个问题。** 一个 skill 仅服务一类读者与一类任务；承担两项职责的，应当拆分为两个 skill。
-2. **确定触发条件。** `description` 应当写成“适用于……”，不得罗列功能；智能体依该字段决定是否加载。
-3. **编写入口。** `SKILL.md` 开头应当说明适用范围、优先级与分工边界，再给出核心规则。
-4. **将细节拆至 `references/`。** 正文放置决策程序与默认值；长模板、清单与维度规则移至 `references/`，
-   正文仅保留链接。
-5. **脚本保持单一职责。** 脚本仅由 skill 调用；测试由项目测试套件承载，不放入 `scripts/`。
-6. **校验。** 运行 Markdown 校验，确认 `name` 与目录名一致、相对链接与脚本路径可以解析。
+[references/templates.md](references/templates.md)；不含维度文件的 skill 应当删除该节。
 
 ## 核心规则
 
@@ -76,7 +100,7 @@ frontmatter 字段如下：
   一份时使用 `checklist.md`，多份时使用 `checklists.md`；索引详情列应当写明文件名与节号，节号与索引一致。
 - **一项事实一个权威来源。** 共享事实仅在一处维护，其他 skill 以链接指向该处并注明“由 X 裁定”，不得复制。
 - **规则可判定。** 应当避免使用“合理”“合适”，优先给出可观察条件、阈值与正反例。改写示例见
-  `references/templates.md`。
+  [references/templates.md](references/templates.md)。
 - **适用与不适用均须写明。** `description` 与正文边界应当一致；边界含糊将导致智能体在不应当加载时加载，或
   在重叠时选错。
 - **脚本与测试分离。** `scripts/` 仅放置运行时脚本；测试由项目测试套件承载，不得混入 `scripts/`。
@@ -94,7 +118,8 @@ frontmatter 字段如下：
 | 排除项 | 写明不适用于何种情形 | 仅写适用，无边界 |
 | 可判定 | 任务出现即可判断是否应当加载 | 仅有形容词或功能清单 |
 
-正反例见 `references/templates.md`。
+正反例见 [references/templates.md](references/templates.md)。审查时应当取三个应加载与两个不应加载的任务句，
+逐个判断，任一项判错即视为触发面需要修改。
 
 ## 渐进披露
 
@@ -114,8 +139,8 @@ frontmatter 字段如下：
 
 ## references 组织
 
-- 一个文件承载一类内容，不得堆叠于一个文件；文件类型、维度拆分与清单命名见核心规则「`references` 按主题
-  管理」。
+- 一个文件承载一类内容，不得堆叠于一个文件；文件类型、维度拆分与清单命名见核心规则“`references` 按主题
+  管理”。
 - 文件命名使用 kebab-case，名称描述内容，并与正文链接中的文件名完全一致。
 - 一项事实仅在一处：正文与各 `references` 之间、`references` 之间，均不得互相复制，其余以链接引用。
 
@@ -139,7 +164,7 @@ frontmatter 字段如下：
 - [ ] `name` 与目录名一致，`description` 写明适用与不适用。
 - [ ] `argument-hint` 存在，且为单引号包裹的方括号格式。
 - [ ] `references/` 与 `scripts/` 仅在需要时存在，目录内无空占位文件。
-- [ ] `description` 触发质量合格：不宽泛、不狭窄、有排除项、可判定。
+- [ ] 触发质量合格：不宽泛、不狭窄、有排除项、可判定。
 - [ ] `SKILL.md` 第一屏说明用途、触发与边界。
 - [ ] 细节已拆至 `references/`，正文仅保留入口与默认值。
 - [ ] 正文不超过 250 行（不含 frontmatter）。
@@ -148,15 +173,15 @@ frontmatter 字段如下：
 - [ ] 事实单一权威，交叉引用为链接而非复制。
 - [ ] 规则可判定，带阈值或示例。
 - [ ] `scripts/` 仅含运行时脚本，测试未混入。
-- [ ] Markdown 校验通过，相对链接与脚本路径可以解析。
+- [ ] Markdown 校验通过，相对链接与脚本路径可以解析，三个应加载与两个不应加载的任务句判断正确。
 
 ## 示例
 
 <example>
 场景：新增 `prompt-authoring`，正文写了 400 行提示词规则。
 问题：`SKILL.md` 过载，加载即消耗大量上下文。
-修复：正文保留适用范围、优先级、流程、核心规则与类型矩阵；将骨架与评测细节移至 `prompt-authoring` 的
-`references/templates.md` 与 `references/evaluation.md`（跨 skill 引用），正文以链接指向该 skill 的引用。
+修复：正文保留适用范围、优先级、工作流、核心规则与类型矩阵；将骨架与评测细节移至该 skill 的
+`references/templates.md` 与 `references/evaluation.md`，正文以链接指向。
 </example>
 
 <example>
@@ -167,5 +192,8 @@ frontmatter 字段如下：
 
 ## 参考资料
 
-- `SKILL.md` 骨架与 frontmatter 模板：`references/templates.md`。
-- 配套 skill 的加载顺序与边界：`references/skill-load-order.md`。
+生命周期契约见 [references/lifecycle.md](references/lifecycle.md)；判断 skill 的阶段职责、门禁证据、交接升级
+与裁剪度量时先读该文件。可复制骨架、frontmatter 模板、`description` 写法、目录布局与可判定改写见
+[references/templates.md](references/templates.md)；新建 skill 或改写正文结构前读该文件。配套 skill 的加载
+顺序与边界见 [references/skill-load-order.md](references/skill-load-order.md)；为一个项目制定规范、决定先加载
+哪个 skill 时读该文件。

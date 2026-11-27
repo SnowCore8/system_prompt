@@ -83,11 +83,13 @@ export function runHook(script, payload, { env = process.env, args = [], raw = f
 
     let stdout = '';
     let stderr = '';
+    child.stdout.setEncoding('utf8');
+    child.stderr.setEncoding('utf8');
     child.stdout.on('data', (chunk) => {
-      stdout += chunk.toString();
+      stdout += chunk;
     });
     child.stderr.on('data', (chunk) => {
-      stderr += chunk.toString();
+      stderr += chunk;
     });
     child.on('close', (code) => {
       resolve({ code, stdout, stderr });
