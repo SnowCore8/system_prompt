@@ -51,6 +51,7 @@ case "$1" in
     cp -a "$REPO_ROOT/rules" "$TARGET/constraints"
     cp -a "$REPO_ROOT/shared/commands" "$TARGET/commands"
     cp -a "$REPO_ROOT/shared/scripts" "$TARGET/scripts"
+    rm -f "$TARGET/scripts/inject-constraints.js" "$TARGET/scripts/inject-compact.js"
     ;;
 esac
 cp "$REPO_ROOT/LICENSE" "$REPO_ROOT/LICENSE-CC-BY-4.0.txt" "$REPO_ROOT/LICENSE-MIT.txt" "$REPO_ROOT/THIRD-PARTY-NOTICES.md" "$TARGET/"
