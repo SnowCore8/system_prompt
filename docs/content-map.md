@@ -9,7 +9,7 @@
 |---|---|---|---|
 | 常驻约束 | 授权、不可逆、诚实、意图、方法、交付与验收 | `rules/global-user-constraints.md` | P |
 | skill 入口 | 触发、适用边界、流程、核心规则、审查清单 | `skills/*/SKILL.md`（20 个） | P |
-| skill 细节 | 维度表、检查表、模板、操作手册、语言覆盖 | `skills/*/references/*.md`（51 个） | P |
+| skill 细节 | 维度表、检查表、模板、操作手册、语言覆盖 | `skills/*/references/*.md` | P |
 | 命令 | 手动审查当前请求/方案/命令 | `shared/commands/constraints-check.md` | P |
 | 项目文档 | 加载调研、发布、时间、校验规则、台账 | `docs/*.md` 与根文档 | R |
 | 分发元数据 | 清单、hooks、许可证、第三方声明 | `plugins/`、`package.json`、根文件 | M/C |
@@ -29,41 +29,41 @@
 
 | skill | 主责 | references |
 |---|---|---|
-| `skill-authoring` | skill 包结构、frontmatter、触发质量、渐进披露、references 组织 | templates、skill-load-order（2） |
-| `prompt-authoring` | 运行时与产品提示词、输出契约、评测与回归 | evaluation、output-contract、templates（3） |
-| `system-prompt-authoring` | `AGENTS.md`/`CLAUDE.md`/`QWEN.md` 的常驻指令内容与校验 | complex-logic、templates（2） |
-| `documentation-conventions` | README、贡献指南、ADR、教程、运行手册、变更记录、文档站 | 3 组 dimensions + 3 组 templates + change-records（7） |
+| `skill-authoring` | skill 包结构、frontmatter、触发质量、渐进披露、references 组织 | templates、skill-load-order |
+| `prompt-authoring` | 运行时与产品提示词、输出契约、评测与回归 | evaluation、output-contract、templates |
+| `system-prompt-authoring` | `AGENTS.md`/`CLAUDE.md`/`QWEN.md` 的常驻指令内容与校验 | complex-logic、templates |
+| `documentation-conventions` | README、贡献指南、ADR、教程、运行手册、变更记录、文档站 | 3 组 dimensions + 3 组 templates + change-records |
 
 ### 3.2 设计与代码
 
 | skill | 主责 | references |
 |---|---|---|
-| `architecture-and-design-conventions` | 模块/组件边界、分层、依赖方向、数据流、ADR | dimensions、checklists、framework-changes（3） |
+| `architecture-and-design-conventions` | 模块/组件边界、分层、依赖方向、数据流、ADR | dimensions、checklists、framework-changes |
 | `project-structure-conventions` | 项目目录、包/工作区边界、物理导入/构建图、包/工作区公开入口、生成与第三方目录 | — |
-| `api-and-data-conventions` | API 契约、错误/分页/幂等/授权、schema 迁移与保留 | dimensions、checklists（2） |
-| `code-style-conventions` | 格式、模块内部文件与资源布局、依赖版本管理、配置、错误与日志 | dimensions、dimensions-errors、languages（3） |
-| `comment-conventions` | 源码注释、文档注释、声明头、弃用与工具指令 | 3 组 dimensions + languages（4） |
-| `naming-conventions` | 文件/代码/接口/数据/配置/提交消息的命名 | 3 组 dimensions + languages（4） |
-| `refactoring-conventions` | 重构/修复判定、安全手法、代码异味、变更拆分 | dimensions、catalog、change-safety（3） |
+| `api-and-data-conventions` | API 契约、错误/分页/幂等/授权、schema 迁移与保留 | dimensions、checklists |
+| `code-style-conventions` | 格式、模块内部文件与资源布局、依赖版本管理、配置、错误与日志 | dimensions、dimensions-errors、languages |
+| `comment-conventions` | 源码注释、文档注释、声明头、弃用与工具指令 | 3 组 dimensions + languages |
+| `naming-conventions` | 文件/代码/接口/数据/配置/提交消息的命名 | 3 组 dimensions + languages |
+| `refactoring-conventions` | 重构/修复判定、安全手法、代码异味、变更拆分 | dimensions、catalog、change-safety |
 
 ### 3.3 运行正确性
 
 | skill | 主责 | references |
 |---|---|---|
-| `concurrency-conventions` | 共享状态、同步原语、死锁/活锁、异步模型、并发测试 | dimensions、checklist（2） |
-| `performance-conventions` | 测量、目标与预算、瓶颈、缓存/索引取舍、优化纪律 | dimensions、checklists（2） |
-| `debugging-conventions` | 缺陷报告、复现、二分、根因、最小修复验证 | dimensions、report-template、root-cause-discipline（3） |
-| `testing-and-quality-conventions` | 测试层级、门禁、静态分析、本地/CI 对齐 | dimensions、gates、project-commands（3） |
+| `concurrency-conventions` | 共享状态、同步原语、死锁/活锁、异步模型、并发测试 | dimensions、checklist |
+| `performance-conventions` | 测量、目标与预算、瓶颈、缓存/索引取舍、优化纪律 | dimensions、checklists |
+| `debugging-conventions` | 缺陷报告、复现、二分、根因、最小修复验证 | dimensions、report-template、root-cause-discipline |
+| `testing-and-quality-conventions` | 测试层级、门禁、静态分析、本地/CI 对齐 | dimensions、gates、project-commands |
 
 ### 3.4 交付与治理
 
 | skill | 主责 | references |
 |---|---|---|
-| `repository-governance-conventions` | 必需文件、仓库卫生、打包实践、角色与审批路由 | dimensions、playbooks（2） |
-| `release-operations-conventions` | 版本、发布、CI/CD、可观测性、事故、备份恢复 | dimensions、playbooks（2） |
-| `vcs-collaboration-conventions` | Git 工作流、分支、PR/MR、审查、保护与所有权 | dimensions、playbooks（2） |
-| `worktree-collaboration-conventions` | 领导者智能体统一管理的智能体团队工作树分配、隔离、集成、恢复与清理 | dimensions、playbooks（2） |
-| `security-compliance-conventions` | 威胁、凭据、供应链、SBOM、许可证、PII、披露 | dimensions、checklists（2） |
+| `repository-governance-conventions` | 必需文件、仓库卫生、打包实践、角色与审批路由 | dimensions、playbooks |
+| `release-operations-conventions` | 版本、发布、CI/CD、可观测性、事故、备份恢复 | dimensions、playbooks |
+| `vcs-collaboration-conventions` | Git 工作流、分支、PR/MR、审查、保护与所有权 | dimensions、playbooks |
+| `worktree-collaboration-conventions` | 领导者智能体统一管理的智能体团队工作树分配、隔离、集成、恢复与清理 | dimensions、playbooks |
+| `security-compliance-conventions` | 威胁、凭据、供应链、SBOM、许可证、PII、披露 | dimensions、checklists |
 
 ## 4. 统一内部结构
 

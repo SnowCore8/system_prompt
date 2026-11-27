@@ -17,13 +17,13 @@
 
 | 路径 | 类别 | 加载者或消费者 | 结论 |
 |---|---|---|---|
-| `rules/global-user-constraints.md` | P | DSH systemPrompt；Qoder/Qwen rules 与 hook；命令按需读取 | 常驻约束唯一真源 |
+| `rules/global-user-constraints.md` | P | DSH systemPrompt；Qoder hook；Qwen contextFileName；命令按需读取 | 常驻约束唯一真源 |
 | `AGENTS.md` | P | DSH/Qwen/Qoder 项目指令 | 只放智能体项目指令 |
 | `CONTRIBUTING.md` | R | 人类贡献者与维护者 | 人类文档，不进入模型上下文 |
 | `skills/*/SKILL.md` | P | 三端 skill 发现；正文按需加载 | 20 个 skill 入口 |
-| `skills/*/references/*.md` | P | skill 按需读取 | 51 个；维护者材料在 `docs/` |
+| `skills/*/references/*.md` | P | skill 按需读取 | 结构与分布见 `docs/content-map.md`；维护者材料在 `docs/` |
 | `shared/commands/constraints-check.md` | P | Qoder/Qwen 命令；DSH 未注册 | 命令提示词 |
-| `shared/scripts/*.py` | C | Qoder/Qwen hook | 提示词发射器，不是提示词正文 |
+| `shared/scripts/*.js` | C | Qoder/Qwen hook | 提示词发射器，不是提示词正文 |
 | `plugins/dsh/src/index.js`、hooks | C | 宿主运行时 | 注入与 skill 提供者 |
 | `docs/*` | R | 维护者 | 不注入、不随包 |
 | `README.md`、`GOVERNANCE.md`、`SECURITY.md`、`GLOSSARY.md`、`CHANGELOG.md` | R | 人类/GitHub/npm | 不自动加载 |
@@ -39,7 +39,8 @@
 - 所有 skill references 为 P。
 - 机器校验规则在 `docs/markdown-check-rules.md`，不在 skill references 中重复。
 - 发布 runbook 以 `docs/release.md` 为准；README、CONTRIBUTING、GOVERNANCE 只保留摘要与链接。
-- Qoder 插件 `rules/` 当前不被 CLI 加载；DSH 不注册 `constraints-check` 命令；DSH 与 Qoder/Qwen hook 均注入 rules 原文，宿主解析另行处理。
+- Qoder 插件 `rules/` 当前不被 CLI 加载；DSH 不注册 `constraints-check` 命令。
+- 约束注入路径：Qoder 由 `SessionStart` hook 注入；Qwen 由清单 `contextFileName` 每请求加载；DSH 由 bundle 经 `ctx.systemPrompt.section()` 注入。
 
 ## 目标结构
 

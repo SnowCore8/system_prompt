@@ -3,8 +3,8 @@
 维护者：SnowCore8；何时阅读：切版本、打 tag 或回滚发布时。
 
 本仓库用 SemVer 与 tag 发布。三个包的版本必须一致：`plugins/qoder/.qoder-plugin/plugin.json`、
-`plugins/qwen/qwen-extension.json` 与仓库根 `package.json`（DSH bundle）的 `version` 由发布者手动修改，
-`scripts/dist.sh` 只读取和校验，不推导或改写。
+`plugins/qwen/qwen-extension.json` 与仓库根 `package.json`（DSH bundle）的 `version` 由发布者手动修改；
+`scripts/check.sh` 与 `scripts/dist.sh` 校验三者一致，`dist.sh` 不推导或改写版本。
 
 ## 版本规则
 
@@ -30,7 +30,12 @@
    `for p in qoder qwen dsh; do sha256sum -c "global-user-constraints-$p-<version>.sha256"; done` 核对。
 8. npm 是唯一发布通道；GitHub Packages 不是发布目标。
 
-本地出包可用 `scripts/dist.sh --require-tag`，要求 HEAD 正好带有 `v<version>` tag。
+## 出包
+
+- `scripts/dist.sh` 只出包，不改写版本；构建归一 mtime、按名称排序并使用 `zip -X`，
+  同一版本同一 tag 的制品可复现。
+- 本地出包可用 `scripts/dist.sh --require-tag`，要求 HEAD 正好带有 `v<version>` tag；
+  每个包只保留最新制品与校验和，构建新版本时删除旧制品；zip 与 `.sha256` 不纳入版本库。
 
 ## 回滚
 

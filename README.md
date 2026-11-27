@@ -8,6 +8,8 @@
 
 ## 快速开始
 
+开发与校验需要 `python3`、`node` 与 `git`（CI 使用 Python 3.12 与 Node 20）。
+
 ```bash
 python3 -m pip install -r requirements-dev.txt
 scripts/assemble.sh dev      # 生成 .dsh/.qoder/.qwen 开发入口（不提交）
@@ -53,9 +55,10 @@ scripts/check.sh             # 全量校验
 
 安装与行为细节见 [Qoder](plugins/qoder/README.md)、[Qwen Code](plugins/qwen/README.md) 与 [DSH](plugins/dsh/README.md)。
 
-三包共用 SemVer 版本号，由 `scripts/check.sh`、`scripts/dist.sh` 与 release 工作流校验。各端差异：
+三包共用 SemVer 版本号，校验细节见 [docs/release.md](docs/release.md)。各端差异：
 
-- Qoder/Qwen 通过 hooks 注入；DSH 以 skill 提供者与 `systemPrompt.section()` 注入，不注册 `constraints-check` 命令。
+- Qoder 与 Qwen 由插件包提供约束（细节见各自 README）；DSH 以 skill 提供者与 `systemPrompt.section()`
+  注入，不注册 `constraints-check` 命令。
 - Qwen 不读取 `.qwen/AGENTS.md`；Qoder 项目级不提供 `.qoder-cn` 与 `.qoder/plugins`。
 - 时间由 Qoder/Qwen hook 注入；DSH 使用自身时间注入。
 
@@ -65,9 +68,7 @@ scripts/check.sh             # 全量校验
 scripts/check.sh
 ```
 
-`check.sh` 覆盖约束体积、Markdown、skill/hook/DSH 测试、shellcheck、ruff、依赖审计、覆盖率、JSON、敏感文件、
-零跟踪软链、开发组装、三包清单与组装后的 Qoder 插件校验。缺少 `shellcheck`、`node` 或 `qoderclicn` 时会跳过
-对应项并在结尾计数。
+覆盖范围、跳过条件与单独运行测试的命令见 [CONTRIBUTING.md](CONTRIBUTING.md)。
 
 Qoder 本地安装冒烟：
 
@@ -78,7 +79,7 @@ qoderclicn --cwd /tmp plugins install --scope local /tmp/qoder-package
 
 ## 发布与 CI
 
-- 发布：版本、tag、回滚与检查单见 [docs/release.md](docs/release.md)；`scripts/dist.sh` 生成可复现 zip 与 SHA256。
+- 发布：版本、tag、出包、回滚与检查单见 [docs/release.md](docs/release.md)；`scripts/dist.sh` 生成 zip 与 SHA256。
 - CI：`check` 运行 `scripts/check.sh` 并做历史机密扫描；`release` 在推送 `v*` tag 时构建三包、SBOM 与 Release
   附件。
 

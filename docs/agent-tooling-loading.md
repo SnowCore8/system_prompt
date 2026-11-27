@@ -118,10 +118,9 @@
 插件携带 rules 的现状：CN 支持矩阵把 Rules 标为 Desktop「即将支持」、CLI「不适用」；
 CLI 1.1.88 的 `plugins validate` 把 `"rules"` 报为 unknown field 并忽略，只含 `rules/` 的插件
 会因「没有可安装组件」被拒。宿主原生的做法仍是把规则放用户级或项目级 `.qoder/rules/`；
-插件若要让约束安装即生效，只能在 `SessionStart` hook 中把规则写进用户级 `.qoder/rules/`
-（本仓库插件首次/内容变化时覆盖写入，不通过 hook 注入正文，之后由 Qoder 原生 rules 加载；
-`UserPromptSubmit` 每轮提醒 `Never violate global user constraints.`）。卸载需手动删除该
-rules 文件。`qoder.md` 是否加载未验证，本仓库已移除。
+本仓库插件由 `SessionStart` hook 注入全文，不写用户级 rules，见
+[plugins/qoder/README.md](../plugins/qoder/README.md)；`UserPromptSubmit` 每轮提醒
+`Never violate global user constraints.`。`qoder.md` 是否加载未验证，本仓库已移除。
 
 来源：[Qoder 插件参考](https://docs.qoder.com/cli/plugins-reference)、[Qoder CN 插件打包规范](https://docs.qoder.cn/qoder-plugins)。
 
@@ -356,13 +355,15 @@ DSH 里「插件」是 TypeScript 模块，导出 `apply(ctx)`；可分发的安
 
 ## 与本仓库的映射
 
-本仓库按上文的规则整改后，各工具的项目级入口如下：
+本仓库各工具的项目级入口如下：
 
 - Qwen Code：`.qwen/rules`（由 `scripts/assemble.sh` 从 `rules/` 生成）。其中的规则没有 `paths:`，属 baseline，
-  首个请求进入 system prompt；`.qwen/AGENTS.md` 会被 Qwen 忽略，因此不再提供。
-- Qoder：项目级 `.qoder/rules`，由 `scripts/assemble.sh` 从根级 `rules/` 生成；用户级由插件 `SessionStart` hook 自动写入
-  （同内容已存在时跳过，不注入正文），也可手动复制到 `~/.qoder-cn/rules`（国际版 `~/.qoder/rules`）。
-  `.qoder-cn` 与 `.qoder/plugins` 在项目级没有加载语义，已移除。
+  首个请求进入 system prompt；插件清单的 `contextFileName` 每个请求加载
+  `constraints/global-user-constraints.md`；`SessionStart` 仅有时间 hook；`.qwen/AGENTS.md` 会被
+  Qwen 忽略，因此不再提供。
+- Qoder：项目级 `.qoder/rules` 由 `scripts/assemble.sh` 从根级 `rules/` 生成；用户级约束由插件
+  `SessionStart` hook 注入全文，不写 `~/.qoder*/rules`。`.qoder-cn` 与 `.qoder/plugins` 在项目级没有加载语义，
+  已移除。
 - DeepSeek Harness：`.dsh/skills` 是 rank 100 的 skill 扫描根，由 `scripts/assemble.sh` 从顶层
   `skills/` 生成；根 `AGENTS.md` 是项目指令入口；约束正文由 bundle 经 `ctx.systemPrompt.section()` 自动注入，
   `~/.dsh/AGENTS.md` 已含同内容时按 sha256 去重跳过。
@@ -370,12 +371,10 @@ DSH 里「插件」是 TypeScript 模块，导出 `apply(ctx)`；可分发的安
   Qoder 与 Qwen Code 只扫描一层，DSH 也不递归发现嵌套 `SKILL.md`。
 - 三包分发：Qoder 插件在 `plugins/qoder`（`command` + `args`，`${QODER_PLUGIN_ROOT}`），
   Qwen 扩展在 `plugins/qwen`（单条 `command`，`${CLAUDE_PLUGIN_ROOT}`），DSH bundle 在
-  `plugins/dsh`（`ctx.skills.registerProvider`）；Qoder/Qwen 共用 `rules/`、`skills/` 与 `shared/`，
-  DSH bundle 只带 `rules/` 与 `skills/`。
-- 时间：两者都没有内建时间感知；Qwen 在 `SessionStart` 与 `UserPromptSubmit`、Qoder 在
-  `UserPromptSubmit` 注入 DSH 风格三行时间块（Qoder 用插件数据记录 turn 与耗时，不输出 step）；
-  Qoder 另在 `PreToolUse`/`PostToolUse`/`PostToolUseFailure` 注入一行时间，并在
-  `SessionStart(source=compact)` 补约束提醒与压缩后时间，见 `docs/time-awareness.md`。
+  `plugins/dsh`（`ctx.skills.registerProvider`）；Qoder/Qwen 都从顶层 `rules/`、`skills/` 与 `shared/`
+  组装（Qwen 的规则目录命名为 `constraints/`），DSH bundle 只带 `rules/` 与 `skills/`。
+- 时间：Qoder 与 Qwen 都没有内建时间感知，由 hook 注入 DSH 风格时间块；设计、接线与关闭方式见
+  [docs/time-awareness.md](time-awareness.md)。
 - 根 `AGENTS.md` 也会被 Qwen Code 当作项目级 `AGENTS.md` 读取，所以它只承载本仓库的智能体项目指令；
   人类贡献与发布流程在 `CONTRIBUTING.md`，不进入模型上下文。
 - 插件包内 Qoder 与 DSH 随包分发 `rules/`、Qwen 分发 `constraints/`（Qwen 把扩展的 `rules/` 当作

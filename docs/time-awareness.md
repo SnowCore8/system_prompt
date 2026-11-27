@@ -10,7 +10,7 @@ Qoder 与 Qwen Code 都不向模型注入当前时间。模型只能靠对话里
 - 载体是 hook 的 `additionalContext`，不改写系统提示，也不依赖模型主动运行 `date`。
 - 时机：
   - Qwen Code：`SessionStart` 与每次 `UserPromptSubmit`；
-  - Qoder：`SessionStart` 安装用户级 rules；`source=compact` 时补约束提醒和一行压缩后时间；
+  - Qoder：`SessionStart` 注入约束全文（`source=resume` 或配置根/项目已有同内容时跳过），`source=compact` 时另注入提醒与一行时间；
     `UserPromptSubmit` 注入完整 DSH 时间块；`PreToolUse` / `PostToolUse` / `PostToolUseFailure`
     各注入一行时间；`SessionEnd` 清理状态。
 - 采用 DSH `time-context` 的三行格式：
@@ -21,10 +21,9 @@ Qoder 与 Qwen Code 都不向模型注入当前时间。模型只能靠对话里
 
   Qoder 没有逐步 step 字段，因此不再输出恒为 1 的 step；脚本用 `QODER_PLUGIN_DATA` 按 session 记录 turn 与上次注入时间。没有状态时输出 turn 1、unavailable；Qwen 的 SessionStart 同样从 turn 1 开始。
 
-- 时区依次取 `TZ`（有 `zoneinfo`/tzdata 时）、`/etc/timezone`、`/etc/localtime` 的 zoneinfo 路径，最后用 `tzname()` 兜底；
-  Windows 没有 `/etc`，有 tzdata 时用 IANA，否则显示系统时区名，仍保留有效 UTC 偏移。
-  仍取不到时标 `UTC`。
-- 成本约为每轮几十 token；工具事件只加一行。失败静默，不阻断会话。Qoder 会写插件数据目录的 clock 状态，并在 `SessionEnd` 清理；不写项目文件、不联网，超时 10 秒。
+- 时区依次取 `TZ`（用 `Intl.DateTimeFormat` 校验）、`Intl` 解析出的系统时区、`/etc/timezone`，
+  最后用 UTC 整点偏移兜底；Windows 没有 `/etc`，走 `Intl` 与偏移。时间戳同时写入数值偏移与方括号内的时区名。
+- 成本约为每轮几十 token；工具事件只加一行。失败静默，不阻断会话。Qoder 会写插件数据目录的 clock 状态，并在 `SessionEnd` 清理；Qwen 在宿主提供 `QODER_PLUGIN_DATA` 或 `CLAUDE_PLUGIN_DATA` 时同样写该状态，其 hooks 未配置 `SessionEnd` 清理。两者都不写项目文件、不联网，超时 10 秒。
 
 ## 双端接线
 
@@ -41,14 +40,13 @@ Qoder 与 Qwen Code 都不向模型注入当前时间。模型只能靠对话里
 
 ## 与约束注入的关系
 
-- Qwen 的约束注入只在 `SessionStart` 做一次，并做同内容去重；Qoder 通过 `SessionStart` 安装用户级 rules，不在 hook 注入全文。时间注入不去重，每轮都是新值。
+- Qwen 由清单的 `contextFileName` 每个请求加载约束正文；Qoder 由 `SessionStart` hook 注入全文，不写用户级 rules。时间注入不去重，每轮都是新值。
 - 时间由 `scripts/inject-clock.js` 负责：`UserPromptSubmit` 发完整 DSH 块，工具事件发一行时间。
 
 ## 验证
 
-- `tests/hooks/test_inject-clock.js` 覆盖用户提示完整时间、工具事件一行时间、SessionEnd 清理、非法 payload 静默、双端 hooks 配置与清单版本。
-- 仓库测试覆盖时间注入、工具事件时间、状态清理、静默失败与双端 hooks 配置。
-- 宿主精确的 token 计费与 Windows 上 Qwen 扩展的 `python` 可用性尚未在仓库内验证。
+- `tests/hooks/inject-clock.test.js` 覆盖用户提示完整时间、工具事件一行时间、SessionEnd 清理、非法 payload 静默、双端 hooks 配置与清单版本。
+- 宿主精确的 token 计费与 Windows 上 Qwen 扩展的 `node` 可用性尚未在仓库内验证。
 
 ## 关闭方式
 

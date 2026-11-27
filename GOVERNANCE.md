@@ -21,20 +21,15 @@
 
 ## 审查
 
-- 所有改动经维护者审查后合入；`.github/CODEOWNERS` 在接入 GitHub 远端后生效。
+- 所有改动经维护者审查后合入；`.github/CODEOWNERS` 已配置，分支保护启用前审查仍靠约定。
 - PR 模板要求粘贴 `scripts/check.sh` 的真实输出与退出码，未运行的验证写「未运行」。
 - 涉及规范正文、插件清单或发布脚本的改动，审查时同时核对
   [CHANGELOG.md](CHANGELOG.md) 是否同步。
 
 ## 发布
 
-- 版本采用 SemVer，`plugins/qoder/.qoder-plugin/plugin.json`、`plugins/qwen/qwen-extension.json`
-  与仓库根 `package.json`（DSH bundle）的 `version` 必须一致；
-  发布点是注释 tag `v<version>`，tag 与三个包的版本必须一致。
-- 发布流程见 [docs/release.md](docs/release.md)：改版本与 CHANGELOG → 校验 → 提交 → 打 tag → 推送，
-  由 `release` 工作流构建 zip 与 SHA256 并挂到 Release。
-- `scripts/dist.sh` 只出包，不改写版本；构建归一 mtime、按名称排序并使用 `zip -X`，
-  同一版本同一 tag 的制品可复现；本地每个包只保留最新制品与校验和，构建新版本时删除旧制品。
+- 发布由维护者执行；版本规则、tag 与三包版本一致性、出包、回滚与检查单见
+  [docs/release.md](docs/release.md)。
 - 分支保护：`master` 要求 `check` 状态通过、禁止强推、要求线性历史；`v*` tag 受保护。
   免费计划的私有仓库不支持分支保护与仓库规则集（API 返回 403），升级到 GitHub Pro 后立即启用；
   在此之前以 `check` 工作流、CODEOWNERS 与 PR 模板约束。

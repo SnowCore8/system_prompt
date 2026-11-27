@@ -2,8 +2,8 @@
 
 维护者：SnowCore8。本文只说明安装与运行行为，不定义规则；规则以包内 `constraints/global-user-constraints.md` 为准。
 
-安装后 `SessionStart` 注入约束全文与当前时间，`UserPromptSubmit` 每次刷新时间；已经通过
-`.qwen/rules`、`AGENTS.md` 或 `QWEN.md` 加载同一份约束时跳过。
+安装后，清单的 `contextFileName` 每个请求加载约束正文；`SessionStart` 与 `UserPromptSubmit` 的 hook
+只注入当前时间。
 
 ## 结构
 
@@ -11,10 +11,10 @@
 |---|---|
 | `qwen-extension.json` | Qwen 扩展清单 |
 | `hooks/qwen-hooks.json` | hook 配置，根目录用 `${CLAUDE_PLUGIN_ROOT}` |
-| `constraints/global-user-constraints.md` | 全局用户约束正文；不用 `rules/`，避免被 Qwen 当作条件规则扫描 |
+| `constraints/global-user-constraints.md` | 全局用户约束正文；清单 `contextFileName` 每请求加载，不使用 `rules/` |
 | `skills/` | 二十个通用规范 skill |
 | `commands/` | 手动审查命令 |
-| `scripts/` | 约束与时间注入脚本 |
+| `scripts/` | 时间注入脚本 |
 
 以上为安装后的自包含结构；源码包只保留清单、hooks 与说明，使用 `scripts/materialize.sh qwen` 从顶层真源组装。
 
@@ -24,8 +24,8 @@
 qwen extensions install global-user-constraints-qwen-<版本>.zip
 ```
 
-安装后开新会话；不需要手动复制规则。Qwen 会把 `${CLAUDE_PLUGIN_ROOT}` 替换成扩展根，
-约束脚本同时接受根目录参数，不依赖环境变量。
+安装后开新会话；约束由清单的 `contextFileName` 每请求加载，不需要复制规则。Qwen 会把
+`${CLAUDE_PLUGIN_ROOT}` 替换成扩展根。
 
 ## 命令
 
@@ -34,15 +34,15 @@ qwen extensions install global-user-constraints-qwen-<版本>.zip
 
 ## 行为
 
-- `SessionStart`：读取 `constraints/global-user-constraints.md` 注入全文，并注入当前时间；去重路径包含 `~/.qwen/rules/`、`~/.qwen/AGENTS.md`、
-  项目 `.qwen/rules/`、`AGENTS.md`、`QWEN.md`（从 cwd 向上查到 `.git`）。`source` 为 `resume`
-  时跳过约束，`startup`/`new`/`clear`/`compact` 才注入。
-- `UserPromptSubmit`：当前时间；Qwen 会把这段上下文包进 `<qwen:user-prompt-submit-context>` 标签。
-- 规则缺失、payload 非法、事件不在范围内时静默退出 0。
-- 解释器用 `python`（PATH 上需有 3.9+），`-X utf8` 固定 stdio 编码；`timeout` 为 10 秒。
+- `contextFileName`：每个请求加载 `constraints/global-user-constraints.md`，约束正文随请求进入上下文。
+- `SessionStart`：注入当前时间。
+- `UserPromptSubmit`：注入当前时间；Qwen 会把这段上下文包进 `<qwen:user-prompt-submit-context>` 标签。
+- payload 非法或事件不在范围内时静默退出 0。
+- 解释器用 `node`（PATH 上需可用；CI 使用 Node 20）；`timeout` 为 10 秒。
 
 ## 安全边界
 
-- hook 只读：读包内规则、去重候选文件与系统时间；不写盘、不联网、不持久化。
-- 注入的约束全文会进入模型上下文；敏感内容不要写进规则正文。
+- 时间 hook 读取宿主 payload 与系统时间；若宿主提供 `QODER_PLUGIN_DATA` 或 `CLAUDE_PLUGIN_DATA`，
+  会写该目录下的 clock 状态用于 turn 计数。不修改项目文件，不联网。
+- 注入的约束正文会进入模型上下文；敏感内容不要写进规则正文。
 - 安装即执行：只安装可信来源的包，并核对 SHA256 校验和。
