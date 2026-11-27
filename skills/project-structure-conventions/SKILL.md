@@ -58,7 +58,7 @@ argument-hint: '[项目目录或模块边界]'
 - **公开面应当最小化。** 包通过导出或入口文件暴露稳定 API；内部子路径、内部类型与实现细节不得被外部深层导入；不得用全量 barrel 文件把内部结构重新导出。
 - **共享代码必须有归属与稳定契约。** `shared`、`common` 或 kernel 仅承载稳定契约与通用机制；被两个模块使用的代码应当按 architecture 的裁定明确依赖方向，而不是把两边逻辑堆进共享目录。
 - **生成与第三方引入目录只读。** 生成代码应当有生成命令、来源与所有者；第三方引入代码应当保留上游来源与补丁记录；两者都不得手工编辑，并应当排除于格式化与 lint 之外。
-- **平台目录是保留层，不是业务模块。** `.github/` 由托管平台读取，承载 `workflows/`、`actions/`、`ISSUE_TEMPLATE/`、
+- **GitHub 平台目录是保留层，不是业务模块。** `.github/` 由托管平台读取，承载 `workflows/`、`actions/`、`ISSUE_TEMPLATE/`、
   `dependabot.yml`、`release.yml` 与 PR 模板；`CODEOWNERS` 按 `repository-governance-conventions` 的路径表放置。该目录
   不得存放产品代码，所有者应当是平台团队，其变动按流水线变更审查。
 - **流水线与本地 action 按可复用单元放置。** 可复用工作流置于 `.github/workflows/` 并以 `workflow_call` 触发；本地
