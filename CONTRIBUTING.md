@@ -20,7 +20,8 @@
 1. 修改约束、skill 或插件前，应当先阅读 `README.md` 与对应目录说明。
 2. 真源位置如下：约束正文为 `rules/global-user-constraints.md`；skill 真源为 `skills/`；命令与注入脚本为
    `shared/`；Qoder/Qwen 包位于 `plugins/qoder|qwen`，包内只放清单与 hook，安装包由 `scripts/materialize.sh` 从顶层真源组装；DSH bundle 的
-   清单为仓库根 `package.json`，`plugins/dsh` 放置源码与 patch，构建时复制 `skills/` 与 `rules/`。约束正文
+   清单为仓库根 `package.json`，`plugins/dsh` 放置源码与 patch，构建时复制 `skills/` 与 `rules/`；Qoder npm 安装包
+   清单为 `npm/qoder/package.json`，只承载 zip 与校验和。约束正文
    以 UTF-8 字节计硬上限 40 KiB；超限时按主题把规则提取到对应 skill 的 `references/`，正文只保留摘要与加载
    指引。
 3. 新增或调整入口时，运行 `scripts/assemble.sh` 重新组装；不手工复制，也不提交软链。
@@ -41,7 +42,7 @@
 - 依赖安装：`python3 -m pip install -r requirements-dev.txt`。
 - 全量校验：`scripts/check.sh`，覆盖常驻约束体积（≤40 KiB）、Markdown、skill 与 hook 测试、DSH bundle 的
   `node --test`、shellcheck、ruff、依赖审计（pip-audit）、覆盖率（`--fail-under=90`）、JSON、敏感文件、
-  零软链与组装、三包清单一致性。缺少 `shellcheck` 或 `qoderclicn` 时对应段打印“跳过”；缺少 `python3`、`node`、`git`
+  零软链与组装、发布包清单一致性。缺少 `shellcheck` 或 `qoderclicn` 时对应段打印“跳过”；缺少 `python3`、`node`、`git`
   或任一 Python 校验依赖时，脚本直接退出 2。交付时应当说明缺口。
 - 单独运行测试：skill 测试使用
   `python3 -B -m unittest discover -s tests/skill -p 'test_*.py'`；hook 测试使用

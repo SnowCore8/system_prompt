@@ -29,10 +29,11 @@ jobs:
               "qoder": json.load(open("plugins/qoder/.qoder-plugin/plugin.json", encoding="utf-8"))["version"],
               "qwen": json.load(open("plugins/qwen/qwen-extension.json", encoding="utf-8"))["version"],
               "dsh": json.load(open("package.json", encoding="utf-8"))["version"],
+              "npm-qoder": json.load(open("npm/qoder/package.json", encoding="utf-8"))["version"],
           }
           tag = os.environ["GITHUB_REF_NAME"]
           if len(set(versions.values())) != 1:
-              raise SystemExit(f"三包版本不一致: {versions}")
+              raise SystemExit(f"发布包版本不一致: {versions}")
           version = versions["qoder"]
           if tag != f"v{version}":
               raise SystemExit(f"tag {tag} 与清单版本 v{version} 不一致")
@@ -48,6 +49,17 @@ jobs:
           registry-url: 'https://registry.npmjs.org'
       - name: 发布 DSH bundle 到 npm
         working-directory: /tmp/dsh-package
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: npm publish --access public
+      - name: 准备 Qoder npm 包
+        run: |
+          mkdir -p /tmp/qoder-npm
+          cp npm/qoder/package.json npm/qoder/README.md /tmp/qoder-npm/
+          cp global-user-constraints-qoder-*.zip global-user-constraints-qoder-*.sha256 /tmp/qoder-npm/
+          cp LICENSE LICENSE-CC-BY-4.0.txt LICENSE-MIT.txt THIRD-PARTY-NOTICES.md /tmp/qoder-npm/
+      - name: 发布 Qoder 安装包到 npm
+        working-directory: /tmp/qoder-npm
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: npm publish --access public

@@ -2,6 +2,21 @@
 
 按版本从新到旧记录可观察变更。自 0.2.0 起版本采用 SemVer、发布点为 tag `v<version>`，每节记录一个发布版本；0.2.0 之前按日期记录。条目按主题合并，记录最终可观察状态；被后续提交推翻的中间状态只在修复项里说明。
 
+## 0.45.3（2026-11-27）
+
+**修复**
+
+- Qoder 去重候选在缺少 `payload.cwd` 时回退 `QODER_PROJECT_DIR`，项目 `AGENTS.md` 与 `.qoder/rules`
+  不再漏查。
+- `check.sh` 校验 `hooks.json` 引用的 `${QODER_PLUGIN_ROOT}` 脚本存在；`dist.sh` 的 zip 结构校验要求
+  三个注入脚本进包。
+- 文档修正：marketplace 需添加 `plugins/` 目录；压缩后时间实为时间戳与时区两行。
+
+**新增**
+
+- 新增 `@snowcore8/qoder-global-user-constraints` npm 包，随 release 发布 Qoder 插件 zip 与校验和，
+  可用 jsdelivr 直链安装。
+
 ## 0.45.2（2026-11-27）
 
 **修复**

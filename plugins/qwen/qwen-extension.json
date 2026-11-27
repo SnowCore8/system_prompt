@@ -1,6 +1,6 @@
 {
   "name": "global-user-constraints",
-  "version": "0.45.2",
+  "version": "0.45.3",
   "displayName": "全局用户约束",
   "description": "Qwen Code 扩展：contextFileName 在启动/刷新读取并随每个请求发送全局用户约束、UserPromptSubmit 注入当前时间；二十个 skill 与一个手动审查命令。",
   "author": {

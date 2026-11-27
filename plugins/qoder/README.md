@@ -33,8 +33,16 @@ unzip global-user-constraints-qoder-<版本>.zip -d global-user-constraints-qode
 qoderclicn plugins install ./global-user-constraints-qoder-<版本> --scope user
 ```
 
-也可以直接传入 Release 附件的 HTTPS zip URL。安装后开新会话即可。约束由 `SessionStart` hook 注入，
-不写入用户级或项目级 rules。
+也可以传 npm 安装包的 HTTPS zip 直链（必须以 `.zip` 结尾）：
+
+```bash
+qoderclicn plugins install \
+  https://cdn.jsdelivr.net/npm/@snowcore8/qoder-global-user-constraints@<版本>/global-user-constraints-qoder-<版本>.zip \
+  --scope user
+```
+
+私有仓库的 Release 资产不能匿名下载，直链以 npm CDN 为准。安装后开新会话即可。约束由 `SessionStart`
+hook 注入，不写入用户级或项目级 rules。
 
 ## 卸载
 

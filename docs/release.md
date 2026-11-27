@@ -2,9 +2,10 @@
 
 维护者：SnowCore8；何时阅读：切版本、打 tag 或回滚发布时。
 
-本仓库用 SemVer 与 tag 发布。三个包的版本必须一致：`plugins/qoder/.qoder-plugin/plugin.json`、
-`plugins/qwen/qwen-extension.json` 与仓库根 `package.json`（DSH bundle）的 `version` 由发布者手动修改；
-`scripts/check.sh` 与 `scripts/dist.sh` 校验三者一致，`dist.sh` 不推导或改写版本。
+本仓库用 SemVer 与 tag 发布。三个包与 Qoder npm 安装包的版本必须一致：
+`plugins/qoder/.qoder-plugin/plugin.json`、`plugins/qwen/qwen-extension.json`、仓库根 `package.json`
+（DSH bundle）与 `npm/qoder/package.json` 的 `version` 由发布者手动修改；`scripts/check.sh` 校验四者
+一致，`scripts/dist.sh` 校验三包版本且不推导或改写版本。
 
 ## 版本规则
 
@@ -18,14 +19,15 @@
 
 ## 发布步骤
 
-1. 更新 manifest 的 `version`，在 `CHANGELOG.md` 顶部加对应版本节。
+1. 更新四个清单的 `version`：`plugins/qoder/.qoder-plugin/plugin.json`、`plugins/qwen/qwen-extension.json`、
+   `package.json` 与 `npm/qoder/package.json`；在 `CHANGELOG.md` 顶部加对应版本节。
 2. 跑 `scripts/check.sh`，确认「全部通过」；没有 `qoderclicn` 时要在有它的机器上补跑插件校验。
 3. 提交 `release: <version>`，工作区保持干净。
 4. 打注释 tag：`git tag -a v<version> -m "release <version>"`。
 5. 推送：`git push origin master --tags`。
-6. GitHub Actions 的 `release` 工作流会重跑校验、构建 zip 与 SHA256，把 DSH bundle 发布到
-   npm 公共 registry，生成 SBOM（SPDX JSON）并把三个 zip、SHA256、`THIRD-PARTY-NOTICES.md` 与
-   SBOM 挂到 Release；需要仓库 secret `NPM_TOKEN`，包版本必须新。
+6. GitHub Actions 的 `release` 工作流会重跑校验、构建 zip 与 SHA256，把 DSH bundle 与 Qoder 安装包
+   发布到 npm 公共 registry，生成 SBOM（SPDX JSON）并把三个 zip、SHA256、`THIRD-PARTY-NOTICES.md`
+   与 SBOM 挂到 Release；需要仓库 secret `NPM_TOKEN`，包版本必须新。
 7. 下载三个 zip 与对应的 `.sha256` 后，用
    `for p in qoder qwen dsh; do sha256sum -c "global-user-constraints-$p-<version>.sha256"; done` 核对。
 8. npm 是唯一发布通道；GitHub Packages 不是发布目标。
@@ -42,6 +44,19 @@
   同一版本同一 tag 的制品可复现。
 - 本地出包可用 `scripts/dist.sh --require-tag`，要求 HEAD 正好带有 `v<version>` tag；
   每个包只保留最新制品与校验和，构建新版本时删除旧制品；zip 与 `.sha256` 不纳入版本库。
+
+## Qoder URL 安装
+
+- GitHub Release 资产在私有仓库不可匿名下载；Qoder 的 HTTPS 直链安装走 npm CDN，URL 必须以 `.zip` 结尾：
+
+  ```bash
+  qoderclicn plugins install \
+    https://cdn.jsdelivr.net/npm/@snowcore8/qoder-global-user-constraints@<version>/global-user-constraints-qoder-<version>.zip \
+    --scope user
+  ```
+
+- `npm/qoder/package.json` 只承载同版本 zip 与 `.sha256`，内容与 Release 附件一致；该包在 `npm publish`
+  成功后才可下载。
 
 ## 回滚
 
@@ -60,3 +75,4 @@
 - [ ] 工作区干净，`scripts/dist.sh --require-tag` 通过
 - [ ] `release` 工作流成功（含 npm publish 与 GitHub Release）
 - [ ] Release 附件包含 zip 与 `.sha256`
+- [ ] Qoder npm 安装包已随 `release` 工作流发布

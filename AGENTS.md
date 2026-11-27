@@ -4,7 +4,7 @@
 
 ## 真源与入口
 
-- 唯一真源：约束正文 `rules/global-user-constraints.md`；skill `skills/`；命令与注入脚本 `shared/`；三包 `plugins/` 与根 `package.json`。
+- 唯一真源：约束正文 `rules/global-user-constraints.md`；skill `skills/`；命令与注入脚本 `shared/`；三包 `plugins/`、根 `package.json` 与 Qoder npm 包 `npm/qoder/`。
 - 修改前阅读 `README.md` 与对应目录说明；仓库为唯一真源，不建第二份副本。
 - 三端入口由 `scripts/assemble.sh` 从 `skills/`、`rules/` 复制生成：`.dsh/skills`、`.qoder/rules`、`.qoder/skills`、`.qwen/rules`、`.qwen/skills`。生成目录不提交；不得手写第二份真源。
 - 发布包由 `scripts/materialize.sh` 从顶层真源组装；不依赖也不提交软链。

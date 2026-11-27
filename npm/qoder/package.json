@@ -1,0 +1,21 @@
+{
+  "name": "@snowcore8/qoder-global-user-constraints",
+  "version": "0.45.3",
+  "description": "Qoder 插件安装包：通过 HTTPS zip 直链安装 global-user-constraints。",
+  "files": [
+    "global-user-constraints-qoder-*.zip",
+    "global-user-constraints-qoder-*.sha256",
+    "LICENSE-CC-BY-4.0.txt",
+    "LICENSE-MIT.txt",
+    "THIRD-PARTY-NOTICES.md"
+  ],
+  "license": "MIT AND CC-BY-4.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SnowCore8/system_prompt.git"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org"
+  }
+}
