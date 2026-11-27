@@ -1,5 +1,5 @@
 {
-  "name": "@snowcore8/global-user-constraints-qoder",
+  "name": "@snowcore8/qoder-global-user-constraints",
   "version": "0.45.3",
   "description": "Qoder 插件安装包：通过 HTTPS zip 直链安装 global-user-constraints。",
   "files": [

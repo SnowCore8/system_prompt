@@ -5,7 +5,7 @@
 
 ```bash
 qoderclicn plugins install \
-  https://cdn.jsdelivr.net/npm/@snowcore8/global-user-constraints-qoder@<版本>/global-user-constraints-qoder-<版本>.zip \
+  https://cdn.jsdelivr.net/npm/@snowcore8/qoder-global-user-constraints@<版本>/global-user-constraints-qoder-<版本>.zip \
   --scope user
 ```
 

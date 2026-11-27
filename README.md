@@ -56,22 +56,23 @@ scripts/check.sh             # 全量校验
 |---|---|
 | Qoder | `qoderclicn plugins install <npm zip URL> --scope user`；或解压 zip 后按目录安装 |
 | Qwen Code | 下载 zip 后 `qwen extensions install global-user-constraints-qwen-VERSION.zip` |
-| DSH | `pnpm dsh plugin --profile PROFILE add @snowcore8/global-user-constraints-dsh@VERSION` |
+| DSH | `pnpm dsh plugin --profile PROFILE add @snowcore8/dsh-global-user-constraints@VERSION` |
 
 Qoder 的 npm zip URL（必须以 `.zip` 结尾）：
 
 ```bash
 qoderclicn plugins install \
-  https://cdn.jsdelivr.net/npm/@snowcore8/global-user-constraints-qoder@VERSION/global-user-constraints-qoder-VERSION.zip \
+  https://cdn.jsdelivr.net/npm/@snowcore8/qoder-global-user-constraints@VERSION/global-user-constraints-qoder-VERSION.zip \
   --scope user
 ```
 
-Qoder 与 Qwen 各有一个同前缀 npm 包（`@snowcore8/global-user-constraints-qoder`、`-qwen`），只承载同版本 zip
-与 `.sha256`；DSH 使用 `@snowcore8/global-user-constraints-dsh` bundle。
+Qoder 与 Qwen 各有一个 zip npm 包（`@snowcore8/qoder-global-user-constraints`、
+`@snowcore8/qwen-global-user-constraints`），只承载同版本 zip 与 `.sha256`；DSH 使用
+`@snowcore8/dsh-global-user-constraints` bundle。
 
 安装与行为细节见 [Qoder](plugins/qoder/README.md)、[Qwen Code](plugins/qwen/README.md) 与 [DSH](plugins/dsh/README.md)。
 
-三包、两个 zip npm 包与 DSH bundle 共用 SemVer 版本号，校验细节见 [docs/release.md](docs/release.md)。各端差异：
+三包与 Qoder、Qwen 两个 zip npm 包共用 SemVer 版本号，校验细节见 [docs/release.md](docs/release.md)。各端差异：
 
 - Qoder 与 Qwen 由插件包提供约束（细节见各自 README）；DSH 以 skill 提供者与 `systemPrompt.section()`
   注入，不注册 `constraints-check` 命令。

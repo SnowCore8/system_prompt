@@ -4,7 +4,7 @@
 GitHub Release 附件一致。
 
 ```bash
-curl -fLO https://cdn.jsdelivr.net/npm/@snowcore8/global-user-constraints-qwen@<版本>/global-user-constraints-qwen-<版本>.zip
+curl -fLO https://cdn.jsdelivr.net/npm/@snowcore8/qwen-global-user-constraints@<版本>/global-user-constraints-qwen-<版本>.zip
 qwen extensions install global-user-constraints-qwen-<版本>.zip
 ```
 

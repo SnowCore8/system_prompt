@@ -2,7 +2,7 @@
 
 维护者：SnowCore8；何时阅读：切版本、打 tag 或回滚发布时。
 
-本仓库用 SemVer 与 tag 发布。三个平台包与两个 zip npm 包的版本必须一致：
+本仓库用 SemVer 与 tag 发布。以下五个清单的版本必须一致：
 `plugins/qoder/.qoder-plugin/plugin.json`、`plugins/qwen/qwen-extension.json`、仓库根 `package.json`
 （DSH bundle）、`npm/qoder/package.json` 与 `npm/qwen/package.json` 的 `version` 由发布者手动修改；
 `scripts/check.sh` 校验五者一致，`scripts/dist.sh` 校验三包版本且不推导或改写版本。
@@ -51,13 +51,13 @@
 
   ```bash
   qoderclicn plugins install \
-    https://cdn.jsdelivr.net/npm/@snowcore8/global-user-constraints-qoder@<version>/global-user-constraints-qoder-<version>.zip \
+    https://cdn.jsdelivr.net/npm/@snowcore8/qoder-global-user-constraints@<version>/global-user-constraints-qoder-<version>.zip \
     --scope user
   ```
 
 - `npm/qoder` 与 `npm/qwen` 只承载同版本 zip 与 `.sha256`，内容与 Release 附件一致；对应包在 `npm publish`
   成功后才可下载。Qwen 先下载 zip 再 `qwen extensions install`；DSH bundle 为
-  `@snowcore8/global-user-constraints-dsh`。
+  `@snowcore8/dsh-global-user-constraints`。
 
 ## 回滚
 
