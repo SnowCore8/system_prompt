@@ -2,6 +2,19 @@
 
 按版本从新到旧记录可观察变更。自 0.2.0 起版本采用 SemVer、发布点为 tag `v<version>`，每节记录一个发布版本；0.2.0 之前按日期记录。条目按主题合并，记录最终可观察状态；被后续提交推翻的中间状态只在修复项里说明。
 
+## 0.46.0（2026-11-27）
+
+**新增**
+
+- 新增 `@snowcore8/qwen-global-user-constraints` npm 包，承载 Qwen Code 扩展 zip 与校验和；`release` 工作流
+  统一发布 DSH bundle、Qoder zip 与 Qwen zip 三个 npm 包。
+
+**变更**
+
+- 说明性文档只保留当前状态：删除来源对照、取证日期、版本基线与历史措辞；`AGENTS.md` 增加「说明性文档必须
+  保持干净」的项目规则。
+- `scripts/check.sh` 与 `release` 工作流按三个 npm 包校验并发布。
+
 ## 0.45.3（2026-11-27）
 
 **修复**

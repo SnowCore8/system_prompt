@@ -1,6 +1,6 @@
 {
   "name": "@snowcore8/qwen-global-user-constraints",
-  "version": "0.45.3",
+  "version": "0.46.0",
   "description": "Qwen Code 扩展安装包：承载同版本 zip 与校验和。",
   "files": [
     "global-user-constraints-qwen-*.zip",
