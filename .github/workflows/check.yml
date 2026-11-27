@@ -11,6 +11,12 @@ permissions:
 jobs:
   check:
     runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ['3.12', '3.14']
+        node: ['22', '24']
+    name: check (Python ${{ matrix.python }}, Node ${{ matrix.node }})
     steps:
       # fetch-depth 0：gitleaks 需要完整历史做历史机密扫描。
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09  # v5
@@ -18,12 +24,12 @@ jobs:
           fetch-depth: 0
       - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1  # v6
         with:
-          python-version: '3.12'
+          python-version: ${{ matrix.python }}
       - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444  # v5
         with:
-          node-version: '20'
+          node-version: ${{ matrix.node }}
       - name: 安装校验依赖
-        run: python3 -m pip install -r requirements-dev.txt
+        run: python3 -m pip install --require-hashes -r requirements-dev.txt
       - name: 确认 shellcheck 可用
         run: shellcheck --version
       - name: 机密扫描（gitleaks，含历史）

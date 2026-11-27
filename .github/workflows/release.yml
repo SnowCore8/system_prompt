@@ -18,7 +18,7 @@ jobs:
         with:
           python-version: '3.12'
       - name: 安装校验依赖
-        run: python3 -m pip install -r requirements-dev.txt
+        run: python3 -m pip install --require-hashes -r requirements-dev.txt
       - name: 全量校验
         run: ./scripts/check.sh
       - name: 校验 tag 与 manifest 版本一致
@@ -44,7 +44,7 @@ jobs:
         run: ./scripts/dist.sh --no-validate --require-tag
       - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444  # v5
         with:
-          node-version: '20'
+          node-version: '24'
           registry-url: 'https://registry.npmjs.org'
       - name: 准备三个 npm 包
         run: |

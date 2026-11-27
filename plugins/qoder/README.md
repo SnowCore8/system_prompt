@@ -56,7 +56,7 @@ Qoder CLI 不加载插件内的 `rules/`，因此约束由 hook 注入：G0 受�
 - 去重：项目目录及其祖先的 `.qoder/rules/global-user-constraints.md`、`AGENTS.md`、`AGENTS.local.md`，
   以及用户配置根（`QODERCN_CONFIG_DIR`、`QODER_CONFIG_DIR`、`~/.qoder-cn`、`~/.qoder`）下的
   `rules/global-user-constraints.md`、`AGENTS.md`，任一与正文 sha256 相同即跳过注入。
-- hook 用 `node`（CI 用 Node 20），超时 10 秒；payload 非法或事件不支持时静默退出 0。
+- hook 用 `node`（CI 覆盖 Node 22/24），超时 10 秒；payload 非法或事件不支持时静默退出 0。
 
 ## 命令
 

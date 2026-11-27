@@ -1,0 +1,8 @@
+# 直接开发依赖；仓库本身无构建步骤，运行时无其他依赖。
+# requirements-dev.txt 由本文件生成，不手工编辑：
+#   python3 -m pip install pip-tools
+#   python3 -m piptools compile --generate-hashes --output-file requirements-dev.txt requirements-dev.in
+markdown-it-py==4.2.0
+ruff==0.17.5
+coverage==7.17.3
+pip-audit==2.10.1

@@ -1,7 +1,7 @@
 # Python 工具链配置：只约束仓库内脚本与校验器，不作打包用途。
 [tool.ruff]
 line-length = 200
-target-version = "py39"
+target-version = "py312"
 extend-exclude = [".venv"]
 
 [tool.ruff.lint]

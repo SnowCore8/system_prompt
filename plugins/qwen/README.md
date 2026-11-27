@@ -43,7 +43,7 @@ qwen extensions install global-user-constraints-qwen-<版本>.zip
 
 - 项目 `.qwen/rules` 与扩展 `contextFileName` 同时启用时宿主不去重，会重复；二选一。
 - Qwen 不提供插件数据目录，时间 hook 通常不落盘，turn 恒为 1、elapsed 为 `unavailable`。
-- hook 用 `node`（CI 用 Node 20），超时 10 秒；payload 非法或事件不在范围内时静默退出 0。
+- hook 用 `node`（CI 覆盖 Node 22/24），超时 10 秒；payload 非法或事件不在范围内时静默退出 0。
 
 ## 命令
 
