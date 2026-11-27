@@ -325,4 +325,26 @@ describe('qoder 常量与去重候选', () => {
     assert.equal(files.some((file) => file.includes('CLAUDE')), false);
     assert.equal(new Set(files).size, files.length);
   });
+
+  it('项目目录回退到 QODER_PROJECT_DIR，payload.cwd 优先', (t) => {
+    const home = tempDir(t);
+    const payloadDir = join(home, 'payload');
+    const envDir = join(home, 'envdir');
+    mkdirSync(payloadDir, { recursive: true });
+    mkdirSync(envDir, { recursive: true });
+    const restore = withEnv({
+      HOME: home,
+      QODER_PROJECT_DIR: envDir,
+      QODER_CONFIG_DIR: undefined,
+      QODERCN_CONFIG_DIR: undefined,
+    });
+    t.after(restore);
+
+    const fromPayload = dedupeCandidates({ cwd: payloadDir });
+    assert.ok(fromPayload.includes(join(payloadDir, 'AGENTS.md')));
+    assert.equal(fromPayload.some((file) => file.startsWith(envDir)), false);
+
+    const fromEnv = dedupeCandidates({});
+    assert.ok(fromEnv.includes(join(envDir, 'AGENTS.md')));
+  });
 });

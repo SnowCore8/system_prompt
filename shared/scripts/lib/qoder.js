@@ -44,6 +44,7 @@ export function rulesFile(root) {
 
 /**
  * 生成用于同内容去重的候选文件：用户配置根与项目目录，去重后返回。
+ * 项目目录依次取 payload.cwd、QODER_PROJECT_DIR 与 process.cwd()。
  *
  * @param {Record<string, unknown>} payload
  * @returns {string[]}
@@ -56,7 +57,10 @@ export function dedupeCandidates(payload) {
     files.add(join(root, 'AGENTS.md'));
   }
 
-  const cwd = typeof payload?.cwd === 'string' && payload.cwd ? payload.cwd : process.cwd();
+  const cwd =
+    typeof payload?.cwd === 'string' && payload.cwd
+      ? payload.cwd
+      : process.env.QODER_PROJECT_DIR || process.cwd();
   for (const directory of projectDirs(cwd)) {
     files.add(join(directory, '.qoder', 'rules', RULES_FILENAME));
     files.add(join(directory, 'AGENTS.md'));
