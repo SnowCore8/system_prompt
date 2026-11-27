@@ -25,7 +25,7 @@ Qoder 与 Qwen Code 都不向模型注入当前时间。模型只能靠对话里
   没有状态时输出 turn 1、unavailable。Qwen 不设置插件数据目录变量，时间 hook 通常不落盘，turn 通常为 1、elapsed 为
   `unavailable`。
 
-  上游 DSH 时间消息含 `turn N, step M` 与 `resolved`/`mixed`/`missing` 三种时区措辞；本页格式是 Qoder/Qwen 适配版。
+  上游 DSH 时间消息含 `turn N, step M` 与 `resolved`/`mixed`/`missing` 三种时区措辞；本页格式为 Qoder/Qwen 注入格式。
 
 - 时区依次取 `TZ`（用 `Intl.DateTimeFormat` 校验）、`Intl` 解析出的系统时区、`/etc/timezone`，
   最后用 UTC 整点偏移兜底；Windows 没有 `/etc`，走 `Intl` 与偏移。时间戳同时写入数值偏移与方括号内的时区名。

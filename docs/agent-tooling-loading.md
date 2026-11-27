@@ -4,19 +4,10 @@
 
 本文分别整理 Qoder、Qwen Code 与 DeepSeek Harness（DSH）三类工件的加载规则与目录结构；hook 事件、输出契约与
 压缩/恢复语义见 [hooks-and-injection.md](hooks-and-injection.md)。
-取证口径：官方文档优先，能读源码的读源码；DSH 以本地实现树为准，因为它就是运行中的版本。
-
-版本基线：
-
-| 工具 | 基线 | 取证日期 |
-| --- | --- | --- |
-| Qoder | 文档站 `docs.qoder.com` / `docs.qoder.cn`；CLI CN 1.1.90 复核 hook 与插件规则，skills 沿用 1.1.88 | 2026-11-27 |
-| Qwen Code | 源码 `QwenLM/qwen-code` main @ `94b1d9d`，`package.json` 0.28.7 | 2026-11-27 |
-| DeepSeek Harness | 本地实现树 `0.2.3-alpha.2` @ `4b399c39` | 2026-11-27 |
 
 ## 结论摘要
 
-- Qoder 三者齐全：`rules/` 目录、`skills/` 目录、插件市场；插件可打包 `rules/`，但 CLI 1.1.90 不加载，只能由 hook 或 command 读取。
+- Qoder 三者齐全：`rules/` 目录、`skills/` 目录、插件市场；插件可打包 `rules/`，但 CLI 不加载，只能由 hook 或 command 读取。
 - Qwen Code 没有独立的 rules 目录名，但 `.qwen/rules/` 是条件规则机制；常驻约束走 `QWEN.md`/`AGENTS.md`。
 - DSH 没有 rules 目录：常驻约束是指令链，skills 走六个扫描根，插件以 bundle + profile 组合。
 
@@ -55,9 +46,7 @@
 - IDE 限制所有活跃规则合计最多 100,000 字符，超出截断；CLI 是否有同一上限未在文档中说明。
 - `@path` 导入只对 `AGENTS.md` 有官方说明；rules 正文是否支持导入未验证，保守做法是写自包含正文。
 - 没有独立的企业级 rules 目录；团队共享就是把项目级 `.qoder/rules/` 提交进 Git。
-- 插件侧可打包 `rules/` 与 manifest 字段，但 CLI 1.1.90 不加载（`plugins validate` 把 `rules` 报为未知并忽略），只能由 hook 或 command 读取。
-
-来源：[Qoder CLI 记忆](https://docs.qoder.cn/cli/memory)、[Qoder IDE 规则](https://docs.qoder.com/user-guide/rules)。
+- 插件侧可打包 `rules/` 与 manifest 字段，但 CLI 不加载（`plugins validate` 把 `rules` 报为未知并忽略），只能由 hook 或 command 读取。
 
 ### Qoder 的 skills：目录名即身份
 
@@ -72,15 +61,13 @@
 - 只扫描 `SKILL.md`，大小写敏感；`scripts/`、`references/`、`templates/` 等辅助文件随 skill 目录
   一起保留，按需读取，用于渐进式披露。
 - 官方 front matter 必填 `name`（最多 64 字符，小写字母、数字、连字符）与 `description`
-  （最多 1024 字符）。CLI 1.1.88 实测（1.1.90 未复验）：身份取**目录名**，`name` 与目录名不一致不报错，
+  （最多 1024 字符）。CLI 中身份取**目录名**，`name` 与目录名不一致不报错，
   且会递归发现 `skills/nested/deep/SKILL.md`。
-- 同名优先级存在文档矛盾：IDE 文档说项目级优先；CLI 文档与 1.1.88 实测都是**用户级优先**
+- 同名优先级存在文档矛盾：IDE 文档说项目级优先；CLI 文档与实测都是**用户级优先**
   （内置 < 插件 < 项目 < 用户）。跨端使用时应避免同名。
 - 插件被禁用时其全部 skill 一并禁用，不能单独禁用插件内的某个 skill。
 - 管理命令：`qoderclicn skills list|install|link|enable|disable|uninstall`；没有 `skills validate`。
   交互态用 `/skills` 查看、`/skills reload` 重新发现；插件内的 skill 由 `plugins validate` 校验。
-
-来源：[Qoder CLI Skills](https://docs.qoder.com/cli/Skills)、[Qoder IDE Skills](https://docs.qoder.cn/user-guide/skills)。
 
 ### Qoder 的 plugins：清单、作用域与市场
 
@@ -117,13 +104,11 @@
   `tags`、`strict`。`category`/`tags`/`strict` 属于市场清单，写进插件清单会被提示放错位置。
 
 插件携带 rules 的现状：CN 支持矩阵把 Rules 标为 Desktop「即将支持」、CLI「不适用」；
-CLI 1.1.90 的 `plugins validate` 把 `"rules"` 报为 unknown field 并忽略，只含 `rules/` 的插件
+CLI 的 `plugins validate` 把 `"rules"` 报为 unknown field 并忽略，只含 `rules/` 的插件
 会因「没有可安装组件」被拒。宿主原生的做法仍是把规则放用户级或项目级 `.qoder/rules/`；
 本仓库插件由 `SessionStart` hook 注入全文，不写用户级 rules，见
 [plugins/qoder/README.md](../plugins/qoder/README.md)；`UserPromptSubmit` 每轮提醒
 `Never violate global user constraints.`。`qoder.md` 是否加载未验证，本仓库不提供。
-
-来源：[Qoder 插件参考](https://docs.qoder.com/cli/plugins-reference)、[Qoder CN 插件打包规范](https://docs.qoder.cn/qoder-plugins)。
 
 ### Qoder 三者关系
 
@@ -175,10 +160,6 @@ Qwen Code 有两套常驻指令机制：上下文文件（`QWEN.md`/`AGENTS.md`�
 - 没有用户开关；safe 模式禁用全部 rules 与 context，bare 模式也不加载 rules。
 - HTML 注释在发送前剥离。
 
-来源：[Qwen Code Rules](https://qwenlm.github.io/qwen-code-docs/en/users/features/rules/)、
-[Qwen Code Memory](https://qwenlm.github.io/qwen-code-docs/en/users/features/memory/)、
-源码 `packages/core/src/{memory/memoryDiscovery.ts,config/rulesDiscovery.ts}`。
-
 ### Qwen Code 的 skills：一层目录
 
 | 来源 | 路径 | 注册名 |
@@ -199,9 +180,6 @@ Qwen Code 有两套常驻指令机制：上下文文件（`QWEN.md`/`AGENTS.md`�
 - 优先级：项目 > 用户（含自定义目录）> 扩展 > 内置；同一级别内 `.qwen` > `.agents`。
 - 模型通过 `Skill` 工具调用，用户通过 `/name` 或 `/skills` 面板；没有 `qwen skills` 校验子命令，
   排查靠 `qwen --debug` 的 `SKILL_MANAGER` 日志。
-
-来源：[Qwen Code Skills](https://qwenlm.github.io/qwen-code-docs/en/users/features/skills/)、
-源码 `packages/core/src/skills/skill-manager.ts`。
 
 ### Qwen Code 的 plugins：extensions
 
@@ -235,10 +213,6 @@ Gemini（`gemini-extension.json`）、Claude（`.claude-plugin/plugin.json`）�
 - 命令：`qwen extensions install|link|list|update|uninstall|enable|disable|new|settings|sources`；
   交互态用 `/extensions` 与 `/reload-plugins`。CLI 改动在运行中的会话里需重启或重载才生效。
 
-来源：[Qwen Code 扩展介绍](https://qwenlm.github.io/qwen-code-docs/en/users/extension/introduction/)、
-[Agent Plugins](https://qwenlm.github.io/qwen-code-docs/en/users/extension/agent-plugins/)、
-源码 `packages/core/src/extension/extensionManager.ts`。
-
 ### Qwen Code 三者关系
 
 - 启动时先加载 extensions、context 与 rules，再组装 system prompt：context 全文 + baseline rules
@@ -270,8 +244,6 @@ DSH 不读 `.dsh/rules` 或 `.claude/rules`。常驻约束由 `dsh-agent-instruc
   会话恢复时对账。
 - 更具体的文件优先于更宽的；指令不覆盖系统、开发者或直接用户指令。
 
-来源：DSH 源码树 `packages/context/agent-instructions/README.md`。
-
 ### DSH 的 skills：六个扫描根，一层深度
 
 skills 由注册表 `dsh-skill`、文件系统提供者 `dsh-skill-filesystem` 与消费者 `dsh-tool-skill`
@@ -296,8 +268,6 @@ skills 由注册表 `dsh-skill`、文件系统提供者 `dsh-skill-filesystem` �
 - 同名解析：先看作用域层（preset 层覆盖全局层），同层再按 rank、提供者注册顺序、本地顺序。
 - 目录变化由 chokidar 监听；根不存在时从最近的已存在祖先逐段探测。监听失败只让本次观测不完整，
   可用候选仍可直接加载；不完整观测不缓存，下次重试。
-
-来源：DSH 源码树 `docs/subsystems/skills.md`、`packages/skill/skill-filesystem/README.md`。
 
 ### DSH 的 plugins：plugin、bundle、profile 三层
 
@@ -328,9 +298,6 @@ DSH 里「插件」是 TypeScript 模块，导出 `apply(ctx)`；可分发的安
 - agent preset 是另一个作用域层：preset 的 standing composition 挂载的插件落在该 preset 的层，
   影响该 agent 可见的 skills 与工具。
 
-来源：DSH 源码树 `docs/user/develop/basic/publish.md`、`packages/boot/app-boot/README.md`、
-`packages/boot/plugin-manager/README.md`。
-
 ### DSH 三者关系
 
 - 指令链是「常驻上下文」，skills 是「按需能力」，插件是「组合与分发」；三者不共用目录约定。
@@ -349,9 +316,9 @@ DSH 里「插件」是 TypeScript 模块，导出 `apply(ctx)`；可分发的安
 | 项目根判定 | 向上查到 `.git` | 最近 `.git` | 最近 `.git` |
 | skills 项目路径 | `.qoder/skills/`、`.agents/skills/` | `.qwen/skills/`、`.agents/skills/` | `.dsh/skills/`、`.agents/skills/` |
 | skills 用户路径 | `~/.qoder/skills/`（CN `~/.qoder-cn/skills/`） | `~/.qwen/skills/`、`~/.agents/skills/` | `~/.dsh/skills/`、`~/.agents/skills/` |
-| skills 扫描深度 | 递归（1.1.88 实测） | 一层 | 一层 |
+| skills 扫描深度 | 递归 | 一层 | 一层 |
 | skills 必填字段 | `name`、`description` | `name`、`description` | `name`、`description` |
-| skills 同名优先级 | 用户级优先（CLI 实测）；IDE 文档相反 | 项目 > 用户 > 扩展 > 内置 | rank 低者优先，preset 层覆盖全局层 |
+| skills 同名优先级 | 用户级优先（CLI）；IDE 文档相反 | 项目 > 用户 > 扩展 > 内置 | rank 低者优先，preset 层覆盖全局层 |
 | 插件清单 | `.qoder-plugin/plugin.json` | `qwen-extension.json` | `package.json` 的 `dsh.bundle` |
 | 插件安装位置 | 用户配置根 `plugins/cache/`，按 scope 记 `enabledPlugins` | 仅 `~/.qwen/extensions/` | `$DSH_HOME/profiles/<name>/` |
 | 插件能否带 rules | 规范可放，当前不加载 | 可放 `rules/`，仅条件规则生效 | 插件即代码，可注册任何能力 |
@@ -385,35 +352,9 @@ DSH 里「插件」是 TypeScript 模块，导出 `apply(ctx)`；可分发的安
 
 ## 未验证与文档矛盾
 
-- Qoder skills 同名优先级：IDE 文档写项目级优先，CLI 文档与 1.1.88 实测相反；1.1.90 未复验。
-- Qoder 插件 rules 的落地时间：schema 与打包规范已存在，CLI 1.1.90 不加载，Desktop 标注「即将支持」。
+- Qoder skills 同名优先级：IDE 文档写项目级优先，CLI 文档相反。
+- Qoder 插件 rules：schema 与打包规范已存在，CLI 不加载，Desktop 标注「即将支持」。
 - Qoder IDE 的 100,000 字符上限是否同样适用于 CLI：文档未说明。
 - Qoder `qoder.md` 是否作为插件级指令加载：打包规范提到，支持矩阵标「—」，未验证。
 - Qwen Code 不读取 `<project>/.qwen/AGENTS.md`：当前实现不支持。
 - Qwen Code 项目级扩展：`storage.ts` 注释提到 `<project>/.qwen/extensions/`，当前实现不加载。
-
-## 来源
-
-Qoder：
-
-- [Qoder CLI 记忆（rules 与 AGENTS.md）](https://docs.qoder.cn/cli/memory)
-- [Qoder IDE 规则](https://docs.qoder.com/user-guide/rules)
-- [Qoder CLI Skills](https://docs.qoder.com/cli/Skills)
-- [Qoder 插件参考](https://docs.qoder.com/cli/plugins-reference)
-- [Qoder CN 插件打包规范与支持矩阵](https://docs.qoder.cn/qoder-plugins)
-
-Qwen Code：
-
-- [Rules](https://qwenlm.github.io/qwen-code-docs/en/users/features/rules/)
-- [Skills](https://qwenlm.github.io/qwen-code-docs/en/users/features/skills/)
-- [Memory](https://qwenlm.github.io/qwen-code-docs/en/users/features/memory/)
-- [Extensions 介绍](https://qwenlm.github.io/qwen-code-docs/en/users/extension/introduction/)
-- 源码：`memoryDiscovery.ts`、`memory-constants.ts`、`rulesDiscovery.ts`、`skill-manager.ts`、
-  `extensionManager.ts`、`storage.ts`（`QwenLM/qwen-code` @ `94b1d9d`）。
-
-DeepSeek Harness：
-
-- 源码树 `packages/context/agent-instructions/README.md`
-- 源码树 `docs/subsystems/skills.md`
-- 源码树 `docs/user/develop/basic/publish.md`
-- 源码树 `packages/boot/plugin-manager/README.md`

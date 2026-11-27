@@ -7,21 +7,11 @@
 三个包的安装与行为见 [Qoder](../plugins/qoder/README.md)、[Qwen Code](../plugins/qwen/README.md)、
 [DSH](../plugins/dsh/README.md)。
 
-取证口径：官方文档写明、源码实现、本机实测、推断四类分开标注；版本与日期见下表。DSH 以本地实现树为准。
-
-## 版本与取证
-
-| 平台 | 基线 | 取证方式 | 日期 |
-| --- | --- | --- | --- |
-| Qoder | CLI CN 1.1.90（构建 2026-11-16） | 本机二进制枚举与官方文档；未跑认证会话 | 2026-11-27 |
-| Qwen Code | 源码 `QwenLM/qwen-code` main @ `94b1d9d`，`package.json` 0.28.7 | 源码与官方文档；本机未安装 CLI | 2026-11-27 |
-| DeepSeek Harness | 本地实现树 `0.2.3-alpha.2` @ `4b399c39` | 本地源码、包 README 与官方 docs；未独立确认运行二进制 | 2026-11-27 |
-
 ## 结论摘要
 
 | 平台 | hook 能力 | 常驻约束载体 | 压缩后 | 本仓库选择 |
 | --- | --- | --- | --- | --- |
-| Qoder | 原生 hooks，1.1.90 注册 29 个事件 | `SessionStart` 的 `additionalContext` 注入全文 | 压缩成功后触发 `SessionStart(source=compact)`；无 matcher 组与 `compact` matcher 组都会执行 | hook 注入 + sha256 去重 |
+| Qoder | 原生 hooks，注册 29 个事件 | `SessionStart` 的 `additionalContext` 注入全文 | 压缩成功后触发 `SessionStart(source=compact)`；无 matcher 组与 `compact` matcher 组都会执行 | hook 注入 + sha256 去重 |
 | Qwen Code | 原生 hooks，23 个事件 | 清单 `contextFileName` 在启动/刷新读取并缓存，随后每个请求随 system prompt 发送 | `contextFileName` 不受压缩影响；`SessionStart` 在 resume/compact 等 source 都触发 | 只用 `contextFileName` 承载约束 |
 | DSH | 没有内建 Claude 风格 hooks；实验桥接包可选，默认不安装 | 插件 `ctx.systemPrompt.section()`；另有独立的 `dsh-agent-instructions` 指令链 | system prompt 压缩后重建；指令链在下一次 pre-step 重新折叠；桥接 hook 的 context 不会在压缩后重放 | `systemPrompt.section()` + 原生时间注入 |
 
@@ -29,10 +19,10 @@
 
 ### 事件与配置
 
-Qoder 1.1.90 的 hook 配置位于 `<plugin>/hooks/hooks.json`，形状为 `{"hooks": {"<事件>": [...]}}`。事件组可带
+Qoder 的 hook 配置位于 `<plugin>/hooks/hooks.json`，形状为 `{"hooks": {"<事件>": [...]}}`。事件组可带
 `matcher`、`sequential`、`async`；条目字段含 `type`、`command`、`args`、`shell`、`env`、`timeout`、`if`。
 
-| 类别 | 1.1.90 事件 |
+| 类别 | 事件 |
 | --- | --- |
 | 工具 | `PreToolUse`、`PostToolUse`、`PostToolUseFailure`、`PermissionRequest`、`PermissionDenied` |
 | 会话与用户 | `SessionStart`、`UserPromptSubmit`、`SessionEnd`、`Setup`、`InstructionsLoaded`、`CwdChanged`、`FileChanged`、`ConfigChange` |
@@ -41,8 +31,8 @@ Qoder 1.1.90 的 hook 配置位于 `<plugin>/hooks/hooks.json`，形状为 `{"ho
 | 子代理与协作 | `SubagentStart`、`SubagentStop`、`TeammateIdle`、`TaskCreated`、`TaskCompleted`、`Elicitation`、`ElicitationResult`、`WorktreeCreate`、`WorktreeRemove` |
 | 内部 | `ImagePrepare` |
 
-文档站事件表与 1.1.90 不完全一致：文档列 `PreModelSwitch`、`PostModelSwitch`，1.1.90 二进制没有；
-Qoder 1.1.90 有 `ImagePrepare`、`QueryEnd`，文档事件表未列。以本机枚举为 1.1.90 的依据，文档差异单独标注。
+文档站事件表与实现不完全一致：文档列 `PreModelSwitch`、`PostModelSwitch`，二进制没有；
+实现有 `ImagePrepare`、`QueryEnd`，文档事件表未列。文档差异单独标注。
 
 ### SessionStart 与 matcher
 
@@ -74,7 +64,7 @@ Qoder 1.1.90 有 `ImagePrepare`、`QueryEnd`，文档事件表未列。以本机
 
 压缩成功后的顺序是：`PreCompact` → `PostCompact` → `SessionStart(source=compact)`，随后把 SessionStart 输出追加到
 压缩后的新历史。`PreCompact` 可阻止压缩；它的 `additionalContext` 只并入压缩指令，不保证摘要保留约束。
-Qoder 1.1.90 的同步 `PostCompact.additionalContext` 不被消费、不进入对话；压缩后的注入点应使用 `SessionStart(source=compact)`。
+Qoder 的同步 `PostCompact.additionalContext` 不被消费、不进入对话；压缩后的注入点应使用 `SessionStart(source=compact)`。
 
 - `resume`：仍触发 `SessionStart(source=resume)`；本仓库脚本按设计跳过全文注入。
 - `clear` 与 `new`：分别触发 `SessionStart(source=clear)` 与 `SessionStart(source=new)`，本仓库不跳过。
@@ -83,7 +73,7 @@ Qoder 1.1.90 的同步 `PostCompact.additionalContext` 不被消费、不进入�
 
 ### 插件 rules 与限制
 
-插件可以物理打包 `rules/`，但 CLI 1.1.90 不把它当 rules 自动加载，manifest 的 `rules` 字段被忽略；只含 `rules/` 的插件
+插件可以物理打包 `rules/`，但 CLI 不把它当 rules 自动加载，manifest 的 `rules` 字段被忽略；只含 `rules/` 的插件
 会因没有可安装组件被拒。插件想让正文生效，只能由自己的 hook 或 command 读取。宿主原生方式仍是项目/用户 `.qoder/rules`
 或 `AGENTS.md`。
 
@@ -222,7 +212,7 @@ DSH 没有内建的 Claude 风格 hooks。需要兼容 `hooks.json` 时，挂载
 | 维度 | Qoder | Qwen Code | DSH |
 | --- | --- | --- | --- |
 | hook 可用性 | 原生 | 原生 | 无内建；实验桥接可选 |
-| 1.1.90/0.28.7/当前 checkout 事件数 | 29 | 23 | 桥接 7 |
+| 事件数 | 29 | 23 | 桥接 7 |
 | SessionStart source | startup/resume/clear/new/compact | startup/resume/clear/compact/branch | 桥接仅 startup/resume |
 | 无 matcher 是否覆盖 compact | 是 | 是 | 桥接无 compact 生产者 |
 | compact 后重注入 | 触发 SessionStart(compact) | 触发 SessionStart(compact)；contextFileName 另保证 | systemPrompt 重建；桥接不重放 |
@@ -246,35 +236,12 @@ DSH 没有内建的 Claude 风格 hooks。需要兼容 `hooks.json` 时，挂载
 
 ## 未验证与已知矛盾
 
-- Qoder 未跑真实认证会话；compact/resume 全链路、37 KiB 上下文的实际计费与截断、`name` 的 UI 显示未实测。
+- Qoder compact/resume 全链路、37 KiB 上下文的实际计费与截断、`name` 的 UI 显示未验证。
 - Qoder 同步 `PostCompact.additionalContext` 不进入对话是源码结论，未做端到端验证；异步路径未验证。
-- Qwen 本机无 CLI；`branch` source 只在源码确认，官方文档未列；自动压缩的异步 SessionStart 存在竞态，未实测。
-- DSH 桥接未实际安装运行；resume 重复、PTC 下 PostToolUse 上下文丢失、time-context 压缩后 10 分钟空档均为源码推断。
+- Qwen `branch` source 只在源码确认，官方文档未列；自动压缩的异步 SessionStart 存在竞态，未验证。
+- DSH 桥接的 resume 重复、PTC 下 PostToolUse 上下文丢失、time-context 压缩后 10 分钟空档均为源码推断。
 - DSH 当前 checkout 没有 `clear`/`compact` 的 SessionStart 生产者；`clear` 行为无法验证。
-- DSH 实验包 README 的事件计数已过期（写 23/30），不是本仓库断言；引用时需注明 DSH 版本。
+- DSH 实验包 README 的事件计数为 23/30，与本仓库统计不一致，不作为本仓库断言。
 - Qwen 不设置插件数据目录；本仓库时间 hook 在 Qwen 下没有跨轮状态，turn 与 elapsed 受限。
 
-## 来源
-
-Qoder：
-
-- [CLI Hooks](https://docs.qoder.com/cli/hooks)
-- [CLI Hooks Reference](https://docs.qoder.com/cli/hooks-reference)
-- [CN 插件打包与支持矩阵](https://docs.qoder.cn/qoder-plugins)
-- [CLI Memory](https://docs.qoder.cn/cli/memory)
-- 本机 Qoder CLI CN 1.1.90 二进制枚举（2026-11-27）
-
-Qwen Code：
-
-- [Hooks](https://qwenlm.github.io/qwen-code-docs/en/users/features/hooks/)
-- [Rules](https://qwenlm.github.io/qwen-code-docs/en/users/features/rules/)
-- [Extensions](https://qwenlm.github.io/qwen-code-docs/en/users/extension/introduction/)
-- 源码 `QwenLM/qwen-code` @ `94b1d9d`：`packages/core/src/hooks/`、`packages/core/src/core/llm-chat.ts`、`packages/core/src/extension/extensionManager.ts`
-
-DeepSeek Harness：
-
-- [DSH 文档](https://deepseek-harness.github.io/deepseek-harness/)
-- 本地实现树 `4b399c39`：`packages/experimental/hooks-claude-code/`、`packages/core/system-prompt/`、`packages/context/agent-instructions/`、`packages/bundle/web-app/presets/`
-- `docs/subsystems/system-prompt.md`、`docs/subsystems/compaction.md`、`docs/agent-lifecycle.md`
-
-本文件与 `scripts/check.sh` 的 Markdown 校验一起维护；三端版本升级或 hook 事件变化时重新取证并更新本页。
+本文件与 `scripts/check.sh` 的 Markdown 校验一起维护。
