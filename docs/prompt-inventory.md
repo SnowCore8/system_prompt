@@ -24,7 +24,7 @@
 | `skills/*/references/*.md` | P | skill 按需读取 | 结构与分布见 `docs/content-map.md`；维护者材料在 `docs/` |
 | `shared/commands/constraints-check.md` | P | Qoder/Qwen 命令；DSH 未注册 | 命令提示词 |
 | `shared/scripts/*.js` | C | Qoder/Qwen hook | 提示词发射器，不是提示词正文 |
-| `plugins/dsh/src/index.js`、hooks | C | 宿主运行时 | 注入与 skill 提供者 |
+| `plugins/dsh/src/*.js`、hooks | C | 宿主运行时 | 注入与 skill 提供者 |
 | `docs/*` | R | 维护者 | 不注入、不随包 |
 | `README.md`、`GOVERNANCE.md`、`SECURITY.md`、`GLOSSARY.md`、`CHANGELOG.md` | R | 人类/GitHub/npm | 不自动加载 |
 | `scripts/`、`tests/`、`.github/` | C | 维护者/CI | 不进入上下文、不随包 |

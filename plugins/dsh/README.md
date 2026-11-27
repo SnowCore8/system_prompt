@@ -10,7 +10,8 @@
 |---|---|
 | `package.json` | npm 包与 `dsh.bundle.patch` 声明 |
 | `plugins/dsh/cordis.patch.yml` | 插入 skill 提供者行 `global-user-constraints-skills` |
-| `plugins/dsh/src/index.js` | Cordis 插件：`apply(ctx)` 注册 skill provider 与 `systemPrompt.section()` |
+| `plugins/dsh/src/index.js` | Cordis 插件入口：`apply(ctx)` 注册 skill provider 与 `systemPrompt.section()` |
+| `plugins/dsh/src/constraints.js`、`skills.js`、`paths.js`、`constants.js` | 约束 section、skill provider、路径与常量模块 |
 | `skills/` | 二十个通用规范 skill |
 | `rules/global-user-constraints.md` | 全局用户约束正文 |
 
