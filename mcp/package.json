@@ -1,0 +1,29 @@
+{
+  "name": "@snowcore8/se-mcp",
+  "version": "1.0.0",
+  "description": "se-governance 的 MCP 服务器：章程条款审查、风险分级、门禁记录与生命周期模板工具。",
+  "type": "module",
+  "bin": {
+    "se-mcp": "./server.mjs"
+  },
+  "main": "./server.mjs",
+  "files": [
+    "server.mjs",
+    "src",
+    "rules",
+    "skills"
+  ],
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "1.32.2",
+    "zod": "4.6.7"
+  },
+  "license": "MIT AND CC-BY-4.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SnowCore8/system_prompt.git"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org"
+  }
+}

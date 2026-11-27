@@ -1,9 +1,12 @@
 {
-  "name": "@snowcore8/dsh-global-user-constraints",
-  "version": "0.46.0",
-  "description": "DSH bundle：提供二十一个 Stage-Gate + Agile 生命周期治理与专业规范 skill，并通过 systemPrompt.section 注入约束正文；用户级 AGENTS.md 已含同内容时按 sha256 去重。",
+  "name": "@snowcore8/se-dsh",
+  "version": "1.0.0",
+  "description": "se-governance DSH bundle：治理章程注入、二十四个覆盖软件工程全生命周期的 skill，以及 se-mcp 工具（经 cordis.patch.yml 挂载）。",
   "type": "module",
   "main": "plugins/dsh/src/index.js",
+  "workspaces": [
+    "mcp"
+  ],
   "files": [
     "plugins/dsh/src",
     "plugins/dsh/cordis.patch.yml",
@@ -13,7 +16,8 @@
     "LICENSE",
     "LICENSE-CC-BY-4.0.txt",
     "LICENSE-MIT.txt",
-    "THIRD-PARTY-NOTICES.md"
+    "THIRD-PARTY-NOTICES.md",
+    "mcp"
   ],
   "engines": {
     "dsh": ">=0.2.2-rc.1 <0.3.0"
@@ -22,7 +26,7 @@
     "check:js": "biome check .",
     "format:js": "biome check --write .",
     "bench:hooks": "node scripts/bench-hooks.mjs",
-    "coverage:js": "c8 --check-coverage --lines 90 --branches 85 --functions 90 node --test \"tests/hooks/*.test.js\" \"tests/dsh/*.test.mjs\""
+    "coverage:js": "c8 --check-coverage --lines 90 --branches 85 --functions 90 node --test \"tests/hooks/*.test.js\" \"tests/dsh/*.test.mjs\" \"tests/mcp/*.test.mjs\""
   },
   "devDependencies": {
     "@biomejs/biome": "2.6.9",
