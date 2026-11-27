@@ -36,6 +36,9 @@ case "$1" in
     cp "$REPO_ROOT/plugins/dsh/cordis.patch.yml" "$REPO_ROOT/plugins/dsh/README.md" "$TARGET/plugins/dsh/"
     cp -a "$REPO_ROOT/skills" "$TARGET/skills"
     cp -a "$REPO_ROOT/rules" "$TARGET/rules"
+    mkdir -p "$TARGET/mcp"
+    cp -a "$REPO_ROOT/mcp/server.mjs" "$REPO_ROOT/mcp/src" "$TARGET/mcp/"
+    cp "$REPO_ROOT/mcp/package.json" "$TARGET/mcp/"
     cp "$REPO_ROOT/plugins/dsh/README.md" "$TARGET/README.md"
     ;;
   qoder)

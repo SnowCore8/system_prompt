@@ -90,6 +90,10 @@ jobs:
           for p in dsh qoder qwen; do
             npm publish "/tmp/npm-$p" --access public --provenance
           done
+      - name: 发布 MCP 包
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: npm publish --workspace mcp --access public --provenance
       - name: 发布 Release
         env:
           GH_TOKEN: ${{ github.token }}

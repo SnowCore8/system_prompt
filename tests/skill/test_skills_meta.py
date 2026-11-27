@@ -18,7 +18,7 @@ REQUIRED_SECTIONS = ("适用范围与优先级", "生命周期定位", "门禁�
 MAX_LINES = 250
 HINT = re.compile(r"\[[^\]]+\]")
 INDEX_HEADER = "| 编号 | 维度名 | 首条规则 | 详情 |"
-NUMBERED_HEADING = re.compile(r"^## (\d+)\.")
+NUMBERED_HEADING = re.compile(r"^## (\d+)\.", re.M)
 HISTORY_TERMS = ("来源清单", "取证日期", "版本基线", "历史沿革", "新旧对照", "迁移说明")
 
 

@@ -108,7 +108,7 @@ required = {
               "scripts/inject-clock.js"],
     "qwen": ["qwen-extension.json", "hooks/qwen-hooks.json", "constraints/global-user-constraints.md"],
     "dsh": ["package.json", "plugins/dsh/cordis.patch.yml", "plugins/dsh/src/index.js",
-            "rules/global-user-constraints.md"],
+            "rules/global-user-constraints.md", "mcp/server.mjs", "mcp/src/tools.mjs"],
 }[name] + ["LICENSE", "LICENSE-CC-BY-4.0.txt", "LICENSE-MIT.txt", "THIRD-PARTY-NOTICES.md"]
 
 with zipfile.ZipFile(path) as zf:
@@ -140,7 +140,7 @@ for info in infos:
 allowed = {
     "qoder": (".qoder-plugin/", "hooks/", "rules/", "skills/", "commands/", "scripts/", "README.md", "LICENSE", "THIRD-PARTY-NOTICES.md"),
     "qwen": ("qwen-extension.json", "hooks/", "constraints/", "skills/", "commands/", "scripts/", "README.md", "LICENSE", "THIRD-PARTY-NOTICES.md"),
-    "dsh": ("package.json", "plugins/dsh/", "skills/", "rules/", "README.md", "LICENSE", "THIRD-PARTY-NOTICES.md"),
+    "dsh": ("package.json", "plugins/dsh/", "skills/", "rules/", "mcp/", "README.md", "LICENSE", "THIRD-PARTY-NOTICES.md"),
 }[name]
 for entry in names:
     permitted = any(entry == prefix or entry.startswith(prefix) for prefix in allowed)
