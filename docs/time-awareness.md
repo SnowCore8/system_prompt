@@ -4,13 +4,15 @@
 
 Qoder 与 Qwen Code 都不向模型注入当前时间。模型只能靠对话里偶然出现的日期去猜，
 跨天、排期、日志时间戳、节假日判断都会失准。本仓库用 hook 把时间变成显式的会话上下文。
+三端 hook 事件、注入落点与压缩语义见 [hooks-and-injection.md](hooks-and-injection.md)。
 
 ## 设计
 
 - 载体是 hook 的 `additionalContext`，不改写系统提示，也不依赖模型主动运行 `date`。
 - 时机：
   - Qwen Code：`SessionStart` 与每次 `UserPromptSubmit`；
-  - Qoder：`SessionStart` 注入约束全文（`source=resume` 或配置根/项目已有同内容时跳过），`source=compact` 时另注入提醒与一行时间；
+  - Qoder：`SessionStart` 注入约束全文（`source=resume` 或配置根/项目已有同内容时跳过）；`source=compact` 时
+    无 matcher 组与 compact 组都会执行，全文与提醒/时间合并为一条上下文，细节见 hooks 文档；
     `UserPromptSubmit` 注入完整 DSH 时间块；`PreToolUse` / `PostToolUse` / `PostToolUseFailure`
     各注入一行时间；`SessionEnd` 清理状态。
 - 采用 DSH `time-context` 的三行格式：
@@ -19,11 +21,15 @@ Qoder 与 Qwen Code 都不向模型注入当前时间。模型只能靠对话里
   `Browser time zone for this request: <时区>. Interpret otherwise-unqualified dates and times in this zone.`
   `Elapsed since the preceding model-visible message: <耗时|unavailable>.`
 
-  Qoder 没有逐步 step 字段，因此不再输出恒为 1 的 step；脚本用 `QODER_PLUGIN_DATA` 按 session 记录 turn 与上次注入时间。没有状态时输出 turn 1、unavailable；Qwen 的 SessionStart 同样从 turn 1 开始。
+  Qoder 没有逐步 step 字段，因此不再输出恒为 1 的 step；脚本用 `QODER_PLUGIN_DATA` 按 session 记录 turn 与上次注入时间。
+  没有状态时输出 turn 1、unavailable。Qwen 不设置插件数据目录变量，时间 hook 通常不落盘，turn 通常为 1、elapsed 为
+  `unavailable`。
+
+  DSH 原版时间消息含 `turn N, step M` 与 `resolved`/`mixed`/`missing` 三种时区措辞；本页格式是 Qoder/Qwen 适配版。
 
 - 时区依次取 `TZ`（用 `Intl.DateTimeFormat` 校验）、`Intl` 解析出的系统时区、`/etc/timezone`，
   最后用 UTC 整点偏移兜底；Windows 没有 `/etc`，走 `Intl` 与偏移。时间戳同时写入数值偏移与方括号内的时区名。
-- 成本约为每轮几十 token；工具事件只加一行。失败静默，不阻断会话。Qoder 会写插件数据目录的 clock 状态，并在 `SessionEnd` 清理；Qwen 在宿主提供 `QODER_PLUGIN_DATA` 或 `CLAUDE_PLUGIN_DATA` 时同样写该状态，其 hooks 未配置 `SessionEnd` 清理。两者都不写项目文件、不联网，超时 10 秒。
+- 成本约为每轮几十 token；工具事件只加一行。失败静默，不阻断会话。Qoder 会写插件数据目录的 clock 状态，并在 `SessionEnd` 清理；Qwen 不设置插件数据目录，时间 hook 通常不落盘，其 hooks 也没有 `SessionEnd` 清理。两者都不写项目文件、不联网，超时 10 秒。
 
 ## 双端接线
 
@@ -40,7 +46,7 @@ Qoder 与 Qwen Code 都不向模型注入当前时间。模型只能靠对话里
 
 ## 与约束注入的关系
 
-- Qwen 由清单的 `contextFileName` 每个请求加载约束正文；Qoder 由 `SessionStart` hook 注入全文，不写用户级 rules。时间注入不去重，每轮都是新值。
+- Qwen 由清单的 `contextFileName` 在启动/刷新读取一次，随后每个请求随 system prompt 携带；Qoder 由 `SessionStart` hook 注入全文，不写用户级 rules。时间注入不去重，每轮都是新值。
 - 时间由 `scripts/inject-clock.js` 负责：`UserPromptSubmit` 发完整 DSH 块，工具事件发一行时间。
 
 ## 验证

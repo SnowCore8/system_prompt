@@ -2,20 +2,21 @@
 
 维护者：SnowCore8；何时阅读：调整各工具入口或调研加载行为时。
 
-本文分别整理 Qoder、Qwen Code 与 DeepSeek Harness（DSH）三类工件的加载规则与目录结构。
+本文分别整理 Qoder、Qwen Code 与 DeepSeek Harness（DSH）三类工件的加载规则与目录结构；hook 事件、输出契约与
+压缩/恢复语义见 [hooks-and-injection.md](hooks-and-injection.md)。
 取证口径：官方文档优先，能读源码的读源码；DSH 以本地实现树为准，因为它就是运行中的版本。
 
 版本基线：
 
 | 工具 | 基线 | 取证日期 |
 | --- | --- | --- |
-| Qoder | 文档站 `docs.qoder.com` / `docs.qoder.cn`；Qoder CLI CN 1.1.88 实测 | 2026-11-14 |
-| Qwen Code | 源码 `QwenLM/qwen-code` main @ `6ba8820`，`package.json` 0.27.2 | 2026-11-14 |
-| DeepSeek Harness | 本地实现树（运行中的 DSH 安装目录） | 2026-11-14 |
+| Qoder | 文档站 `docs.qoder.com` / `docs.qoder.cn`；CLI CN 1.1.90 复核 hook 与插件规则，skills 沿用 1.1.88 | 2026-11-27 |
+| Qwen Code | 源码 `QwenLM/qwen-code` main @ `94b1d9d`，`package.json` 0.28.7 | 2026-11-27 |
+| DeepSeek Harness | 本地实现树 `0.2.3-alpha.2` @ `4b399c39` | 2026-11-27 |
 
 ## 结论摘要
 
-- Qoder 三者齐全：`rules/` 目录、`skills/` 目录、插件市场；插件当前**不能**真正携带 rules。
+- Qoder 三者齐全：`rules/` 目录、`skills/` 目录、插件市场；插件可打包 `rules/`，但 CLI 1.1.90 不加载，只能由 hook 或 command 读取。
 - Qwen Code 没有独立的 rules 目录名，但 `.qwen/rules/` 是条件规则机制；常驻约束走 `QWEN.md`/`AGENTS.md`。
 - DSH 没有 rules 目录：常驻约束是指令链，skills 走六个扫描根，插件以 bundle + profile 组合。
 
@@ -54,7 +55,7 @@
 - IDE 限制所有活跃规则合计最多 100,000 字符，超出截断；CLI 是否有同一上限未在文档中说明。
 - `@path` 导入只对 `AGENTS.md` 有官方说明；rules 正文是否支持导入未验证，保守做法是写自包含正文。
 - 没有独立的企业级 rules 目录；团队共享就是把项目级 `.qoder/rules/` 提交进 Git。
-- 插件侧预留了 `rules/` 目录与 manifest 字段，但当前 runtime 不加载，详见下文 plugins 一节。
+- 插件侧可打包 `rules/` 与 manifest 字段，但 CLI 1.1.90 不加载（`plugins validate` 把 `rules` 报为未知并忽略），只能由 hook 或 command 读取。
 
 来源：[Qoder CLI 记忆](https://docs.qoder.cn/cli/memory)、[Qoder IDE 规则](https://docs.qoder.com/user-guide/rules)。
 
@@ -71,7 +72,7 @@
 - 只扫描 `SKILL.md`，大小写敏感；`scripts/`、`references/`、`templates/` 等辅助文件随 skill 目录
   一起保留，按需读取，用于渐进式披露。
 - 官方 front matter 必填 `name`（最多 64 字符，小写字母、数字、连字符）与 `description`
-  （最多 1024 字符）。CLI 1.1.88 实测：身份取**目录名**，`name` 与目录名不一致不报错，
+  （最多 1024 字符）。CLI 1.1.88 实测（1.1.90 未复验）：身份取**目录名**，`name` 与目录名不一致不报错，
   且会递归发现 `skills/nested/deep/SKILL.md`。
 - 同名优先级存在文档矛盾：IDE 文档说项目级优先；CLI 文档与 1.1.88 实测都是**用户级优先**
   （内置 < 插件 < 项目 < 用户）。跨端使用时应避免同名。
@@ -116,7 +117,7 @@
   `tags`、`strict`。`category`/`tags`/`strict` 属于市场清单，写进插件清单会被提示放错位置。
 
 插件携带 rules 的现状：CN 支持矩阵把 Rules 标为 Desktop「即将支持」、CLI「不适用」；
-CLI 1.1.88 的 `plugins validate` 把 `"rules"` 报为 unknown field 并忽略，只含 `rules/` 的插件
+CLI 1.1.90 的 `plugins validate` 把 `"rules"` 报为 unknown field 并忽略，只含 `rules/` 的插件
 会因「没有可安装组件」被拒。宿主原生的做法仍是把规则放用户级或项目级 `.qoder/rules/`；
 本仓库插件由 `SessionStart` hook 注入全文，不写用户级 rules，见
 [plugins/qoder/README.md](../plugins/qoder/README.md)；`UserPromptSubmit` 每轮提醒
@@ -146,12 +147,12 @@ Qwen Code 有两套常驻指令机制：上下文文件（`QWEN.md`/`AGENTS.md`�
 | 项目根到 cwd 各级的 `QWEN.md` | 需工作区可信；由项目根向 cwd 逐层查找 |
 | 项目根到 cwd 各级的 `AGENTS.md` | 同上 |
 | `<project>/.qwen/QWEN.local.md` | 仅真实 git 根，最后追加 |
-| 已启用扩展的 context 文件 | 每个请求携带，默认扩展目录内 `QWEN.md` |
+| 已启用扩展的 context 文件 | 启动/刷新读取并缓存，随后每请求随 system prompt 携带；默认扩展目录内 `QWEN.md` |
 
-- `context.fileName`（`string | string[]`）会**替换**默认列表而不是追加；旧顶层键
-  `contextFileName` 已迁移为 `context.fileName`。
-- 多个文件按「文件名优先、目录其次」的顺序拼接，每段包在
-  `--- Context from: <路径> ---` 标记里；按 realpath 去重；没有覆盖语义，冲突需自行删改。
+- `context.fileName`（`string | string[]`）会**替换**默认列表而不是追加；Qwen 配置的旧顶层键
+  `contextFileName` 已迁移为 `context.fileName`。扩展清单的 `contextFileName` 是另一项字段，语义见 hook 文档。
+- 默认记忆文件按「文件名优先、目录其次」拼接；扩展 `contextFileName` 数组按声明顺序，跨扩展按启用顺序。
+  每段包在 `--- Context from: <路径> ---` 标记里；按 realpath 去重，冲突需自行删改。
 - `@path/to/file` 导入受支持：相对被导入文件所在目录解析，深度上限 5，代码块与行内代码里的
   `@` 不导入，默认限制在项目根内。
 - 没有显式的文件体积上限，只有模型上下文窗口这一硬约束；官方反复强调保持短小。
@@ -223,7 +224,7 @@ Gemini（`gemini-extension.json`）、Claude（`.claude-plugin/plugin.json`）�
 
 | 工件 | 加载时机 |
 | --- | --- |
-| context 文件 | 启用后每个请求拼接，无相关性过滤、无体积上限 |
+| context 文件 | 启动/刷新读取并缓存，随后每个请求随 system prompt 发送；无相关性过滤、无体积上限 |
 | rules | 启动时加载，只接受带 `paths:` 的条件规则 |
 | skills | 启动时注册为 `<ext>:<name>`，调用时载入正文 |
 | commands | 启动时注册；冲突时降级为 `/<ext>.<cmd>` |
@@ -259,12 +260,14 @@ DSH 不读 `.dsh/rules` 或 `.claude/rules`。常驻约束由 `dsh-agent-instruc
 | 项目 | 项目根到会话 cwd 每层的 `AGENTS.md`、`CLAUDE.md` | 再由 `AGENTS.local.md`、`CLAUDE.local.md` 叠加 |
 
 - 项目根是最近的含 `.git` 的祖先；找不到时用当前 cwd。同一候选组内内容相同的文件只渲染一次。
-- 按由宽到窄拼接：用户全局链在前，项目链从根到 cwd。首轮请求注入一条持久的
-  `<system-reminder>` 消息；不解释 `@path` 导入、大小写变体或 `.claude/rules/`。
+- 按由宽到窄拼接：用户全局链在前，项目链从根到 cwd。首次 eligible `agent/pre-step` 注入一条
+  `<system-reminder>` 消息，持续到压缩；压缩后下一次 pre-step 重新补入。不解释 `@path` 导入、大小写变体或
+  `.claude/rules/`。
 - 预算按链分别计：`maxBytes` 默认 65536 字节，单个源文件 `maxSourceBytes` 默认 1 MiB。
   超预算先整份丢弃更宽的文件，再截断剩下的最后一个，并输出 `Workspace instruction budget` 提示。
 - 首次加载后不持续监听：后续 `read`、`write`、`edit` 成功进入更深目录时补入新文件；
-  内容变化替换原文，文件消失或与更早候选重复时给出移除通知；会话恢复时对账。
+  内容变化追加 `Updated instructions from: <路径>` 消息（历史 append-only），文件消失或与更早候选重复时给出移除通知；
+  会话恢复时对账。
 - 更具体的文件优先于更宽的；指令不覆盖系统、开发者或直接用户指令。
 
 来源：DSH 源码树 `packages/context/agent-instructions/README.md`。
@@ -319,8 +322,9 @@ DSH 里「插件」是 TypeScript 模块，导出 `apply(ctx)`；可分发的安
 - 启停：在 profile patch 里给对应行写 `disabled`；Web 的 Plugins 页与 `plugin_manager` 工具
   做同样的事，只有启用 HMR 时才即时生效，否则重启后生效。
 - 插件可贡献的能力没有白名单：`ctx` 上能注册什么就能贡献什么，例如工具、人类命令、
-  skill 提供者、MCP 服务器、指令上下文与界面组件。Claude Code 风格 hooks 经
-  `dsh-experimental-claude-code-mods` 桥接，而不是读 `plugin.json`。
+  skill 提供者、MCP 服务器、指令上下文与界面组件。Claude Code 风格 hooks 由实验包
+  `dsh-hooks-claude-code` 桥接，默认不安装；`claude-code-mods` 只处理 mods 的 `register` 钩子链。
+  事件与限制见 [hooks-and-injection.md](hooks-and-injection.md)。
 - agent preset 是另一个作用域层：preset 的 standing composition 挂载的插件落在该 preset 的层，
   影响该 agent 可见的 skills 与工具。
 
@@ -358,23 +362,23 @@ DSH 里「插件」是 TypeScript 模块，导出 `apply(ctx)`；可分发的安
 本仓库各工具的项目级入口如下：
 
 - Qwen Code：`.qwen/rules`（由 `scripts/assemble.sh` 从 `rules/` 生成）。其中的规则没有 `paths:`，属 baseline，
-  首个请求进入 system prompt；插件清单的 `contextFileName` 每个请求加载
-  `constraints/global-user-constraints.md`；`SessionStart` 仅有时间 hook；`.qwen/AGENTS.md` 会被
-  Qwen 忽略，因此不再提供。
+  首个请求进入 system prompt；插件清单的 `contextFileName` 在启动/刷新读取一次，随后每请求随
+  system prompt 携带 `constraints/global-user-constraints.md`；`SessionStart` 仅有时间 hook；
+  `.qwen/AGENTS.md` 会被 Qwen 忽略，因此不再提供。
 - Qoder：项目级 `.qoder/rules` 由 `scripts/assemble.sh` 从根级 `rules/` 生成；用户级约束由插件
   `SessionStart` hook 注入全文，不写 `~/.qoder*/rules`。`.qoder-cn` 与 `.qoder/plugins` 在项目级没有加载语义，
   已移除。
 - DeepSeek Harness：`.dsh/skills` 是 rank 100 的 skill 扫描根，由 `scripts/assemble.sh` 从顶层
-  `skills/` 生成；根 `AGENTS.md` 是项目指令入口；约束正文由 bundle 经 `ctx.systemPrompt.section()` 自动注入，
-  `~/.dsh/AGENTS.md` 已含同内容时按 sha256 去重跳过。
+  `skills/` 生成；根 `AGENTS.md` 是项目指令入口；约束正文由 bundle 在 `apply` 时经 `ctx.systemPrompt.section()`
+  注册；只对两个用户级 `AGENTS.md` 做 sha256 去重，项目级不参与，文件变化需重载。
 - skills：`.qwen/skills`、`.qoder/skills`、`.dsh/skills` 都是由 `scripts/assemble.sh` 生成的普通目录；
   Qoder 与 Qwen Code 只扫描一层，DSH 也不递归发现嵌套 `SKILL.md`。
 - 三包分发：Qoder 插件在 `plugins/qoder`（`command` + `args`，`${QODER_PLUGIN_ROOT}`），
   Qwen 扩展在 `plugins/qwen`（单条 `command`，`${CLAUDE_PLUGIN_ROOT}`），DSH bundle 在
   `plugins/dsh`（`ctx.skills.registerProvider`）；Qoder/Qwen 都从顶层 `rules/`、`skills/` 与 `shared/`
   组装（Qwen 的规则目录命名为 `constraints/`），DSH bundle 只带 `rules/` 与 `skills/`。
-- 时间：Qoder 与 Qwen 都没有内建时间感知，由 hook 注入 DSH 风格时间块；设计、接线与关闭方式见
-  [docs/time-awareness.md](time-awareness.md)。
+- 时间：Qoder 与 Qwen 都没有内建时间感知，由 hook 注入 DSH 风格时间块；DSH 的时间由 preset 决定
+  （`dsh-time-context` 在 Web `standard`/`ptc` 挂载）。设计、接线与关闭方式见 [docs/time-awareness.md](time-awareness.md)。
 - 根 `AGENTS.md` 也会被 Qwen Code 当作项目级 `AGENTS.md` 读取，所以它只承载本仓库的智能体项目指令；
   人类贡献与发布流程在 `CONTRIBUTING.md`，不进入模型上下文。
 - 插件包内 Qoder 与 DSH 随包分发 `rules/`、Qwen 分发 `constraints/`（Qwen 把扩展的 `rules/` 当作
@@ -382,8 +386,8 @@ DSH 里「插件」是 TypeScript 模块，导出 `apply(ctx)`；可分发的安
 
 ## 未验证与文档矛盾
 
-- Qoder skills 同名优先级：IDE 文档写项目级优先，CLI 文档与 1.1.88 实测相反。
-- Qoder 插件 rules 的落地时间：schema 与打包规范已存在，CLI 不加载，Desktop 标注「即将支持」。
+- Qoder skills 同名优先级：IDE 文档写项目级优先，CLI 文档与 1.1.88 实测相反；1.1.90 未复验。
+- Qoder 插件 rules 的落地时间：schema 与打包规范已存在，CLI 1.1.90 不加载，Desktop 标注「即将支持」。
 - Qoder IDE 的 100,000 字符上限是否同样适用于 CLI：文档未说明。
 - Qoder `qoder.md` 是否作为插件级指令加载：打包规范提到，支持矩阵标「—」，未验证。
 - Qwen Code 历史版本是否读过 `<project>/.qwen/AGENTS.md`：当前版本不支持，历史未找到证据。
@@ -406,7 +410,7 @@ Qwen Code：
 - [Memory](https://qwenlm.github.io/qwen-code-docs/en/users/features/memory/)
 - [Extensions 介绍](https://qwenlm.github.io/qwen-code-docs/en/users/extension/introduction/)
 - 源码：`memoryDiscovery.ts`、`memory-constants.ts`、`rulesDiscovery.ts`、`skill-manager.ts`、
-  `extensionManager.ts`、`storage.ts`（`QwenLM/qwen-code` main）。
+  `extensionManager.ts`、`storage.ts`（`QwenLM/qwen-code` @ `94b1d9d`）。
 
 DeepSeek Harness：
 

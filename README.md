@@ -26,14 +26,15 @@ scripts/check.sh             # 全量校验
 | `rules/`、`skills/`、`shared/` | 唯一真源：约束、二十个 skill、命令与注入脚本 |
 | `plugins/qoder/`、`plugins/qwen/`、`plugins/dsh/` | 三包清单、hooks 与说明 |
 | `scripts/` | `assemble.sh` 生成开发入口、`materialize.sh` 组装包、`check.sh` 校验、`dist.sh` 出包 |
-| `docs/` | 加载调研、时间设计、校验规则、分类台账与发布手册 |
+| `docs/` | 加载调研、hook 与注入、时间设计、校验规则、分类台账与发布手册 |
 | `tests/`、`.github/` | 测试与 CI/Release 工作流 |
 | `AGENTS.md`、`CONTRIBUTING.md` | 智能体项目指令与人类贡献约定（分离，不互相复制） |
 | `.dsh/`、`.qoder/`、`.qwen/` | `assemble.sh` 生成的开发入口，被 `.gitignore` 忽略 |
 | `package.json`、`plugins/marketplace.json` | DSH bundle 清单与 Qoder 本地市场描述；后者使用前运行 `scripts/assemble.sh qoder` |
 | 根文档与许可证 | 治理、安全、术语、变更日志、双许可证与第三方声明 |
 
-内容层级、20 个 skill 的主责与边界见 [docs/content-map.md](docs/content-map.md)。
+内容层级、20 个 skill 的主责与边界见 [docs/content-map.md](docs/content-map.md)；三端 hook 事件、注入时序与压缩后行为见
+[docs/hooks-and-injection.md](docs/hooks-and-injection.md)。
 
 ## 编辑与组装
 

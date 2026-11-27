@@ -2,7 +2,7 @@
 /**
  * SessionStart(source=compact) 钩子：压缩后注入约束提醒与当前时间。
  *
- * Qoder 的 PostCompact 不提供 additionalContext，压缩后的可注入事件是
+ * Qoder 1.1.90 的同步 PostCompact 输出不进入对话，压缩后的注入点是
  * SessionStart(source=compact)。这里只在该 source 触发时输出一句约束提醒和
  * 一行时间 + 时区解释；不写状态、不写日志、不阻断压缩。
  */

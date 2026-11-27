@@ -40,7 +40,7 @@
 - 机器校验规则在 `docs/markdown-check-rules.md`，不在 skill references 中重复。
 - 发布 runbook 以 `docs/release.md` 为准；README、CONTRIBUTING、GOVERNANCE 只保留摘要与链接。
 - Qoder 插件 `rules/` 当前不被 CLI 加载；DSH 不注册 `constraints-check` 命令。
-- 约束注入路径：Qoder 由 `SessionStart` hook 注入；Qwen 由清单 `contextFileName` 每请求加载；DSH 由 bundle 经 `ctx.systemPrompt.section()` 注入。
+- 约束注入路径：Qoder 由 `SessionStart` hook 注入；Qwen 由清单 `contextFileName` 在启动/刷新读取一次，随后每请求随 system prompt 携带；DSH 由 bundle 经 `ctx.systemPrompt.section()` 注入。
 
 ## 目标结构
 
