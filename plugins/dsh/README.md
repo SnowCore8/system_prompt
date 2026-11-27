@@ -34,8 +34,7 @@ pnpm dsh plugin --profile web add /path/to/global-user-constraints-dsh-<版本>
 
 ## 命令
 
-本 bundle 不注册 `constraints-check` 命令；该命令由 Qoder/Qwen 包提供。DSH 中直接按规则与 skill 审查，
-不引入另一套命令格式。
+本 bundle 不注册 `constraints-check` 命令；直接按规则与 skill 审查，不引入另一套命令格式。
 
 ## 行为
 
