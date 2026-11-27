@@ -20,7 +20,7 @@ describe('inject-compact.js', () => {
 
     const lines = contextOf(stdout).split('\n');
     assert.equal(lines.length, 4);
-    assert.equal(lines[0], 'Never violate global user constraints.');
+    assert.equal(lines[0], 'Never violate the se-governance charter.');
     assert.equal(lines[1], '');
     assert.match(lines[2], new RegExp(`^Time sampled after context compaction: ${TIMESTAMP}\\.$`));
     assert.match(

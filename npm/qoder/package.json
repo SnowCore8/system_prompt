@@ -1,10 +1,10 @@
 {
-  "name": "@snowcore8/qoder-global-user-constraints",
-  "version": "0.46.0",
-  "description": "Qoder 插件安装包：通过 HTTPS zip 直链安装含生命周期治理与二十一个 skill 的 global-user-constraints。",
+  "name": "@snowcore8/se-qoder",
+  "version": "1.0.0",
+  "description": "se-governance Qoder 安装包：承载同版本 se-governance-qoder-*.zip 与校验和。",
   "files": [
-    "global-user-constraints-qoder-*.zip",
-    "global-user-constraints-qoder-*.sha256",
+    "se-governance-qoder-*.zip",
+    "se-governance-qoder-*.sha256",
     "LICENSE-CC-BY-4.0.txt",
     "LICENSE-MIT.txt",
     "THIRD-PARTY-NOTICES.md"

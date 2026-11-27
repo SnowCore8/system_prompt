@@ -153,7 +153,7 @@ export function formatCompactText(now) {
   const stamp = formatTimestamp(now);
 
   return [
-    'Never violate global user constraints.',
+    'Never violate the se-governance charter.',
     '',
     `Time sampled after context compaction: ${stamp}.`,
     `Browser time zone for this request: ${zone}. Interpret otherwise-unqualified dates and times in this zone.`,

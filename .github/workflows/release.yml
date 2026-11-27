@@ -64,14 +64,14 @@ jobs:
         uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8  # v4
         with:
           subject-path: |
-            global-user-constraints-*.zip
+            se-governance-*.zip
             global-user-constraints-*.sha256
             sbom.spdx.json
       - name: 校验构建来源证明
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          for file in global-user-constraints-*.zip sbom.spdx.json; do
+          for file in se-governance-*.zip sbom.spdx.json; do
             gh attestation verify "$file" --repo "$GITHUB_REPOSITORY"
           done
       - name: 准备三个 npm 包
@@ -80,7 +80,7 @@ jobs:
           for p in qoder qwen; do
             mkdir -p "/tmp/npm-$p"
             cp "npm/$p/package.json" "npm/$p/README.md" "/tmp/npm-$p/"
-            cp global-user-constraints-$p-*.zip global-user-constraints-$p-*.sha256 "/tmp/npm-$p/"
+            cp se-governance-$p-*.zip se-governance-$p-*.sha256 "/tmp/npm-$p/"
             cp LICENSE LICENSE-CC-BY-4.0.txt LICENSE-MIT.txt THIRD-PARTY-NOTICES.md "/tmp/npm-$p/"
           done
       - name: 发布三个 npm 包
@@ -95,7 +95,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           gh release create "$GITHUB_REF_NAME" \
-            global-user-constraints-*.zip \
+            se-governance-*.zip \
             global-user-constraints-*.sha256 \
             THIRD-PARTY-NOTICES.md \
             sbom.spdx.json \

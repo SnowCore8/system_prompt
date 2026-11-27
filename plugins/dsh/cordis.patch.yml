@@ -1,4 +1,6 @@
 # 把本 bundle 的 skill 提供者挂进 profile；行 id 供用户在自己的 patch 里覆盖或禁用。
+# MCP 服务器随包提供：mcp/server.mjs（stdio），可经 dsh-mcp-client 挂载，
+# 命令示例见 README 的 MCP 一节。
 - insert:
-    - id: global-user-constraints-skills
-      name: '@snowcore8/dsh-global-user-constraints'
+    - id: se-governance-skills
+      name: '@snowcore8/se-dsh'

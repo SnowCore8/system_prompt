@@ -8,7 +8,7 @@ usage() {
 
 三个包分别是 plugins/qoder、plugins/qwen 与 plugins/dsh，版本以各自清单为准：
 `.qoder-plugin/plugin.json`、`qwen-extension.json`、`package.json` 的 version 必须一致
-（SemVer），输出 global-user-constraints-<包名>-<版本>.zip 与对应 .sha256。
+（SemVer），输出 se-governance-<包名>-<版本>.zip 与对应 .sha256。
 
 Qoder/Qwen 包只放清单与 hook；三包都由 scripts/materialize.sh 从顶层 skills/、rules/ 与
 shared/ 组装成自包含目录，不依赖软链；Qoder 的 plugins validate 针对组装后的目录运行。
@@ -128,8 +128,8 @@ for item in required:
 if embedded_version != version:
     problems.append(f"包内版本 {embedded_version!r} 与 {version} 不一致")
 skills = [entry for entry in names if entry.count("/") == 2 and entry.endswith("/SKILL.md")]
-if len(skills) != 21:
-    problems.append(f"skill 数量为 {len(skills)}，期望 21")
+if len(skills) != 24:
+    problems.append(f"skill 数量为 {len(skills)}，期望 24")
 for info in infos:
     mode = (info.external_attr >> 16) & 0o170000
     if mode == 0o120000:
@@ -158,7 +158,7 @@ PY
 
 retain() {
   local name="$1" old
-  mapfile -t zips < <(ls -1t "$REPO_ROOT"/global-user-constraints-"$name"-*.zip 2>/dev/null || true)
+  mapfile -t zips < <(ls -1t "$REPO_ROOT"/se-governance-"$name"-*.zip 2>/dev/null || true)
   if [ "${#zips[@]}" -gt 1 ]; then
     for old in "${zips[@]:1}"; do
       rm -f "$old" "${old%.zip}.sha256"
@@ -205,7 +205,7 @@ build_one() {
     qoderclicn plugins validate "$STAGE_DIR/pkg"
   fi
 
-  out="$REPO_ROOT/global-user-constraints-$name-$VERSION$SUFFIX.zip"
+  out="$REPO_ROOT/se-governance-$name-$VERSION$SUFFIX.zip"
   sums="${out%.zip}.sha256"
   mv "$zip" "$out"
   if command -v sha256sum >/dev/null 2>&1; then

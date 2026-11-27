@@ -42,7 +42,7 @@ describe('inject-constraints.js', () => {
     assert.equal(code, 0, stderr);
 
     const context = contextOf(stdout);
-    assert.equal(context.startsWith('全局用户约束（由插件于会话启动时注入，必须遵守）：'), true);
+    assert.equal(context.startsWith('se-governance 治理章程（由插件于会话启动时注入，必须遵守）：'), true);
     assert.ok(context.length > 10000, '约束正文不应为空或被截断');
     assert.equal(context.endsWith(readFileSync(RULES, 'utf-8').trim()), true);
   });
@@ -150,7 +150,7 @@ describe('inject-constraints.js', () => {
     );
     assert.equal(code, 0);
     const context = contextOf(stdout);
-    assert.equal(context.includes('全局用户约束未注入'), true);
+    assert.equal(context.includes('se-governance 章程未注入'), true);
     assert.equal(context.includes(RULE_BASENAME), true);
   });
 
@@ -167,7 +167,7 @@ describe('inject-constraints.js', () => {
     );
     assert.equal(code, 0);
     const context = contextOf(stdout);
-    assert.equal(context.includes('全局用户约束未注入'), true);
+    assert.equal(context.includes('se-governance 章程未注入'), true);
     assert.equal(context.includes('读取'), true);
     assert.equal(context.includes('失败'), true);
   });
@@ -200,7 +200,7 @@ describe('inject-constraints.js', () => {
     assert.equal(code, 0);
     const output = JSON.parse(stdout);
     assert.equal(output.hookSpecificOutput.hookEventName, 'UserPromptSubmit');
-    assert.equal(output.hookSpecificOutput.additionalContext, 'Never violate global user constraints.');
+    assert.equal(output.hookSpecificOutput.additionalContext, 'Never violate the se-governance charter.');
   });
 
   it('非法 payload 静默退出 0', async (t) => {

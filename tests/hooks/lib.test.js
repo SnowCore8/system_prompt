@@ -244,7 +244,7 @@ describe('time 文本格式', () => {
 
   it('formatCompactText 保留提醒、空行与两行时间', () => {
     const lines = formatCompactText(now).split('\n');
-    assert.deepEqual(lines.slice(0, 2), ['Never violate global user constraints.', '']);
+    assert.deepEqual(lines.slice(0, 2), ['Never violate the se-governance charter.', '']);
     assert.equal(lines[2], `Time sampled after context compaction: ${formatTimestamp(now)}.`);
     assert.match(
       lines[3],

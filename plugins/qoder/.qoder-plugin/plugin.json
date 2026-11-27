@@ -1,8 +1,8 @@
 {
-  "name": "global-user-constraints",
-  "displayName": "全局用户约束",
-  "version": "0.46.0",
-  "description": "Qoder 插件：SessionStart 注入全局用户约束全文；UserPromptSubmit 提醒与 DSH 时间；工具/压缩后补时间；二十一个 skill（含 Stage-Gate + Agile 生命周期治理）与一个手动门禁审查命令。",
+  "name": "se-governance",
+  "displayName": "软件工程治理套件",
+  "version": "1.0.0",
+  "description": "Qoder 插件：SessionStart 注入治理章程全文；UserPromptSubmit 提醒与时间；压缩后恢复；二十四个 skill（覆盖需求到退役的 8 阶段全生命周期）与门禁审查命令。",
   "author": {
     "name": "SnowCore8"
   },

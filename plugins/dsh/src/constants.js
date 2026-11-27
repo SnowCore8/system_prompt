@@ -3,12 +3,12 @@
  *
  * 这些值同时被 index.js 的导出与各内部模块使用，集中于此避免重复定义。
  */
-export const NAME = 'global-user-constraints-skills'
+export const NAME = 'se-governance-skills'
 export const INJECT = ['skills', 'systemPrompt']
-export const PROVIDER = 'global-user-constraints'
+export const PROVIDER = 'se-governance'
 export const RANK = 700
 export const SOURCE = 'bundled'
-export const SECTION_NAME = 'global-user-constraints'
+export const SECTION_NAME = 'se-governance'
 // 全局用户约束排在计划策略（500）之前。
 export const SECTION_ORDER = 400
 export const CONSTRAINTS_FILENAME = 'global-user-constraints.md'

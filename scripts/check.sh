@@ -6,7 +6,7 @@ set -uo pipefail
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$REPO_ROOT" || exit 2
 
-SKILL_DIR="skills/system-prompt-authoring"
+MDCHECK_DIR="scripts/mdcheck"
 failures=0
 skips=0
 
@@ -75,7 +75,7 @@ fi
 
 echo "== Markdown 格式 =="
 while IFS= read -r -d '' file; do
-  if ! output="$(python3 "$SKILL_DIR/scripts/check.py" --strict "$file" 2>&1)"; then
+  if ! output="$(python3 "$MDCHECK_DIR/check.py" --strict "$file" 2>&1)"; then
     printf '%s\n' "$output"
     fail "$file"
   fi
@@ -108,9 +108,9 @@ rm -rf "$audit_cache"
 
 echo "== 覆盖率 =="
 cov_cfg="$(mktemp)"
-printf '[run]\nbranch = true\nparallel = true\nsource = %s/skills/system-prompt-authoring/scripts\ndata_file = %s/.coverage\ndisable_warnings = no-data-collected\n' \
+printf '[run]\nbranch = true\nparallel = true\nsource = %s/scripts/mdcheck\ndata_file = %s/.coverage\ndisable_warnings = no-data-collected\n' \
   "$REPO_ROOT" "$REPO_ROOT" > "$cov_cfg"
-COVERAGE_PROCESS_START="$cov_cfg" python3 -B -m coverage run --rcfile="$cov_cfg" -m unittest discover -s tests/skill -p 'test_*.py' || fail "覆盖率 skill 测试"
+COVERAGE_PROCESS_START="$cov_cfg" python3 -B -m coverage run --rcfile="$cov_cfg" -m unittest discover -s tests/mdcheck -p 'test_*.py' || fail "覆盖率 skill 测试"
 python3 -m coverage combine --rcfile="$cov_cfg" >/dev/null 2>&1 || fail "覆盖率合并"
 python3 -m coverage report --rcfile="$cov_cfg" --fail-under=90 || fail "覆盖率低于 90%"
 rm -f "$cov_cfg" .coverage .coverage.*
@@ -257,7 +257,7 @@ if not (root / str(dsh.get("main", ""))).is_file():
 if not dsh.get("engines", {}).get("dsh"):
     problems.append("DSH bundle 缺少 engines.dsh")
 for name, pkg in (("dsh", dsh), ("qoder", npmq), ("qwen", npmw)):
-    if pkg.get("name") != f"@snowcore8/{name}-global-user-constraints":
+    if pkg.get("name") != f"@snowcore8/se-{name}":
         problems.append(f"{name} npm 包名不一致")
     if (pkg.get("publishConfig") or {}).get("access") != "public":
         problems.append(f"{name} npm 包缺少公开 publishConfig")

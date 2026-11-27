@@ -84,12 +84,12 @@ function createContext() {
 }
 
 test('constants keep the bundle identity and injection contract', () => {
-  assert.equal(NAME, 'global-user-constraints-skills')
+  assert.equal(NAME, 'se-governance-skills')
   assert.deepEqual(INJECT, ['skills', 'systemPrompt'])
   assert.equal(PROVIDER, 'global-user-constraints')
   assert.equal(RANK, 700)
   assert.equal(SOURCE, 'bundled')
-  assert.equal(SECTION_NAME, 'global-user-constraints')
+  assert.equal(SECTION_NAME, 'se-governance')
   assert.equal(SECTION_ORDER, 400)
   assert.equal(CONSTRAINTS_MAX_BYTES, 64 * 1024)
 })
@@ -102,11 +102,11 @@ test('index exports the bundle identity and re-exports legacy helpers', () => {
   assert.equal(reexportedParseSkill, parseSkill)
 })
 
-test('list returns the twenty-one bundled skills', async () => {
+test('list returns the twenty-four bundled skills', async () => {
   const { provider } = createContext()
   const candidates = await provider.list()
   const directories = (await readdir(path.join(PACKAGE_ROOT, 'skills'))).filter((entry) => !entry.startsWith('.'))
-  assert.equal(candidates.length, 21)
+  assert.equal(candidates.length, 24)
   assert.equal(candidates.length, directories.length)
   assert.deepEqual(
     candidates.map((item) => item.name),

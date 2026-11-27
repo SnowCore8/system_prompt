@@ -17,8 +17,8 @@ import { dedupeCandidates, pluginRoot, RULES_FILENAME, rulesFile, SKIP_SOURCES }
 
 const SCRIPT_DIR = dirname(fileURLToPath(import.meta.url));
 const MAX_BYTES = 64 * 1024;
-const REMINDER = 'Never violate global user constraints.';
-const TITLE = '全局用户约束（由插件于会话启动时注入，必须遵守）：';
+const REMINDER = 'Never violate the se-governance charter.';
+const TITLE = 'se-governance 治理章程（由插件于会话启动时注入，必须遵守）：';
 
 /**
  * 处理一次约束注入 hook 调用。
@@ -43,7 +43,7 @@ async function handle(payload) {
   if (!path) {
     emitContext(
       'SessionStart',
-      `全局用户约束未注入：插件包内未找到 rules/ 下的 ${RULES_FILENAME}。本会话须先读取约束；无法读取的，停止并报告安装缺失。`,
+      `se-governance 章程未注入：插件包内未找到 rules/ 下的 ${RULES_FILENAME}。本会话须先读取章程；无法读取的，停止并报告安装缺失。`,
     );
     return;
   }
@@ -55,7 +55,7 @@ async function handle(payload) {
     const reason = error.code || error.message || '未知错误';
     emitContext(
       'SessionStart',
-      `全局用户约束未注入：读取 ${path} 失败（${reason}）。本会话须先读取约束；无法读取的，停止并报告。`,
+      `se-governance 章程未注入：读取 ${path} 失败（${reason}）。本会话须先读取章程；无法读取的，停止并报告。`,
     );
     return;
   }
@@ -65,7 +65,7 @@ async function handle(payload) {
     return;
   }
   if (data.length > MAX_BYTES) {
-    emitContext('SessionStart', `全局用户约束正文超过 64 KiB 硬上限，未直接注入；应当读取 ${path} 并在本会话遵守。`);
+    emitContext('SessionStart', `se-governance 章程超过 64 KiB 硬上限，未直接注入；应当读取 ${path} 并在本会话遵守。`);
     return;
   }
 
