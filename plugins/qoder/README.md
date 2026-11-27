@@ -55,10 +55,9 @@ Windows 为 `%USERPROFILE%\.qoder-cn\rules\global-user-constraints.md` 或
 
 - `SessionStart`：读取包内 `rules/global-user-constraints.md` 注入全文；`source=resume` 时跳过。
 - 去重：项目目录及其祖先（有 `.git` 时到 `.git` 为止，无 `.git` 时到文件系统根）的
-  `.qoder/rules/global-user-constraints.md`、`.qwen/rules/global-user-constraints.md`、
-  `AGENTS.md`、`AGENTS.local.md`、`QWEN.md`、`QWEN.local.md`；用户配置根（`QODERCN_CONFIG_DIR`、
-  `QODER_CONFIG_DIR`、`QWEN_HOME`、`QWEN_CONFIG_DIR`、`~/.qoder-cn`、`~/.qoder`、`~/.qwen`）下的
-  `rules/global-user-constraints.md`、`AGENTS.md`、`QWEN.md`。任一文件与正文 sha256 相同即跳过注入。
+  `.qoder/rules/global-user-constraints.md`、`AGENTS.md`、`AGENTS.local.md`；用户配置根
+  （`QODERCN_CONFIG_DIR`、`QODER_CONFIG_DIR`、`~/.qoder-cn`、`~/.qoder`）下的
+  `rules/global-user-constraints.md`、`AGENTS.md`。任一文件与正文 sha256 相同即跳过注入。
 - 规则缺失、读取失败或正文超过 40 KiB：不注入全文，改为输出对应提示。
 - `source=compact`：另由 `inject-compact.js` 注入 `Never violate global user constraints.` 与一行压缩后时间。
 - `UserPromptSubmit`：提醒 `Never violate global user constraints.` + 完整 DSH 三行时间。
