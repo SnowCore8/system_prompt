@@ -1,12 +1,25 @@
 # 时间感知设计
 
+Qoder 与 Qwen Code 都不向模型注入当前时间。模型只能靠对话里偶然出现的日期去猜，跨天、排期、日志时间戳与
+节假日判断都会失准。本仓库用 hook 把时间变成显式的会话上下文，使生命周期中的时间判断有统一基准。
+
+时间注入与约束注入是两项独立需求：约束决定能否做，时间只说明何时在做。时间不是门禁证据，也不扩大授权；
+门禁记录中的时间取自会话时间与人工确认。三端 hook 事件、注入落点与压缩语义见
+[hooks-and-injection.md](hooks-and-injection.md)。
+
 维护者：SnowCore8；何时阅读：修改或排查时间注入 hook 时。
 
-Qoder 与 Qwen Code 都不向模型注入当前时间。模型只能靠对话里偶然出现的日期去猜，
-跨天、排期、日志时间戳、节假日判断都会失准。本仓库用 hook 把时间变成显式的会话上下文。
-三端 hook 事件、注入落点与压缩语义见 [hooks-and-injection.md](hooks-and-injection.md)。
+## 在生命周期中的位置
 
-## 设计
+| 环节 | 时间的作用 | 边界 |
+|---|---|---|
+| S0 受理 | 判断停止条件、时限与受理时间 | 授权仍以用户明确同意为准，时间不构成同意 |
+| S2 计划 | 迭代、里程碑与发布窗口的时间参照 | 计划承诺仍按容量评估，不按时间戳推断可用性 |
+| S4 验证 | 记录验证执行时间，区分过时证据 | 时间相近不代表证据有效，过期证据仍须重跑 |
+| S5 发布 | 发布窗口、通告时间与观测时长 | 发布授权与回滚触发条件不依赖时间注入 |
+| S6 收尾 | 复盘时间线、偏差与行动项到期 | 事故时间线以记录为准，不以模型推测补齐 |
+
+## 注入设计
 
 - 载体是 hook 的 `additionalContext`，不改写系统提示，也不依赖模型主动运行 `date`。
 - 时机：
@@ -30,7 +43,8 @@ Qoder 与 Qwen Code 都不向模型注入当前时间。模型只能靠对话里
   最后用 UTC 整点偏移兜底；Windows 没有 `/etc`，走 `Intl` 与偏移。时间戳同时写入数值偏移与方括号内的时区名。
 - 成本约为每轮几十 token；工具事件只加一行。失败静默，不阻断会话。
 - Qoder 把 clock 状态写入插件数据目录，并在 `SessionEnd` 清理。Qwen 不设置插件数据目录，时间 hook 不落盘，
-  turn 固定为 1、elapsed 为 `unavailable`，其 hooks 也没有 `SessionEnd` 清理。两者都不写项目文件、不联网，超时 10 秒。
+  turn 固定为 1、elapsed 为 `unavailable`，其 hooks 也没有 `SessionEnd` 清理。两者都不写项目文件、不联网，
+  超时 10 秒。
 
 ## 双端接线
 
@@ -47,12 +61,15 @@ Qoder 与 Qwen Code 都不向模型注入当前时间。模型只能靠对话里
 
 ## 与约束注入的关系
 
-- Qwen 由清单的 `contextFileName` 在启动/刷新读取一次，随后每个请求随 system prompt 携带；Qoder 由 `SessionStart` hook 注入全文，不写用户级 rules。时间注入不去重，每轮都是新值。
+- 约束决定生命周期能否推进，时间只提供判断依据；两者载体不同、去重规则不同，不得互相替代。
+- Qwen 由清单的 `contextFileName` 在启动/刷新读取一次，随后每个请求随 system prompt 携带；Qoder 由
+  `SessionStart` hook 注入全文，不写用户级 rules。时间注入不去重，每轮都是新值。
 - 时间由 `scripts/inject-clock.js` 负责：`UserPromptSubmit` 发完整 DSH 块，工具事件发一行时间。
 
 ## 验证
 
-- `tests/hooks/inject-clock.test.js` 覆盖用户提示完整时间、工具事件一行时间、SessionEnd 清理、非法 payload 静默、双端 hooks 配置与清单版本。
+- `tests/hooks/inject-clock.test.js` 覆盖用户提示完整时间、工具事件一行时间、SessionEnd 清理、非法 payload
+  静默、双端 hooks 配置与清单版本。
 - 宿主精确的 token 计费与 Windows 上 Qwen 扩展的 `node` 可用性没有仓库内的校验手段。
 
 ## 关闭方式

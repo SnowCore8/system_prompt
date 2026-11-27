@@ -1,11 +1,13 @@
 # 三平台 hook 与注入规则
 
-维护者：SnowCore8；何时阅读：调整 Qoder、Qwen Code 或 DSH 的 hook、约束注入、压缩后恢复行为时。
+本文件是 hook 事件、输出契约、注入落点与压缩/恢复时序的唯一权威。生命周期要求规则在每个请求中在场：约束
+注入决定 G0 受理能否依据同一份正文判断授权与风险，决定长会话中每轮提醒是否到达，也决定压缩后门禁判定是否
+仍然有效。注入保证规则在场，不保证规则被遵守；门禁证据仍是测试输出、审查结论与明确批准。
 
-本文件是 hook 事件、输出契约、注入落点与压缩/恢复时序的唯一权威。rules、skills、plugins 的目录与加载顺序见
-[agent-tooling-loading.md](agent-tooling-loading.md)；本仓库的时间注入见 [time-awareness.md](time-awareness.md)；
-三个包的安装与行为见 [Qoder](../plugins/qoder/README.md)、[Qwen Code](../plugins/qwen/README.md)、
-[DSH](../plugins/dsh/README.md)。
+维护者：SnowCore8；何时阅读：调整 Qoder、Qwen Code 或 DSH 的 hook、约束注入、压缩后恢复行为时。
+rules、skills、plugins 的目录与加载顺序见 [agent-tooling-loading.md](agent-tooling-loading.md)；本仓库的时间
+注入见 [time-awareness.md](time-awareness.md)；三个包的安装与行为见 [Qoder](../plugins/qoder/README.md)、
+[Qwen Code](../plugins/qwen/README.md)、[DSH](../plugins/dsh/README.md)。
 
 ## 结论摘要
 
@@ -14,6 +16,19 @@
 | Qoder | 原生 hooks，注册 29 个事件 | `SessionStart` 的 `additionalContext` 注入全文 | 压缩成功后触发 `SessionStart(source=compact)`；无 matcher 组与 `compact` matcher 组都会执行 | hook 注入 + sha256 去重 |
 | Qwen Code | 原生 hooks，23 个事件 | 清单 `contextFileName` 在启动/刷新读取并缓存，随后每个请求随 system prompt 发送 | `contextFileName` 不受压缩影响；`SessionStart` 在 resume/compact 等 source 都触发 | 只用 `contextFileName` 承载约束 |
 | DSH | 没有内建 Claude 风格 hooks；实验桥接包可选，默认不安装 | 插件 `ctx.systemPrompt.section()`；另有独立的 `dsh-agent-instructions` 指令链 | system prompt 压缩后重建；指令链在下一次 pre-step 重新折叠；桥接 hook 的 context 不会在压缩后重放 | `systemPrompt.section()` + 原生时间注入 |
+
+## 约束注入在生命周期中的位置
+
+| 生命周期环节 | 注入承载的作用 | 依赖的机制 | 不能替代的证据 |
+|---|---|---|---|
+| G0 受理 | 约束正文在会话开始即可用，授权、风险分级与停止条件依同一份正文判断 | Qoder `SessionStart` 全文注入；Qwen `contextFileName`；DSH `systemPrompt.section()` | 受理记录中的授权依据与风险级别 |
+| 每轮请求（`UserPromptSubmit` 提醒） | 长会话与多轮任务中重申约束，避免首轮之后失效 | Qoder `UserPromptSubmit` 提醒；Qwen 每请求携带 context；DSH 每次 assembly 重建 | 每轮的实际分类、范围与停止条件 |
+| 压缩后仍生效 | 压缩只替换对话历史，门禁判断仍以完整正文为依据 | Qoder `SessionStart(source=compact)`；Qwen context 缓存；DSH 重建 system head | 压缩后的重新确认与门禁记录 |
+| G4 与 G5 | 规则在场不构成放行依据，验证与发布仍按门禁执行 | 无；注入与门禁证据分离 | 测试输出、审查结论、回滚演练与批准 |
+
+- 提醒与全文注入都是上下文，不是授权：`UserPromptSubmit` 的提醒不扩大范围，也不构成对不可逆操作的同意。
+- 压缩后的注入可能同时出现全文与提醒；是否出现完整正文取决于各平台的去重与重建机制，见下文各平台小节。
+- 注入失败的处置是报告缺口并按已有规则保守执行，不得凭记忆补写约束。
 
 ## Qoder
 

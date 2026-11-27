@@ -1,15 +1,35 @@
 # 三工具加载规则：rules、skills、plugins
 
-维护者：SnowCore8；何时阅读：调整各工具入口或核对加载行为时。
+本文件整理 Qoder、Qwen Code 与 DeepSeek Harness（DSH）三类工件的加载规则与目录结构。加载规则决定生命周期
+各阶段能看到什么：常驻约束在 G0 前可用，skill 索引在受理后按阶段加载，插件负责分发与注册。规则本身的内容
+归属见 [content-map.md](content-map.md)；hook 事件、输出契约与压缩/恢复语义见
+[hooks-and-injection.md](hooks-and-injection.md)。
 
-本文分别整理 Qoder、Qwen Code 与 DeepSeek Harness（DSH）三类工件的加载规则与目录结构；hook 事件、输出契约与
-压缩/恢复语义见 [hooks-and-injection.md](hooks-and-injection.md)。
+维护者：SnowCore8；何时阅读：调整各工具入口、核对加载行为或排查「规则未生效」时。
 
 ## 结论摘要
 
 - Qoder 三者齐全：`rules/` 目录、`skills/` 目录、插件市场；插件可打包 `rules/`，但 CLI 不加载，只能由 hook 或 command 读取。
 - Qwen Code 没有独立的 rules 目录名，但 `.qwen/rules/` 是条件规则机制；常驻约束走 `QWEN.md`/`AGENTS.md`。
 - DSH 没有 rules 目录：常驻约束是指令链，skills 走六个扫描根，插件以 bundle + profile 组合。
+
+## skill 结构与阶段加载
+
+三端对 skill 的发现方式不同，但加载顺序一致：启动时只登记 `name` 与 `description` 的索引，正文在模型调用
+skill 时读取，`references/` 在正文引用后按需读取。生命周期的阶段决定加载哪些 skill，而不是把全部正文常驻。
+
+| 生命周期环节 | 需要加载的内容 | 由谁提供 |
+|---|---|---|
+| G0 受理 | 约束正文与项目指令 | 常驻约束机制；`AGENTS.md` |
+| S1/S2 计划 | `project-lifecycle-governance` 与阶段主责 skill 的正文 | skill 索引与按需读取 |
+| S3 构建 | 代码、命名、注释、重构、并发、调试 skill 的规则 | skill 正文与维度文件 |
+| S4 验证 | 测试、安全、性能、文档 skill 的门禁章节与校验脚本 | skill 正文、`references/lifecycle.md`、脚本 |
+| S5/S6 | 发布、仓库治理、生命周期治理 skill 的发布与收尾章节 | skill 正文与模板 |
+
+本仓库的 21 个 skill 采用统一结构：以 `## 适用范围与优先级` 开始、以 `## 参考资料` 结束，中间含
+「生命周期定位」与「门禁与证据」两节；阶段契约写在 `references/lifecycle.md`，`SKILL.md` 只保留摘要与指针。
+结构检查由 `tests/skill/test_skills_meta.py` 与 `tests/skill/test_lifecycle_contract.py` 执行，包括首尾段、
+250 行上限、维度索引、逐字重复与阶段契约字段。
 
 ## Qoder
 
@@ -323,7 +343,7 @@ DSH 里「插件」是 TypeScript 模块，导出 `apply(ctx)`；可分发的安
 | 插件能否带 rules | 规范可放，当前不加载 | 可放 `rules/`，仅条件规则生效 | 插件即代码，可注册任何能力 |
 | 校验命令 | `qoderclicn plugins validate` | 无 `skills` 校验；靠 `/skills` 与日志 | `dsh --dump-config`、web 加载日志 |
 
-## 与本仓库的映射
+## 与本仓库生命周期的映射
 
 本仓库各工具的项目级入口如下：
 
@@ -348,6 +368,8 @@ DSH 里「插件」是 TypeScript 模块，导出 `apply(ctx)`；可分发的安
   人类贡献与发布流程在 `CONTRIBUTING.md`，不进入模型上下文。
 - 插件包内 Qoder 与 DSH 随包分发 `rules/`、Qwen 分发 `constraints/`（Qwen 把扩展的 `rules/` 当作
   条件规则，见 Qwen 一节）；Qoder 宿主当前不加载插件的 `rules/`（见 Qoder 一节）。
+- 对照生命周期：G0 需要常驻约束与根 `AGENTS.md` 可用；S1–S6 需要 21 个 skill 可被发现并按需读取正文与
+  `references/`；S5 需要三包组装可复现。任一环节缺失时报告缺口，不以记忆代替加载。
 
 ## 已知缺口与文档矛盾
 

@@ -1,7 +1,7 @@
 {
   "name": "@snowcore8/qoder-global-user-constraints",
   "version": "0.46.0",
-  "description": "Qoder 插件安装包：通过 HTTPS zip 直链安装 global-user-constraints。",
+  "description": "Qoder 插件安装包：通过 HTTPS zip 直链安装含生命周期治理与二十一个 skill 的 global-user-constraints。",
   "files": [
     "global-user-constraints-qoder-*.zip",
     "global-user-constraints-qoder-*.sha256",

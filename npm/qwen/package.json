@@ -1,7 +1,7 @@
 {
   "name": "@snowcore8/qwen-global-user-constraints",
   "version": "0.46.0",
-  "description": "Qwen Code 扩展安装包：承载同版本 zip 与校验和。",
+  "description": "Qwen Code 扩展安装包：承载含生命周期治理与二十一个 skill 的同版本 zip 与校验和。",
   "files": [
     "global-user-constraints-qwen-*.zip",
     "global-user-constraints-qwen-*.sha256",
