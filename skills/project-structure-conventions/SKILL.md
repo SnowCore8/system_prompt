@@ -28,6 +28,7 @@ argument-hint: '[项目目录或模块边界]'
 - 命名由 `naming-conventions` 管辖；API 契约与数据由 `api-and-data-conventions` 管辖；测试策略与门禁阈值由 `testing-and-quality-conventions` 管辖；
   必需文件、打包与发布由 `repository-governance-conventions` 与 `release-operations-conventions` 管辖。
 - 强制规则冲突的，智能体应当报告用户裁决，不得自行选定；非强制的项目约定冲突，可以说明冲突与所选约定，并记录于结构决策或 ADR。
+- 生命周期：目录与工作区结构主责 S2 计划（G2），结构调整随计划评审；阶段门禁与证据见 `project-lifecycle-governance`。
 
 ## 流程
 

@@ -51,7 +51,7 @@ python3 -m pip_audit --version >/dev/null 2>&1 || {
 
 echo "== 常驻约束体积 =="
 constraints_file="rules/global-user-constraints.md"
-constraints_limit=40960
+constraints_limit=65536
 if [ ! -f "$constraints_file" ]; then
   fail "缺少常驻约束正文: $constraints_file"
 else
@@ -59,7 +59,7 @@ else
   if [ -z "$constraints_bytes" ]; then
     fail "无法统计常驻约束正文大小: $constraints_file"
   elif [ "$constraints_bytes" -gt "$constraints_limit" ]; then
-    fail "$constraints_file: ${constraints_bytes} 字节，超过 40 KiB 硬上限，按主题提取到对应 skill 的 references"
+    fail "$constraints_file: ${constraints_bytes} 字节，超过 64 KiB 硬上限，按主题提取到对应 skill 的 references"
   else
     echo "$constraints_file: ${constraints_bytes} 字节"
   fi

@@ -29,6 +29,7 @@ skill 是按需加载的规范包。它失效通常不是因为内容不足，�
 - 内容事实的写法由对应领域 skill 管辖，例如 API 契约由 `api-and-data-conventions` 管辖；本 skill 仅管辖
   承载结构；
 - 发布节奏、版本与 CI 门禁由 `release-operations-conventions` 与 `testing-and-quality-conventions` 管辖。
+- 生命周期：skill 包结构主责 S1/S2（G1/G2）与 S4 验证（G4）；阶段门禁与证据见 `project-lifecycle-governance`。
 
 ## 结构
 

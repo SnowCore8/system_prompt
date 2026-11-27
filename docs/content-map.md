@@ -1,31 +1,45 @@
 # 内容结构地图
 
-维护者：SnowCore8。何时阅读：新增 skill、调整 domains、移动 references 或判断一条事实应放在哪里时。
-本文件描述内容层级、领域划分、20 个 skill 的职责与 references 结构；目录与分发结构见 `README.md`，提示词/纯规则分类见 `docs/prompt-inventory.md`。
+维护者：SnowCore8。何时阅读：新增 skill、调整生命周期映射、移动 references 或判断一条事实应放在哪里时。
+本文件描述内容层级、生命周期主线、21 个 skill 的职责与 references 结构；目录与分发结构见 `README.md`，提示词/纯规则分类见 `docs/prompt-inventory.md`。
 
 ## 1. 内容层级
 
 | 层 | 内容 | 载体 | 类别 |
 |---|---|---|---|
-| 常驻约束 | 授权、不可逆、诚实、意图、方法、交付与验收 | `rules/global-user-constraints.md` | P |
-| skill 入口 | 触发、适用边界、流程、核心规则、审查清单 | `skills/*/SKILL.md`（20 个） | P |
+| 常驻约束 | 生命周期与门禁、授权、不可逆、诚实、意图、方法、交付与验收 | `rules/global-user-constraints.md` | P |
+| skill 入口 | 触发、适用边界、流程、核心规则、审查清单 | `skills/*/SKILL.md`（21 个） | P |
 | skill 细节 | 维度表、检查表、模板、操作手册、语言覆盖 | `skills/*/references/*.md` | P |
 | 命令 | 手动审查当前请求/方案/命令 | `shared/commands/constraints-check.md` | P |
 | 项目文档 | 加载规则、hook 与注入、发布、时间、校验规则、台账 | `docs/*.md` 与根文档 | R |
 | 分发元数据 | 清单、hooks、许可证、第三方声明 | `plugins/`、`package.json`、根文件 | M/C |
 
-## 2. 四个内容域
+## 2. 生命周期主线
 
-| 域 | skill | 负责 | 不负责 |
-|---|---|---|---|
-| 编写与文档 | `skill-authoring`、`prompt-authoring`、`system-prompt-authoring`、`documentation-conventions` | skill 包、运行时提示词、常驻指令文件、项目文档 | 具体业务契约、代码风格、代码注释 |
-| 设计与代码 | `architecture-and-design-conventions`、`project-structure-conventions`、`api-and-data-conventions`、`code-style-conventions`、`comment-conventions`、`naming-conventions`、`refactoring-conventions` | 项目结构、模块边界、接口/数据、风格、注释、名称、安全重构 | 运行时正确性、测试策略、交付流程 |
-| 运行正确性 | `concurrency-conventions`、`performance-conventions`、`debugging-conventions`、`testing-and-quality-conventions` | 并发、性能、缺陷诊断、测试与门禁 | 发布/回滚、仓库治理、安全披露 |
-| 交付与治理 | `repository-governance-conventions`、`release-operations-conventions`、`vcs-collaboration-conventions`、`security-compliance-conventions` | 仓库卫生与打包、发布运维、Git 协作、安全合规 | 代码细节、具体门禁阈值、产品契约 |
+Stage-Gate 的阶段、门禁与风险分级由 `project-lifecycle-governance` 裁定；各 skill 在其主责阶段提供规则与证据。
 
-## 3. 20 个 skill 的主责
+| 阶段 | 主责 skill | 出口门 |
+|---|---|---|
+| S0 受理 | `project-lifecycle-governance`、`security-compliance-conventions`、`repository-governance-conventions` | G0 |
+| S1 探索 | `project-lifecycle-governance`、`prompt-authoring`、`system-prompt-authoring`、`skill-authoring` | G1 |
+| S2 计划 | `architecture-and-design-conventions`、`project-structure-conventions`、`api-and-data-conventions`、`testing-and-quality-conventions`、`release-operations-conventions`、`vcs-collaboration-conventions`、`worktree-collaboration-conventions` | G2 |
+| S3 构建 | `code-style-conventions`、`naming-conventions`、`comment-conventions`、`refactoring-conventions`、`concurrency-conventions`、`debugging-conventions` | G3 |
+| S4 验证 | `testing-and-quality-conventions`、`security-compliance-conventions`、`performance-conventions`、`documentation-conventions` | G4 |
+| S5 发布 | `release-operations-conventions`、`repository-governance-conventions`、`vcs-collaboration-conventions` | G5 |
+| S6 收尾 | `project-lifecycle-governance`、`release-operations-conventions`、`repository-governance-conventions`、`worktree-collaboration-conventions` | G6 |
 
-### 3.1 编写与文档
+门禁决定、证据要求与裁剪见 `rules/global-user-constraints.md` 第 2 节与
+`project-lifecycle-governance/references/gates.md`。
+
+## 3. 21 个 skill 的主责
+
+### 3.1 生命周期治理
+
+| skill | 主责 | references |
+|---|---|---|
+| `project-lifecycle-governance` | 阶段与门禁、风险分级与裁剪、敏捷迭代、角色、工件、度量与组合管理 | stages、gates、agile、mappings、templates |
+
+### 3.2 编写与文档
 
 | skill | 主责 | references |
 |---|---|---|
@@ -34,7 +48,7 @@
 | `system-prompt-authoring` | `AGENTS.md`/`CLAUDE.md`/`QWEN.md` 的常驻指令内容与校验 | complex-logic、templates |
 | `documentation-conventions` | README、贡献指南、ADR、教程、运行手册、变更记录、文档站 | 3 组 dimensions + 3 组 templates + change-records |
 
-### 3.2 设计与代码
+### 3.3 设计与代码
 
 | skill | 主责 | references |
 |---|---|---|
@@ -46,7 +60,7 @@
 | `naming-conventions` | 文件/代码/接口/数据/配置/提交消息的命名 | 3 组 dimensions + languages |
 | `refactoring-conventions` | 重构/修复判定、安全手法、代码异味、变更拆分 | dimensions、catalog、change-safety |
 
-### 3.3 运行正确性
+### 3.4 运行正确性
 
 | skill | 主责 | references |
 |---|---|---|
@@ -55,7 +69,7 @@
 | `debugging-conventions` | 缺陷报告、复现、二分、根因、最小修复验证 | dimensions、report-template、root-cause-discipline |
 | `testing-and-quality-conventions` | 测试层级、门禁、静态分析、本地/CI 对齐 | dimensions、gates、project-commands |
 
-### 3.4 交付与治理
+### 3.5 交付与治理
 
 | skill | 主责 | references |
 |---|---|---|
@@ -67,7 +81,7 @@
 
 ## 4. 统一内部结构
 
-每个 `SKILL.md` 以 `## 适用范围与优先级` 开始、以 `## 参考资料` 结束；正文不超过 250 行。通用段为：
+每个 `SKILL.md` 以 `## 适用范围与优先级` 开始、以 `## 参考资料` 结束；正文不超过 250 行。各 skill 在该节末尾标注生命周期主责阶段与门禁，并链接 `project-lifecycle-governance`。通用段为：
 
 - 适用范围与优先级
 - 流程
@@ -105,6 +119,7 @@
 | `repository-governance` / `release-operations` / `vcs` / `security` | 必需文件与打包 / 发布运维 / 协作 / 安全合规 |
 | `refactoring` / `architecture` / `code-style` | 安全改造手法 / 目标结构 / 表面风格 |
 | `concurrency` / `performance` / `api-and-data` | 正确性 / 调优 / 幂等与重试 |
+| `project-lifecycle-governance` / `testing-and-quality` / `release-operations` | 阶段、门禁判定与风险分级 / 测试策略与门禁实现 / 发布与回滚操作 |
 
 ## 7. 例外与检查
 

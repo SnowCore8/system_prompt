@@ -33,6 +33,7 @@ skill 规定一套决策程序与规则集，将提示词作为产品代码处�
   规则分别由 `release-operations-conventions` 与 `testing-and-quality-conventions` 提供；
 - 注入、越权、隐私与拒答的风险面由 `security-compliance-conventions` 管辖；本 skill 仅规定提示词层面的防
   线。
+- 生命周期：提示词与输出契约主责 S1/S2（G1/G2）与 S4 验证（G4）；阶段门禁与证据见 `project-lifecycle-governance`。
 
 ## 流程
 

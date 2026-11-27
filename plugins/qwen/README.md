@@ -10,7 +10,7 @@
 | `qwen-extension.json` | 扩展清单，`contextFileName` 指向约束正文 |
 | `hooks/qwen-hooks.json` | hook 配置，根目录用 `${CLAUDE_PLUGIN_ROOT}`（Qwen 替换为扩展根） |
 | `constraints/global-user-constraints.md` | 全局用户约束正文 |
-| `skills/` | 二十个通用规范 skill |
+| `skills/` | 二十一个通用规范 skill |
 | `commands/` | 手动审查命令 |
 | `scripts/` | 时间注入脚本 |
 

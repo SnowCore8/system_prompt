@@ -36,6 +36,7 @@ argument-hint: '[路径或符号]'
 - 门禁阈值以及跳过、隔离与豁免策略由 `testing-and-quality-conventions` 管辖。
 - 机密扫描、轮换与披露由 `security-compliance-conventions` 管辖。
 - 整体变更审查深度与合并门禁由 `vcs-collaboration-conventions` 管辖。
+- 生命周期：注释与文档注释主责 S3 构建（G3），注释失真在 S4 验证发现；阶段门禁与证据见 `project-lifecycle-governance`。
 
 ## 流程
 

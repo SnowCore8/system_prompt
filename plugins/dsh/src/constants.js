@@ -13,4 +13,4 @@ export const SECTION_NAME = 'global-user-constraints'
 export const SECTION_ORDER = 400
 export const CONSTRAINTS_FILENAME = 'global-user-constraints.md'
 // 常驻约束正文的硬上限，与 scripts/check.sh、shared/scripts/inject-constraints.js 保持一致。
-export const CONSTRAINTS_MAX_BYTES = 40 * 1024
+export const CONSTRAINTS_MAX_BYTES = 64 * 1024

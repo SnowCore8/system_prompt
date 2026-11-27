@@ -17,11 +17,12 @@
 
 | 路径 | 类别 | 加载者或消费者 | 结论 |
 |---|---|---|---|
-| `rules/global-user-constraints.md` | P | DSH systemPrompt；Qoder hook；Qwen contextFileName；命令按需读取 | 常驻约束唯一真源 |
+| `rules/global-user-constraints.md` | P | DSH systemPrompt；Qoder hook；Qwen contextFileName；命令按需读取 | 常驻约束与生命周期门禁唯一真源 |
 | `AGENTS.md` | P | DSH/Qwen/Qoder 项目指令 | 只放智能体项目指令 |
 | `CONTRIBUTING.md` | R | 人类贡献者与维护者 | 人类文档，不进入模型上下文 |
-| `skills/*/SKILL.md` | P | 三端 skill 发现；正文按需加载 | 20 个 skill 入口 |
+| `skills/*/SKILL.md` | P | 三端 skill 发现；正文按需加载 | 21 个 skill 入口 |
 | `skills/*/references/*.md` | P | skill 按需读取 | 结构与分布见 `docs/content-map.md`；维护者材料在 `docs/` |
+| `skills/project-lifecycle-governance/references/*.md` | P | skill 按需读取 | 阶段、门禁、敏捷、映射与模板 |
 | `shared/commands/constraints-check.md` | P | Qoder/Qwen 命令；DSH 未注册 | 命令提示词 |
 | `shared/scripts/*.js` | C | Qoder/Qwen hook | 提示词发射器，不是提示词正文 |
 | `plugins/dsh/src/*.js`、hooks | C | 宿主运行时 | 注入与 skill 提供者 |
@@ -34,7 +35,7 @@
 ## 当前边界
 
 - `AGENTS.md` 只承载智能体项目指令；`CONTRIBUTING.md` 只承载人类贡献与发布流程。
-- `skill-authoring` 不管辖本仓库打包；`system-prompt-authoring` 不复制本仓库的 40 KiB、`check.sh` 或来源表。
+- `skill-authoring` 不管辖本仓库打包；`system-prompt-authoring` 不复制本仓库的 64 KiB、`check.sh` 或来源表。
 - `documentation-conventions` 使用通用文档事实，不陈述本仓库的软链或 CHANGELOG 事实。
 - 所有 skill references 为 P。
 - 机器校验规则在 `docs/markdown-check-rules.md`，不在 skill references 中重复。

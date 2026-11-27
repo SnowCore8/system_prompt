@@ -111,7 +111,7 @@ Qwen Code 有 23 个 hook 事件：
 - 文件在会话启动或刷新时读取一次，缓存在 `userMemory`；不是每个请求重新读盘。
 - 每个请求重建 system prompt 时都携带这段缓存，位置在 base 与媒体指引之后、`appendPrompt` 与 autoMemory 之前。
 - 每个文件包在 `--- Context from: <路径> ---` 与 `--- End of Context from: <路径> ---` 之间；文件间用空行连接。
-- 没有显式的文件体积上限，只受模型上下文窗口限制；40 KiB 正文会成为每轮固定成本。
+- 没有显式的文件体积上限，只受模型上下文窗口限制；64 KiB 正文会成为每轮固定成本。
 - 压缩只替换对话历史，不改变 system prompt 的 context 缓存，所以压缩后约束仍在且不会重复拼接。
 - safe mode 跳过 context/rules 加载；扩展 context 不受 workspace trust 门槛限制。
 

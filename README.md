@@ -1,6 +1,6 @@
 # AI 编码智能体 system prompt
 
-本仓库维护全局用户约束、二十个通用规范 skill，以及面向 Qoder、Qwen Code、DeepSeek Harness（DSH）的三个包。
+本仓库维护全局用户约束、二十一个通用规范 skill（含 Stage-Gate + Agile 生命周期治理），以及面向 Qoder、Qwen Code、DeepSeek Harness（DSH）的三个包。
 `rules/`、`skills/`、`shared/` 是唯一真源；开发入口与安装包由组装脚本从真源生成，仓库不保存第二份副本。
 
 维护者：SnowCore8。职责见 [GOVERNANCE.md](GOVERNANCE.md)，智能体指令见 [AGENTS.md](AGENTS.md)，
@@ -23,7 +23,7 @@ scripts/check.sh             # 全量校验
 
 | 路径 | 作用 |
 |---|---|
-| `rules/`、`skills/`、`shared/` | 唯一真源：约束、二十个 skill、命令与注入脚本 |
+| `rules/`、`skills/`、`shared/` | 唯一真源：约束、二十一个 skill、命令与注入脚本 |
 | `plugins/qoder/`、`plugins/qwen/`、`plugins/dsh/` | 三包清单、hooks 与说明；DSH 另含 `src/` 提供者代码 |
 | `npm/qoder/`、`npm/qwen/` | 平台 npm 安装包清单：承载同版本 zip 与校验和 |
 | `scripts/` | `assemble.sh` 生成开发入口、`materialize.sh` 组装包、`check.sh` 校验、`dist.sh` 出包 |
@@ -34,12 +34,12 @@ scripts/check.sh             # 全量校验
 | `package.json`、`plugins/marketplace.json` | DSH bundle 清单与 Qoder 本地市场描述；后者使用前运行 `scripts/assemble.sh qoder` |
 | 根文档与许可证 | 治理、安全、术语、变更日志、双许可证与第三方声明 |
 
-内容层级、二十个 skill 的主责与边界见 [docs/content-map.md](docs/content-map.md)；三端 hook 事件、注入时序与压缩后行为见
+内容层级、二十一个 skill 的主责与生命周期定位见 [docs/content-map.md](docs/content-map.md)；三端 hook 事件、注入时序与压缩后行为见
 [docs/hooks-and-injection.md](docs/hooks-and-injection.md)。
 
 ## 编辑与组装
 
-- 改约束：编辑 `rules/global-user-constraints.md`（唯一权威来源）；正文 UTF-8 上限 40 KiB，超限时把细节提取到
+- 改约束：编辑 `rules/global-user-constraints.md`（唯一权威来源）；正文 UTF-8 上限 64 KiB，超限时把细节提取到
   对应 skill 的 `references/`。
 - 改 skill：编辑 `skills/<name>/`，不复制第二份；改后运行 `scripts/assemble.sh` 刷新开发入口。
 - 改命令或注入脚本：编辑 `shared/commands/` 或 `shared/scripts/`。

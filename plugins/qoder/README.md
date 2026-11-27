@@ -9,7 +9,7 @@
 | `.qoder-plugin/plugin.json` | 插件清单 |
 | `hooks/hooks.json` | hook 配置，根目录用 `${QODER_PLUGIN_ROOT}` |
 | `rules/global-user-constraints.md` | 全局用户约束正文 |
-| `skills/` | 二十个通用规范 skill |
+| `skills/` | 二十一个通用规范 skill |
 | `commands/` | 手动审查命令 |
 | `scripts/` | 约束与时间注入脚本 |
 
@@ -35,7 +35,7 @@ qoderclicn plugins install \
 
 ## 行为
 
-- `SessionStart`：注入包内规则全文，`source=resume` 时跳过；规则缺失、读取失败或超过 40 KiB 时改输出提示。
+- `SessionStart`：注入包内规则全文，`source=resume` 时跳过；规则缺失、读取失败或超过 64 KiB 时改输出提示。
 - 去重：项目目录及其祖先的 `.qoder/rules/global-user-constraints.md`、`AGENTS.md`、`AGENTS.local.md`，
   以及用户配置根（`QODERCN_CONFIG_DIR`、`QODER_CONFIG_DIR`、`~/.qoder-cn`、`~/.qoder`）下的
   `rules/global-user-constraints.md`、`AGENTS.md`，任一与正文 sha256 相同即跳过注入。

@@ -10,7 +10,7 @@ dev     生成 .dsh/skills、.qoder/rules、.qoder/skills、.qwen/rules、.qwen/
         这些目录被 .gitignore 忽略，不提交。
 qoder   生成 plugins/qoder 的 skills/rules/commands/scripts，供 Qoder 本地市场使用；
         生成目录被 .gitignore 忽略，不提交。
---check 在临时目录组装并校验 20 个 skill、两个 rules 入口与零软链，不改工作区。
+--check 在临时目录组装并校验 21 个 skill、两个 rules 入口与零软链，不改工作区。
 EOF
 }
 

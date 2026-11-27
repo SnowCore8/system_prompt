@@ -28,6 +28,7 @@ CLAUDE.md 或 QWEN.md。交付物为可直接加载的 Markdown：内容规则�
 - 门禁与 CI，由 `testing-and-quality-conventions` 与 `release-operations-conventions` 管辖。
 - 一次性或产品提示词，即非常驻指令，由 `prompt-authoring` 管辖。
 - skill 包（SKILL.md 及其 `references/`、`scripts/`）的结构由 `skill-authoring` 管辖；打包与分发由 `repository-governance-conventions` 与 `release-operations-conventions` 管辖。
+- 生命周期：常驻指令文件主责 S1/S2（G1/G2）与 S4 验证（G4）；阶段门禁与证据见 `project-lifecycle-governance`。
 
 ## 流程
 

@@ -37,7 +37,7 @@ argument-hint: '[路径或符号]'
 - 包与分发元数据，由 repository-governance-conventions 负责；版本策略、发布流程与审批、上线与回滚，由
   release-operations-conventions 负责。
 - 文档正文、变更日志、发布说明、文档站与术语表的散文定义，由 documentation-conventions 负责；名称、大小写、被禁用的同义词、文件名、目录名、锚点与 ADR 编号由本 skill 负责。
-- 指令文件，由 system-prompt-authoring 负责。
+- 指令文件，由 system-prompt-authoring 负责；生命周期中本 skill 主责 S3 构建（G3），门禁与证据见 `project-lifecycle-governance`。
 
 ## 流程
 

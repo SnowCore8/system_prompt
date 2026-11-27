@@ -9,7 +9,7 @@
 | `package.json` | npm 包与 `dsh.bundle.patch` 声明 |
 | `plugins/dsh/cordis.patch.yml` | 插入 skill 提供者行 `global-user-constraints-skills` |
 | `plugins/dsh/src/` | Cordis 入口与模块（`index.js`、`constraints.js`、`skills.js`、`paths.js`、`constants.js`） |
-| `skills/` | 二十个通用规范 skill |
+| `skills/` | 二十一个通用规范 skill |
 | `rules/global-user-constraints.md` | 全局用户约束正文 |
 
 从 npm 公共包仓库安装（插件页可检测更新）：

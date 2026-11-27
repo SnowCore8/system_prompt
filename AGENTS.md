@@ -11,7 +11,7 @@
 
 ## 约束与 skill
 
-- 约束正文以 UTF-8 字节计硬上限 40 KiB（40,960 字节）；超过时按主题提取到对应 skill 的 `references/`，正文只保留摘要与加载指引。`scripts/check.sh` 校验该上限。
+- 约束正文以 UTF-8 字节计硬上限 64 KiB（65,536 字节）；超过时按主题提取到对应 skill 的 `references/`，正文只保留摘要与加载指引。`scripts/check.sh` 校验该上限。
 - skill 真源为 `skills/<name>/SKILL.md` 与其 `references/`；修改后运行 `scripts/assemble.sh` 刷新开发入口，不复制正文。
 - 说明性文档（`README.md`、`CONTRIBUTING.md`、`GOVERNANCE.md`、`SECURITY.md`、`GLOSSARY.md`、`docs/`、各包 README）必须保持干净：只写当前状态与事实，不写来源清单、取证日期、版本基线、历史沿革、迁移说明、新旧对照、变更记录或未验证自述；上述内容写入 `CHANGELOG.md`、提交消息或 PR。
 - 代码注释与文档注释使用中文，只写当前事实；第三方引入代码保留原文注释。

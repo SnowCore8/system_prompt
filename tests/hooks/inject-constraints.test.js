@@ -172,11 +172,11 @@ describe('inject-constraints.js', () => {
     assert.equal(context.includes('失败'), true);
   });
 
-  it('正文超过 40 KiB 时输出上限提示', async (t) => {
+  it('正文超过 64 KiB 时输出上限提示', async (t) => {
     const box = makeSandbox();
     t.after(() => cleanup(box));
     const plugin = join(box.dir, 'plugin');
-    writeRule(plugin, 'x'.repeat(40 * 1024 + 1));
+    writeRule(plugin, 'x'.repeat(64 * 1024 + 1));
 
     const { code, stdout } = await runHook(
       CONSTRAINTS_HOOK,
@@ -185,7 +185,7 @@ describe('inject-constraints.js', () => {
     );
     assert.equal(code, 0);
     const context = contextOf(stdout);
-    assert.equal(context.includes('超过 40 KiB 硬上限'), true);
+    assert.equal(context.includes('超过 64 KiB 硬上限'), true);
   });
 
   it('UserPromptSubmit 输出固定提醒', async (t) => {

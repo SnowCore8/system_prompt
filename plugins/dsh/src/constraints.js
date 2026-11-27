@@ -60,7 +60,7 @@ export function sectionFromFile(pkgRoot, filename, sectionName, order, maxBytes)
   }
 }
 
-/** 全局用户约束 section；文件缺失或已去重时返回 undefined，超过 40 KiB 硬上限时返回提示 section。 */
+/** 全局用户约束 section；文件缺失或已去重时返回 undefined，超过 64 KiB 硬上限时返回提示 section。 */
 export function constraintsSection(pkgRoot) {
   return sectionFromFile(pkgRoot, CONSTRAINTS_FILENAME, SECTION_NAME, SECTION_ORDER, CONSTRAINTS_MAX_BYTES)
 }

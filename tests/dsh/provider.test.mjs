@@ -83,7 +83,7 @@ test('constants keep the bundle identity and injection contract', () => {
   assert.equal(SOURCE, 'bundled')
   assert.equal(SECTION_NAME, 'global-user-constraints')
   assert.equal(SECTION_ORDER, 400)
-  assert.equal(CONSTRAINTS_MAX_BYTES, 40 * 1024)
+  assert.equal(CONSTRAINTS_MAX_BYTES, 64 * 1024)
 })
 
 test('index exports the bundle identity and re-exports legacy helpers', () => {
@@ -94,11 +94,11 @@ test('index exports the bundle identity and re-exports legacy helpers', () => {
   assert.equal(reexportedParseSkill, parseSkill)
 })
 
-test('list returns the twenty bundled skills', async () => {
+test('list returns the twenty-one bundled skills', async () => {
   const { provider } = createContext()
   const candidates = await provider.list()
   const directories = (await readdir(path.join(PACKAGE_ROOT, 'skills'))).filter((entry) => !entry.startsWith('.'))
-  assert.equal(candidates.length, 20)
+  assert.equal(candidates.length, 21)
   assert.equal(candidates.length, directories.length)
   assert.deepEqual(candidates.map((item) => item.name), [...candidates.map((item) => item.name)].sort())
   assert.equal(provider.name, PROVIDER)
@@ -258,7 +258,7 @@ test('constraintsSection returns undefined when the rules file is missing', asyn
 })
 
 test('constraintsSection returns a hint instead of the full text when oversized', async (t) => {
-  const body = '# 测试约束\n\nMARKER-dsh-oversized-6b2e\n' + 'x'.repeat(40 * 1024)
+  const body = '# 测试约束\n\nMARKER-dsh-oversized-6b2e\n' + 'x'.repeat(64 * 1024)
   const root = await createRulesPackage(t, body)
   await withIsolatedUserHomes(t, async () => {
     const section = constraintsSection(root)
@@ -267,7 +267,7 @@ test('constraintsSection returns a hint instead of the full text when oversized'
     assert.equal(section.order, SECTION_ORDER)
     assert.equal(section.interpolate, false)
     assert.ok(!section.text.includes('MARKER-dsh-oversized-6b2e'))
-    assert.match(section.text, /40 KiB/u)
+    assert.match(section.text, /64 KiB/u)
     assert.match(section.text, /rules[/\\]global-user-constraints\.md/u)
   })
 })

@@ -33,6 +33,7 @@ argument-hint: '[路径或场景]'
 - **测试策略与门禁由 `testing-and-quality-conventions` 管辖。** 本 skill 管辖可测试性设计，包括依赖注入点、接缝与可替换的依赖；测试的运行与门禁机制由该 skill 管辖。
 - **ADR 的内容与触发时机由本 skill 裁定。** 目录与模板由 `documentation-conventions` 裁定；文件名与编号由 `naming-conventions` 裁定；发布节奏由 `release-operations-conventions` 管辖。
 - **强制规则冲突的，智能体应当报告用户裁决，不得自行选定；非强制的项目约定冲突，可以说明冲突与所选约定。** 所选约定应当记录于 ADR；模块文档可记录派生决定，不得替代 ADR，使下一次变更遵循该决定，避免重复争论同一问题。
+- 生命周期：架构与 ADR 主责 S2 计划（G2），设计偏差在 S3 构建回写；阶段门禁与证据见 `project-lifecycle-governance`。
 
 ## 流程
 

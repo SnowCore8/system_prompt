@@ -26,6 +26,10 @@
 | 产物 | output | 生成结果、构建缓存等非发布物 | 制品（指普通输出时） |
 | 销毁性 | destructive | 会删除或不可逆破坏数据的操作或变更 | 破坏性（destructive） |
 | 破坏性 | breaking | 破坏兼容性的变更 | 销毁性（breaking） |
+| 生命周期 | lifecycle | S0–S6 的阶段、门禁与迭代闭环，由 `project-lifecycle-governance` 裁定 | 流程、项目流程 |
+| 阶段门 | gate | G0–G6 的决策点，只判断证据是否足以进入下一阶段 | 里程碑（指门禁时）、关卡 |
+| 风险级别 | risk tier | R0/R1/R2，决定门禁裁剪、工件厚度与批准权限 | 优先级（指风险时） |
+| 就绪定义 / 完成定义 | DoR / DoD | 条目进入迭代与增量完成时必须满足的条件 | 完成标准（指 DoD 时） |
 | 系统提示 | system prompt | 交给模型的整体指令文本 | 系统指令、指代具体指令文件 |
 | 指令文件 | instruction file | `AGENTS.md`、`CLAUDE.md`、`QWEN.md` 等承载持久指令的文件 | 与系统提示混用 |
 | 插件 | plugin | 用户级安装包：Qoder 插件、Qwen 扩展、DSH bundle | 扩展、bundle（指具体包时） |
