@@ -44,7 +44,9 @@ scripts/check.sh             # 全量校验
 - 改命令或注入脚本：编辑 `shared/commands/` 或 `shared/scripts/`。
 - 改包清单或 hook：编辑 `plugins/<包>/`，同步三包版本，并运行 `scripts/materialize.sh` 验证组装。
 - Qoder 本地市场：先运行 `scripts/assemble.sh qoder` 填充 `plugins/qoder`，并用
-  `qoderclicn plugins validate plugins/qoder` 确认组件齐全，再交给 Qoder 的 marketplace；生成目录不提交。
+  `qoderclicn plugins validate plugins/qoder` 确认组件齐全，再添加目录 `plugins/`：
+  `qoderclicn plugins marketplace add <仓库>/plugins`。不要只添加 `plugins/marketplace.json`，
+  其缓存不带同级插件目录，安装会报 ENOENT；生成目录不提交。
 - 提交前运行 `scripts/check.sh`；零跟踪软链、开发组装与组装后的包由该脚本校验。
 
 ## 三个包

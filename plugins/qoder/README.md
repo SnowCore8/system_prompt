@@ -20,7 +20,9 @@ rules，卸载时无需手动清理约束文件。项目或用户配置中已有
 
 - 发布包：使用 `scripts/materialize.sh qoder <目标目录>` 从顶层真源组装。
 - 本地市场：先运行 `scripts/assemble.sh qoder` 填充本目录，并运行
-  `qoderclicn plugins validate plugins/qoder` 确认组件齐全，再交给 Qoder 的 marketplace；生成目录不提交。
+  `qoderclicn plugins validate plugins/qoder` 确认组件齐全；marketplace 来源传上级目录 `plugins/`
+  （`qoderclicn plugins marketplace add <仓库>/plugins`），不能只添加 `plugins/marketplace.json`，
+  否则缓存不带同级插件目录、安装报 ENOENT；生成目录不提交。
 
 ## 安装
 
@@ -64,7 +66,7 @@ Windows 为 `%USERPROFILE%\.qoder-cn\rules\global-user-constraints.md` 或
   （`QODERCN_CONFIG_DIR`、`QODER_CONFIG_DIR`、`~/.qoder-cn`、`~/.qoder`）下的
   `rules/global-user-constraints.md`、`AGENTS.md`。任一文件与正文 sha256 相同即跳过注入。
 - 规则缺失、读取失败或正文超过 40 KiB：不注入全文，改为输出对应提示。
-- `source=compact`：另由 `inject-compact.js` 注入 `Never violate global user constraints.` 与一行压缩后时间。
+- `source=compact`：另由 `inject-compact.js` 注入 `Never violate global user constraints.` 与两行压缩后时间（时间戳与时区）。
 - `UserPromptSubmit`：提醒 `Never violate global user constraints.` + 完整 DSH 三行时间。
 - `PreToolUse` / `PostToolUse` / `PostToolUseFailure`：注入一行时间，不注入完整时间块。
 - `SessionEnd`：清理当前 session 在插件数据目录的时间状态，不注入上下文。

@@ -91,7 +91,7 @@ Qoder 1.1.90 的同步 `PostCompact.additionalContext` 不被消费、不进入�
 
 - `SessionStart` 的无 matcher 组运行 [inject-constraints.js](../shared/scripts/inject-constraints.js)：读取包内 `rules/`
   注入全文；`source=resume` 跳过；项目/用户同内容文件按 sha256 跳过。
-- `SessionStart` 的 `compact` matcher 组运行 [inject-compact.js](../shared/scripts/inject-compact.js)：注入提醒与一行时间。
+- `SessionStart` 的 `compact` matcher 组运行 [inject-compact.js](../shared/scripts/inject-compact.js)：注入提醒与两行时间（时间戳与时区）。
 - `UserPromptSubmit` 运行提醒 + 完整时间块；工具事件与 `SessionEnd` 由 [inject-clock.js](../shared/scripts/inject-clock.js) 处理。
 - 由于两组在 compact 时都会执行，压缩后可能同时得到全文与提醒；全文是否出现取决于 sha256 去重。
 
