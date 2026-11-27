@@ -51,6 +51,23 @@ jobs:
       - name: 全量校验
         run: ./scripts/check.sh
 
+  reproducible:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09  # v5
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1  # v6
+        with:
+          python-version: '3.12'
+      - name: 跨时区重建并比对制品
+        run: |
+          TZ=UTC ./scripts/dist.sh --no-validate
+          sha256sum global-user-constraints-*.zip > /tmp/repro.sha256
+          TZ=Asia/Shanghai ./scripts/dist.sh --no-validate
+          sha256sum -c /tmp/repro.sha256
+
   windows:
     runs-on: windows-latest
     timeout-minutes: 20

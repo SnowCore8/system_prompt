@@ -173,8 +173,10 @@ qoderclicn --cwd /tmp plugins install --scope local /tmp/qoder-package
 
 - 发布是 G5 发布门与 G6 收尾门的一部分：版本、tag、出包、回滚、观测与通告见
   [docs/release.md](docs/release.md)；`scripts/dist.sh` 生成 zip 与 SHA256。
-- CI：`check` 运行 `scripts/check.sh`，并对仓库历史做 gitleaks 机密扫描；`release` 在推送 `v*` tag 时构建三包，
-  发布 DSH bundle 与 Qoder、Qwen 两个 zip 包，生成 SBOM 并挂载 Release 附件。
+- CI：`check` 在 Python 3.12/3.14 与 Node 22/24 的组合上运行 `scripts/check.sh`，`windows` 任务验证 Node
+  测试与组装，`reproducible` 任务跨时区重建并比对制品；gitleaks 扫描完整历史，CodeQL 按推送与每周计划扫描
+  JS 与 Python。`release` 在推送 `v*` tag 时构建三包，以 provenance 发布 npm 包，生成 SBOM 与构建来源证明，
+  并把 zip、校验和与 SBOM 挂到 Release。
 
 ## 安全、许可与变更
 

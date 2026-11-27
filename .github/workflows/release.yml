@@ -6,10 +6,13 @@ on:
 
 permissions:
   contents: write
+  id-token: write
+  attestations: write
 
 jobs:
   release:
     runs-on: ubuntu-24.04
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09  # v5
         with:
@@ -17,8 +20,15 @@ jobs:
       - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1  # v6
         with:
           python-version: '3.12'
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444  # v5
+        with:
+          node-version: '24'
+          cache: npm
+          registry-url: 'https://registry.npmjs.org'
       - name: 安装校验依赖
         run: python3 -m pip install --require-hashes -r requirements-dev.txt
+      - name: 安装 JS 开发依赖
+        run: npm ci
       - name: 全量校验
         run: ./scripts/check.sh
       - name: 校验 tag 与 manifest 版本一致
@@ -42,10 +52,28 @@ jobs:
       # runner 没有 qoderclicn，插件校验在本地发布前完成；此处用 --no-validate 换取可重复构建
       - name: 构建制品
         run: ./scripts/dist.sh --no-validate --require-tag
-      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444  # v5
+      - name: 清理 JS 依赖
+        run: rm -rf node_modules
+      - name: 生成 SBOM
+        uses: anchore/sbom-action@e22c389904149dbc22b58101806040fa8d37a610  # v0
         with:
-          node-version: '24'
-          registry-url: 'https://registry.npmjs.org'
+          path: ./
+          format: spdx-json
+          output-file: sbom.spdx.json
+      - name: 生成构建来源证明
+        uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8  # v4
+        with:
+          subject-path: |
+            global-user-constraints-*.zip
+            global-user-constraints-*.sha256
+            sbom.spdx.json
+      - name: 校验构建来源证明
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          for file in global-user-constraints-*.zip sbom.spdx.json; do
+            gh attestation verify "$file" --repo "$GITHUB_REPOSITORY"
+          done
       - name: 准备三个 npm 包
         run: |
           scripts/materialize.sh dsh /tmp/npm-dsh
@@ -60,14 +88,8 @@ jobs:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
           for p in dsh qoder qwen; do
-            (cd "/tmp/npm-$p" && npm publish --access public)
+            npm publish "/tmp/npm-$p" --access public --provenance
           done
-      - name: 生成 SBOM
-        uses: anchore/sbom-action@e22c389904149dbc22b58101806040fa8d37a610  # v0
-        with:
-          path: ./
-          format: spdx-json
-          output-file: sbom.spdx.json
       - name: 发布 Release
         env:
           GH_TOKEN: ${{ github.token }}

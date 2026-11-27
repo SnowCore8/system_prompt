@@ -13,7 +13,7 @@
 |---|---|---|---|
 | 发布准备 | G4 → G5 | 确认 G4 验证证据、版本位、变更记录与回滚方案 | 校验输出、变更日志、回滚说明 |
 | 生产授权 | G5 | 对打 tag、推送、npm publish 与创建 Release 取得逐次明确同意 | 批准记录 |
-| 执行 | G5 | `scripts/check.sh`、`scripts/dist.sh --require-tag`、推送 tag、`release` 工作流 | CI/CD 记录、制品与校验和 |
+| 执行 | G5 | `scripts/check.sh`、`scripts/dist.sh --require-tag`、推送 tag、`release` 工作流 | CI/CD 记录、制品与校验和、provenance 与 attestation |
 | 观测 | G5 | 核对工作流步骤、Release 附件与三个 npm 包内容 | 工作流结果、附件清单 |
 | 通告 | G5 → G6 | Release 说明、CHANGELOG 版本节、弃用与迁移说明 | Release 页面 |
 | 复盘 | G6 | 对照发布目标核对偏差，行动项进入后续变更 | 复盘记录 |
@@ -50,15 +50,17 @@
 4. 打注释 tag：`git tag -a v<version> -m "release <version>"`。
 5. 推送：`git push origin master --tags`。
 6. GitHub Actions 的 `release` 工作流重跑校验、构建 zip 与 SHA256，把 DSH bundle 与 Qoder、Qwen 两个 zip
-   安装包发布到 npm 公共 registry，生成 SBOM（SPDX JSON），并把三个 zip、SHA256、`THIRD-PARTY-NOTICES.md`
-   与 SBOM 挂到 Release；需要仓库 secret `NPM_TOKEN`，三个包版本必须新。
+   安装包以 provenance 发布到 npm 公共 registry，生成 SBOM（SPDX JSON）与构建来源证明，并把三个 zip、SHA256、
+   `THIRD-PARTY-NOTICES.md` 与 SBOM 挂到 Release；需要仓库 secret `NPM_TOKEN`，三个包版本必须新。
 7. 下载三个 zip 与对应的 `.sha256` 后，用
-   `for p in qoder qwen dsh; do sha256sum -c "global-user-constraints-$p-<version>.sha256"; done` 核对。
+   `for p in qoder qwen dsh; do sha256sum -c "global-user-constraints-$p-<version>.sha256"; done` 核对；
+   用 `gh attestation verify <文件> --repo SnowCore8/system_prompt` 核对构建来源证明。
 8. npm 是唯一发布通道；GitHub Packages 不是发布目标。
 
 ## 发布完成判定
 
 - `release` 工作流成功即视为发布完成：校验、构建、npm publish、SBOM 与 GitHub Release 在同一次运行中完成。
+- npm 包附带 provenance，Release 附件带构建来源证明；均可在 GitHub 的 attestations 页面复核。
 - 不人工轮询 npm registry；索引传播延迟不属于发布失败，也不以 `npm view` 或网页可见性作为发布门禁。
 - 工作流失败时按回滚节处理，并在变更记录中写明失败步骤与后续动作。
 
@@ -71,10 +73,11 @@
 - 默认用 `qoderclicn` 校验组装后的 Qoder 包，缺失时失败；`--no-validate` 跳过校验，CI 发布流水线用它换取
   可重复构建，发布前须在本地补跑校验。
 - 每个包只保留最新制品与校验和，构建新版本时删除旧制品；zip 与 `.sha256` 不纳入版本库。
+- CI 的 `reproducible` 任务在 UTC 与 Asia/Shanghai 两个时区重建同一提交并比对 SHA256。
 
 ## npm zip 直链安装
 
-- GitHub Release 资产在私有仓库不可匿名下载；Qoder 的 HTTPS 直链安装走 npm CDN，URL 必须以 `.zip` 结尾：
+- Qoder 的 HTTPS 直链安装走 npm CDN，URL 必须以 `.zip` 结尾：
 
   ```bash
   qoderclicn plugins install \
@@ -96,6 +99,7 @@
 
 - 观测对象是工作流步骤、制品与 Release 附件，不是 npm 索引的可见性。
 - 发布后核对：三个 zip 与校验和齐全、SBOM 生成、Release 说明可读、三包版本一致。
+- 核对 Release 附件与 npm 包的 provenance/attestation 可验证。
 - 仓库不收集使用遥测；安装问题与行为异常来自使用者报告，按 [SECURITY.md](../SECURITY.md) 或普通变更请求处理。
 - 发现制品错误时按回滚节处理，不在原版本上重打出包。
 
@@ -129,5 +133,7 @@
 - [ ] 生产授权已取得：打 tag、推送、npm publish 与创建 Release
 - [ ] `release` 工作流成功（含 npm publish 与 GitHub Release）
 - [ ] Release 附件包含 zip、`.sha256` 与 SBOM
+- [ ] npm 包带 provenance，Release 附件带构建来源证明
+- [ ] `reproducible` 任务通过（跨时区重建一致）
 - [ ] 三个 npm 包已随 `release` 工作流发布
 - [ ] 复盘结论与行动项已记录

@@ -35,15 +35,15 @@
 
 | 编号 | 威胁 | 路径 | 控制 | 残余风险 |
 |---|---|---|---|---|
-| T1 | 约束或 skill 被篡改，模型行为被劫持 | 提交、PR、安装包 | `CODEOWNERS` 全路径指派与审查约定；唯一真源与脚本组装；发布前 `scripts/check.sh`；zip 结构校验 | 单人维护；尚未启用制品签名与 provenance |
-| T2 | 制品被替换或降级 | npm、Release、下载链路 | HTTPS；发布 SHA256；SBOM；包内清单版本校验；`scripts/dist.sh` 可复现构建 | 用户需自行核对校验和；registry 与 CDN 不受本仓库控制 |
+| T1 | 约束或 skill 被篡改，模型行为被劫持 | 提交、PR、安装包 | `CODEOWNERS` 全路径指派与审查约定；唯一真源与脚本组装；发布前 `scripts/check.sh`；zip 结构校验；npm provenance 与构建来源证明 | 单人维护；制品签名仍未启用 |
+| T2 | 制品被替换或降级 | npm、Release、下载链路 | HTTPS；发布 SHA256；SBOM；包内清单版本校验；`scripts/dist.sh` 可复现构建；npm provenance 与构建来源证明 | 用户需自行核对校验和；registry 与 CDN 不受本仓库控制 |
 | T3 | hook 收到恶意或畸形输入 | stdin payload | 仅 `JSON.parse`，无 `eval`、无子进程、无网络；非对象载荷直接返回；异常静默且退出码为 0；超时 10 秒 | 宿主自身漏洞不在范围内 |
 | T4 | 路径穿越或软链 | 组装、zip、hook 读取 | 组装与包内零软链；`verify_zip` 拒绝软链与 `__pycache__`；读取限于固定文件名，状态写入限于插件数据目录 | 环境变量可指向任意目录，按用户输入处理 |
 | T5 | 凭据泄露 | 提交、日志、CI | gitleaks 全历史扫描；敏感文件忽略与检查；仓库不保存密钥 | token 权限与轮换依赖人工操作 |
 | T6 | 依赖供应链投毒 | pip、GitHub Actions | 版本固定与哈希锁定；`pip-audit`；Dependabot；Action 按 SHA 固定 | 上游 0day 与投毒仍可能发生 |
 | T7 | 注入内容膨胀或降级 | 会话启动与压缩后注入 | 64 KiB 硬上限；超限只提示读取原文；压缩后重新注入提醒与时间 | 超限时用户须手动读取约束 |
 | T8 | 本地状态泄露 | 插件数据目录 | 状态文件仅含 turn 与时间，文件名是会话 ID 的 sha256 前缀；无网络调用 | 目录权限由宿主管理 |
-| T9 | 发布管线滥用 | tag、workflow、secrets | tag 与五个清单版本一致性校验；`release` 工作流仅授予 `contents: write`；发布前重跑全量校验 | 维护者账号被攻破时无可信第三方阻断 |
+| T9 | 发布管线滥用 | tag、workflow、secrets | tag 与五个清单版本一致性校验；发布工作流仅授予 contents、id-token 与 attestations；npm publish 带 provenance；发布前重跑全量校验 | 维护者账号被攻破时无可信第三方阻断 |
 
 ## 信任假设
 
