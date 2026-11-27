@@ -21,6 +21,7 @@
   "scripts": {
     "check:js": "biome check .",
     "format:js": "biome check --write .",
+    "bench:hooks": "node scripts/bench-hooks.mjs",
     "coverage:js": "c8 --check-coverage --lines 90 --branches 85 --functions 90 node --test \"tests/hooks/*.test.js\" \"tests/dsh/*.test.mjs\""
   },
   "devDependencies": {

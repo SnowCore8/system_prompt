@@ -100,6 +100,7 @@ Qoder 通过 `.qoder/rules` 读取；用户级安装插件后，由插件包提�
 - 单独运行测试：skill 测试使用
   `python3 -B -m unittest discover -s tests/skill -p 'test_*.py'`；JS lint 与格式使用 `npm run check:js`；
   JS 测试与覆盖率使用 `npm run coverage:js`。
+- 性能预算：`npm run --silent bench:hooks`，CI 的 `perf` 任务运行同一脚本。
 - 发布、版本、tag 与出包流程见 [docs/release.md](docs/release.md)；本地出包使用 `scripts/dist.sh`。
 
 ## 分支与审查

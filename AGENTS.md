@@ -51,7 +51,7 @@
 - 提交前运行 `scripts/check.sh`，失败先修复；交付时粘贴真实输出与退出码。未运行的验证写“未运行”。
 - 单文件 Markdown 校验：`python3 skills/system-prompt-authoring/scripts/check.py --strict <文件>`。
 - 相关用例：`python3 -B -m unittest discover -s tests/skill -p 'test_*.py'`、`npm run --silent check:js`、
-  `npm run --silent coverage:js`。JS 工具链先运行 `npm ci`。
+  `npm run --silent coverage:js`、`npm run --silent bench:hooks`。JS 工具链先运行 `npm ci`。
 - 提交按事项拆分，信息使用 `type(scope): short description`，空行后写明修改原因；不提交生成目录、缓存、
   构建产物或调试残留。
 - 发布、打 tag 与出包按 [docs/release.md](docs/release.md)，不得自行发布。

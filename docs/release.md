@@ -24,8 +24,9 @@
 ## 版本规则
 
 五个清单的版本必须一致：`plugins/qoder/.qoder-plugin/plugin.json`、`plugins/qwen/qwen-extension.json`、仓库根
-`package.json`（DSH bundle）、`npm/qoder/package.json` 与 `npm/qwen/package.json`。版本由发布者手动修改；
-`scripts/check.sh` 校验五者一致，`scripts/dist.sh` 校验三包版本且不推导或改写版本。
+`package.json`（DSH bundle）、`npm/qoder/package.json` 与 `npm/qwen/package.json`；`package-lock.json` 的根
+版本随 `package.json` 同步。版本用 `node scripts/bump-version.mjs <version>` 一次修改；`scripts/check.sh`
+校验六者一致，`scripts/dist.sh` 校验三包版本且不推导或改写版本。
 
 | 变更 | 版本位 |
 |---|---|
@@ -38,13 +39,13 @@
 ## 发布准备
 
 1. 确认 G4 证据：`scripts/check.sh` 通过，插件校验在装有 `qoderclicn` 的机器上完成。
-2. 确定版本位，更新五个清单的 `version`，在 [CHANGELOG.md](../CHANGELOG.md) 顶部加对应版本节。
+2. 确定版本位，运行 `node scripts/bump-version.mjs <version>`，在 [CHANGELOG.md](../CHANGELOG.md) 顶部加对应版本节。
 3. 写明本次发布的变更范围、受影响的使用者、回滚方式与停止条件；R2 变更附独立结论或例外记录。
 4. 确认工作区干净，生成目录未提交，`.gitignore` 覆盖本地配置与制品。
 
 ## 发布步骤
 
-1. 更新五个清单的 `version` 与 CHANGELOG 版本节。
+1. 运行 `node scripts/bump-version.mjs <version>`，并在 CHANGELOG 顶部加对应版本节。
 2. 跑 `scripts/check.sh`，确认「全部通过」。
 3. 提交 `release: <version>`，工作区保持干净。
 4. 打注释 tag：`git tag -a v<version> -m "release <version>"`。
@@ -127,7 +128,7 @@
 ## 发布检查单
 
 - [ ] G4 证据齐备，`scripts/check.sh` 通过
-- [ ] 五个清单与 tag 版本一致
+- [ ] 版本清单与 tag 一致（`node scripts/bump-version.mjs <version>`）
 - [ ] CHANGELOG 已加版本节，破坏性变更写明迁移路径
 - [ ] 工作区干净，`scripts/dist.sh --require-tag` 通过
 - [ ] 生产授权已取得：打 tag、推送、npm publish 与创建 Release
