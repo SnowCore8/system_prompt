@@ -15,8 +15,8 @@ from pathlib import Path
 REPO = Path(__file__).resolve().parents[2]
 SKILLS = REPO / "skills"
 H2 = re.compile(r"^## (.+)$", re.M)
-STAGE = re.compile(r"S[0-6]")
-GATE = re.compile(r"G[0-6]")
+STAGE = re.compile(r"S[0-7]")
+GATE = re.compile(r"G[0-7]")
 LIFECYCLE_HEADINGS = (
     "## 阶段职责",
     "## 门禁证据",
