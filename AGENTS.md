@@ -1,8 +1,19 @@
 # 智能体项目指令
 
-本文件是智能体在本仓库的项目指令。全局治理章程由宿主加载，两者冲突时以章程为准。本文件只说明仓库事实与
-本仓库的执行要求；人类贡献、治理与发布流程见 [CONTRIBUTING.md](CONTRIBUTING.md)、[GOVERNANCE.md](GOVERNANCE.md)
-与 [docs/release.md](docs/release.md)。
+本文件是智能体在本仓库的项目指令。全局治理章程由宿主加载，两者冲突时以章程为准。本文件只说明仓库的
+设计目标、仓库事实与本仓库的执行要求；人类贡献、治理与发布流程见 [CONTRIBUTING.md](CONTRIBUTING.md)、
+[GOVERNANCE.md](GOVERNANCE.md) 与 [docs/release.md](docs/release.md)。
+
+## 设计目标
+
+- 本仓库的目标是打造软件工程领域最强大、最全面的治理插件包 **se-governance**：skills + MCP + rules +
+  hooks + scripts + workflows 一套真源，覆盖从提出需求到发布、运维、退役的产品全生命周期（S0 受理–S7 收尾）。
+- 治理先行：全局章程是唯一真源与最高准则，24 个 skill 是其落地细则；一切规则必须可判定、可核验、可追溯，
+  以门禁证据为准，不以意图与口头承诺为准。
+- 多端一致：同一真源经 `scripts/assemble.sh` 与 `scripts/materialize.sh` 分发到 Qoder、Qwen 与 DSH 三端，
+  以 npm 包发布，带 provenance 与 SBOM，制品可复现、可验证。
+- 工程标准：契约测试与全量门禁先行，内容做语义级核验，未经验证不得宣称完成；安全、授权与不可逆约束
+  优先于进度。
 
 ## 真源与入口
 
