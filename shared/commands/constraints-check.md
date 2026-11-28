@@ -1,3 +1,9 @@
+---
+name: constraints-check
+description: 依全局用户约束与生命周期门禁审查当前对话中的请求、方案或待执行命令
+argument-hint: [待审查的请求、方案或命令]
+---
+
 # constraints-check
 
 审查当前对话中的请求、方案或待执行命令，对照 se-governance 治理章程给出结论。只审查，不执行被审查对象。
