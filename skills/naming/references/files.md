@@ -4,7 +4,8 @@
 
 - 名称使用小写，不含空格与版本后缀；每种语言选定一种大小写：Python 与 Rust 模块用 snake_case，Web 资产与文档用 kebab-case，仅语言要求时用 PascalCase。
 - 按主要导出或职责命名文件，不按层次命名：用 `user_repository.py` 而非 `db.py`，用 `billing/invoice_calculator.go` 而非 `helpers.go`。
-- 目录中集合用复数名词（`users/`、`orders/`），单个功能用单数名词（`billing/`）；除项目已记录边界外避免 `misc/`、`common/`、`utils/`。
+- 目录中集合用复数名词（`users/`、`orders/`），单个功能用单数名词（`billing/`）；除项目已记录边界外避免 `misc/`、`common/`、`utils/`，
+  无边界目录是否移除由 `project-structure` 裁定。
 - 测试文件与被测单元同名并带语言后缀：`user_service_test.py`、`UserServiceTest.java`、`user-service.test.ts`。
 - fixture 放 `fixtures/` 或 `testdata/`，快照放 `__snapshots__/` 或 `snapshots/`，基准文件放 `golden/`。
 - 迁移文件带时间戳并保持有序：`20261114093000_add_order_status.sql`。
