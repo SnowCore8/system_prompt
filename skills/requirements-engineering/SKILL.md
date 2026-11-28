@@ -1,6 +1,6 @@
 ---
 name: requirements-engineering
-description: 受理请求并完成需求工程：请求分类与授权确认、需求收集与分析、可判定验收标准、收益基线、优先级排序。适用于受理新请求、澄清需求、编写验收标准，或在 G0/G1 检查受理与立项证据；不适用于架构裁定（见 architecture-design）、任务拆分与估算（见 planning-estimation）与实现纪律（见 implementation-practices）。
+description: 受理请求并完成需求工程：请求分类与授权确认、需求收集与分析、可判定验收标准、收益基线、优先级排序。适用于受理新请求、澄清需求、编写验收标准，或在 G0/G1 检查受理与立项证据；不适用于架构裁定（见 `architecture-design`）、任务拆分与估算（见 `planning-estimation`）与实现纪律（见 `implementation-practices`）。
 argument-hint: '[请求、需求或待办条目]'
 ---
 
@@ -13,12 +13,12 @@ argument-hint: '[请求、需求或待办条目]'
 
 效力依下列层级判断：高层覆盖低层，低层仅在高层未规定时补充。
 
-1. 强制约束。宿主、法律、平台与 `rules/global-user-constraints.md` 的授权（AUT）、意图（INT）、诚实（HON）与不确定（UNC）条款优先；请求分类与歧义处理不得与本层冲突。
+1. 强制约束。宿主、法律、平台与 `rules/global-user-constraints.md` 的授权（AUT）、保密（SEC）、不可逆（IRR）、诚实（HON）、意图（INT）与不确定（UNC）条款优先；请求分类与歧义处理不得与本层冲突。
 2. 本 skill 的规则。受理记录、需求收集、验收标准、DoR、收益基线与优先级排序，以本文件与 `references/` 为准。
 3. 项目约定与事实。既有需求文档、术语表与待办属于事实输入，依本 skill 的规则处理，仅在本 skill 未规定时补充。
 
-本 skill 管辖：请求复述与分类、授权与风险分级的记录、需求收集与澄清、验收标准、Definition of Ready、收益基线与结果指标、选项比较与优先级。
-本 skill 不管辖：方案与架构裁定（`architecture-design`）、任务拆分与估算（`planning-estimation`）、实现与提交（`implementation-practices`），以及测试策略与发布操作（对应专业 skill）。
+本 skill 管辖：请求复述与分类、授权与风险分级的记录、需求收集与澄清、验收标准、DoR 的 G2 检查、收益基线与结果指标、选项比较与优先级。
+本 skill 不管辖：方案与架构裁定（`architecture-design`）、任务拆分与估算（`planning-estimation`）、实现与提交（`implementation-practices`）、测试策略（`testing-quality`）与发布与回滚操作（`release-operations`）。
 
 ## 生命周期定位
 
@@ -27,7 +27,7 @@ argument-hint: '[请求、需求或待办条目]'
 | 阶段 | 职责 | 产出与证据 |
 |---|---|---|
 | S0 受理 | 复述请求并分类，确认授权、风险级别、停止条件与负责人 | 受理记录、分类结论、G0 证据 |
-| S1 需求 | 收集并澄清问题与用户，定义验收标准、收益基线与选项比较，排序并给出建议 | 需求说明、验收标准、收益基线、选项比较、DoR 结论、G1 证据 |
+| S1 需求 | 收集并澄清问题与用户，定义验收标准、收益基线与选项比较，排序并给出建议 | 需求说明、验收标准、收益基线、选项比较、G1 证据 |
 | S2 设计 | 移交可实施的需求与验收标准，参与固定范围与非范围 | 需求移交清单、DoR 复核结论 |
 
 ## 门禁与证据
@@ -55,7 +55,7 @@ argument-hint: '[请求、需求或待办条目]'
 | 3 | 验收标准 | 每条验收标准必须可判定，并写明执行者与通过、失败、条件通过三种结论。 | `references/acceptance.md` 第 1 节 |
 | 4 | 选项比较与优先级 | 每个提案至少比较两个选项（含不做事），按价值、风险、依赖与学习速度排序。 | `references/options.md` 第 1 节 |
 | 5 | 收益基线与结果指标 | 结果指标必须可测量并附基线，在 G1 记录、在 S7 对照。 | `references/benefits.md` 第 1 节 |
-| 6 | Definition of Ready | 结果、验收、依赖、负责人、估算、风险与测试方式齐备的条目方可进入 S3 构建。 | `references/dor.md` 第 1 节 |
+| 6 | Definition of Ready | DoR 条目内容由 `project-lifecycle` 管辖，本 skill 在 G2 给出逐项检查结论。 | `references/dor.md` 第 1 节 |
 
 ## 参考资料
 

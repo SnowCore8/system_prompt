@@ -1,6 +1,6 @@
 ---
 name: architecture-design
-description: 划定并审查软件系统的模块边界、分层与依赖方向、数据流、框架选择与变更、可测试性接缝，并以 ADR 固定决策。适用于新增模块、划分分层、选换框架、设计接缝与 ADR；不适用于需求收集（见 requirements-engineering）、任务拆分与估算（见 planning-estimation）与实现纪律（见 implementation-practices）。
+description: 划定并审查软件系统的模块边界、分层与依赖方向、数据流、框架选择与变更、可测试性接缝，并以 ADR 固定决策。适用于新增模块、划分分层、选换框架、设计接缝与 ADR；不适用于需求收集（见 `requirements-engineering`）、任务拆分与估算（见 `planning-estimation`）与实现纪律（见 `implementation-practices`）。
 argument-hint: '[模块、分层或架构决策]'
 ---
 
@@ -18,11 +18,13 @@ argument-hint: '[模块、分层或架构决策]'
 3. 项目约定与事实。既有模块清单、依赖图、分层约定与 ADR 是事实输入，先阅读再裁定；项目约定仅在本 skill 未规定时补充。
 
 本 skill 管辖：模块与组件边界、分层与依赖方向、数据流与控制流、框架选择与变更、可测试性接缝、ADR。
-本 skill 不管辖：接口的字段与错误形状、目录与包边界的物理落地、重构手法、测试策略（均由对应专业 skill 管辖）；需求与验收标准归 `requirements-engineering`，任务拆分与估算归 `planning-estimation`，实现与提交纪律归 `implementation-practices`。
+本 skill 不管辖：接口的字段与错误形状（`api-data`）、目录与包边界的物理落地（`project-structure`）、
+重构手法（`refactoring`）、测试策略（`testing-quality`）；需求与验收标准归 `requirements-engineering`，
+任务拆分与估算归 `planning-estimation`，实现与提交纪律归 `implementation-practices`。
 
 ## 生命周期定位
 
-上游：G1 的问题、用户、验收标准与约束，安全与性能目标。下游：目标结构交目录与包边界落地，接口形状交接口契约定义，接缝的测试用法交测试策略。停止条件：依赖图成环或内层依赖外层且无法在本次变更内打破、框架变更缺少迁移步骤、ADR 与实现分叉时停止实施，报 Recycle 到 S2。
+上游：G1 的问题、用户、验收标准与约束，安全与性能目标。下游：目标结构交 `project-structure` 落地目录与包边界，接口的字段与错误形状交 `api-data` 定义，接缝的测试用法交 `testing-quality`。停止条件：依赖图成环或内层依赖外层且无法在本次变更内打破、框架变更缺少迁移步骤、ADR 与实现分叉时停止实施，报 Recycle 到 S2。
 
 | 阶段 | 职责 | 产出与证据 |
 |---|---|---|
@@ -45,7 +47,7 @@ argument-hint: '[模块、分层或架构决策]'
 - 依赖图必须为有向无环图。依赖不得由内层指向外层，同层允许但不得成环；违反在合并前由构建或静态分析捕获，存量越界以接缝逐步收紧。
 - 每个模块一个变更理由。同一模块总是因两个不同理由而变化，即视为边界划定错误，应当拆分。
 - 抽象在内层，实现在外层。稳定的抽象置于内层，易变的实现置于外层并依赖抽象。
-- 接口的位置与形状分开裁定。本 skill 裁定接口位于何处、谁依赖谁；接口的字段与错误形状由接口契约 skill 定义。
+- 接口的位置与形状分开裁定。本 skill 裁定接口位于何处、谁依赖谁；接口的字段与错误形状由 `api-data` 定义。
 - 新决策或推翻决策必须写 ADR。未记录的决策会在下一次变更时被重新争论；已接受的 ADR 决定正文不得改写。
 
 ## 维度索引
