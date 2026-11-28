@@ -41,7 +41,7 @@ S4 只验证 S2 已确定的契约与错误目录，不在验证阶段重新设�
 - 交 `prompt-engineering`：工具清单、描述与错误语义，供调用方写工具指令。
 - 交 `release-operations`：版本策略、注册时机与回滚步骤。
 - 交 `security-compliance`：权限边界、机密注入方式与审计要求。
-- 交 `naming`：工具名、参数名与错误代码的命名格式。
+- 交 `naming`：错误代码的命名形态；工具名与参数名的选择由本 skill 裁定。
 - 交 `documentation`：用户可见的工具说明与弃用公告。
 
 升级：
