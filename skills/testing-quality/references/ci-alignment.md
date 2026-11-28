@@ -7,6 +7,5 @@
 - 固定版本：工具链、服务镜像与 fixture 在仓库中固定，禁止 `latest` 浮动；本地通过而 CI 失败属于一致性
   缺陷，先修一致性再加校验。
 - 测试数据合成化：使用合成值与 `example.test.invalid` 地址，每次运行分配唯一命名空间并在结束后清理。
-- 工作流最小权限：顶层 `permissions` 默认只读，按 job 提升；第三方 action 固定到完整提交 SHA；PR 工作流
-  不得在执行不可信代码的上下文中获得机密，不使用 `pull_request_target` 运行 fork 代码；云访问使用 OIDC
-  短期凭据。
+- 固定动作与安全边界：第三方 action 固定到完整提交 SHA；工作流最小权限与 fork 隔离归 `security-compliance`，
+  发布环境与云凭据（OIDC）归 `release-operations`。
