@@ -16,6 +16,7 @@ SKILLS = REPO / "skills"
 H2 = re.compile(r"^## (.+)$", re.M)
 REQUIRED_SECTIONS = ("适用范围与优先级", "生命周期定位", "门禁与证据", "维度索引", "参考资料")
 MAX_LINES = 250
+MAX_DESCRIPTION_BYTES = 1024
 HINT = re.compile(r"\[[^\]]+\]")
 INDEX_HEADER = "| 编号 | 维度名 | 首条规则 | 详情 |"
 NUMBERED_HEADING = re.compile(r"^## (\d+)\.", re.M)
@@ -67,6 +68,15 @@ class SkillsMetaTest(unittest.TestCase):
                 description = frontmatter_of(path).get("description", "")
                 self.assertIn("适用于", description)
                 self.assertIn("不适用于", description)
+
+    def test_description_size_limit(self) -> None:
+        for path in skill_files():
+            with self.subTest(skill=path.parent.name):
+                description = frontmatter_of(path).get("description", "")
+                self.assertLessEqual(
+                    len(description.encode("utf-8")), MAX_DESCRIPTION_BYTES,
+                    f"description 超过 {MAX_DESCRIPTION_BYTES} 字节",
+                )
 
     def test_required_sections_in_order(self) -> None:
         for path in skill_files():
